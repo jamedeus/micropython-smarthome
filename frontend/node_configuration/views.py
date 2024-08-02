@@ -137,7 +137,7 @@ def reupload_all(request):
 
 @requires_post
 def delete_config(data):
-    '''Takes filename of existing config file, deletes from database and disk.
+    '''Takes filename of existing config file, deletes from database.
     If Config was uploaded also deletes associated Node model entry.
     '''
     try:
@@ -149,26 +149,20 @@ def delete_config(data):
             status=404
         )
 
-    try:
-        # If config has been uploaded delete related node (also deletes config)
-        if target.node:
-            target.node.delete()
-        # Otherwise delete config
-        else:
-            target.delete()
+    # If config has been uploaded delete related node (also deletes config)
+    if target.node:
+        target.node.delete()
+    # Otherwise delete config
+    else:
+        target.delete()
 
-        return standard_response(message=f"Deleted {data}")
-    except PermissionError:
-        return error_response(
-            message="Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
-            status=500
-        )
+    return standard_response(message=f"Deleted {data}")
 
 
 @requires_post
 def delete_node(data):
     '''Takes name of existing Node model entry, deletes Node and associated
-    Config entry from database, deletes config file from disk.
+    Config entry from database.
     '''
     try:
         # Get model entry
@@ -179,15 +173,8 @@ def delete_node(data):
             status=404
         )
 
-    try:
-        # Delete from database and disk
-        node.delete()
-        return standard_response(message=f"Deleted {data}")
-    except PermissionError:
-        return error_response(
-            message="Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
-            status=500
-        )
+    node.delete()
+    return standard_response(message=f"Deleted {data}")
 
 
 @requires_post
@@ -202,7 +189,6 @@ def change_node_ip(data):
         )
 
     try:
-        # Get model entry, delete from disk + database
         node = Node.objects.get(friendly_name=data['friendly_name'])
     except Node.DoesNotExist:
         return error_response(
@@ -422,12 +408,11 @@ def generate_config_file(data, edit_existing=False):
         print(f"\nERROR: {valid}\n")
         return error_response(message=valid, status=400)
 
-    # If creating new config, add to models + write to disk
+    # If creating new config, add to models
     if not edit_existing:
-        new = Config.objects.create(config=data, filename=filename)
-        new.write_to_disk()
+        Config.objects.create(config=data, filename=filename)
 
-    # If modifying old config, update JSON object and write to disk
+    # If modifying old config update JSON object
     else:
         try:
             model_entry = Config.objects.get(filename=filename)
@@ -573,7 +558,7 @@ def add_schedule_keyword_config(data):
     # Save keywords on all nodes
     save_all_schedule_keywords()
 
-    # Add new keyword to all configs in database and on disk
+    # Add new keyword to all configs in database
     all_keywords = get_schedule_keywords_dict()
     for node in Node.objects.all():
         node.config.config['metadata']['schedule_keywords'] = all_keywords
@@ -625,7 +610,7 @@ def edit_schedule_keyword_config(data):
     # Save keywords on all nodes
     save_all_schedule_keywords()
 
-    # Update keywords for all configs in database and on disk
+    # Update keywords for all configs in database
     all_keywords = get_schedule_keywords_dict()
     for node in Node.objects.all():
         node.config.config['metadata']['schedule_keywords'] = all_keywords
@@ -657,7 +642,7 @@ def delete_schedule_keyword_config(data):
     # Save keywords on all nodes
     save_all_schedule_keywords()
 
-    # Remove keyword from all configs in database and from disk
+    # Remove keyword from all configs in database
     all_keywords = get_schedule_keywords_dict()
     for node in Node.objects.all():
         node.config.config['metadata']['schedule_keywords'] = all_keywords

@@ -1,38 +1,17 @@
-import os
-from django.conf import settings
+from django.test import TestCase
 from .get_api_target_menu_options import convert_config_to_api_target_options
 from .views import get_api_target_menu_options
 from .models import Node
 
-# Functions used to manage cli_config.json
-from helper_functions import get_cli_config
-
 # Large JSON objects, helper functions
 from .unit_test_helpers import (
-    TestCaseBackupRestore,
     create_test_nodes,
-    clean_up_test_nodes,
     create_config_and_node_from_json
 )
 
-# Ensure CLI_SYNC is True (writes test configs to disk when created)
-settings.CLI_SYNC = True
-
-# Create CONFIG_DIR if it does not exist
-if not os.path.exists(settings.CONFIG_DIR):
-    os.mkdir(settings.CONFIG_DIR, mode=0o775)
-    with open(os.path.join(settings.CONFIG_DIR, 'readme'), 'w') as file:
-        file.write('This directory was automatically created for frontend unit tests.\n')
-        file.write('You can safely delete it, it will be recreated each time tests run.')
-
-# Create cli_config.json if it does not exist
-if not os.path.exists(os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')):
-    from helper_functions import write_cli_config
-    write_cli_config(get_cli_config())
-
 
 # Test function that generates JSON used to populate API target set_rule menu
-class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
+class ApiTargetMenuOptionsTest(TestCase):
     def test_empty_database(self):
         # Should return empty template when no Nodes exist
         options = get_api_target_menu_options()
@@ -225,9 +204,6 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
         # Should return valid options for each device and sensor of all existing nodes
         self.assertEqual(options, expected_options)
 
-        # Remove test configs from disk
-        clean_up_test_nodes()
-
     def test_from_edit_config(self):
         # Create nodes
         create_test_nodes()
@@ -413,9 +389,6 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
         # Should return valid options for each device and sensor of all existing nodes, except Test1
         # Should include Test1's options in self-target section, should not be in main section
         self.assertEqual(options, expected_options)
-
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     # Original bug: IR Blaster options always included both TV and AC, even if only one configured.
     # Fixed in 8ab9367b, now only includes available options.
@@ -651,9 +624,6 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
         options = get_api_target_menu_options('Test2')
         self.assertEqual(options['self-target'], expected_options)
 
-        # Remove test configs from disk
-        clean_up_test_nodes()
-
     # Original bug: The self-target conditional in get_api_target_menu_options contained a
     # dict comprehension intended to remove turn_on and turn_off from api-target instances,
     # but it also removed all instances with types other than api-target. Fixed in 069e6b29.
@@ -679,9 +649,6 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
             options['self-target']['ir_key']['display']
         )
         self.assertIn('ignore', options['self-target'].keys())
-
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     # Original bug: Function that adds endpoints used conditional with hard-coded sensor
     # types to determine if trigger_sensor was supported. When new non-triggerable sensors

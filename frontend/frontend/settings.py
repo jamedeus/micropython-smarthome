@@ -38,32 +38,13 @@ for i in ALLOWED_HOSTS:
     CSRF_TRUSTED_ORIGINS.append(f'http://{i}')
     CSRF_TRUSTED_ORIGINS.append(f'https://{i}')
 
-# Read config dir + node password from env vars
-CONFIG_DIR = os.environ.get('CONFIG_DIR')
+# Read webrepl password from env var, use default if not set
 NODE_PASSWD = os.environ.get('NODE_PASSWD')
-
-# Project root directory, used to upload firmware files etc
-REPO_DIR = os.path.dirname(BASE_DIR)
-
-# Read setting that determines whether files are written to disk
-CLI_SYNC = os.environ.get('CLI_SYNC')
-
-# Use defaults if env vars not set
-if not CONFIG_DIR:
-    CONFIG_DIR = os.path.join(REPO_DIR, 'config_files')
 if not NODE_PASSWD:
     NODE_PASSWD = 'password'
-if not CLI_SYNC:  # pragma: no cover
-    CLI_SYNC = False  # pragma: no cover
 
-# Create config dir if it does not exist and CLI_SYNC is enabled
-if CLI_SYNC and not os.path.exists(CONFIG_DIR):
-    os.mkdir(CONFIG_DIR, mode=0o775)
-
-# Create cli_config.json if it does not exist and CLI_SYNC is enabled
-if CLI_SYNC and not os.path.exists(os.path.join(REPO_DIR, 'CLI', 'cli_config.json')):
-    from helper_functions import get_cli_config, write_cli_config
-    write_cli_config(get_cli_config())
+# Project root directory, used to upload firmware files
+REPO_DIR = os.path.dirname(BASE_DIR)
 
 # Set env var, cause shared utilities to use db instead of json files
 os.environ.update({'SMARTHOME_FRONTEND': 'django'})

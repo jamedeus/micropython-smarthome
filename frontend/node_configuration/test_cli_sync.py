@@ -1,15 +1,11 @@
+from django.test import TestCase
 from .models import ScheduleKeyword
 
 # Large JSON objects, helper functions
-from .unit_test_helpers import (
-    TestCaseBackupRestore,
-    create_test_nodes,
-    clean_up_test_nodes,
-    test_config_1,
-)
+from .unit_test_helpers import create_test_nodes, test_config_1
 
 
-class CliSyncTests(TestCaseBackupRestore):
+class CliSyncTests(TestCase):
     '''Tests endpoints called by CLI tools to update cli_config.json'''
 
     def setUp(self):
@@ -19,10 +15,6 @@ class CliSyncTests(TestCaseBackupRestore):
         # Create 2 test schedule keywords
         ScheduleKeyword.objects.create(keyword='morning', timestamp='08:00')
         ScheduleKeyword.objects.create(keyword='sleep', timestamp='23:30')
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_get_nodes(self):
         '''Endpoint should return a dict with all node names as keys, dict

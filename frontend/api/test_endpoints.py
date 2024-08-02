@@ -1,12 +1,12 @@
 from unittest.mock import patch
+from django.test import TestCase
 from .views import parse_command
 from api_endpoints import ir_commands
 from .unit_test_helpers import config1_status
-from node_configuration.unit_test_helpers import TestCaseBackupRestore
 
 
 # Test successful calls to all API endpoints with mocked return values
-class TestEndpoints(TestCaseBackupRestore):
+class TestEndpoints(TestCase):
 
     def test_status(self):
         # Mock request to return status object
@@ -315,7 +315,7 @@ class TestEndpoints(TestCaseBackupRestore):
 
 
 # Test unsuccessful calls with invalid arguments to verify errors
-class TestEndpointErrors(TestCaseBackupRestore):
+class TestEndpointErrors(TestCase):
 
     def test_parse_command_missing_argument(self):
         # Call parse_command with no argument

@@ -2,6 +2,7 @@ import json
 import asyncio
 from copy import deepcopy
 from unittest.mock import patch, MagicMock, AsyncMock, call
+from django.test import TestCase
 from .views import parse_command
 from api_endpoints import request
 from .unit_test_helpers import (
@@ -15,8 +16,6 @@ from .unit_test_helpers import (
 from node_configuration.models import ScheduleKeyword, Node
 from node_configuration.unit_test_helpers import (
     create_test_nodes,
-    clean_up_test_nodes,
-    TestCaseBackupRestore,
     JSONClient,
     test_config_1
 )
@@ -24,7 +23,7 @@ from Webrepl import Webrepl
 
 
 # Test function that makes async API calls to esp32 nodes (called by send_command)
-class RequestTests(TestCaseBackupRestore):
+class RequestTests(TestCase):
     def setUp(self):
         # Simulate successful reply from Node
         async def read_response():
@@ -136,7 +135,7 @@ class RequestTests(TestCaseBackupRestore):
 
 
 # Test send_command function that bridges frontend HTTP requests to esp32 API calls
-class SendCommandTests(TestCaseBackupRestore):
+class SendCommandTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -217,14 +216,10 @@ class SendCommandTests(TestCaseBackupRestore):
 
 
 # Test API Card interface
-class ApiCardTests(TestCaseBackupRestore):
+class ApiCardTests(TestCase):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_get_status(self):
         # Mock request to return status object
@@ -366,14 +361,10 @@ class ApiCardTests(TestCaseBackupRestore):
 
 
 # Test endpoints used to manage schedule keywords
-class ScheduleKeywordTests(TestCaseBackupRestore):
+class ScheduleKeywordTests(TestCase):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_get_keywords(self):
         # Mock request to return expected response
@@ -426,7 +417,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
 
 
-class SyncScheduleKeywordTests(TestCaseBackupRestore):
+class SyncScheduleKeywordTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -584,7 +575,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
 
 
 # Test endpoint that syncs config file from node to database when user modifies schedule rules
-class SyncScheduleRulesTests(TestCaseBackupRestore):
+class SyncScheduleRulesTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -641,7 +632,7 @@ class SyncScheduleRulesTests(TestCaseBackupRestore):
 
 
 # Test endpoints used to create and modify IR macros
-class IrMacroTests(TestCaseBackupRestore):
+class IrMacroTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()

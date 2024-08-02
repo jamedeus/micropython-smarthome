@@ -44,9 +44,6 @@ COPY --from=py_build /usr/local/lib/python3.10/site-packages/ /usr/local/lib/pyt
 # Copy webpack bundles to final build stage
 COPY --from=node_build webapp/static/webapp/ /repo/frontend/webapp/static/webapp/
 
-# Create CLI dir (required if CLI_SYNC enabled)
-RUN mkdir /repo/CLI
-
 # Run migrations, start dev server
 COPY frontend/docker/entrypoint.sh /repo/entrypoint.sh
 CMD ["/repo/entrypoint.sh"]

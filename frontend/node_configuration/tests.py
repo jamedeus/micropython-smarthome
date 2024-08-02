@@ -1,49 +1,24 @@
 import os
 import json
-from io import StringIO
 from copy import deepcopy
-from django.conf import settings
-from django.core.management import call_command
-from django.core.management.base import CommandError
+from django.test import TestCase
 from .views import validate_full_config, get_api_target_menu_options
 from .models import Config, Node, GpsCoordinates
-
-# Functions used to manage cli_config.json
-from helper_functions import get_cli_config, load_unit_test_config
+from helper_functions import load_unit_test_config
 
 # Large JSON objects, helper functions
 from .unit_test_helpers import (
-    TestCaseBackupRestore,
     JSONClient,
     request_payload,
     create_test_nodes,
-    clean_up_test_nodes,
-    test_config_1,
-    test_config_2,
-    test_config_3,
     test_config_1_edit_context,
     test_config_2_edit_context,
     test_config_3_edit_context
 )
 
-# Ensure CLI_SYNC is True (writes test configs to disk when created)
-settings.CLI_SYNC = True
-
-# Create CONFIG_DIR if it does not exist
-if not os.path.exists(settings.CONFIG_DIR):
-    os.mkdir(settings.CONFIG_DIR, mode=0o775)
-    with open(os.path.join(settings.CONFIG_DIR, 'readme'), 'w') as file:
-        file.write('This directory was automatically created for frontend unit tests.\n')
-        file.write('You can safely delete it, it will be recreated each time tests run.')
-
-# Create cli_config.json if it does not exist
-if not os.path.exists(os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')):
-    from helper_functions import write_cli_config
-    write_cli_config(get_cli_config())
-
 
 # Test all endpoints that require POST requests
-class ConfirmRequiresPostTests(TestCaseBackupRestore):
+class ConfirmRequiresPostTests(TestCase):
     def test_get_request(self):
         # All endpoints requiring POST requests
         endpoints = [
@@ -65,17 +40,13 @@ class ConfirmRequiresPostTests(TestCaseBackupRestore):
 
 
 # Test edit config view
-class EditConfigTests(TestCaseBackupRestore):
+class EditConfigTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
 
         # Create 3 test nodes and configs to edit
         create_test_nodes()
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_edit_config_1(self):
         # Request page, confirm correct template used
@@ -158,7 +129,7 @@ class EditConfigTests(TestCaseBackupRestore):
 
 
 # Test config generation page
-class ConfigGeneratorTests(TestCaseBackupRestore):
+class ConfigGeneratorTests(TestCase):
     def test_new_config(self):
         # Request page, confirm correct template used
         response = self.client.get('/new_config')
@@ -190,7 +161,7 @@ class ConfigGeneratorTests(TestCaseBackupRestore):
 
 
 # Test duplicate detection
-class DuplicateDetectionTests(TestCaseBackupRestore):
+class DuplicateDetectionTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -227,7 +198,7 @@ class DuplicateDetectionTests(TestCaseBackupRestore):
 
 
 # Test config generator backend function
-class GenerateConfigFileTests(TestCaseBackupRestore):
+class GenerateConfigFileTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -238,12 +209,6 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
             lat='45.689122409097',
             lon='-122.63675124859863'
         )
-
-    def tearDown(self):
-        try:
-            os.remove(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'))
-        except FileNotFoundError:
-            pass
 
     def test_generate_config_file(self):
         # Confirm starting condition
@@ -348,7 +313,7 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
 
 
 # Test the validate_full_config function called when user submits config generator form
-class ValidateConfigTests(TestCaseBackupRestore):
+class ValidateConfigTests(TestCase):
     def setUp(self):
         self.valid_config = load_unit_test_config()
 
@@ -472,156 +437,3 @@ class ValidateConfigTests(TestCaseBackupRestore):
             result,
             'Invalid rule limits, both must be int between 0 and 1023'
         )
-
-
-# Test custom management commands used to import/export config files
-class ManagementCommandTests(TestCaseBackupRestore):
-    def setUp(self):
-        # Create 3 test nodes, save references
-        create_test_nodes()
-        self.config1 = Config.objects.get(config=test_config_1)
-        self.config2 = Config.objects.get(config=test_config_2)
-        self.config3 = Config.objects.get(config=test_config_3)
-
-        # Write all config files to disk
-        self.config1.write_to_disk()
-        self.config2.write_to_disk()
-        self.config3.write_to_disk()
-
-        # Create buffer to capture stdio from management command
-        self.output = StringIO()
-
-        # Save path to cli_config.json
-        self.cli_config_path = os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
-
-    def test_import_configs_from_disk(self):
-        # Overwrite all 3 configs in database (also overwrites on disk)
-        self.config1.config = {'test': 'placeholder'}
-        self.config1.save()
-        self.assertNotEqual(self.config1.config, test_config_1)
-        self.config2.config = {'test': 'placeholder'}
-        self.config2.save()
-        self.assertNotEqual(self.config2.config, test_config_2)
-        self.config3.config = {'test': 'placeholder'}
-        self.config3.save()
-        self.assertNotEqual(self.config3.config, test_config_3)
-
-        # Overwrite new configs on disk with original contents
-        with open(os.path.join(settings.CONFIG_DIR, 'test1.json'), 'w') as file:
-            json.dump(test_config_1, file)
-        with open(os.path.join(settings.CONFIG_DIR, 'test2.json'), 'w') as file:
-            json.dump(test_config_2, file)
-        with open(os.path.join(settings.CONFIG_DIR, 'test3.json'), 'w') as file:
-            json.dump(test_config_3, file)
-
-        # Call command, confirm correct output
-        call_command("import_configs_from_disk", stdout=self.output)
-        self.assertIn("Importing test1.json", self.output.getvalue())
-        self.assertIn("Importing test2.json", self.output.getvalue())
-        self.assertIn("Importing test3.json", self.output.getvalue())
-
-        # Confirm all configs restored in database
-        self.config1.refresh_from_db()
-        self.config2.refresh_from_db()
-        self.config3.refresh_from_db()
-        self.assertEqual(self.config1.config, test_config_1)
-        self.assertEqual(self.config2.config, test_config_2)
-        self.assertEqual(self.config3.config, test_config_3)
-
-    def test_export_configs_to_disk(self):
-        # Delete all 3 config files from disk
-        for i in range(1, 4):
-            os.remove(os.path.join(settings.CONFIG_DIR, f'test{i}.json'))
-            self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, f'test{i}.json')))
-
-        # Call command, confirm correct output
-        call_command("export_configs_to_disk", stdout=self.output)
-        self.assertIn("Exporting test1.json", self.output.getvalue())
-        self.assertIn("Exporting test2.json", self.output.getvalue())
-        self.assertIn("Exporting test3.json", self.output.getvalue())
-
-        # Confirm configs created on disk
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'test1.json')))
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'test2.json')))
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'test3.json')))
-
-        # Confirm config contents correct
-        with open(os.path.join(settings.CONFIG_DIR, 'test1.json'), 'r') as file:
-            self.assertEqual(json.load(file), test_config_1)
-        with open(os.path.join(settings.CONFIG_DIR, 'test2.json'), 'r') as file:
-            self.assertEqual(json.load(file), test_config_2)
-        with open(os.path.join(settings.CONFIG_DIR, 'test3.json'), 'r') as file:
-            self.assertEqual(json.load(file), test_config_3)
-
-    def test_generate_cli_config(self):
-        # Delete cli_config.json, confirm does not exist
-        os.remove(self.cli_config_path)
-        self.assertFalse(os.path.exists(self.cli_config_path))
-
-        # Call command, confirm correct output, confirm created on disk
-        call_command("generate_cli_config", stdout=self.output)
-        self.assertIn("Generated config:", self.output.getvalue())
-        self.assertTrue(os.path.exists(self.cli_config_path))
-
-        # Read config from disk, confirm correct contents
-        with open(self.cli_config_path) as file:
-            config = json.load(file)
-            # Confirm number of nodes and keywords, config dir, webrepl password
-            self.assertEqual(len(config['nodes']), 3)
-            self.assertEqual(len(config['schedule_keywords']), 2)
-            self.assertEqual(config['config_directory'], settings.CONFIG_DIR)
-            self.assertEqual(config['webrepl_password'], settings.NODE_PASSWD)
-
-            # Confirm correct IP and config path for each node
-            self.assertEqual(config['nodes']['test1']['ip'], '192.168.1.123')
-            self.assertEqual(config['nodes']['test2']['ip'], '192.168.1.124')
-            self.assertEqual(config['nodes']['test3']['ip'], '192.168.1.125')
-            self.assertEqual(
-                config['nodes']['test1']['config'],
-                os.path.join(settings.CONFIG_DIR, 'test1.json')
-            )
-            self.assertEqual(
-                config['nodes']['test2']['config'],
-                os.path.join(settings.CONFIG_DIR, 'test2.json')
-            )
-            self.assertEqual(
-                config['nodes']['test3']['config'],
-                os.path.join(settings.CONFIG_DIR, 'test3.json')
-            )
-
-            # Confirm correct name and timestamp for each keyword
-            self.assertEqual(config['schedule_keywords']['sunrise'], '06:00')
-            self.assertEqual(config['schedule_keywords']['sunset'], '18:00')
-
-    def test_cli_sync_disabled(self):
-        # Disable CLI_SYNC
-        settings.CLI_SYNC = False
-
-        # Confirm all commands raise correct error
-        with self.assertRaises(CommandError):
-            call_command("export_configs_to_disk", stdout=self.output)
-            self.assertIn(
-                'Files cannot be written in diskless mode, set the CLI_SYNC env var to enable.',
-                self.output.getvalue()
-            )
-
-        with self.assertRaises(CommandError):
-            call_command("import_configs_from_disk", stdout=self.output)
-            self.assertIn(
-                'Files cannot be read in diskless mode, set the CLI_SYNC env var to enable.',
-                self.output.getvalue()
-            )
-
-        with self.assertRaises(CommandError):
-            call_command("generate_cli_config", stdout=self.output)
-            self.assertIn(
-                'Files cannot be written in diskless mode, set the CLI_SYNC env var to enable.',
-                self.output.getvalue()
-            )
-
-        # Revert
-        settings.CLI_SYNC = True
