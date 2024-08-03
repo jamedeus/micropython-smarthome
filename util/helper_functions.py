@@ -138,7 +138,7 @@ def remove_node_from_cli_config(friendly_name):
 def write_cli_config(config):
     '''Takes dict, overwrites cli_config.json'''
     with open(cli_config_path, 'w', encoding='utf-8') as file:
-        json.dump(config, file)
+        json.dump(config, file, indent=4)
 
 
 def get_schedule_keywords_dict():
