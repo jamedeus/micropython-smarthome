@@ -3,6 +3,7 @@
 import re
 import os
 import json
+import requests
 
 
 # Get full path to repository root directory
@@ -144,6 +145,19 @@ def add_node_to_cli_config(friendly_name, ip):
     cli_config = get_cli_config()
     cli_config['nodes'][name] = ip
     write_cli_config(cli_config)
+
+    # If django backend configured add new node to database
+    if 'django_backend' in cli_config:
+        print('Uploading node to django database...')
+        requests.post(
+            f'{cli_config["django_backend"]}/add_node',
+            json.dumps({
+                'ip': ip,
+                'config': load_node_config_file(friendly_name)
+            }),
+            timeout=5
+        )
+        print('Done.')
 
 
 def remove_node_from_cli_config(friendly_name):

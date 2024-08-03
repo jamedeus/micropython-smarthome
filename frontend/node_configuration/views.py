@@ -10,6 +10,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.templatetags.static import static
+from django.views.decorators.csrf import csrf_exempt
 from Webrepl import Webrepl
 from provision_tools import get_modules, provision
 from api_endpoints import (
@@ -690,6 +691,7 @@ def get_node_config(request, ip):
         )
 
 
+@csrf_exempt
 @requires_post
 def add_node(data):
     '''Creates Node entry with parameters and config JSON from POST body.

@@ -20,7 +20,8 @@ mock_cli_config = {
         "node3": "192.168.1.111"
     },
     'webrepl_password': 'password',
-    'config_directory': os.path.join(repo, 'config_files')
+    'config_directory': os.path.join(repo, 'config_files'),
+    'django_backend': 'http://192.168.1.100'
 }
 
 
@@ -269,13 +270,18 @@ class TestInstantiation(TestCase):
         # Confirm ID from mock config not in cli_config.json nodes section
         self.assertNotIn('node4', mock_cli_config['nodes'].keys())
 
-        # Mock provision to do nothing, mock cli_config.json, mock open + json.load to return empty dict (config)
+        # Mock provision to do nothing
+        # Mock cli_config.json contents
+        # Mock open, json.load, and load_node_config_file to return mock_file_contents
+        # Mock requests to check call args
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
              patch('provision.json.load', MagicMock(return_value=mock_file_contents)), \
+             patch('helper_functions.load_node_config_file', return_value=mock_file_contents), \
              patch('helper_functions.get_cli_config', return_value=mock_cli_config), \
              patch('provision.cli_config', mock_cli_config), \
-             patch('builtins.open', mock_file):
+             patch('builtins.open', mock_file), \
+             patch('helper_functions.requests.post') as mock_post:
 
             # Instantiate, confirm provision called once with expected IP, password, config
             Provisioner(args, '')
@@ -284,6 +290,18 @@ class TestInstantiation(TestCase):
             self.assertEqual(kwargs['ip'], '192.168.1.123')
             self.assertEqual(kwargs['password'], 'hunter2')
             self.assertEqual(kwargs['config'], mock_file_contents)
+
+            # Confirm node was uploaded to django database
+            self.assertEqual(mock_post.call_count, 1)
+            request_args = mock_post.call_args
+            self.assertEqual(request_args[0][0], 'http://192.168.1.100/add_node')
+            self.assertEqual(
+                request_args[0][1],
+                json.dumps({
+                    'ip': '192.168.1.123',
+                    'config': mock_file_contents
+                })
+            )
 
         # Confirm ID from mock config was added to cli_config.json nodes section
         self.assertIn('node4', mock_cli_config['nodes'].keys())
