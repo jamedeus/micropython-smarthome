@@ -688,3 +688,43 @@ def get_node_config(request, ip):
             message=f'Node with IP {ip} not found',
             status=404
         )
+
+
+@requires_post
+def add_node(data):
+    '''Creates Node entry with parameters and config JSON from POST body.
+    Called by CLI tools when a new node is created from the command line.
+    '''
+
+    # Confirm IP is valid
+    if not valid_ip(data['ip']):
+        return error_response(message=f'Invalid IP {data["ip"]}', status=400)
+
+    # Confirm config JSON is valid
+    valid = validate_full_config(data['config'])
+    if valid is not True:
+        print(f'\nERROR: {valid}\n')
+        return error_response(message=valid, status=400)
+
+    # Confirm name is not duplicate
+    friendly_name = data['config']['metadata']['id']
+    filename = get_config_filename(friendly_name)
+    if is_duplicate(filename, friendly_name):
+        return error_response(
+            message='Config already exists with identical name',
+            status=409
+        )
+
+    # Create Node and Config models
+    node = Node.objects.create(
+        friendly_name=friendly_name,
+        ip=data['ip'],
+        floor=data['config']['metadata']['floor']
+    )
+    Config.objects.create(
+        config=data['config'],
+        filename=filename,
+        node=node
+    )
+
+    return standard_response(message='Node created')
