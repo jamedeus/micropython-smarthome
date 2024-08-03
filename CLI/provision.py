@@ -24,7 +24,8 @@ from helper_functions import (
     valid_ip,
     get_cli_config,
     add_node_to_cli_config,
-    get_config_filepath
+    get_config_filepath,
+    load_node_config_file
 )
 from provision_tools import get_modules, dependencies, core_modules, provision
 
@@ -109,10 +110,14 @@ class Provisioner():
 
         # Upload given config file to given IP address
         elif args.config and args.ip:
-            with open(args.config, 'r') as file:
+            with open(args.config, 'r', encoding='utf-8') as file:
                 config = json.load(file)
-            modules = get_modules(config, repo)
-            result = provision(args.ip, self.passwd, config, modules)
+            result = provision(
+                ip=args.ip,
+                password=self.passwd,
+                config=config,
+                modules=get_modules(config, repo)
+            )
             print(result['message'])
 
             # Add to cli_config.json if upload successful
@@ -124,30 +129,34 @@ class Provisioner():
 
     # Iterate cli_config.json, reprovision all nodes
     def upload_all(self):
-        # Iterate all nodes in config file
-        for i in cli_config['nodes']:
-            print(f"\n{i}\n")
+        # Iterate node names and IPs in config file
+        for name, ip in cli_config['nodes'].items():
+            print(f"\n{name}\n")
 
             # Load config from disk
-            with open(get_config_filepath(i), 'r', encoding='utf-8') as file:
-                config = json.load(file)
-
-            # Get modules
-            modules = get_modules(config, repo)
+            config = load_node_config_file(name)
 
             # Upload
-            result = provision(cli_config['nodes'][i], self.passwd, config, modules)
+            result = provision(
+                ip=ip,
+                password=self.passwd,
+                config=config,
+                modules=get_modules(config, repo)
+            )
             print(result['message'])
 
     # Reprovision an existing node, accepts friendly name as arg
     def upload_node(self, node):
         # Load requested node config from disk
-        with open(get_config_filepath(node), 'r', encoding='utf-8') as file:
-            config = json.load(file)
+        config = load_node_config_file(node)
 
-        # Get modules, upload
-        modules = get_modules(config, repo)
-        result = provision(cli_config['nodes'][node], self.passwd, config, modules)
+        # Upload
+        result = provision(
+            ip=cli_config['nodes'][node],
+            password=self.passwd,
+            config=config,
+            modules=get_modules(config, repo)
+        )
         print(result['message'])
 
     # Upload unit tests to IP address

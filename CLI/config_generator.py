@@ -32,7 +32,7 @@ from helper_functions import (
     is_int,
     get_schedule_keywords_dict,
     get_existing_nodes,
-    get_config_filepath
+    save_node_config_file
 )
 from config_prompt_validators import (
     IntRange,
@@ -201,10 +201,7 @@ class GenerateConfigFile:
 
     def write_to_disk(self):
         '''Writes self.config to config_directory set in cli_config.json.'''
-
-        config_path = get_config_filepath(self.config["metadata"]["id"])
-        with open(config_path, 'w', encoding='utf-8') as file:
-            json.dump(self.config, file)
+        config_path = save_node_config_file(self.config)
         print(f"\nConfig saved as {os.path.split(config_path)[1]}")
 
     def metadata_prompt(self, name="", floor="", location=""):

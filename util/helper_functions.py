@@ -70,6 +70,31 @@ def get_config_filepath(friendly_name):
     return os.path.join(get_cli_config()['config_directory'], filename)
 
 
+def load_node_config_file(friendly_name):
+    '''Takes friendly_name of existing node, reads matching config file in
+    config_directory (set in cli_config.json), returns contents.
+    '''
+    config_filepath = get_config_filepath(friendly_name)
+    if not os.path.exists(config_filepath):
+        raise FileNotFoundError
+    with open(config_filepath, 'r', encoding='utf-8') as file:
+        config = json.load(file)
+    return config
+
+
+def save_node_config_file(config):
+    '''Takes config file dict, generates filename from config.metadata.id,
+    creates or overwrites file in config_directory (set in cli_config.json).
+    '''
+    try:
+        config_filepath = get_config_filepath(config['metadata']['id'])
+        with open(config_filepath, 'w', encoding='utf-8') as file:
+            json.dump(config, file)
+        return config_filepath
+    except KeyError as exception:
+        raise ValueError('config file has no name') from exception
+
+
 def get_config_param_list(config, param):
     '''Takes config file and name of param that exists in subsections.
     Returns list of values for each occurence of the param name.
