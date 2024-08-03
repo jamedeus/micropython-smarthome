@@ -54,10 +54,6 @@ def download_all_node_config_files():
             with open(config_path, 'w', encoding='utf-8') as file:
                 json.dump(config, file)
 
-            # Add config file path to cli_config.json
-            cli_config['nodes'][node]['config'] = config_path
-            write_cli_config(cli_config)
-
         else:
             print(f'Failed to download {node} config file')
 
