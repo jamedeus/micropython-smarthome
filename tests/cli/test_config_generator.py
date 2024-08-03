@@ -879,6 +879,10 @@ class TestGenerateConfigFile(TestCase):
             # Run prompt
             self.generator.add_devices_and_sensors()
 
+        # Confirm correct section added
+        self.assertEqual(self.generator.config['ir_blaster'], expected_config)
+        self.assertNotIn('IR Blaster', self.generator.category_options)
+
     def test_select_sensor_targets_prommpt(self):
         # Set partial config expected when user reaching targets prompt
         self.generator.config = {
