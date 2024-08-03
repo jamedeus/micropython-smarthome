@@ -39,12 +39,16 @@ cli_config = get_cli_config()
 
 
 def validate_ip(ip):
+    '''Validates --ip argument with IPv4 regex'''
     if not valid_ip(ip):
         raise argparse.ArgumentTypeError(f"Invalid IP address '{ip}'")
     return ip
 
 
 def parse_args():
+    '''Parse command line arguments, return parameters used to instantiate
+    Provisioner class
+    '''
     parser = argparse.ArgumentParser(
         description='''\
 Upload config files + dependencies to micropython smarthome nodes
@@ -55,20 +59,51 @@ The password flag is optional and works with all modes''',
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
+    # Arguments that accept arbitrary IP address and config file path
     manual_group = parser.add_argument_group('Manual')
-    manual_group.add_argument('--config', metavar='config', help='Path to config file')
-    manual_group.add_argument('--ip', type=validate_ip, metavar='IP', help='Target IP address')
+    manual_group.add_argument(
+        '--config',
+        metavar='config',
+        help='Path to config file'
+    )
+    manual_group.add_argument(
+        '--ip',
+        type=validate_ip,
+        metavar='IP',
+        help='Target IP address'
+    )
 
+    # Argument that accepts name of existing node from cli_config.json
     node_group = parser.add_argument_group('Node Name (pick one)')
-    node_group.add_argument('node', nargs='?', choices=cli_config['nodes'].keys())
+    node_group.add_argument(
+        'node',
+        nargs='?',
+        choices=cli_config['nodes'].keys()
+    )
 
+    # Argument that reuploads all existing nodes in cli_config.json
     all_group = parser.add_argument_group('All')
-    all_group.add_argument('--all', action='store_true', help='Reupload all nodes from cli_config.json')
+    all_group.add_argument(
+        '--all',
+        action='store_true',
+        help='Reupload all nodes from cli_config.json'
+    )
 
+    # Argument that uploads unit_test_config.json to specified IP
     test_group = parser.add_argument_group('Test')
-    test_group.add_argument('--test', type=validate_ip, metavar='IP', help='Upload unit tests to IP')
+    test_group.add_argument(
+        '--test',
+        type=validate_ip,
+        metavar='IP',
+        help='Upload unit tests to IP'
+    )
 
-    parser.add_argument('--password', metavar='<...>', help='Webrepl password (uses default if omitted)')
+    # Argument that accepts string used as webrepl password
+    parser.add_argument(
+        '--password',
+        metavar='<...>',
+        help='Webrepl password (uses default if omitted)'
+    )
 
     args = parser.parse_args()
 
@@ -89,6 +124,8 @@ The password flag is optional and works with all modes''',
 
 
 class Provisioner():
+    '''Instantiated with return values of parse_args, runs requested acitons'''
+
     def __init__(self, args, parser):
         # Use configured password if arg omitted
         if args.password:
@@ -127,8 +164,9 @@ class Provisioner():
         else:
             parser.print_help()
 
-    # Iterate cli_config.json, reprovision all nodes
     def upload_all(self):
+        '''Iterate cli_config.json, reprovision all nodes'''
+
         # Iterate node names and IPs in config file
         for name, ip in cli_config['nodes'].items():
             print(f"\n{name}\n")
@@ -145,8 +183,9 @@ class Provisioner():
             )
             print(result['message'])
 
-    # Reprovision an existing node, accepts friendly name as arg
     def upload_node(self, node):
+        '''Reprovision an existing node, accepts friendly name as arg'''
+
         # Load requested node config from disk
         config = load_node_config_file(node)
 
@@ -159,20 +198,26 @@ class Provisioner():
         )
         print(result['message'])
 
-    # Upload unit tests to IP address
     def upload_tests(self, ip):
+        '''Upload unit tests to IP address passed as arg'''
+
         # Load unit test config file
-        with open(os.path.join(repo, "tests", 'firmware', "unit_test_config.json"), 'r') as file:
+        path = os.path.join(repo, 'tests', 'firmware', 'unit_test_config.json')
+        with open(path, 'r', encoding='utf-8') as file:
             config = json.load(file)
 
-        # Get list of relative paths for all unit tests (Example: 'tests/firmware/test_core_config.py')
-        tests = [i for i in os.listdir(os.path.join(repo, 'tests', 'firmware')) if i.startswith('test_')]
+        # Get list of relative paths for all unit tests
+        # (Example: 'tests/firmware/test_core_config.py')
+        tests = [i for i in os.listdir(os.path.join(repo, 'tests', 'firmware'))
+                 if i.startswith('test_')]
         tests = [os.path.join('tests', 'firmware', i) for i in tests]
 
         # Build list of all device and sensor modules
         modules = []
-        [modules.extend(i) for i in dependencies['devices'].values()]
-        [modules.extend(i) for i in dependencies['sensors'].values()]
+        for i in dependencies['devices'].values():
+            modules.extend(i)
+        for i in dependencies['sensors'].values():
+            modules.extend(i)
         modules.append('devices/IrBlaster.py')
 
         # Add unit tests + core modules, remove main.py
@@ -187,8 +232,10 @@ class Provisioner():
         # Local path is uploaded to remote path on target ESP32
         modules = {os.path.join(repo, i): i.split("/")[-1] for i in modules}
 
-        # Add unit_test_main.py (must add after dict comprehension, remote name is different)
-        modules[os.path.join(repo, 'tests', 'firmware', 'unit_test_main.py')] = 'main.py'
+        # Add unit_test_main.py (must add after dict comprehension, remote
+        # name (main.py) is different than local (unit_test_main.py)
+        main_path = os.path.join(repo, 'tests', 'firmware', 'unit_test_main.py')
+        modules[main_path] = 'main.py'
 
         result = provision(ip, self.passwd, config, modules)
         print(result['message'])
