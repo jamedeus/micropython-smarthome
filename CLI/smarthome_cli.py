@@ -2,10 +2,12 @@
 
 '''Main CLI script'''
 
+import os
 import json
 import requests
 import questionary
 from helper_functions import (
+    valid_ip,
     valid_uri,
     get_cli_config,
     write_cli_config,
@@ -13,6 +15,7 @@ from helper_functions import (
     get_config_filepath
 )
 from config_generator import GenerateConfigFile
+from provision import upload_node, upload_config_to_ip
 
 
 # Read cli_config.json from disk
@@ -111,36 +114,88 @@ def sync_prompt():
             break
 
 
+def config_prompt():
+    '''Prompt allows user to create config file or edit existing config'''
+    choice = questionary.select(
+        "\nWhat would you like to do?",
+        choices=[
+            "Generate new config",
+            "Edit existing config",
+            "Done"
+        ]
+    ).unsafe_ask()
+    if choice == 'Generate new config':
+        generator = GenerateConfigFile()
+        generator.run_prompt()
+        if generator.passed_validation:
+            generator.write_to_disk()
+    elif choice == 'Edit existing config':
+        # Prompt to select node
+        node = questionary.select(
+            "\nSelect a node to edit",
+            choices=list(cli_config['nodes'].keys())
+        ).unsafe_ask()
+
+        # Instantiate generator with path to node config
+        generator = GenerateConfigFile(get_config_filepath(node))
+        generator.run_prompt()
+        if generator.passed_validation:
+            generator.write_to_disk()
+
+
+def provision_prompt():
+    '''Prompt allows user to reprovision existing node or provision new node'''
+    choice = questionary.select(
+        "\nWhat would you like to do?",
+        choices=[
+            "Reupload config to existing node",
+            "Upload config to new node",
+            "Done"
+        ]
+    ).unsafe_ask()
+    if choice == 'Reupload config to existing node':
+        node = questionary.select(
+            "\nSelect a node to reprovision",
+            choices=list(cli_config['nodes'].keys())
+        ).unsafe_ask()
+        upload_node(node, cli_config['webrepl_password'])
+    elif choice == 'Upload config to new node':
+        # Prompt user for valid IPv4 address
+        ip_address = questionary.text(
+            "Enter IP address:",
+            validate=valid_ip
+        ).unsafe_ask()
+
+        # Prompt user to select file from config_directory
+        config = questionary.select(
+            "\nWhat would you like to do?",
+            choices=os.listdir(cli_config['config_directory'])
+        ).unsafe_ask()
+
+        upload_config_to_ip(
+            config_path=os.path.join(cli_config['config_directory'], config),
+            ip=ip_address,
+            webrepl_password=cli_config['webrepl_password']
+        )
+
+
 def main_prompt():
     '''Main menu prompt'''
     while True:
         choice = questionary.select(
             "\nWhat would you like to do?",
             choices=[
-                "Generate config file",
-                "Edit config file",
-                "Django sync settings",
+                "Configure node",
+                "Provision node",
+                "Settings",
                 "Done"
             ]
         ).unsafe_ask()
-        if choice == 'Generate config file':
-            generator = GenerateConfigFile()
-            generator.run_prompt()
-            if generator.passed_validation:
-                generator.write_to_disk()
-        elif choice == 'Edit config file':
-            # Prompt to select node
-            node = questionary.select(
-                "\nSelect a node to edit",
-                choices=list(cli_config['nodes'].keys())
-            ).unsafe_ask()
-
-            # Instantiate generator with path to node config
-            generator = GenerateConfigFile(get_config_filepath(node))
-            generator.run_prompt()
-            if generator.passed_validation:
-                generator.write_to_disk()
-        elif choice == 'Django sync settings':
+        if choice == 'Configure node':
+            config_prompt()
+        elif choice == 'Provision node':
+            provision_prompt()
+        elif choice == 'Settings':
             sync_prompt()
         elif choice == 'Done':
             break

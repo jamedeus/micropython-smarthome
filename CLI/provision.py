@@ -160,6 +160,25 @@ def upload_node(node, webrepl_password):
     print(result['message'])
 
 
+def upload_config_to_ip(config_path, ip, webrepl_password):
+    '''Takes path to config file, IP address, and webrepl password.
+    Uploads config file and all dependencies to target IP.
+    '''
+    with open(config_path, 'r', encoding='utf-8') as file:
+        config = json.load(file)
+    result = provision(
+        ip=ip,
+        password=webrepl_password,
+        config=config,
+        modules=get_modules(config, repo)
+    )
+    print(result['message'])
+
+    # Add to cli_config.json if upload successful
+    if result['status'] == 200:
+        add_node_to_cli_config(config['metadata']['id'], ip)
+
+
 def upload_tests(ip, webrepl_password):
     '''Upload unit tests to IP address passed as arg'''
 
@@ -226,19 +245,7 @@ def handle_cli_args(args, parser):
 
     # Upload given config file to given IP address
     elif args.config and args.ip:
-        with open(args.config, 'r', encoding='utf-8') as file:
-            config = json.load(file)
-        result = provision(
-            ip=args.ip,
-            password=webrepl_password,
-            config=config,
-            modules=get_modules(config, repo)
-        )
-        print(result['message'])
-
-        # Add to cli_config.json if upload successful
-        if result['status'] == 200:
-            add_node_to_cli_config(config['metadata']['id'], args.ip)
+        upload_config_to_ip(args.config, args.ip, webrepl_password)
 
     else:
         parser.print_help()
