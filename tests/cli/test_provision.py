@@ -4,7 +4,7 @@ import json
 from unittest import TestCase
 from unittest.mock import patch, MagicMock, mock_open
 from argparse import Namespace, ArgumentParser
-from provision import Provisioner, parse_args
+from provision import parse_args, handle_cli_args
 from provision_tools import provision, get_modules
 from Webrepl import Webrepl
 
@@ -144,7 +144,7 @@ class TestInstantiation(TestCase):
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm provision called once for each node
-            Provisioner(args, '')
+            handle_cli_args(args, '')
             self.assertEqual(mock_provision.call_count, 3)
 
             self.assertEqual(mock_provision.call_args_list[0][1]['ip'], '192.168.1.123')
@@ -167,7 +167,7 @@ class TestInstantiation(TestCase):
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm provision called once with expected IP
-            Provisioner(args, '')
+            handle_cli_args(args, '')
             self.assertEqual(mock_provision.call_count, 1)
             self.assertEqual(mock_provision.call_args[1]['ip'], '192.168.1.123')
 
@@ -243,7 +243,7 @@ class TestInstantiation(TestCase):
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm called once with given IP + test modules
-            Provisioner(args, '')
+            handle_cli_args(args, '')
             args = mock_provision.call_args[0]
             self.assertEqual(args[0], '192.168.1.123')
             self.assertEqual(args[3], test_modules)
@@ -284,7 +284,7 @@ class TestInstantiation(TestCase):
              patch('helper_functions.requests.post') as mock_post:
 
             # Instantiate, confirm provision called once with expected IP, password, config
-            Provisioner(args, '')
+            handle_cli_args(args, '')
             self.assertEqual(mock_provision.call_count, 1)
             kwargs = mock_provision.call_args[1]
             self.assertEqual(kwargs['ip'], '192.168.1.123')
@@ -315,7 +315,7 @@ class TestInstantiation(TestCase):
         mock_parser = MagicMock(spec=ArgumentParser)
 
         # Instantiate with mock args and parser, confirm print_help called
-        Provisioner(args, mock_parser)
+        handle_cli_args(args, mock_parser)
         self.assertTrue(mock_parser.print_help.called)
 
 
