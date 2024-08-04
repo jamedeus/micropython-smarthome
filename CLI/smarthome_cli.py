@@ -9,8 +9,10 @@ from helper_functions import (
     valid_uri,
     get_cli_config,
     write_cli_config,
-    save_node_config_file
+    save_node_config_file,
+    get_config_filepath
 )
+from config_generator import GenerateConfigFile
 
 
 # Read cli_config.json from disk
@@ -78,7 +80,10 @@ def set_django_address(address):
     write_cli_config(cli_config)
 
 
-def main_prompt():
+def sync_prompt():
+    '''Prompt allows user to configure django server to sync from, update
+    cli_config.json from django database, or download config files from django.
+    '''
     while True:
         choice = questionary.select(
             "\nWhat would you like to do?",
@@ -102,6 +107,41 @@ def main_prompt():
             print(json.dumps(cli_config, indent=4))
         elif choice == 'Download all config files from django':
             download_all_node_config_files()
+        elif choice == 'Done':
+            break
+
+
+def main_prompt():
+    '''Main menu prompt'''
+    while True:
+        choice = questionary.select(
+            "\nWhat would you like to do?",
+            choices=[
+                "Generate config file",
+                "Edit config file",
+                "Django sync settings",
+                "Done"
+            ]
+        ).unsafe_ask()
+        if choice == 'Generate config file':
+            generator = GenerateConfigFile()
+            generator.run_prompt()
+            if generator.passed_validation:
+                generator.write_to_disk()
+        elif choice == 'Edit config file':
+            # Prompt to select node
+            node = questionary.select(
+                "\nSelect a node to edit",
+                choices=list(cli_config['nodes'].keys())
+            ).unsafe_ask()
+
+            # Instantiate generator with path to node config
+            generator = GenerateConfigFile(get_config_filepath(node))
+            generator.run_prompt()
+            if generator.passed_validation:
+                generator.write_to_disk()
+        elif choice == 'Django sync settings':
+            sync_prompt()
         elif choice == 'Done':
             break
 
