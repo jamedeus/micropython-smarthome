@@ -234,4 +234,7 @@ def main_prompt():
 
 
 if __name__ == '__main__':
-    main_prompt()
+    try:
+        main_prompt()
+    except KeyboardInterrupt as interrupt:
+        raise SystemExit from interrupt
