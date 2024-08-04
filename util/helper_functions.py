@@ -11,6 +11,20 @@ util = os.path.dirname(os.path.realpath(__file__))
 repo = os.path.split(util)[0]
 cli_config_path = os.path.join(repo, 'CLI', 'cli_config.json')
 
+# Build URI regex, requires http or https followed by domain or IP
+# Accepts optional subdomains, ports, and subpaths
+ip_regex = (
+    r'((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
+    r'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
+)
+domain_regex = (r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}')
+port_regex = (r'(:[0-9]{1,5})?')
+path_regex = (r'(/[^\s]*)?')
+uri_regex = re.compile(
+    r'^(http|https)://'
+    r'(' + ip_regex + '|' + domain_regex + ')' + port_regex + path_regex + '$'
+)
+
 
 def is_device_or_sensor(string):
     '''Returns True if arg starts with "device" or "sensor", otherwise False'''
@@ -109,6 +123,11 @@ def valid_ip(ip):
         r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$',
         ip
     ))
+
+
+def valid_uri(uri):
+    '''Returns True if arg is a valid URI, otherwise False.'''
+    return bool(uri_regex.match(uri))
 
 
 def valid_timestamp(timestamp):
