@@ -12,7 +12,7 @@ questionary = "*"
 requests = "*"
 
 [dev-packages]
-ipython = "*"
+ipython = "8.14.0"
 nest-asyncio = "*"
 coverage = "*"
 pylint = "*"
