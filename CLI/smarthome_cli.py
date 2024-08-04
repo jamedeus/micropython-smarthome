@@ -12,7 +12,8 @@ from helper_functions import (
     get_cli_config,
     write_cli_config,
     save_node_config_file,
-    get_config_filepath
+    get_config_filepath,
+    remove_node_from_cli_config
 )
 from config_generator import GenerateConfigFile
 from provision import upload_node, upload_config_to_ip
@@ -179,6 +180,34 @@ def provision_prompt():
         )
 
 
+def delete_prompt():
+    '''Prompt allows user to delete existing nodes from cli_config.json. If a
+    django server is configured the node is also removed from django database.
+    '''
+    targets = questionary.checkbox(
+        "Select nodes to delete",
+        choices=list(cli_config['nodes'].keys())
+    ).unsafe_ask()
+
+    # Print warning, show confirmation prompt
+    print('The following nodes will be deleted:')
+    for i in targets:
+        print(f'  {i}')
+    if cli_config['django_backend']:
+        print('These nodes will also be deleted from the django database')
+    choice = questionary.select(
+        "\nThis cannot be undone, are you sure?",
+        choices=[
+            "Yes",
+            "No"
+        ]
+    ).unsafe_ask()
+
+    if choice == 'Yes':
+        for i in targets:
+            remove_node_from_cli_config(i)
+
+
 def main_prompt():
     '''Main menu prompt'''
     while True:
@@ -187,6 +216,7 @@ def main_prompt():
             choices=[
                 "Configure node",
                 "Provision node",
+                "Delete node",
                 "Settings",
                 "Done"
             ]
@@ -195,6 +225,8 @@ def main_prompt():
             config_prompt()
         elif choice == 'Provision node':
             provision_prompt()
+        elif choice == 'Delete node':
+            delete_prompt()
         elif choice == 'Settings':
             sync_prompt()
         elif choice == 'Done':

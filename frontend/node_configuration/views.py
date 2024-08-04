@@ -160,6 +160,7 @@ def delete_config(data):
     return standard_response(message=f"Deleted {data}")
 
 
+@csrf_exempt
 @requires_post
 def delete_node(data):
     '''Takes name of existing Node model entry, deletes Node and associated

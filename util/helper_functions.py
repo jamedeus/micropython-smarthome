@@ -179,16 +179,35 @@ def add_node_to_cli_config(friendly_name, ip):
         print('Done.')
 
 
-def remove_node_from_cli_config(friendly_name):
-    '''Takes node friendly name, deletes from cli_config.json'''
+def remove_node_from_cli_config(name):
+    '''Takes node config name, deletes from cli_config.json'''
 
-    # Remove spaces (breaks CLI tool bash completion)
-    name = get_cli_config_name(friendly_name)
+    # Ensure name has no spaces (cli_config.json syntax)
+    name = get_cli_config_name(name)
 
     try:
         cli_config = get_cli_config()
         del cli_config['nodes'][name]
         write_cli_config(cli_config)
+
+        # If django backend configured delete node from database
+        if 'django_backend' in cli_config:
+            print(f'Deleting {name} from django database...')
+
+            try:
+                # Load config, get friendly name
+                config = load_node_config_file(name)
+                friendly_name = config['metadata']['id']
+
+                # Post friendly name to backend
+                requests.post(
+                    f'{cli_config["django_backend"]}/delete_node',
+                    json.dumps(friendly_name),
+                    timeout=5
+                )
+                print('Done.')
+            except FileNotFoundError:
+                print('Failed to delete from django database')
     except KeyError:
         pass
 
