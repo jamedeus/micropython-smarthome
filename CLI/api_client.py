@@ -357,6 +357,30 @@ def ir_blaster_endpoints_prompt(status, endpoint, node_ip):
     return command_args
 
 
+def get_endpoint_options(status):
+    '''Returns list of relevant endpoint options based on status object'''
+
+    # Get list of all endpoints, add Done (breaks loop)
+    endpoint_options = list(example_usage.keys()) + ['Done']
+
+    # Remove IR options if target node does not have IR Blaster
+    if not status['metadata']['ir_blaster']:
+        endpoint_options = [option for option in endpoint_options
+                            if not option.startswith('ir')]
+
+    # Remove device endpoints if target node does not have devices
+    if not len(status['devices']):
+        endpoint_options = [option for option in endpoint_options
+                            if option not in ['turn_on', 'turn_off']]
+
+    # Remove sensor endpoints if target node does not have sensors
+    if not len(status['sensors']):
+        endpoint_options = [option for option in endpoint_options
+                            if option not in ['trigger_sensor', 'condition_met']]
+
+    return endpoint_options
+
+
 def api_prompt():
     '''Prompt allows user to send API commands to existing nodes'''
 
@@ -365,10 +389,6 @@ def api_prompt():
     if node == 'Done':
         return
     node_ip = nodes[node]
-
-    # Get API endpoint options, add Done (break loop)
-    endpoint_options = list(example_usage.keys())
-    endpoint_options.append('Done')
 
     while True:
         # Get status object, print current status (repeats after each command)
@@ -379,7 +399,7 @@ def api_prompt():
         # Prompt to select endpoint
         endpoint = questionary.select(
             "Select command",
-            choices=endpoint_options
+            choices=get_endpoint_options(status)
         ).unsafe_ask()
 
         # Create list with endpoint as first arg
