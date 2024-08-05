@@ -201,6 +201,90 @@ def api_target_node_prompt():
     ).unsafe_ask()
 
 
+def device_and_sensor_endpoints_prompt(status, endpoint):
+    '''Called by api_prompt when user selects an endpoint that requires a device
+    or sensor argument, shows remaining prompts, returns command_args.
+    '''
+
+    # Create list with endpoint as first arg
+    # Prompts below add additional args (if needed), result sent to node
+    command_args = [endpoint]
+
+    # Prompt to select from available devices and sensors
+    target = questionary.select(
+        "Select device or sensor",
+        choices=list(status['devices'].keys()) + list(status['sensors'].keys())
+    ).unsafe_ask()
+    command_args.append(target)
+
+    # If selected endpoint requires additional arg
+    if endpoint in ['disable_in', 'enable_in']:
+        arg = questionary.text(
+            "Enter delay (minutes):"
+        ).unsafe_ask()
+        command_args.append(arg)
+
+    elif endpoint == 'set_rule':
+        arg = questionary.text(
+            "Enter rule"
+        ).unsafe_ask()
+        command_args.append(arg)
+
+    elif endpoint == 'increment_rule':
+        arg = questionary.text(
+            "Enter amount to increment rule by (can be negative)"
+        ).unsafe_ask()
+        command_args.append(arg)
+
+    elif endpoint == 'add_rule':
+        # Prompt to enter timestamp or keyword
+        timestamp = questionary.text(
+            "Enter timestamp (HH:MM) or keyword"
+        ).unsafe_ask()
+        command_args.append(timestamp)
+
+        # Prompt to enter rule
+        rule = questionary.text(
+            "Enter rule"
+        ).unsafe_ask()
+        command_args.append(rule)
+
+    elif endpoint == 'remove_rule':
+        # Get list of existing rules for target
+        if target.startswith('device'):
+            rules = list(status['devices'][target]['schedule'].keys())
+        else:
+            rules = list(status['sensors'][target]['schedule'].keys())
+
+        # Prompt to select existing rule to remove
+        rule = questionary.select(
+            'Select rule to remove',
+            choices=rules
+        ).unsafe_ask()
+        command_args.append(rule)
+
+    return command_args
+
+
+def ir_blaster_endpoints_prompt(status, endpoint):
+    '''Called by api_prompt when user selects an IR blaster endpoint, shows
+    remaining prompts, returns command_args.
+    '''
+
+    # Create list with endpoint as first arg
+    # Prompts below add additional args (if needed), result sent to node
+    command_args = [endpoint]
+
+    if endpoint == 'ir_create_macro':
+        # Prompt user for new macro name
+        arg = questionary.text(
+            'Enter new macro name'
+        ).unsafe_ask()
+        command_args.append(arg)
+
+    return command_args
+
+
 def api_prompt():
     '''Prompt allows user to send API commands to existing nodes'''
 
@@ -248,58 +332,7 @@ def api_prompt():
             'remove_rule',
             'get_attributes'
         ]:
-            # Prompt to select from available devices and sensors
-            target = questionary.select(
-                "Select device or sensor",
-                choices=list(status['devices'].keys()) + list(status['sensors'].keys())
-            ).unsafe_ask()
-            command_args.append(target)
-
-            # If selected endpoint requires additional arg
-            if endpoint in ['disable_in', 'enable_in']:
-                arg = questionary.text(
-                    "Enter delay (minutes):"
-                ).unsafe_ask()
-                command_args.append(arg)
-
-            elif endpoint == 'set_rule':
-                arg = questionary.text(
-                    "Enter rule"
-                ).unsafe_ask()
-                command_args.append(arg)
-
-            elif endpoint == 'increment_rule':
-                arg = questionary.text(
-                    "Enter amount to increment rule by (can be negative)"
-                ).unsafe_ask()
-                command_args.append(arg)
-
-            elif endpoint == 'add_rule':
-                # Prompt to enter timestamp or keyword
-                timestamp = questionary.text(
-                    "Enter timestamp (HH:MM) or keyword"
-                ).unsafe_ask()
-                command_args.append(timestamp)
-
-                # Prompt to enter rule
-                rule = questionary.text(
-                    "Enter rule"
-                ).unsafe_ask()
-                command_args.append(rule)
-
-            elif endpoint == 'remove_rule':
-                # Get list of existing rules for target
-                if target.startswith('device'):
-                    rules = list(status['devices'][target]['schedule'].keys())
-                else:
-                    rules = list(status['sensors'][target]['schedule'].keys())
-
-                # Prompt to select existing rule to remove
-                rule = questionary.select(
-                    'Select rule to remove',
-                    choices=rules
-                ).unsafe_ask()
-                command_args.append(rule)
+            command_args = device_and_sensor_endpoints_prompt(status, endpoint)
 
         # If selected endpoint requires device argument
         elif endpoint in ['turn_on', 'turn_off']:
@@ -338,12 +371,8 @@ def api_prompt():
             ).unsafe_ask()
             command_args.append(keyword)
 
-        elif endpoint == 'ir_create_macro':
-            # Prompt user for new macro name
-            arg = questionary.text(
-                'Enter new macro name'
-            ).unsafe_ask()
-            command_args.append(arg)
+        elif endpoint.startswith('ir'):
+            command_args = ir_blaster_endpoints_prompt(status, endpoint)
 
         elif endpoint == 'set_gps_coords':
             # Prompt user for longitude and latitude
