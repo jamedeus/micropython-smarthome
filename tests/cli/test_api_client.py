@@ -4,7 +4,7 @@ import json
 import asyncio
 from io import StringIO
 from unittest import TestCase, IsolatedAsyncioTestCase
-from unittest.mock import patch, MagicMock, AsyncMock, mock_open
+from unittest.mock import patch, MagicMock, AsyncMock
 from api_client import endpoint_error, parse_ip, parse_command, main, example_usage_error
 from api_endpoints import ir_commands, request
 
@@ -427,6 +427,7 @@ class TestEndpoints(TestCase):
     def test_add_rule_keyword(self):
         # Mock request to return expected response
         with patch('api_endpoints.request', return_value={'time': 'sunrise', 'Rule added': 'disabled'}), \
+             patch('api_endpoints.get_schedule_keywords_dict', return_value=mock_cli_config['schedule_keywords']), \
              patch('api_client.nodes', mock_cli_config['nodes']):
 
             # Send request, verify response
@@ -443,6 +444,7 @@ class TestEndpoints(TestCase):
     def test_remove_rule_keyword(self):
         # Mock request to return expected response
         with patch('api_endpoints.request', return_value={'Deleted': 'sunrise'}), \
+             patch('api_endpoints.get_schedule_keywords_dict', return_value=mock_cli_config['schedule_keywords']), \
              patch('api_client.nodes', mock_cli_config['nodes']):
 
             # Send request, verify response
