@@ -25,6 +25,7 @@ from helper_functions import (
     is_device,
     is_sensor,
     is_device_or_sensor,
+    valid_timestamp,
     get_existing_nodes,
     get_config_filepath,
     get_device_and_sensor_metadata,
@@ -428,6 +429,30 @@ def load_config_from_ip(ip):
         print(f"\n{Fore.RED}FATAL ERROR{Fore.RESET}: Target node config file missing from disk")
         print("Unable to get options, please check the config_directory in cli_config.json")
         raise SystemExit from interrupt
+
+
+def schedule_rule_timestamp_or_keyword_prompt(keyword_options):
+    '''Prompts user to enter a schedule rule timestamp or select keyword from
+    list passed as arg. Returns input or selection.
+    '''
+    choice = questionary.select(
+        "\nTimestamp or keyword?",
+        choices=['Timestamp', 'Keyword']
+    ).unsafe_ask()
+    if choice == 'Timestamp':
+        return schedule_rule_timestamp_prompt()
+    return questionary.select(
+        "\nSelect keyword",
+        choices=keyword_options
+    ).unsafe_ask()
+
+
+def schedule_rule_timestamp_prompt():
+    '''Prompts user to enter a schedule rule timestamp, returns input.'''
+    return questionary.text(
+        "Enter timestamp (HH:MM):",
+        validate=valid_timestamp
+    ).unsafe_ask()
 
 
 # Build mapping dict (must call after functions are declared)

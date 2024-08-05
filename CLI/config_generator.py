@@ -25,7 +25,6 @@ from validation_constants import (
 )
 from helper_functions import (
     valid_ip,
-    valid_timestamp,
     is_device,
     is_sensor,
     is_device_or_sensor,
@@ -43,7 +42,9 @@ from config_prompt_validators import (
 from config_rule_prompts import (
     default_rule_prompt_router,
     schedule_rule_prompt_router,
-    rule_limits_map
+    rule_limits_map,
+    schedule_rule_timestamp_prompt,
+    schedule_rule_timestamp_or_keyword_prompt
 )
 
 
@@ -606,35 +607,15 @@ class GenerateConfigFile:
 
         # Prompt user to select timestamp or keyword if keywords are configured
         if self.schedule_keyword_options:
-            timestamp = self.__schedule_rule_timestamp_or_keyword_prompt()
+            timestamp = schedule_rule_timestamp_or_keyword_prompt(
+                self.schedule_keyword_options
+            )
         # Prompt for timestamp if no keywords are available
         else:
-            timestamp = self.__schedule_rule_timestamp_prompt()
+            timestamp = schedule_rule_timestamp_prompt()
         rule = schedule_rule_prompt_router(config)
         config['schedule'][timestamp] = rule
         return config
-
-    def __schedule_rule_timestamp_prompt(self):
-        '''Prompts user to enter a schedule rule timestamp, returns input.'''
-        return questionary.text(
-            "Enter timestamp (HH:MM):",
-            validate=valid_timestamp
-        ).unsafe_ask()
-
-    def __schedule_rule_timestamp_or_keyword_prompt(self):
-        '''Prompts user to pick a schedule rule timestamp or keyword. Returns
-        user input if timestamp selected, or list choice if keyword selected.
-        '''
-        choice = questionary.select(
-            "\nTimestamp or keyword?",
-            choices=['Timestamp', 'Keyword']
-        ).unsafe_ask()
-        if choice == 'Timestamp':
-            return self.__schedule_rule_timestamp_prompt()
-        return questionary.select(
-            "\nSelect keyword",
-            choices=self.schedule_keyword_options
-        ).unsafe_ask()
 
 
 if __name__ == '__main__':

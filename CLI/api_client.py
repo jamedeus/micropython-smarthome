@@ -7,13 +7,17 @@ import json
 import questionary
 from colorama import Fore, Style
 from api_endpoints import endpoint_map, ir_commands
-from config_rule_prompts import schedule_rule_prompt_router
 from config_prompt_validators import IntRange, FloatRange, MinLength
+from config_rule_prompts import (
+    schedule_rule_prompt_router,
+    schedule_rule_timestamp_or_keyword_prompt
+)
 from helper_functions import (
     is_int,
     valid_ip,
     valid_timestamp,
     get_existing_nodes,
+    get_schedule_keywords_dict,
     load_node_config_file
 )
 
@@ -260,9 +264,9 @@ def device_and_sensor_endpoints_prompt(node, status, endpoint):
 
     elif endpoint == 'add_rule':
         # Prompt to enter timestamp or keyword
-        timestamp = questionary.text(
-            "Enter timestamp (HH:MM) or keyword"
-        ).unsafe_ask()
+        timestamp = schedule_rule_timestamp_or_keyword_prompt(
+            get_schedule_keywords_dict()
+        )
         command_args.append(timestamp)
 
         # Prompt user to select/enter valid rule for chosen device/sensor
