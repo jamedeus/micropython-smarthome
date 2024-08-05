@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+'''Command line utility used to control ESP32 nodes with API calls'''
+
 import sys
 import json
 from colorama import Fore, Style
@@ -7,6 +9,7 @@ from api_endpoints import endpoint_map
 from helper_functions import valid_ip, get_existing_nodes
 
 
+# pylint: disable=line-too-long
 # Used for help/error message
 endpoint_descriptions = {
     "status":                                   "Get dict containing status of all devices and sensors",
@@ -73,43 +76,62 @@ example_usage = {
     'ir_run_macro': {"Example usage": "./api_client.py ir_run_macro [name]"},
     'set_gps_coords': {"Example usage": "./api_client.py set_gps_coords [latitude] [longitude]"},
 }
+# pylint: enable=line-too-long
 
 
-# Print all endpoints and descriptions, exit
 def endpoint_error():
-    print("\n" + Fore.RED + "Error: please pass one of the following commands as argument:" + Fore.RESET + "\n")
-    for command in endpoint_descriptions:
-        print("- " + Fore.YELLOW + Style.BRIGHT + command.ljust(42) + Style.RESET_ALL + endpoint_descriptions[command])
+    '''Prints all endpoints and descriptions then exits script'''
+    print(
+        "\n" + Fore.RED +
+        "Error: please pass one of the following commands as argument:" +
+        Fore.RESET + "\n")
+    for command, description in endpoint_descriptions.items():
+        print(
+            "- " + Fore.YELLOW + Style.BRIGHT +
+            command.ljust(42) +
+            Style.RESET_ALL + description
+        )
     print()
     raise SystemExit
 
 
-# Takes endpoint name, prints example (must be key in example_usage)
 def example_usage_error(endpoint):
+    '''Takes endpoint name, prints usage example, exits script.
+    If endpoint is invalid, print all endpoints and their descriptions.
+    '''
     try:
         return example_usage[endpoint]
     except KeyError:
-        endpoint_error()
+        return endpoint_error()
 
 
-# Show available nodes and exit, called when no target IP/node in args
 def missing_target_error(nodes):
-    print(Fore.RED + "Error: Must specify target ip, or one of the following names:" + Fore.RESET)
+    '''Prints available nodes from cli_config.json then exits scrip.
+    Called when no target IP/node is given, or invalid node is given.
+    '''
+    print(
+        Fore.RED +
+        "Error: Must specify target ip, or one of the following names:" +
+        Fore.RESET
+    )
     for name in nodes:
         print(f" - {name}")
     raise SystemExit
 
 
-# Receives args, finds IP, passes IP + remaining args to parse_command
 def parse_ip(args):
+    '''Receives command line args, finds IP arg (or IP of node if node name
+    given), passes IP and remaining args to parse_command (makes API call).
+    '''
+
     # Get dict of existing node friendly names and IPs
     nodes = get_existing_nodes()
 
     # Parse target IP from args, pass IP + remaining args to parse_command
-    for i in range(len(args)):
+    for i, arg in enumerate(args):
 
         # User passed --all flag, iterate existing nodes and pass args to each
-        if args[i] == "--all":
+        if arg == "--all":
             args.pop(i)
             for i in nodes:
                 ip = nodes[i]
@@ -122,34 +144,34 @@ def parse_ip(args):
             raise SystemExit
 
         # User passed node name, look up IP in dict
-        elif args[i] in nodes:
-            ip = nodes[args[i]]
+        if arg in nodes:
+            ip = nodes[arg]
             args.pop(i)
             return parse_command(ip, args)
 
         # User passed IP flag
-        elif args[i] == "-ip":
+        if arg == "-ip":
             args.pop(i)
             ip = args.pop(i)
             if valid_ip(ip):
                 return parse_command(ip, args)
-            else:
-                print("Error: Invalid IP format")
-                raise SystemExit
+            print("Error: Invalid IP format")
+            raise SystemExit
 
         # User passed IP with no flag
-        elif valid_ip(args[i]):
+        if valid_ip(arg):
             ip = args.pop(i)
             return parse_command(ip, args)
 
     # No IP or node name found
-    else:
-        missing_target_error(nodes)
+    return missing_target_error(nodes)
 
 
-# Takes target IP + args list (first item must be endpoint name)
-# Find endpoint matching first arg, call handler function with remaining args
 def parse_command(ip, args):
+    '''Takes target IP and list of command args (first must be endpoint name).
+    Finds matching endpoint, calls handler function with remaining args.
+    '''
+
     if len(args) == 0:
         endpoint_error()
 
@@ -162,10 +184,12 @@ def parse_command(ip, args):
         # No arguments given, show usage example
         return example_usage_error(endpoint)
     except KeyError:
-        endpoint_error()
+        return endpoint_error()
 
 
 def main():
+    '''Parses CLI arguments and makes API call, or prints help message'''
+
     # Remove name of application from args
     sys.argv.pop(0)
 
