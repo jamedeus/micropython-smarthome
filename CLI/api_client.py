@@ -411,16 +411,21 @@ def api_prompt():
         return
     node_ip = nodes[node]
 
+    # Prevent traceback on first loop
+    # Replaced by chosen endpoint on each loop, used as default for next loop
+    endpoint = None
+
     while True:
         # Get status object, print current status (repeats after each command)
         status = parse_command(node_ip, ['status'])
         print(f'{node} status:')
         print(json.dumps(status, indent=4))
 
-        # Prompt to select endpoint
+        # Prompt to select endpoint (default to endpoint from previous loop)
         endpoint = questionary.select(
             "Select command",
-            choices=get_endpoint_options(status)
+            choices=get_endpoint_options(status),
+            default=endpoint
         ).unsafe_ask()
 
         # Create list with endpoint as first arg
