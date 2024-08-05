@@ -7,7 +7,8 @@ import json
 import questionary
 from colorama import Fore, Style
 from api_endpoints import endpoint_map, ir_commands
-from helper_functions import valid_ip, get_existing_nodes
+from config_rule_prompts import schedule_rule_prompt_router
+from helper_functions import valid_ip, get_existing_nodes, load_node_config_file
 
 
 # pylint: disable=line-too-long
@@ -202,7 +203,20 @@ def api_target_node_prompt():
     ).unsafe_ask()
 
 
-def device_and_sensor_endpoints_prompt(status, endpoint):
+def device_or_sensor_rule_prompt(node, target):
+    '''Takes node name and device or sensor ID, shows correct rule prompt,
+    returns user selection.
+    '''
+
+    # Load config file from disk (used to determine correct prompt)
+    config = load_node_config_file(node)
+
+    # Show correct schedule rule prompt (shows all options, not just default
+    # rule options - all rule endpoints accept any valid rule)
+    return schedule_rule_prompt_router(config[target])
+
+
+def device_and_sensor_endpoints_prompt(node, status, endpoint):
     '''Called by api_prompt when user selects an endpoint that requires a device
     or sensor argument, shows remaining prompts, returns command_args.
     '''
@@ -226,10 +240,8 @@ def device_and_sensor_endpoints_prompt(status, endpoint):
         command_args.append(arg)
 
     elif endpoint == 'set_rule':
-        arg = questionary.text(
-            "Enter rule"
-        ).unsafe_ask()
-        command_args.append(arg)
+        # Prompt user to select/enter valid rule for chosen device/sensor
+        command_args.append(device_or_sensor_rule_prompt(node, target))
 
     elif endpoint == 'increment_rule':
         arg = questionary.text(
@@ -244,11 +256,8 @@ def device_and_sensor_endpoints_prompt(status, endpoint):
         ).unsafe_ask()
         command_args.append(timestamp)
 
-        # Prompt to enter rule
-        rule = questionary.text(
-            "Enter rule"
-        ).unsafe_ask()
-        command_args.append(rule)
+        # Prompt user to select/enter valid rule for chosen device/sensor
+        command_args.append(device_or_sensor_rule_prompt(node, target))
 
     elif endpoint == 'remove_rule':
         # Get list of existing rules for target
@@ -424,7 +433,7 @@ def api_prompt():
             'remove_rule',
             'get_attributes'
         ]:
-            command_args = device_and_sensor_endpoints_prompt(status, endpoint)
+            command_args = device_and_sensor_endpoints_prompt(node, status, endpoint)
 
         # If selected endpoint requires device argument
         elif endpoint in ['turn_on', 'turn_off']:
