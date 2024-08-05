@@ -8,7 +8,14 @@ import questionary
 from colorama import Fore, Style
 from api_endpoints import endpoint_map, ir_commands
 from config_rule_prompts import schedule_rule_prompt_router
-from helper_functions import valid_ip, get_existing_nodes, load_node_config_file
+from config_prompt_validators import IntRange, FloatRange, MinLength
+from helper_functions import (
+    is_int,
+    valid_ip,
+    valid_timestamp,
+    get_existing_nodes,
+    load_node_config_file
+)
 
 
 # pylint: disable=line-too-long
@@ -235,7 +242,8 @@ def device_and_sensor_endpoints_prompt(node, status, endpoint):
     # If selected endpoint requires additional arg
     if endpoint in ['disable_in', 'enable_in']:
         arg = questionary.text(
-            "Enter delay (minutes):"
+            "Enter delay (minutes):",
+            validate=FloatRange(0, 1440)
         ).unsafe_ask()
         command_args.append(arg)
 
@@ -245,7 +253,8 @@ def device_and_sensor_endpoints_prompt(node, status, endpoint):
 
     elif endpoint == 'increment_rule':
         arg = questionary.text(
-            "Enter amount to increment rule by (can be negative)"
+            "Enter amount to increment rule by (can be negative)",
+            validate=is_int
         ).unsafe_ask()
         command_args.append(arg)
 
@@ -312,7 +321,8 @@ def ir_blaster_endpoints_prompt(status, endpoint, node_ip):
     elif endpoint == 'ir_create_macro':
         # Prompt user for new macro name
         arg = questionary.text(
-            'Enter new macro name'
+            'Enter new macro name',
+            validate=MinLength(1)
         ).unsafe_ask()
         command_args.append(arg)
 
@@ -340,7 +350,8 @@ def ir_blaster_endpoints_prompt(status, endpoint, node_ip):
         # Prompt user to add optional delay
         if questionary.confirm("Add delay after key?").unsafe_ask():
             delay = questionary.text(
-                'Enter delay (milliseconds)'
+                'Enter delay (milliseconds)',
+                validate=IntRange(0, 5000)
             ).unsafe_ask()
             command_args.append(delay)
         else:
@@ -349,7 +360,8 @@ def ir_blaster_endpoints_prompt(status, endpoint, node_ip):
         # Prompt user to add optional repeat
         if questionary.confirm("Press key multiple times?").unsafe_ask():
             repeat = questionary.text(
-                'Enter number of times key should be pressed'
+                'Enter number of times key should be pressed',
+                validate=IntRange(0, 999)
             ).unsafe_ask()
             command_args.append(repeat)
         else:
@@ -455,12 +467,14 @@ def api_prompt():
         elif endpoint == 'add_schedule_keyword':
             # Prompt user to enter keyword and timestamp
             keyword = questionary.text(
-                'Enter new keyword name'
+                'Enter new keyword name',
+                validate=MinLength(1)
             ).unsafe_ask()
             command_args.append(keyword)
 
             timestamp = questionary.text(
-                'Enter new keyword timestamp'
+                'Enter new keyword timestamp',
+                validate=valid_timestamp
             ).unsafe_ask()
             command_args.append(timestamp)
 
@@ -478,12 +492,14 @@ def api_prompt():
         elif endpoint == 'set_gps_coords':
             # Prompt user for longitude and latitude
             latitude = questionary.text(
-                'Enter latitude'
+                'Enter latitude',
+                validate=FloatRange(-90, 90)
             ).unsafe_ask()
             command_args.append(latitude)
 
             longitude = questionary.text(
-                'Enter longitude'
+                'Enter longitude',
+                validate=FloatRange(-180, 180)
             ).unsafe_ask()
             command_args.append(longitude)
 
