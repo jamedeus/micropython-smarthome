@@ -206,7 +206,7 @@ class TestParseIP(TestCase):
 
     def test_all_flag(self):
         with patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command, \
-             patch('builtins.open', mock_open(read_data=json.dumps(mock_cli_config))), \
+             patch('api_client.nodes', mock_cli_config['nodes']), \
              self.assertRaises(SystemExit):
 
             # Parse args, should call parse_command once for each node before exiting
@@ -215,7 +215,7 @@ class TestParseIP(TestCase):
 
     def test_node_name(self):
         with patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command, \
-             patch('builtins.open', mock_open(read_data=json.dumps(mock_cli_config))):
+             patch('api_client.nodes', mock_cli_config['nodes']):
 
             self.assertTrue(parse_ip(['node2', 'enable', 'device1']))
             self.assertTrue(mock_parse_command.called_once)
@@ -234,7 +234,7 @@ class TestParseIP(TestCase):
 
     def test_no_target_ip(self):
         with patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command, \
-             patch('builtins.open', mock_open(read_data=json.dumps(mock_cli_config))), \
+             patch('api_client.nodes', mock_cli_config['nodes']), \
              self.assertRaises(SystemExit):
 
             self.assertTrue(parse_ip(['enable', 'device1']))
@@ -427,7 +427,7 @@ class TestEndpoints(TestCase):
     def test_add_rule_keyword(self):
         # Mock request to return expected response
         with patch('api_endpoints.request', return_value={'time': 'sunrise', 'Rule added': 'disabled'}), \
-             patch('builtins.open', mock_open(read_data=json.dumps(mock_cli_config))):
+             patch('api_client.nodes', mock_cli_config['nodes']):
 
             # Send request, verify response
             response = parse_command('192.168.1.123', ['add_rule', 'device2', 'sunrise', 'disabled'])
@@ -443,7 +443,7 @@ class TestEndpoints(TestCase):
     def test_remove_rule_keyword(self):
         # Mock request to return expected response
         with patch('api_endpoints.request', return_value={'Deleted': 'sunrise'}), \
-             patch('builtins.open', mock_open(read_data=json.dumps(mock_cli_config))):
+             patch('api_client.nodes', mock_cli_config['nodes']):
 
             # Send request, verify response
             response = parse_command('192.168.1.123', ['remove_rule', 'device2', 'sunrise'])
@@ -824,7 +824,7 @@ class TestMain(TestCase):
 
         # Mock sys.arg to simulate running from command line
         with patch("sys.argv", ["api_client.py", "192.168.1.123", "enable", "device1"]), \
-             patch('builtins.open', mock_open(read_data=json.dumps(mock_cli_config))), \
+             patch('api_client.nodes', mock_cli_config['nodes']), \
              patch('api_endpoints.request', return_value={'Enabled': 'device1'}):
 
             # Run main, verify response printed to console

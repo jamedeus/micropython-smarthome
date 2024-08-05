@@ -4,6 +4,7 @@
 
 import sys
 import json
+import questionary
 from colorama import Fore, Style
 from api_endpoints import endpoint_map
 from helper_functions import valid_ip, get_existing_nodes
@@ -79,6 +80,10 @@ example_usage = {
 # pylint: enable=line-too-long
 
 
+# Get dict of existing node friendly names and IPs from cli_config.json
+nodes = get_existing_nodes()
+
+
 def endpoint_error():
     '''Prints all endpoints and descriptions then exits script'''
     print(
@@ -123,9 +128,6 @@ def parse_ip(args):
     '''Receives command line args, finds IP arg (or IP of node if node name
     given), passes IP and remaining args to parse_command (makes API call).
     '''
-
-    # Get dict of existing node friendly names and IPs
-    nodes = get_existing_nodes()
 
     # Parse target IP from args, pass IP + remaining args to parse_command
     for i, arg in enumerate(args):
@@ -187,15 +189,197 @@ def parse_command(ip, args):
         return endpoint_error()
 
 
+def api_target_node_prompt():
+    '''Prompts user to select a Node for api_prompt'''
+
+    node_options = list(nodes.keys())
+    node_options.append('Done')
+
+    return questionary.select(
+        "Select target node",
+        choices=node_options
+    ).unsafe_ask()
+
+
+def api_prompt():
+    '''Prompt allows user to send API commands to existing nodes'''
+
+    # Prompt to select existing node, get name and IP address
+    node = api_target_node_prompt()
+    if node == 'Done':
+        return
+    node_ip = nodes[node]
+
+    # Get API endpoint options, add Done (break loop)
+    endpoint_options = list(example_usage.keys())
+    endpoint_options.append('Done')
+
+    while True:
+        # Get status object, print current status (repeats after each command)
+        status = parse_command(node_ip, ['status'])
+        print(f'{node} status:')
+        print(json.dumps(status, indent=4))
+
+        # Prompt to select endpoint
+        endpoint = questionary.select(
+            "Select command",
+            choices=endpoint_options
+        ).unsafe_ask()
+
+        # Create list with endpoint as first arg
+        # Prompts below add additional args (if needed), result sent to node
+        command_args = [endpoint]
+
+        # Break loop when user selects Done
+        if endpoint == 'Done':
+            break
+
+        # If selected endpoint requires device/sensor argument
+        if endpoint in [
+            'disable',
+            'disable_in',
+            'enable',
+            'enable_in',
+            'set_rule',
+            'increment_rule',
+            'reset_rule',
+            'get_schedule_rules',
+            'add_rule',
+            'remove_rule',
+            'get_attributes'
+        ]:
+            # Prompt to select from available devices and sensors
+            target = questionary.select(
+                "Select device or sensor",
+                choices=list(status['devices'].keys()) + list(status['sensors'].keys())
+            ).unsafe_ask()
+            command_args.append(target)
+
+            # If selected endpoint requires additional arg
+            if endpoint in ['disable_in', 'enable_in']:
+                arg = questionary.text(
+                    "Enter delay (minutes):"
+                ).unsafe_ask()
+                command_args.append(arg)
+
+            elif endpoint == 'set_rule':
+                arg = questionary.text(
+                    "Enter rule"
+                ).unsafe_ask()
+                command_args.append(arg)
+
+            elif endpoint == 'increment_rule':
+                arg = questionary.text(
+                    "Enter amount to increment rule by (can be negative)"
+                ).unsafe_ask()
+                command_args.append(arg)
+
+            elif endpoint == 'add_rule':
+                # Prompt to enter timestamp or keyword
+                timestamp = questionary.text(
+                    "Enter timestamp (HH:MM) or keyword"
+                ).unsafe_ask()
+                command_args.append(timestamp)
+
+                # Prompt to enter rule
+                rule = questionary.text(
+                    "Enter rule"
+                ).unsafe_ask()
+                command_args.append(rule)
+
+            elif endpoint == 'remove_rule':
+                # Get list of existing rules for target
+                if target.startswith('device'):
+                    rules = list(status['devices'][target]['schedule'].keys())
+                else:
+                    rules = list(status['sensors'][target]['schedule'].keys())
+
+                # Prompt to select existing rule to remove
+                rule = questionary.select(
+                    'Select rule to remove',
+                    choices=rules
+                ).unsafe_ask()
+                command_args.append(rule)
+
+        # If selected endpoint requires device argument
+        elif endpoint in ['turn_on', 'turn_off']:
+            # Prompt to select from available devices
+            target = questionary.select(
+                "Select device or sensor",
+                choices=list(status['devices'].keys())
+            ).unsafe_ask()
+            command_args.append(target)
+
+        elif endpoint in ['trigger_sensor', 'condition_met']:
+            # Prompt to select from available sensors
+            target = questionary.select(
+                "Select device or sensor",
+                choices=list(status['sensors'].keys())
+            ).unsafe_ask()
+            command_args.append(target)
+
+        elif endpoint == 'add_schedule_keyword':
+            # Prompt user to enter keyword and timestamp
+            keyword = questionary.text(
+                'Enter new keyword name'
+            ).unsafe_ask()
+            command_args.append(keyword)
+
+            timestamp = questionary.text(
+                'Enter new keyword timestamp'
+            ).unsafe_ask()
+            command_args.append(timestamp)
+
+        elif endpoint == 'remove_schedule_keyword':
+            # Prompt user to select existing keyword to delete
+            keyword = questionary.select(
+                'Select keyword to delete',
+                choices=list(status['metadata']['schedule_keywords'])
+            ).unsafe_ask()
+            command_args.append(keyword)
+
+        elif endpoint == 'ir_create_macro':
+            # Prompt user for new macro name
+            arg = questionary.text(
+                'Enter new macro name'
+            ).unsafe_ask()
+            command_args.append(arg)
+
+        elif endpoint == 'set_gps_coords':
+            # Prompt user for longitude and latitude
+            latitude = questionary.text(
+                'Enter latitude'
+            ).unsafe_ask()
+            command_args.append(latitude)
+
+            longitude = questionary.text(
+                'Enter longitude'
+            ).unsafe_ask()
+            command_args.append(longitude)
+
+        # Send command, print response
+        response = parse_command(node_ip, command_args)
+        print(json.dumps(response, indent=4))
+        questionary.press_any_key_to_continue().ask()
+
+
 def main():
     '''Parses CLI arguments and makes API call, or prints help message'''
 
     # Remove name of application from args
     sys.argv.pop(0)
 
-    # Parse args, send request if valid, pretty print response/error
-    response = parse_ip(sys.argv)
-    print(json.dumps(response, indent=4) + "\n")
+    # Show interactive prompt if no args
+    if len(sys.argv) == 0:
+        try:
+            api_prompt()
+        except KeyboardInterrupt as interrupt:
+            raise SystemExit from interrupt
+
+    else:
+        # Parse args, send request if valid, pretty print response/error
+        response = parse_ip(sys.argv)
+        print(json.dumps(response, indent=4) + "\n")
 
 
 if __name__ == "__main__":
