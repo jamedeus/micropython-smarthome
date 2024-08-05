@@ -6,7 +6,7 @@ import sys
 import json
 import questionary
 from colorama import Fore, Style
-from api_endpoints import endpoint_map
+from api_endpoints import endpoint_map, ir_commands
 from helper_functions import valid_ip, get_existing_nodes
 
 
@@ -266,19 +266,90 @@ def device_and_sensor_endpoints_prompt(status, endpoint):
     return command_args
 
 
-def ir_blaster_endpoints_prompt(status, endpoint):
+def ir_key_prompt(target_options):
+    '''Prompts user to select an IR target and key, returns selection as list'''
+    target = questionary.select(
+        'Select IR target',
+        choices=target_options
+    ).unsafe_ask()
+
+    # Prompt user to select IR key
+    key = questionary.select(
+        'Select key',
+        choices=ir_commands[target].split(', ')
+    ).unsafe_ask()
+
+    return [target, key]
+
+
+def ir_blaster_endpoints_prompt(status, endpoint, node_ip):
     '''Called by api_prompt when user selects an IR blaster endpoint, shows
     remaining prompts, returns command_args.
     '''
+
+    # Get dict with existing IR macros
+    macros = parse_command(node_ip, ['ir_get_existing_macros'])
 
     # Create list with endpoint as first arg
     # Prompts below add additional args (if needed), result sent to node
     command_args = [endpoint]
 
-    if endpoint == 'ir_create_macro':
+    if endpoint == 'ir':
+        command_args.extend(ir_key_prompt(
+            list(status['metadata']['ir_targets'])
+        ))
+
+    elif endpoint == 'ir_create_macro':
         # Prompt user for new macro name
         arg = questionary.text(
             'Enter new macro name'
+        ).unsafe_ask()
+        command_args.append(arg)
+
+    elif endpoint == 'ir_delete_macro':
+        # Prompt user to select existing macro name
+        arg = questionary.select(
+            'Select macro to delete',
+            choices=list(macros.keys())
+        ).unsafe_ask()
+        command_args.append(arg)
+
+    elif endpoint == 'ir_add_macro_action':
+        # Prompt user to select existing macro name
+        macro_name = questionary.select(
+            'Select macro to add action to',
+            choices=list(macros.keys())
+        ).unsafe_ask()
+        command_args.append(macro_name)
+
+        # Prompt user to select IR target and key
+        command_args.extend(ir_key_prompt(
+            list(status['metadata']['ir_targets'])
+        ))
+
+        # Prompt user to add optional delay
+        if questionary.confirm("Add delay after key?").unsafe_ask():
+            delay = questionary.text(
+                'Enter delay (milliseconds)'
+            ).unsafe_ask()
+            command_args.append(delay)
+        else:
+            command_args.append(0)
+
+        # Prompt user to add optional repeat
+        if questionary.confirm("Press key multiple times?").unsafe_ask():
+            repeat = questionary.text(
+                'Enter number of times key should be pressed'
+            ).unsafe_ask()
+            command_args.append(repeat)
+        else:
+            command_args.append(1)
+
+    elif endpoint == 'ir_run_macro':
+        # Prompt user to select existing macro name
+        arg = questionary.select(
+            'Select macro to run',
+            choices=list(macros.keys())
         ).unsafe_ask()
         command_args.append(arg)
 
@@ -372,7 +443,7 @@ def api_prompt():
             command_args.append(keyword)
 
         elif endpoint.startswith('ir'):
-            command_args = ir_blaster_endpoints_prompt(status, endpoint)
+            command_args = ir_blaster_endpoints_prompt(status, endpoint, node_ip)
 
         elif endpoint == 'set_gps_coords':
             # Prompt user for longitude and latitude
