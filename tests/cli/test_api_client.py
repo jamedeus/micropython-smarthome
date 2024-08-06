@@ -1,3 +1,7 @@
+'''Unit tests for functions called with api_client.py command line arguments'''
+
+# pylint: disable=missing-function-docstring, missing-class-docstring
+
 import os
 import sys
 import json

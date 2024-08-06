@@ -1,19 +1,13 @@
-import os
-import sys
-import json
-import asyncio
-from io import StringIO
-from unittest import TestCase
-from unittest.mock import patch, MagicMock, AsyncMock
-from questionary import ValidationError
-from api_client import api_prompt, parse_command, main
-from api_endpoints import ir_commands, request
-from test_api_client import mock_cli_config, mock_status_object
+'''Unit tests for the interactive menu shown when api_client.py is called from
+the command line with no arguments.
+'''
 
-# Get paths to test dir, CLI dir, repo dir
-tests = os.path.dirname(os.path.realpath(__file__))
-cli = os.path.split(tests)[0]
-repo = os.path.dirname(tests)
+# pylint: disable=missing-function-docstring, missing-class-docstring
+
+from unittest import TestCase
+from unittest.mock import patch, MagicMock
+from api_client import api_prompt, main
+from test_api_client import mock_cli_config, mock_status_object
 
 mock_config = {
     "metadata": {
