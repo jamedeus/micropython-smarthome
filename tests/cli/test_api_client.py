@@ -34,7 +34,12 @@ mock_status_object = {
         'id': 'Test1',
         'floor': '1',
         'location': 'Inside cabinet above microwave',
-        'ir_blaster': False
+        'ir_blaster': False,
+        "schedule_keywords": {
+            "sunrise": "06:00",
+            "sunset": "18:00",
+            "sleep": "23:00"
+        }
     },
     'sensors': {
         'sensor1': {
