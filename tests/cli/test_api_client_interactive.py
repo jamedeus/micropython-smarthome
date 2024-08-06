@@ -572,6 +572,24 @@ class InteractiveMenuTests(TestCase):
                 ("192.168.1.123", ["status"])
             )
 
+    def test_exit_without_selecting_node(self):
+        # Simulate user selecting "Done" at node select prompt
+        self.mock_ask.unsafe_ask.side_effect = [
+            'Done'
+        ]
+
+        # Patch empty sys.argv (runs interactive menu when main called)
+        with patch("sys.argv", ["api_client.py"]), \
+             patch('api_client.nodes', mock_cli_config['nodes']), \
+             patch('questionary.select', return_value=self.mock_ask), \
+             patch('api_client.parse_command') as mock_parse_command:
+
+            # Call main, will run interactive menu (blank sys.argv)
+            main()
+
+            # Confirm parse_command was not called
+            self.assertEqual(mock_parse_command.call_count, 0)
+
 
 class InteractiveIrBlasterMenuTests(TestCase):
     def setUp(self):
@@ -786,6 +804,68 @@ class InteractiveIrBlasterMenuTests(TestCase):
             self.assertEqual(
                 mock_parse_command.call_args_list[2][0],
                 ("192.168.1.123", ["ir_add_macro_action", "start_ac", "tv", "power", "500", "2"])
+            )
+
+            # Fourth call: requested updated status object after API call
+            self.assertEqual(
+                mock_parse_command.call_args_list[3][0],
+                ("192.168.1.123", ["status"])
+            )
+
+    def test_ir_add_macro_action_endpoint_default_delay_and_repeat(self):
+        # Simulate user selecting node1, ir_add_macro_action, start_ac, tv, power
+        self.mock_ask.unsafe_ask.side_effect = [
+            'node1',
+            'ir_add_macro_action',
+            'start_ac',
+            'tv',
+            'power',
+            'Done',
+            'Done'
+        ]
+
+        # Mock parse_command to return status, then macros, then status
+        mock_api_responses = [
+            mock_ir_status,
+            mock_ir_config['ir_blaster']['macros'],
+            mock_ir_status,
+            mock_ir_status
+        ]
+
+        with patch("sys.argv", ["api_client.py"]), \
+             patch('api_client.nodes', mock_cli_config['nodes']), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.confirm', MagicMock()) as mock_confirm, \
+             patch('questionary.press_any_key_to_continue'), \
+             patch('api_client.load_node_config_file', return_value=mock_ir_config), \
+             patch('api_client.parse_command', side_effect=mock_api_responses) as mock_parse_command:
+
+            # Answer No to optional arg prompts
+            mock_confirm.return_value.unsafe_ask.return_value = False
+
+            # Run prompt, will complete immediately with mock input
+            api_prompt()
+
+            # Confirm called parse_command 4 times
+            self.assertEqual(mock_parse_command.call_count, 4)
+
+            # First call: requested status object from target node
+            self.assertEqual(
+                mock_parse_command.call_args_list[0][0],
+                ("192.168.1.123", ["status"])
+            )
+
+            # Second call: requested existing IR macros
+            self.assertEqual(
+                mock_parse_command.call_args_list[1][0],
+                ("192.168.1.123", ["ir_get_existing_macros"])
+            )
+
+            # Third call: sent enable command with correct arg
+            self.assertEqual(
+                mock_parse_command.call_args_list[2][0],
+                ("192.168.1.123", ["ir_add_macro_action", "start_ac", "tv", "power", 0, 1])
             )
 
             # Fourth call: requested updated status object after API call

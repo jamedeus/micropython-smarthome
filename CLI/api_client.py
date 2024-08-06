@@ -274,10 +274,8 @@ def device_and_sensor_endpoints_prompt(node, status, endpoint):
 
     elif endpoint == 'remove_rule':
         # Get list of existing rules for target
-        if target.startswith('device'):
-            rules = list(status['devices'][target]['schedule'].keys())
-        else:
-            rules = list(status['sensors'][target]['schedule'].keys())
+        category = ''.join([i for i in target if not i.isdigit()])
+        rules = list(status[f'{category}s'][target]['schedule'].keys())
 
         # Prompt to select existing rule to remove
         rule = questionary.select(
@@ -528,7 +526,7 @@ def main():
     if len(sys.argv) == 0:
         try:
             api_prompt()
-        except KeyboardInterrupt as interrupt:
+        except KeyboardInterrupt as interrupt:  # pragma: no cover
             raise SystemExit from interrupt
 
     else:
@@ -537,5 +535,5 @@ def main():
         print(json.dumps(response, indent=4) + "\n")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
