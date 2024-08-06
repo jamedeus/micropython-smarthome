@@ -4,8 +4,10 @@
 
 import os
 import json
+import pydoc
 import requests
 import questionary
+from Webrepl import Webrepl
 from helper_functions import (
     valid_ip,
     valid_uri,
@@ -209,6 +211,33 @@ def delete_prompt():
             remove_node_from_cli_config(i)
 
 
+def view_log_prompt():
+    '''Prompt allows user to download and view log from an existing node'''
+    node = questionary.select(
+        "\nSelect a node to view log",
+        choices=list(cli_config['nodes'].keys())
+    ).unsafe_ask()
+
+    # Open connection, download log
+    ip = cli_config['nodes'][node]
+    connection = Webrepl(ip, cli_config['webrepl_password'])
+    print('Downloading log, this may take a few minutes...')
+    log = connection.get_file_mem('app.log')
+
+    # Display log in pager
+    pydoc.pager(log.decode())
+
+    # Save log prompt
+    if questionary.confirm('Save log?').ask():
+        filename = questionary.text(
+            'Enter filename',
+            default=f'{node}.log'
+        ).ask()
+        with open(filename, 'w', encoding='utf-8') as file:
+            file.write(log.decode())
+        print(f'Log saved as {filename}')
+
+
 def main_prompt():
     '''Main menu prompt'''
     while True:
@@ -219,6 +248,7 @@ def main_prompt():
                 "Configure node",
                 "Provision node",
                 "Delete node",
+                "View node log",
                 "Settings",
                 "Done"
             ]
@@ -231,6 +261,8 @@ def main_prompt():
             provision_prompt()
         elif choice == 'Delete node':
             delete_prompt()
+        elif choice == 'View node log':
+            view_log_prompt()
         elif choice == 'Settings':
             sync_prompt()
         elif choice == 'Done':
