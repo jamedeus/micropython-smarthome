@@ -618,7 +618,9 @@ class GenerateConfigFile:
         return config
 
 
-if __name__ == '__main__':
+def main():
+    '''Command line entrypoint, handles args and shows prompt'''
+
     if len(sys.argv) > 1:
         # Instantiate in edit mode with path to existing config
         generator = GenerateConfigFile(sys.argv[1])
@@ -627,9 +629,13 @@ if __name__ == '__main__':
 
     try:
         generator.run_prompt()
-    except KeyboardInterrupt as interrupt:
+    except KeyboardInterrupt as interrupt:  # pragma: no cover
         raise SystemExit from interrupt
 
     # Write to disk if passed validation
     if generator.passed_validation:
         generator.write_to_disk()
+
+
+if __name__ == '__main__':  # pragma: no cover
+    main()

@@ -8,7 +8,8 @@ from config_generator import (
     IntRange,
     FloatRange,
     MinLength,
-    NicknameValidator
+    NicknameValidator,
+    main
 )
 from config_rule_prompts import (
     api_call_prompt,
@@ -372,6 +373,9 @@ class TestGenerateConfigFile(TestCase):
             },
             "sensor2": {
                 "pin": "32"
+            },
+            "ir_blaster": {
+                "pin": "27"
             }
         }
 
@@ -386,7 +390,7 @@ class TestGenerateConfigFile(TestCase):
             _, kwargs = mock_select.call_args
             self.assertEqual(
                 kwargs['choices'],
-                ['16', '17', '18', '21', '22', '23', '25', '26', '27', '33']
+                ['16', '17', '18', '21', '22', '23', '25', '26', '33']
             )
 
     def test_add_devices_and_sensors_prompt(self):
@@ -1236,3 +1240,45 @@ class TestGenerateConfigFile(TestCase):
 
         # Delete fake config
         os.remove('fake_config_file.txt')
+
+
+class TestCliUsage(TestCase):
+    def test_call_with_no_arg(self):
+        # Mock empty sys.argv (should show new config prompt)
+        # Mock GenerateConfigFile class to confirm correct methods called
+        with patch('sys.argv', ['./config_generator.py']), \
+             patch(
+                 'config_generator.GenerateConfigFile',
+                 new=MagicMock(spec=GenerateConfigFile)
+            ) as mock_class:
+
+            # Simulate calling from command line
+            main()
+
+            # Confirm class was instantiated with no argument
+            mock_class.assert_called_once_with()
+
+            # Get instance created by main, confirm expected methods were called
+            mock_instance = mock_class.return_value
+            mock_instance.run_prompt.assert_called_once()
+            mock_instance.write_to_disk.assert_called_once()
+
+    def test_call_with_arg(self):
+        # Mock sys.argv with path to config file (should show edit prompt)
+        # Mock GenerateConfigFile class to confirm correct methods called
+        with patch('sys.argv', ['./config_generator.py', 'config.json']), \
+             patch(
+                 'config_generator.GenerateConfigFile',
+                 new=MagicMock(spec=GenerateConfigFile)
+            ) as mock_class:
+
+            # Simulate calling from command line
+            main()
+
+            # Confirm class was instantiated with config path arg
+            mock_class.assert_called_once_with('config.json')
+
+            # Get instance created by main, confirm expected methods were called
+            mock_instance = mock_class.return_value
+            mock_instance.run_prompt.assert_called_once()
+            mock_instance.write_to_disk.assert_called_once()
