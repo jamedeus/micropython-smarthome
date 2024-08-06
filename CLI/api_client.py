@@ -394,12 +394,12 @@ def get_endpoint_options(status):
                             if not option.startswith('ir')]
 
     # Remove device endpoints if target node does not have devices
-    if not len(status['devices']):
+    if 'devices' not in status:
         endpoint_options = [option for option in endpoint_options
                             if option not in ['turn_on', 'turn_off']]
 
     # Remove sensor endpoints if target node does not have sensors
-    if not len(status['sensors']):
+    if 'sensors' not in status:
         endpoint_options = [option for option in endpoint_options
                             if option not in ['trigger_sensor', 'condition_met']]
 
