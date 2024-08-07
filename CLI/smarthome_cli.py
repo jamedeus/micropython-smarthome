@@ -19,6 +19,7 @@ from helper_functions import (
     remove_node_from_cli_config
 )
 from config_generator import GenerateConfigFile
+from config_prompt_validators import LengthRange
 from provision import upload_node, upload_config_to_ip
 from api_client import api_prompt
 
@@ -88,6 +89,27 @@ def set_django_address(address):
     write_cli_config(cli_config)
 
 
+def config_directory_prompt():
+    '''Prompt allows user to change config_directory in cli_config.json'''
+    directory = questionary.text(
+        'Enter absolute path to config directory'
+    ).unsafe_ask()
+    cli_config['config_directory'] = directory
+    write_cli_config(cli_config)
+    print('Config directory set')
+
+
+def webrepl_password_prompt():
+    '''Prompt allows user to change webrepl password'''
+    password = questionary.text(
+        'Enter new password',
+        validate=LengthRange(4, 9)
+    ).unsafe_ask()
+    cli_config['webrepl_password'] = password
+    write_cli_config(cli_config)
+    print('Password set')
+
+
 def sync_prompt():
     '''Prompt allows user to configure django server to sync from, update
     cli_config.json from django database, or download config files from django.
@@ -99,6 +121,8 @@ def sync_prompt():
                 "Set django address",
                 "Sync current nodes from django",
                 "Download all config files from django",
+                "Change config config directory",
+                "Change webrepl password",
                 "Done"
             ]
         ).unsafe_ask()
@@ -115,6 +139,10 @@ def sync_prompt():
             print(json.dumps(cli_config, indent=4))
         elif choice == 'Download all config files from django':
             download_all_node_config_files()
+        elif choice == 'Change config config directory':
+            config_directory_prompt()
+        elif choice == 'Change webrepl password':
+            webrepl_password_prompt()
         elif choice == 'Done':
             break
 

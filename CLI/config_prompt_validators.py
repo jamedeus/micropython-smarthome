@@ -56,6 +56,23 @@ class MinLength(Validator):
         raise ValidationError(message=f"Enter {self.min_length} or more characters")
 
 
+class LengthRange(Validator):
+    '''Takes minimum and maximum characters (integer), prevents user from
+    submitting a string with fewer or greater characters
+    '''
+
+    def __init__(self, min_length, max_length):
+        self.min_length = int(min_length)
+        self.max_length = int(max_length)
+
+    def validate(self, document):
+        if self.min_length <= len(str(document.text)) <= self.max_length:
+            return True
+        raise ValidationError(
+            message=f"Must be between {self.min_length} and {self.max_length} characters"
+        )
+
+
 class NicknameValidator(Validator):
     '''Takes list of existing device and sensor nicknames, prevents user from
     submitting a duplicate nickname or a blank string.
