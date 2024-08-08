@@ -215,7 +215,6 @@ def edit_node_config_prompt():
         upload_node(node, cli_config.config['webrepl_password'])
 
 
-
 def manage_nodes_prompt():
     '''Prompt allows user to create config files, provision nodes, etc'''
     while True:
@@ -256,7 +255,6 @@ def manage_nodes_prompt():
 
         elif choice == 'Done':
             break
-
 
 
 def main_prompt():

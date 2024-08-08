@@ -13,6 +13,7 @@ cli_config_path = os.path.join(cli, 'cli_config.json')
 
 class CliConfigManager:
     '''Loads cli_config.json from disk and exposes methods to read and modify'''
+
     def __init__(self):
         self.config = self.read_cli_config_from_disk()
 
@@ -130,7 +131,6 @@ class CliConfigManager:
                     print('Failed to delete from django database')
         except KeyError:
             pass
-
 
     def get_config_filepath(self, friendly_name):
         '''Takes friendly_name, returns path to config file. Does not check if

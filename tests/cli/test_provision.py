@@ -278,7 +278,7 @@ class TestInstantiation(TestCase):
              patch('provision.cli_config.config', mock_cli_config), \
              patch('builtins.open', mock_file), \
              patch('os.path.exists', return_value=True), \
-             patch('helper_functions.requests.post') as mock_post:
+             patch('cli_config_manager.requests.post') as mock_post:
 
             # Instantiate, confirm provision called once with expected IP, password, config
             handle_cli_args(args, '')

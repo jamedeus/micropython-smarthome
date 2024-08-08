@@ -184,7 +184,7 @@ def upload_tests(ip, webrepl_password):
     # Get list of relative paths for all unit tests
     # (Example: 'tests/firmware/test_core_config.py')
     tests = [i for i in os.listdir(os.path.join(repo, 'tests', 'firmware'))
-                if i.startswith('test_')]
+             if i.startswith('test_')]
     tests = [os.path.join('tests', 'firmware', i) for i in tests]
 
     # Build list of all device and sensor modules

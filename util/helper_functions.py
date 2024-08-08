@@ -3,8 +3,6 @@
 import re
 import os
 import json
-import requests
-
 
 # Get full path to repository root directory
 util = os.path.dirname(os.path.realpath(__file__))
