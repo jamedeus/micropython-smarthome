@@ -16,34 +16,28 @@ class CliSyncTests(TestCase):
         ScheduleKeyword.objects.create(keyword='morning', timestamp='08:00')
         ScheduleKeyword.objects.create(keyword='sleep', timestamp='23:30')
 
-    def test_get_nodes(self):
-        '''Endpoint should return a dict with all node names as keys, dict
-        containing IP address as values.
+    def test_get_cli_config(self):
+        '''Endpoint should return a dict with "nodes" and "schedule_keywords"
+        keys. nodes should contain dict with node names as keys, IP addresses
+        as values. schedule_keywords should contain dict with keywords as keys
+        and timestamps as values.
         '''
-        response = self.client.get('/get_nodes')
+        response = self.client.get('/get_cli_config')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.json()['message'],
             {
-                'test1': '192.168.1.123',
-                'test2': '192.168.1.124',
-                'test3': '192.168.1.125',
-            }
-        )
-
-    def test_get_schedule_keywords(self):
-        '''Endpoint should return a dict with all schedule keywords as keys,
-        timestamps as values.
-        '''
-        response = self.client.get('/get_schedule_keywords')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.json()['message'],
-            {
-                'morning': '08:00',
-                'sleep': '23:30',
-                'sunrise': '06:00',
-                'sunset': '18:00'
+                'nodes': {
+                        'test1': '192.168.1.123',
+                        'test2': '192.168.1.124',
+                        'test3': '192.168.1.125',
+                    },
+                'schedule_keywords': {
+                    'morning': '08:00',
+                    'sleep': '23:30',
+                    'sunrise': '06:00',
+                    'sunset': '18:00'
+                }
             }
         )
 

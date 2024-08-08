@@ -55,43 +55,27 @@ class CliConfigManager:
         with open(cli_config_path, 'w', encoding='utf-8') as file:
             json.dump(self.config, file, indent=4)
 
-    def sync_nodes_from_django(self):
-        '''Updates config contents with nodes from django database.
-        Must set django server address in cli_config.json.
+    def sync_from_django(self):
+        '''Updates config contents with nodes and schedule keywords from django
+        database (must set django server address in cli_config.json).
         '''
         if not self.config['django_backend']:
             raise RuntimeError('No django backend configured')
 
         # Request dict of existing nodes from backend
         response = requests.get(
-            f'{self.config["django_backend"]}/get_nodes',
+            f'{self.config["django_backend"]}/get_cli_config',
             timeout=5
         )
         if response.status_code == 200:
             # Merge response dict into cli_config with union operator
-            self.config['nodes'] |= response.json()['message']
+            update = response.json()['message']
+            self.config['nodes'] |= update['nodes']
+            self.config['schedule_keywords'] |= update['schedule_keywords']
+            # Write updated cli_config.json to disk
             self.write_cli_config_to_disk()
         else:
-            print('Failed to sync nodes')
-
-    def sync_schedule_keywords_from_django(self):
-        '''Updates config contents with schedule keywords from django database.
-        Must set django server address in cli_config.json.
-        '''
-        if not self.config['django_backend']:
-            raise RuntimeError('No django backend configured')
-
-        # Request dict of existing nodes from backend
-        response = requests.get(
-            f'{self.config["django_backend"]}/get_schedule_keywords',
-            timeout=5
-        )
-        if response.status_code == 200:
-            # Merge response dict into cli_config with union operator
-            self.config['schedule_keywords'] |= response.json()['message']
-            self.write_cli_config_to_disk()
-        else:
-            print('Failed to sync keywords')
+            print('Failed to sync from django')
 
     def get_existing_node_names(self):
         '''Returns list of node names in cli_config.json nodes section'''

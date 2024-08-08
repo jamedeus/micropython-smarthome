@@ -45,8 +45,7 @@ urlpatterns = [
     path('edit_config/<str:name>', views.edit_config, name='edit_config'),
 
     # Sync endpoints called by CLI tools
-    path('get_nodes', views.get_nodes, name='get_nodes'),
-    path('get_schedule_keywords', views.get_schedule_keywords, name='get_schedule_keywords'),
+    path('get_cli_config', views.get_cli_config, name='get_cli_config'),
     path('get_node_config/<str:ip>', views.get_node_config, name='get_node_config'),
     path('add_node', views.add_node, name='add_node')
 ]

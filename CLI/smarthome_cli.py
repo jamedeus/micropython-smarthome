@@ -55,7 +55,7 @@ def sync_prompt():
             "\nWhat would you like to do?",
             choices=[
                 "Set django address",
-                "Sync current nodes from django",
+                "Sync nodes and keywords from django",
                 "Download all config files from django",
                 "Change config config directory",
                 "Change webrepl password",
@@ -69,9 +69,8 @@ def sync_prompt():
             ).unsafe_ask()
             cli_config.set_django_address(address)
             print('Address set')
-        elif choice == 'Sync current nodes from django':
-            cli_config.sync_nodes_from_django()
-            cli_config.sync_schedule_keywords_from_django()
+        elif choice == 'Sync nodes and keywords from django':
+            cli_config.sync_from_django()
             print('Updated cli_config.json:')
             print(json.dumps(cli_config.config, indent=4))
         elif choice == 'Download all config files from django':

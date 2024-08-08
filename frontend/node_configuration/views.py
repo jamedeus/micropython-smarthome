@@ -662,20 +662,17 @@ def save_all_schedule_keywords():
         executor.map(save_schedule_keywords, *zip(*commands))
 
 
-def get_nodes(request):
-    '''Returns dict containing all existing Nodes and their IPs.
+def get_cli_config(request):
+    '''Returns dict containing all existing Nodes and ScheduleKeywords.
     Called by CLI tools to update cli_config.json.
     '''
     nodes = {get_cli_config_name(node.friendly_name): node.ip
              for node in Node.objects.all()}
-    return standard_response(message=nodes)
-
-
-def get_schedule_keywords(request):
-    '''Returns dict containing all existing ScheduleKeywords.
-    Called by CLI tools to update cli_config.json.
-    '''
-    return standard_response(message=get_schedule_keywords_dict())
+    keywords = get_schedule_keywords_dict()
+    return standard_response(message={
+        'nodes': nodes,
+        'schedule_keywords': keywords
+    })
 
 
 def get_node_config(request, ip):
