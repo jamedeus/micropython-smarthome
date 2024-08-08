@@ -33,7 +33,13 @@ class CliConfigManager:
     def __init__(self):
         if self._initialized:
             return
+        # Load cli_config.json from disk
         self.config = self.read_cli_config_from_disk()
+
+        # If django server configured sync nodes and keywords
+        if 'django_backend' in self.config:
+            self.sync_from_django()
+
         self._initialized = True
 
     def read_cli_config_from_disk(self):
@@ -63,10 +69,14 @@ class CliConfigManager:
             raise RuntimeError('No django backend configured')
 
         # Request dict of existing nodes from backend
-        response = requests.get(
-            f'{self.config["django_backend"]}/get_cli_config',
-            timeout=5
-        )
+        try:
+            response = requests.get(
+                f'{self.config["django_backend"]}/get_cli_config',
+                timeout=5
+            )
+        except OSError:
+            print('Failed to sync from django (connection refused)')
+            return
         if response.status_code == 200:
             # Merge response dict into cli_config with union operator
             update = response.json()['message']
