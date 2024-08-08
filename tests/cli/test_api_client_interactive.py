@@ -126,7 +126,16 @@ class InteractiveMenuTests(TestCase):
         patch('api_client.nodes', mock_cli_config['nodes']).start()
 
         # Mock config file read from disk in tests
-        patch('api_client.cli_config.load_node_config_file', return_value=mock_config).start()
+        # Note: This effects CliConfigManager singleton (shared between tests)
+        self.mock_load = patch(
+            'api_client.cli_config.load_node_config_file',
+            return_value=mock_config
+        )
+        self.mock_load.start()
+
+    def tearDown(self):
+        # Reset mock to prevent breaking tests in other files
+        self.mock_load.stop()
 
     def test_runs_interactive_prompt_when_called_with_no_args(self):
         # Mock empty sys.argv (should run interactive prompt)
@@ -636,7 +645,16 @@ class InteractiveIrBlasterMenuTests(TestCase):
         patch('api_client.nodes', mock_cli_config['nodes']).start()
 
         # Mock config file read from disk in tests
-        patch('api_client.cli_config.load_node_config_file', return_value=mock_ir_config).start()
+        # Note: This effects CliConfigManager singleton (shared between tests)
+        self.mock_load = patch(
+            'api_client.cli_config.load_node_config_file',
+            return_value=mock_ir_config
+        )
+        self.mock_load.start()
+
+    def tearDown(self):
+        # Reset mock to prevent breaking tests in other files
+        self.mock_load.stop()
 
     def test_ir_key_endpoint(self):
         # Simulate user selecting node1, ir, tv, power

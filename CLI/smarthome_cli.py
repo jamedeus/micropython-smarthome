@@ -174,11 +174,6 @@ def upload_config_from_disk(config=None):
         webrepl_password=cli_config.config['webrepl_password']
     )
 
-    # Read updated cli_config.json from disk
-    print('updating from disk')
-    cli_config.read_cli_config_from_disk()
-    print(cli_config.config['nodes'])
-
 
 def create_new_node_prompt():
     '''Prompt allows user to create config file, upload to new node'''

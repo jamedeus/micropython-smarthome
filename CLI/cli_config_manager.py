@@ -12,10 +12,29 @@ cli_config_path = os.path.join(cli, 'cli_config.json')
 
 
 class CliConfigManager:
-    '''Loads cli_config.json from disk and exposes methods to read and modify'''
+    '''Loads cli_config.json from disk and exposes methods to read and modify.
+
+    Singleton class, all modules that instantiate receive the same instance to
+    ensure config contents remain in sync (example: if user runs smarthome_cli
+    and creates a new node the CliConfigManager instance in provision.py will
+    call add_node, the smarthome_cli instance. Without singleton the new node
+    would not appear in smarthome_cli menu until the script was restarted).
+    '''
+
+    _instance = None
+    _initialized = False
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(CliConfigManager, cls).__new__(cls, *args, **kwargs)
+            cls._instance._initialized = False
+        return cls._instance
 
     def __init__(self):
+        if self._initialized:
+            return
         self.config = self.read_cli_config_from_disk()
+        self._initialized = True
 
     def read_cli_config_from_disk(self):
         '''Reads cli_config.json from disk and returns parsed contents'''
