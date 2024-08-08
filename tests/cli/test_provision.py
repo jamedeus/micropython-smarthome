@@ -58,7 +58,7 @@ class TestArgParser(TestCase):
 
     def test_node_friendly_name(self):
         with patch.object(sys, 'argv', ['', 'node1']), \
-             patch('provision.cli_config', mock_cli_config):
+             patch('provision.cli_config.config', mock_cli_config):
 
             args, parser = parse_args()
 
@@ -138,9 +138,8 @@ class TestInstantiation(TestCase):
         mock_file = mock_open(read_data=json.dumps({}))
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
-             patch('helper_functions.get_cli_config', return_value=mock_cli_config), \
              patch('helper_functions.os.path.exists', return_value=True), \
-             patch('provision.cli_config', mock_cli_config), \
+             patch('provision.cli_config.config', mock_cli_config), \
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm provision called once for each node
@@ -161,9 +160,8 @@ class TestInstantiation(TestCase):
         mock_file = mock_open(read_data=json.dumps({}))
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
-             patch('helper_functions.get_cli_config', return_value=mock_cli_config), \
              patch('helper_functions.os.path.exists', return_value=True), \
-             patch('provision.cli_config', mock_cli_config), \
+             patch('provision.cli_config.config', mock_cli_config), \
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm provision called once with expected IP
@@ -239,7 +237,7 @@ class TestInstantiation(TestCase):
         mock_file = mock_open(read_data=json.dumps({}))
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
-             patch('provision.cli_config', mock_cli_config), \
+             patch('provision.cli_config.config', mock_cli_config), \
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm called once with given IP + test modules
@@ -272,15 +270,14 @@ class TestInstantiation(TestCase):
 
         # Mock provision to do nothing
         # Mock cli_config.json contents
-        # Mock open, json.load, and load_node_config_file to return mock_file_contents
+        # Mock open, json.load and os.path.exists to return mock_file_contents
         # Mock requests to check call args
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
              patch('provision.json.load', MagicMock(return_value=mock_file_contents)), \
-             patch('helper_functions.load_node_config_file', return_value=mock_file_contents), \
-             patch('helper_functions.get_cli_config', return_value=mock_cli_config), \
-             patch('provision.cli_config', mock_cli_config), \
+             patch('provision.cli_config.config', mock_cli_config), \
              patch('builtins.open', mock_file), \
+             patch('os.path.exists', return_value=True), \
              patch('helper_functions.requests.post') as mock_post:
 
             # Instantiate, confirm provision called once with expected IP, password, config

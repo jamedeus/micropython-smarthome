@@ -77,39 +77,6 @@ def get_config_filename(friendly_name):
     return filename
 
 
-def get_config_filepath(friendly_name):
-    '''Takes friendly_name, returns path to config file. Does not check if file
-    exists, can be used to get path for new file or to find an existing file.
-    '''
-    filename = get_config_filename(friendly_name)
-    return os.path.join(get_cli_config()['config_directory'], filename)
-
-
-def load_node_config_file(friendly_name):
-    '''Takes friendly_name of existing node, reads matching config file in
-    config_directory (set in cli_config.json), returns contents.
-    '''
-    config_filepath = get_config_filepath(friendly_name)
-    if not os.path.exists(config_filepath):
-        raise FileNotFoundError
-    with open(config_filepath, 'r', encoding='utf-8') as file:
-        config = json.load(file)
-    return config
-
-
-def save_node_config_file(config):
-    '''Takes config file dict, generates filename from config.metadata.id,
-    creates or overwrites file in config_directory (set in cli_config.json).
-    '''
-    try:
-        config_filepath = get_config_filepath(config['metadata']['id'])
-        with open(config_filepath, 'w', encoding='utf-8') as file:
-            json.dump(config, file)
-        return config_filepath
-    except KeyError as exception:
-        raise ValueError('config file has no name') from exception
-
-
 def get_config_param_list(config, param):
     '''Takes config file and name of param that exists in subsections.
     Returns list of values for each occurence of the param name.
@@ -135,89 +102,6 @@ def valid_timestamp(timestamp):
     return bool(re.match(r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$', timestamp))
 
 
-def get_cli_config():
-    '''Returns contents of cli_config.json loaded into dict.
-    If file does not exist returns template with default values.
-    '''
-    try:
-        with open(cli_config_path, 'r', encoding='utf-8') as file:
-            return json.load(file)
-    except FileNotFoundError:
-        print("Warning: Unable to find cli_config.json, friendly names will not work")
-        return {
-            'nodes': {},
-            'schedule_keywords': {},
-            'webrepl_password': 'password',
-            'config_directory': os.path.join(repo, 'config_files')
-        }
-
-
-def add_node_to_cli_config(friendly_name, ip):
-    '''Takes node friendly_name and IP.
-    Adds (or overwrites) entry in nodes section of cli_config.json.
-    '''
-
-    # Remove spaces (breaks CLI tool bash completion)
-    name = get_cli_config_name(friendly_name)
-
-    # Add to nodes section with cli-safe name as key, IP as value
-    cli_config = get_cli_config()
-    cli_config['nodes'][name] = ip
-    write_cli_config(cli_config)
-
-    # If django backend configured add new node to database
-    if 'django_backend' in cli_config:
-        print('Uploading node to django database...')
-        requests.post(
-            f'{cli_config["django_backend"]}/add_node',
-            json.dumps({
-                'ip': ip,
-                'config': load_node_config_file(friendly_name)
-            }),
-            timeout=5
-        )
-        print('Done.')
-
-
-def remove_node_from_cli_config(name):
-    '''Takes node config name, deletes from cli_config.json'''
-
-    # Ensure name has no spaces (cli_config.json syntax)
-    name = get_cli_config_name(name)
-
-    try:
-        cli_config = get_cli_config()
-        del cli_config['nodes'][name]
-        write_cli_config(cli_config)
-
-        # If django backend configured delete node from database
-        if 'django_backend' in cli_config:
-            print(f'Deleting {name} from django database...')
-
-            try:
-                # Load config, get friendly name
-                config = load_node_config_file(name)
-                friendly_name = config['metadata']['id']
-
-                # Post friendly name to backend
-                requests.post(
-                    f'{cli_config["django_backend"]}/delete_node',
-                    json.dumps(friendly_name),
-                    timeout=5
-                )
-                print('Done.')
-            except FileNotFoundError:
-                print('Failed to delete from django database')
-    except KeyError:
-        pass
-
-
-def write_cli_config(config):
-    '''Takes dict, overwrites cli_config.json'''
-    with open(cli_config_path, 'w', encoding='utf-8') as file:
-        json.dump(config, file, indent=4)
-
-
 def get_schedule_keywords_dict():
     '''Returns dict with schedule keywords as keys, timestamps as values.
     Reads from django database if SMARTHOME_FRONTEND env var exists.
@@ -232,17 +116,12 @@ def get_schedule_keywords_dict():
                 for keyword in ScheduleKeyword.objects.all()}
 
     # Load from config file on disk
-    config = get_cli_config()
-    return config['schedule_keywords']
-
-
-def get_existing_nodes():
-    '''Returns nodes section from cli_config.json as dict.
-    Contains all existing node friendly names as keys, sub-dict with IP and
-    path to config file as values.
-    '''
-    config = get_cli_config()
-    return config['nodes']
+    try:
+        with open(cli_config_path, 'r', encoding='utf-8') as file:
+            config = json.load(file)
+            return config['schedule_keywords']
+    except FileNotFoundError:
+        return {}
 
 
 def load_unit_test_config():

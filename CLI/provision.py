@@ -20,22 +20,16 @@ Reupload config files to all nodes in cli_config.json
 import os
 import json
 import argparse
-from helper_functions import (
-    valid_ip,
-    get_cli_config,
-    add_node_to_cli_config,
-    get_config_filepath,
-    load_node_config_file
-)
+from helper_functions import valid_ip
 from provision_tools import get_modules, dependencies, core_modules, provision
-
+from cli_config_manager import CliConfigManager
 
 # Get full paths to repository root directory, CLI tools directory
 cli = os.path.dirname(os.path.realpath(__file__))
 repo = os.path.split(cli)[0]
 
-# Load CLI config file
-cli_config = get_cli_config()
+# Read cli_config.json from disk
+cli_config = CliConfigManager()
 
 
 def validate_ip(ip):
@@ -78,7 +72,7 @@ The password flag is optional and works with all modes''',
     node_group.add_argument(
         'node',
         nargs='?',
-        choices=cli_config['nodes'].keys()
+        choices=cli_config.get_existing_node_names()
     )
 
     # Argument that reuploads all existing nodes in cli_config.json
@@ -111,7 +105,7 @@ The password flag is optional and works with all modes''',
     if bool(args.config):
         # If file not found check if it exists in config_directory
         if not os.path.exists(args.config):
-            args.config = get_config_filepath(args.config)
+            args.config = cli_config.get_config_filepath(args.config)
             if not os.path.exists(args.config):
                 # Throw error if still not found in config directory
                 parser.error('Could not find config file')
@@ -128,11 +122,11 @@ def upload_all(webrepl_password):
     '''Iterate cli_config.json, reprovision all nodes'''
 
     # Iterate node names and IPs in config file
-    for name, ip in cli_config['nodes'].items():
+    for name, ip in cli_config.config['nodes'].items():
         print(f"\n{name}\n")
 
         # Load config from disk
-        config = load_node_config_file(name)
+        config = cli_config.load_node_config_file(name)
 
         # Upload
         result = provision(
@@ -148,11 +142,11 @@ def upload_node(node, webrepl_password):
     '''Reprovision an existing node, accepts friendly name as arg'''
 
     # Load requested node config from disk
-    config = load_node_config_file(node)
+    config = cli_config.load_node_config_file(node)
 
     # Upload
     result = provision(
-        ip=cli_config['nodes'][node],
+        ip=cli_config.config['nodes'][node],
         password=webrepl_password,
         config=config,
         modules=get_modules(config, repo)
@@ -176,7 +170,7 @@ def upload_config_to_ip(config_path, ip, webrepl_password):
 
     # Add to cli_config.json if upload successful
     if result['status'] == 200:
-        add_node_to_cli_config(config['metadata']['id'], ip)
+        cli_config.add_node(config['metadata']['id'], ip)
 
 
 def upload_tests(ip, webrepl_password):
@@ -229,7 +223,7 @@ def handle_cli_args(args, parser):
     if args.password:
         webrepl_password = args.password
     else:
-        webrepl_password = cli_config['webrepl_password']
+        webrepl_password = cli_config.config['webrepl_password']
 
     # Reprovision all nodes
     if args.all:

@@ -26,12 +26,14 @@ from helper_functions import (
     is_sensor,
     is_device_or_sensor,
     valid_timestamp,
-    get_existing_nodes,
-    get_config_filepath,
     get_device_and_sensor_metadata,
     convert_celsius_temperature
 )
 from config_prompt_validators import IntRange, FloatRange
+from cli_config_manager import CliConfigManager
+
+# Read cli_config.json from disk (contains existing nodes)
+cli_config = CliConfigManager()
 
 
 def build_rule_prompt_maps():
@@ -418,11 +420,12 @@ def load_config_from_ip(ip):
     reads matching config file and returns contents.
     Used by api_call_prompt to get options, determine correct rule prompt, etc.
     '''
-    existing_nodes = get_existing_nodes()
+    existing_nodes = cli_config.config['nodes']
     try:
         for i in existing_nodes:
             if existing_nodes[i] == ip:
-                with open(get_config_filepath(i), 'r', encoding='utf-8') as file:
+                config_path = cli_config.get_config_filepath(i)
+                with open(config_path, 'r', encoding='utf-8') as file:
                     return json.load(file)
         raise FileNotFoundError
     except FileNotFoundError as interrupt:

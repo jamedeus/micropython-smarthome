@@ -28,10 +28,7 @@ from helper_functions import (
     is_device,
     is_sensor,
     is_device_or_sensor,
-    is_int,
-    get_schedule_keywords_dict,
-    get_existing_nodes,
-    save_node_config_file
+    is_int
 )
 from config_prompt_validators import (
     IntRange,
@@ -46,6 +43,10 @@ from config_rule_prompts import (
     schedule_rule_timestamp_prompt,
     schedule_rule_timestamp_or_keyword_prompt
 )
+from cli_config_manager import CliConfigManager
+
+# Read cli_config.json from disk (contains existing nodes and schedule keywords)
+cli_config = CliConfigManager()
 
 
 class GenerateConfigFile:
@@ -64,7 +65,7 @@ class GenerateConfigFile:
                     'id': '',
                     'floor': '',
                     'location': '',
-                    'schedule_keywords': get_schedule_keywords_dict()
+                    'schedule_keywords': cli_config.config['schedule_keywords']
                 }
             }
 
@@ -101,7 +102,7 @@ class GenerateConfigFile:
         self.category_options = ['Device', 'Sensor', 'IR Blaster', 'Done']
 
         # List of schedule keywords from config file
-        self.schedule_keyword_options = list(get_schedule_keywords_dict().keys())
+        self.schedule_keyword_options = list(cli_config.config['schedule_keywords'].keys())
 
     def run_prompt(self):
         '''Main entrypoint, displays a series of interactive menus used to
@@ -202,7 +203,7 @@ class GenerateConfigFile:
 
     def write_to_disk(self):
         '''Writes self.config to config_directory set in cli_config.json.'''
-        config_path = save_node_config_file(self.config)
+        config_path = cli_config.save_node_config_file(self.config)
         print(f"\nConfig saved as {os.path.split(config_path)[1]}")
 
     def metadata_prompt(self, name="", floor="", location=""):
@@ -369,15 +370,12 @@ class GenerateConfigFile:
         cli_config.json, returns IP address of selected node.
         '''
 
-        # Get dict of existing nodes from cli_config.json
-        existing_nodes = get_existing_nodes()
-
         # Show prompt with names of all existing nodes
         target = questionary.select(
             "Select target node",
-            choices=list(existing_nodes.keys())
+            choices=list(cli_config.config['nodes'].keys())
         ).unsafe_ask()
-        return existing_nodes[target]
+        return cli_config.config['nodes'][target]
 
     def __configure_device(self, config=None):
         '''Prompts user to select device type followed by all required params

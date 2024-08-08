@@ -15,11 +15,9 @@ from config_rule_prompts import (
 from helper_functions import (
     is_int,
     valid_ip,
-    valid_timestamp,
-    get_existing_nodes,
-    get_schedule_keywords_dict,
-    load_node_config_file
+    valid_timestamp
 )
+from cli_config_manager import CliConfigManager
 
 
 # pylint: disable=line-too-long
@@ -93,8 +91,9 @@ example_usage = {
 # pylint: enable=line-too-long
 
 
-# Get dict of existing node friendly names and IPs from cli_config.json
-nodes = get_existing_nodes()
+# Read cli_config.json from disk (contains existing nodes and schedule keywords)
+cli_config = CliConfigManager()
+nodes = cli_config.config['nodes']
 
 
 def endpoint_error():
@@ -220,7 +219,7 @@ def device_or_sensor_rule_prompt(node, target):
     '''
 
     # Load config file from disk (used to determine correct prompt)
-    config = load_node_config_file(node)
+    config = cli_config.load_node_config_file(node)
 
     # Show correct schedule rule prompt (shows all options, not just default
     # rule options - all rule endpoints accept any valid rule)
@@ -265,7 +264,7 @@ def device_and_sensor_endpoints_prompt(node, status, endpoint):
     elif endpoint == 'add_rule':
         # Prompt to enter timestamp or keyword
         timestamp = schedule_rule_timestamp_or_keyword_prompt(
-            get_schedule_keywords_dict()
+            cli_config.config['schedule_keywords']
         )
         command_args.append(timestamp)
 

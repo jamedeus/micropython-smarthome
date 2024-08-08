@@ -126,7 +126,7 @@ class InteractiveMenuTests(TestCase):
         patch('api_client.nodes', mock_cli_config['nodes']).start()
 
         # Mock config file read from disk in tests
-        patch('api_client.load_node_config_file', return_value=mock_config).start()
+        patch('api_client.cli_config.load_node_config_file', return_value=mock_config).start()
 
     def test_runs_interactive_prompt_when_called_with_no_args(self):
         # Mock empty sys.argv (should run interactive prompt)
@@ -636,7 +636,7 @@ class InteractiveIrBlasterMenuTests(TestCase):
         patch('api_client.nodes', mock_cli_config['nodes']).start()
 
         # Mock config file read from disk in tests
-        patch('api_client.load_node_config_file', return_value=mock_ir_config).start()
+        patch('api_client.cli_config.load_node_config_file', return_value=mock_ir_config).start()
 
     def test_ir_key_endpoint(self):
         # Simulate user selecting node1, ir, tv, power
