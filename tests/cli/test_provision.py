@@ -271,13 +271,14 @@ class TestInstantiation(TestCase):
         # Mock provision to do nothing
         # Mock cli_config.json contents
         # Mock open, json.load and os.path.exists to return mock_file_contents
-        # Mock requests to check call args
+        # Mock cli_config._client.post to check POST request body
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
-             patch('provision.json.load', MagicMock(return_value=mock_file_contents)), \
              patch('provision.cli_config.config', mock_cli_config), \
+             patch('provision.json.load', MagicMock(return_value=mock_file_contents)), \
              patch('builtins.open', mock_file), \
              patch('os.path.exists', return_value=True), \
+             patch('provision.cli_config._client'), \
              patch('provision.cli_config._client.post') as mock_post:
 
             # Instantiate, confirm provision called once with expected IP, password, config
