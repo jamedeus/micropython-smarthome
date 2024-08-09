@@ -278,7 +278,7 @@ class TestInstantiation(TestCase):
              patch('provision.cli_config.config', mock_cli_config), \
              patch('builtins.open', mock_file), \
              patch('os.path.exists', return_value=True), \
-             patch('cli_config_manager.requests.post') as mock_post:
+             patch('provision.cli_config._client.post') as mock_post:
 
             # Instantiate, confirm provision called once with expected IP, password, config
             handle_cli_args(args, '')
@@ -293,11 +293,11 @@ class TestInstantiation(TestCase):
             request_args = mock_post.call_args
             self.assertEqual(request_args[0][0], 'http://192.168.1.100/add_node')
             self.assertEqual(
-                request_args[0][1],
-                json.dumps({
+                request_args[1]['json'],
+                {
                     'ip': '192.168.1.123',
                     'config': mock_file_contents
-                })
+                }
             )
 
         # Confirm ID from mock config was added to cli_config.json nodes section

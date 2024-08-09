@@ -36,6 +36,10 @@ class CliConfigManager:
         # Load cli_config.json from disk
         self.config = self.read_cli_config_from_disk()
 
+        # Used for POST requests if django_backend configured
+        self._client = None
+        self._csrf_token = None
+
         # If django server configured sync nodes and keywords
         if 'django_backend' in self.config:
             self.sync_from_django()
@@ -68,9 +72,13 @@ class CliConfigManager:
         if not self.config['django_backend']:
             raise RuntimeError('No django backend configured')
 
+        # Open session on first run
+        if not self._client:
+            self._client = requests.session()
+
         # Request dict of existing nodes from backend
         try:
-            response = requests.get(
+            response = self._client.get(
                 f'{self.config["django_backend"]}/get_cli_config',
                 timeout=5
             )
@@ -82,8 +90,12 @@ class CliConfigManager:
             update = response.json()['message']
             self.config['nodes'] |= update['nodes']
             self.config['schedule_keywords'] |= update['schedule_keywords']
+
             # Write updated cli_config.json to disk
             self.write_cli_config_to_disk()
+
+            # Save CSRF token (used for POST requests to django)
+            self._csrf_token = self._client.cookies['csrftoken']
         else:
             print('Failed to sync from django')
 
@@ -104,15 +116,21 @@ class CliConfigManager:
         # If django backend configured add new node to database
         if 'django_backend' in self.config:
             print('Uploading node to django database...')
-            requests.post(
+            response = self._client.post(
                 f'{self.config["django_backend"]}/add_node',
-                json.dumps({
+                json={
                     'ip': ip,
                     'config': self.load_node_config_file(name)
-                }),
+                },
+                headers = {
+                    'X-CSRFToken': self._csrf_token
+                },
                 timeout=5
             )
-            print('Done.')
+            if response.status_code == 200:
+                print('Done.')
+            else:
+                print(response.text)
 
     def remove_node(self, name):
         '''Takes node config name, deletes from cli_config.json'''
@@ -134,12 +152,18 @@ class CliConfigManager:
                     friendly_name = config['metadata']['id']
 
                     # Post friendly name to backend
-                    requests.post(
+                    response = self._client.post(
                         f'{self.config["django_backend"]}/delete_node',
-                        json.dumps(friendly_name),
+                        json=friendly_name,
+                        headers = {
+                            'X-CSRFToken': self._csrf_token
+                        },
                         timeout=5
                     )
-                    print('Done.')
+                    if response.status_code == 200:
+                        print('Done.')
+                    else:
+                        print(response.text)
                 except FileNotFoundError:
                     print('Failed to delete from django database')
         except KeyError:
