@@ -199,6 +199,35 @@ class CliConfigManager:
         except KeyError as exception:
             raise ValueError('config file has no name') from exception
 
+    def download_node_config_file_from_django(self, ip):
+        '''Takes IP of existing node in cli_config.json, requests config file
+        from django backend, returns config dict.
+        '''
+        if not self.config['django_backend']:
+            raise RuntimeError('No django backend configured')
+
+        response = requests.get(
+            f'{self.config["django_backend"]}/get_node_config/{ip}',
+            timeout=5
+        )
+        if response.status_code == 200:
+            return response.json()['message']
+        return False
+
+    def download_all_node_config_files_from_django(self):
+        '''Iterates existing nodes in cli_config.json, downloads each config
+        file from django backend and writes to config_directory.
+        '''
+        for node, ip in self.config['nodes'].items():
+            config = self.download_node_config_file_from_django(ip)
+            if config:
+                # Create JSON config file in config_directory
+                self.save_node_config_file(config)
+                print(f'Downloaded {node} config file')
+
+            else:
+                print(f'Failed to download {node} config file')
+
     def set_django_address(self, address):
         '''Takes django backend URI, updates config and writes to disk'''
         self.config['django_backend'] = address

@@ -5,7 +5,6 @@
 import os
 import json
 import pydoc
-import requests
 import questionary
 from Webrepl import Webrepl
 from helper_functions import valid_ip, valid_uri, get_config_filename
@@ -18,32 +17,6 @@ from cli_config_manager import CliConfigManager
 
 # Read cli_config.json from disk
 cli_config = CliConfigManager()
-
-
-def download_all_node_config_files():
-    '''Iterates nodes in cli_config.json, downloads each config file from
-    backend and writes to config_dir (set in cli_config.json).
-    '''
-    for node, ip in cli_config.config['nodes'].items():
-        config = download_node_config_file(ip)
-        if config:
-            # Create JSON config file in config_directory
-            cli_config.save_node_config_file(config)
-            print(f'Downloaded {node} config file')
-
-        else:
-            print(f'Failed to download {node} config file')
-
-
-def download_node_config_file(ip):
-    '''Takes node IP, requests config file from backend and returns'''
-    response = requests.get(
-        f'{cli_config.config["django_backend"]}/get_node_config/{ip}',
-        timeout=5
-    )
-    if response.status_code == 200:
-        return response.json()['message']
-    return False
 
 
 def sync_prompt():
@@ -74,7 +47,7 @@ def sync_prompt():
             print('Updated cli_config.json:')
             print(json.dumps(cli_config.config, indent=4))
         elif choice == 'Download all config files from django':
-            download_all_node_config_files()
+            cli_config.download_all_node_config_files_from_django()
         elif choice == 'Change config config directory':
             directory = questionary.text(
                 'Enter absolute path to config directory'
