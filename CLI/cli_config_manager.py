@@ -69,7 +69,7 @@ class CliConfigManager:
         '''Updates config contents with nodes and schedule keywords from django
         database (must set django server address in cli_config.json).
         '''
-        if not self.config['django_backend']:
+        if 'django_backend' not in self.config:
             raise RuntimeError('No django backend configured')
 
         # Open session on first run
@@ -164,7 +164,7 @@ class CliConfigManager:
                         print('Done.')
                     else:
                         print(response.text)
-                except FileNotFoundError:
+                except (FileNotFoundError, KeyError):
                     print('Failed to delete from django database')
         except KeyError:
             pass
@@ -203,10 +203,10 @@ class CliConfigManager:
         '''Takes IP of existing node in cli_config.json, requests config file
         from django backend, returns config dict.
         '''
-        if not self.config['django_backend']:
+        if 'django_backend' not in self.config:
             raise RuntimeError('No django backend configured')
 
-        response = requests.get(
+        response = self._client.get(
             f'{self.config["django_backend"]}/get_node_config/{ip}',
             timeout=5
         )
@@ -218,6 +218,9 @@ class CliConfigManager:
         '''Iterates existing nodes in cli_config.json, downloads each config
         file from django backend and writes to config_directory.
         '''
+        if 'django_backend' not in self.config:
+            raise RuntimeError('No django backend configured')
+
         for node, ip in self.config['nodes'].items():
             config = self.download_node_config_file_from_django(ip)
             if config:
