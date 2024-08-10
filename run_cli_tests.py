@@ -22,7 +22,7 @@ mock_read_file = patch('cli_config_manager.open', mock_open(
 mock_read_file.start()
 
 # Mock requests.session to simulate successful django backend sync request
-mock_session = patch('cli_config_manager.requests.Session').start()
+mock_session = patch('cli_config_manager.requests.session').start()
 # Mock get method
 mock_get = MagicMock()
 mock_session.return_value.get = mock_get
@@ -32,15 +32,18 @@ mock_get.return_value = mock_response
 # Mock response contents (same as mock cli_config.json)
 mock_response.status_code = 200
 mock_response.json.return_value = {
-    'nodes': {
-        'node1': '192.168.1.123',
-        'node2': '192.168.1.234',
-        'node3': '192.168.1.111'
-    },
-    'schedule_keywords': {
-        'sunrise': '06:00',
-        'sunset': '18:00',
-        'sleep': '22:00'
+    'status': 'success',
+    'message': {
+        'nodes': {
+            'node1': '192.168.1.123',
+            'node2': '192.168.1.234',
+            'node3': '192.168.1.111'
+        },
+        'schedule_keywords': {
+            'sunrise': '06:00',
+            'sunset': '18:00',
+            'sleep': '22:00'
+        }
     }
 }
 
