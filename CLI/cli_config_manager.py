@@ -122,7 +122,7 @@ class CliConfigManager:
                     'ip': ip,
                     'config': self.load_node_config_file(name)
                 },
-                headers = {
+                headers={
                     'X-CSRFToken': self._csrf_token
                 },
                 timeout=5
@@ -155,7 +155,7 @@ class CliConfigManager:
                     response = self._client.post(
                         f'{self.config["django_backend"]}/delete_node',
                         json=friendly_name,
-                        headers = {
+                        headers={
                             'X-CSRFToken': self._csrf_token
                         },
                         timeout=5
