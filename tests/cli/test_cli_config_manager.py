@@ -165,6 +165,32 @@ class TestCliConfigManager(TestCase):
                 timeout=5
             )
 
+    def test_add_node_no_backend_configured(self):
+        # Confirm config object does not contain name that will be added
+        self.assertNotIn('new-node', self.manager.config['nodes'])
+
+        # Create mock cli_config.json with no django backend configured
+        mock_cli_config_no_backend = deepcopy(mock_cli_config)
+        del mock_cli_config_no_backend['django_backend']
+
+        # Mock CliConfigManager.config remove django_backend key
+        # Mock _client.post to confirm no request is made
+        with patch.object(self.manager, 'config', mock_cli_config_no_backend), \
+             patch.object(self.manager, '_client', MagicMock()) as mock_client, \
+             patch.object(mock_client, 'post') as mock_post:
+
+            # Call add_node method
+            self.manager.add_node('New Node', '192.168.1.63')
+
+            # Confirm node was added to manager config attribute and file on disk
+            self.assertIn('new-node', self.manager.config['nodes'])
+            with open(mock_cli_config_path, 'r') as file:
+                config = json.load(file)
+            self.assertIn('new-node', config['nodes'])
+
+            # Confirm no POST request was made
+            mock_post.assert_not_called()
+
     def test_remove_node(self):
         # Create mock response object
         mock_response = MagicMock()
@@ -197,6 +223,32 @@ class TestCliConfigManager(TestCase):
                 },
                 timeout=5
             )
+
+    def test_remove_node_no_backend_configured(self):
+        # Confirm config object contains node3
+        self.assertIn('node3', self.manager.config['nodes'])
+
+        # Create mock cli_config.json with no django backend configured
+        mock_cli_config_no_backend = deepcopy(mock_cli_config)
+        del mock_cli_config_no_backend['django_backend']
+
+        # Mock CliConfigManager.config remove django_backend key
+        # Mock _client.post to confirm no request is made
+        with patch.object(self.manager, 'config', mock_cli_config_no_backend), \
+             patch.object(self.manager, '_client', MagicMock()) as mock_client, \
+             patch.object(mock_client, 'post') as mock_post:
+
+            # Call remove_node method with name of existing node
+            self.manager.remove_node('node3')
+
+            # Confirm node3 was removed from manager config attribute and file on disk
+            self.assertNotIn('node3', self.manager.config['nodes'])
+            with open(mock_cli_config_path, 'r') as file:
+                config = json.load(file)
+            self.assertNotIn('node3', config['nodes'])
+
+            # Confirm no POST request was made
+            mock_post.assert_not_called()
 
     def test_remove_node_does_not_exist(self):
         # Confirm config object does not contain fake node
