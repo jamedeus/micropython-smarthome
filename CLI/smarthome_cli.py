@@ -30,7 +30,7 @@ def sync_prompt():
                 "Set django address",
                 "Sync nodes and keywords from django",
                 "Download all config files from django",
-                "Change config config directory",
+                "Change config directory",
                 "Change webrepl password",
                 "Done"
             ]
@@ -48,7 +48,7 @@ def sync_prompt():
             print(json.dumps(cli_config.config, indent=4))
         elif choice == 'Download all config files from django':
             cli_config.download_all_node_config_files_from_django()
-        elif choice == 'Change config config directory':
+        elif choice == 'Change config directory':
             directory = questionary.text(
                 'Enter absolute path to config directory'
             ).unsafe_ask()
@@ -114,7 +114,7 @@ def view_log_prompt():
         filename = questionary.text(
             'Enter filename',
             default=f'{node}.log'
-        ).ask()
+        ).unsafe_ask()
         with open(filename, 'w', encoding='utf-8') as file:
             file.write(log.decode())
         print(f'Log saved as {filename}')
@@ -246,7 +246,7 @@ def main_prompt():
             break
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     try:
         main_prompt()
     except KeyboardInterrupt as interrupt:
