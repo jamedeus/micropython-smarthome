@@ -83,7 +83,7 @@ class GenerateConfigFile:
                 print('Example usage: ./CLI/config_generator.py /path/to/existing_config.json')
                 raise SystemExit
             if not os.path.exists(path):
-                print(f'Error: Config file "{sys.argv[1]}" not found')
+                print(f'Error: Config file "{edit}" not found')
                 print('Example usage: ./CLI/config_generator.py /path/to/existing_config.json')
                 raise SystemExit
 

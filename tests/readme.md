@@ -18,9 +18,11 @@ To run the CLI tests go to the repo root and paste this:
 
 ```
 export PYTHONPATH=$PYTHONPATH:`pwd`/CLI
-pipenv run coverage run -m unittest discover tests/cli
+pipenv run coverage run run_cli_tests.py
 pipenv run coverage report
 ```
+
+Note: The `run_cli_tests.py` script applies mocks that prevent `CLI/cli_config.json` from being read (if it exists). Running tests without the script will likely fail.
 
 ## Client
 

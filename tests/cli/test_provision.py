@@ -278,7 +278,6 @@ class TestInstantiation(TestCase):
              patch('provision.json.load', MagicMock(return_value=mock_file_contents)), \
              patch('builtins.open', mock_file), \
              patch('os.path.exists', return_value=True), \
-             patch('provision.cli_config._client'), \
              patch('provision.cli_config._client.post') as mock_post:
 
             # Instantiate, confirm provision called once with expected IP, password, config
