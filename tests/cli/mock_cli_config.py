@@ -1,13 +1,14 @@
 '''Mock cli_config.json contents used by CLI unit tests'''
 
 import os
+import json
 import tempfile
 
 # Create temp directory to write config files to
 temp_dir = tempfile.gettempdir()
 
-# Get path to config_dir
-config_dir = os.path.join(temp_dir, 'config_files')
+# Get path to mock config_directory
+mock_config_dir = os.path.join(temp_dir, 'config_files')
 
 mock_cli_config = {
     'nodes': {
@@ -21,10 +22,24 @@ mock_cli_config = {
         'sleep': '22:00'
     },
     'webrepl_password': 'password',
-    'config_directory': config_dir,
+    'config_directory': mock_config_dir,
     'django_backend': 'http://192.168.1.100'
 }
 
-# Create config directory if it doesn't exist
+# Create mock config directory if it doesn't exist
 if not os.path.exists(mock_cli_config['config_directory']):
     os.mkdir(mock_cli_config['config_directory'])
+
+# Create mock config files for each node in mock cli_config.json
+node1_config = os.path.join(mock_config_dir, 'node1.json')
+if not os.path.exists(node1_config):
+    with open(node1_config, 'w', encoding='utf-8') as file:
+        json.dump({'metadata': {'id': 'Node1'}}, file)
+node2_config = os.path.join(mock_config_dir, 'node2.json')
+if not os.path.exists(node2_config):
+    with open(node2_config, 'w', encoding='utf-8') as file:
+        json.dump({'metadata': {'id': 'Node1'}}, file)
+node3_config = os.path.join(mock_config_dir, 'node3.json')
+if not os.path.exists(node3_config):
+    with open(node3_config, 'w', encoding='utf-8') as file:
+        json.dump({'metadata': {'id': 'Node1'}}, file)

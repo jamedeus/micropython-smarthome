@@ -1,3 +1,4 @@
+import os
 from unittest import TestCase
 from unittest.mock import patch, MagicMock, mock_open
 from smarthome_cli import (
@@ -10,6 +11,7 @@ from smarthome_cli import (
     delete_prompt,
     sync_prompt
 )
+from mock_cli_config import mock_cli_config
 
 
 class TestMainPrompt(TestCase):
@@ -344,8 +346,29 @@ class TestManageNodeFunctions(TestCase):
             # Confirm called upload_node with node name and webrepl password
             mock_upload_node.assert_called_once_with('node1', 'password')
 
-    # TODO need to create mock config files in config_directory
-    #def test_upload_config_from_disk(self):
+    def test_upload_config_from_disk(self):
+        # Mock user entering IP address, then selecting existing config file
+        self.mock_ask.unsafe_ask.side_effect = [
+            '192.168.1.123',
+            'node2.json'
+        ]
+
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('smarthome_cli.upload_config_to_ip') as mock_upload_config:
+
+            # Call prompt with no argument
+            upload_config_from_disk()
+
+            # Confirm called upload_config_to_ip with user-entered IP, absolute
+            # path to selected config file
+            mock_upload_config.assert_called_once_with(
+                config_path=os.path.join(
+                    mock_cli_config['config_directory'], 'node2.json'
+                ),
+                ip='192.168.1.123',
+                webrepl_password='password'
+            )
 
     def test_view_log_prompt(self):
         # Mock user selecting name of existing node, then enter filename to save log

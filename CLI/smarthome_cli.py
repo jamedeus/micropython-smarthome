@@ -134,7 +134,7 @@ def upload_config_from_disk(config=None):
     # Prompt user to select file from config_directory
     if not config:
         config = questionary.select(
-            "\nWhat would you like to do?",
+            "\nSelect config file",
             choices=os.listdir(cli_config.config['config_directory'])
         ).unsafe_ask()
     print(config)
