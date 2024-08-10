@@ -1,6 +1,7 @@
 [run]
 omit =
     tests/*
+    run_cli_tests.py
 
 [report]
 precision = 1
