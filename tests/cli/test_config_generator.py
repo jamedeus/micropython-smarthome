@@ -3,13 +3,13 @@ from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from questionary import ValidationError
 from validation_constants import valid_device_pins
-from config_generator import (
-    GenerateConfigFile,
+from config_generator import GenerateConfigFile, main
+from config_prompt_validators import (
     IntRange,
     FloatRange,
     MinLength,
-    NicknameValidator,
-    main
+    LengthRange,
+    NicknameValidator
 )
 from config_rule_prompts import (
     api_call_prompt,
@@ -85,6 +85,28 @@ class TestValidators(TestCase):
         with self.assertRaises(ValidationError):
             validator.validate(SimulatedInput("x"))
 
+        with self.assertRaises(ValidationError):
+            validator.validate(SimulatedInput(5))
+
+    def test_length_range_validator(self):
+        # Create validator requiring between 4 and 9 characters
+        validator = LengthRange(4, 9)
+
+        # Should accept strings with 4-9 characters
+        self.assertTrue(validator.validate(SimulatedInput("1234")))
+        self.assertTrue(validator.validate(SimulatedInput("12345")))
+        self.assertTrue(validator.validate(SimulatedInput("123456")))
+        self.assertTrue(validator.validate(SimulatedInput("1234567")))
+        self.assertTrue(validator.validate(SimulatedInput("12345678")))
+        self.assertTrue(validator.validate(SimulatedInput("123456789")))
+
+        # Should reject strings with fewer than 4 or greater than 9 characters
+        with self.assertRaises(ValidationError):
+            self.assertFalse(validator.validate(SimulatedInput("123")))
+        with self.assertRaises(ValidationError):
+            self.assertFalse(validator.validate(SimulatedInput("1234567890")))
+
+        # Should reject integers
         with self.assertRaises(ValidationError):
             validator.validate(SimulatedInput(5))
 
