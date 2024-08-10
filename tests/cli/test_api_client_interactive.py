@@ -7,7 +7,8 @@ the command line with no arguments.
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from api_client import api_prompt, main
-from test_api_client import mock_cli_config, mock_status_object
+from mock_cli_config import mock_cli_config
+from test_api_client import mock_status_object
 
 mock_config = {
     "metadata": {

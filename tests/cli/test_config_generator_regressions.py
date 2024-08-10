@@ -6,26 +6,7 @@ from config_rule_prompts import (
     default_rule_prompt_router,
     schedule_rule_prompt_router,
 )
-
-# Get paths to test dir, CLI dir, repo dir
-tests = os.path.dirname(os.path.realpath(__file__))
-cli = os.path.split(tests)[0]
-repo = os.path.dirname(cli)
-test_config = os.path.join(repo, 'util', 'unit-test-config.json')
-
-# Mock cli_config.json contents
-mock_cli_config = {
-    'nodes': {
-        "node1": "192.168.1.123",
-        "node2": "192.168.1.223"
-    },
-    'webrepl_password': 'password',
-    'config_directory': os.path.join(repo, 'config_files')
-}
-
-# Create config directory if itt doesn't exist
-if not os.path.exists(mock_cli_config['config_directory']):
-    os.mkdir(mock_cli_config['config_directory'])
+from mock_cli_config import mock_cli_config
 
 
 class TestRegressions(TestCase):
@@ -131,13 +112,8 @@ class TestRegressions(TestCase):
             }
         }
 
-        # Mock config_directory path in cli_config.json, write to disk
-        with patch('config_generator.cli_config.config', {
-            'config_directory': mock_cli_config['config_directory']
-        }):
-            self.generator.write_to_disk()
-
-        # Confirm file exists
+        # Write to disk, confirm file exists
+        self.generator.write_to_disk()
         self.assertTrue(os.path.exists(self.existing_config_path))
 
         # Instantiate new generator with path to existing config (simulate editing)
@@ -189,13 +165,8 @@ class TestRegressions(TestCase):
             }
         }
 
-        # Mock config_directory path in cli_config.json, write to disk
-        with patch('config_generator.cli_config.config', {
-            'config_directory': mock_cli_config['config_directory']
-        }):
-            self.generator.write_to_disk()
-
-        # Confirm file exists
+        # Write to disk, confirm file exists
+        self.generator.write_to_disk()
         self.assertTrue(os.path.exists(self.existing_config_path))
 
         # Instantiate new generator with path to existing config, confirm edit_mode and config attributes

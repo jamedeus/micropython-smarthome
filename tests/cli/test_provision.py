@@ -7,22 +7,11 @@ from argparse import Namespace, ArgumentParser
 from provision import parse_args, handle_cli_args
 from provision_tools import provision, get_modules
 from Webrepl import Webrepl
+from mock_cli_config import mock_cli_config
 
-# Get full paths to repository root directory, CLI tools directory
+# Get full paths to repository root directory
 cli = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
 repo = os.path.split(cli)[0]
-
-# Mock cli_config.json contents
-mock_cli_config = {
-    'nodes': {
-        "node1": "192.168.1.123",
-        "node2": "192.168.1.234",
-        "node3": "192.168.1.111"
-    },
-    'webrepl_password': 'password',
-    'config_directory': os.path.join(repo, 'config_files'),
-    'django_backend': 'http://192.168.1.100'
-}
 
 
 class TestArgParser(TestCase):

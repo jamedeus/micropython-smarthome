@@ -2,7 +2,6 @@
 
 # pylint: disable=missing-function-docstring, missing-class-docstring
 
-import os
 import sys
 import json
 import asyncio
@@ -11,27 +10,7 @@ from unittest import TestCase, IsolatedAsyncioTestCase
 from unittest.mock import patch, MagicMock, AsyncMock
 from api_client import endpoint_error, parse_ip, parse_command, main, example_usage_error
 from api_endpoints import ir_commands, request
-
-# Get paths to test dir, CLI dir, repo dir
-tests = os.path.dirname(os.path.realpath(__file__))
-cli = os.path.split(tests)[0]
-repo = os.path.dirname(tests)
-
-# Mock cli_config.json contents
-mock_cli_config = {
-    'nodes': {
-        "node1": "192.168.1.123",
-        "node2": "192.168.1.234",
-        "node3": "192.168.1.111"
-    },
-    'schedule_keywords': {
-        "sunrise": "06:00",
-        "sunset": "18:00",
-        "sleep": "22:00"
-    },
-    'webrepl_password': 'password',
-    'config_directory': os.path.join(repo, 'config_files')
-}
+from mock_cli_config import mock_cli_config
 
 mock_status_object = {
     'metadata': {

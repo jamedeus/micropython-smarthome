@@ -7,35 +7,17 @@ environment consistent between machines with different cli_config.json contents
 and CI/CD, which runs in docker and does not have cli_config.json.
 '''
 
-import os
 import json
 import unittest
 from unittest.mock import patch, mock_open, MagicMock
 from cli_config_manager import CliConfigManager
-
-# Get path to config_dir
-repo = os.path.dirname(os.path.realpath(__file__))
-config_dir = os.path.join(repo, 'config_files')
+from tests.cli.mock_cli_config import mock_cli_config
 
 # Mock open builtin to return mock cli_config.json contents
 # Prevents reading actual cli_config.json on dev machines, keeps tests
 # consistent with CI/CD environment
 mock_read_file = patch('cli_config_manager.open', mock_open(
-    read_data=json.dumps({
-        'nodes': {
-            'node1': '192.168.1.123',
-            'node2': '192.168.1.234',
-            'node3': '192.168.1.111'
-        },
-        'schedule_keywords': {
-            'sunrise': '06:00',
-            'sunset': '18:00',
-            'sleep': '22:00'
-        },
-        'webrepl_password': 'password',
-        'config_directory': config_dir,
-        'django_backend': 'http://192.168.1.100'
-    })
+    read_data=json.dumps(mock_cli_config)
 ))
 mock_read_file.start()
 
@@ -79,5 +61,4 @@ result = runner.run(suite)
 
 if result.wasSuccessful():
     raise SystemExit(0)
-else:
-    raise SystemExit(1)
+raise SystemExit(1)

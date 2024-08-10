@@ -20,26 +20,7 @@ from config_rule_prompts import (
     float_rule_prompt,
     string_rule_prompt
 )
-
-# Get paths to test dir, CLI dir, repo dir
-tests = os.path.dirname(os.path.realpath(__file__))
-cli = os.path.split(tests)[0]
-repo = os.path.dirname(cli)
-test_config = os.path.join(repo, 'util', 'unit-test-config.json')
-
-# Mock cli_config.json contents
-mock_cli_config = {
-    'nodes': {
-        "node1": "192.168.1.123",
-        "node2": "192.168.1.223"
-    },
-    'webrepl_password': 'password',
-    'config_directory': os.path.join(repo, 'config_files')
-}
-
-# Create config directory if it doesn't exist
-if not os.path.exists(mock_cli_config['config_directory']):
-    os.mkdir(mock_cli_config['config_directory'])
+from mock_cli_config import mock_cli_config
 
 
 # Simulate user input object passed to validators
@@ -1006,8 +987,7 @@ class TestGenerateConfigFile(TestCase):
     def test_api_target_ip_prompt(self):
         # Simulate user selecting first option, confirm correct IP returned
         self.mock_ask.unsafe_ask.side_effect = ['node1']
-        with patch('questionary.select', return_value=self.mock_ask), \
-             patch('config_generator.cli_config.config', mock_cli_config):
+        with patch('questionary.select', return_value=self.mock_ask):
             output = self.generator._GenerateConfigFile__apitarget_ip_prompt()
             self.assertEqual(output, '192.168.1.123')
 
@@ -1038,6 +1018,12 @@ class TestGenerateConfigFile(TestCase):
         # Mock nodes.json to include unit-test-config.json
         self.generator.existing_nodes = mock_cli_config['nodes']
 
+        # Get absolute path to unit-test-config.json
+        tests = os.path.dirname(os.path.realpath(__file__))
+        cli = os.path.split(tests)[0]
+        repo = os.path.dirname(cli)
+        test_config = os.path.join(repo, 'util', 'unit-test-config.json')
+
         # Simulate user at rule prompt after selecting IP matching unit-test-config.json
         mock_config = {
             "_type": "api-target",
@@ -1062,8 +1048,7 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
-             patch('config_rule_prompts.cli_config.get_config_filepath', return_value=test_config), \
-             patch('config_rule_prompts.cli_config.config', mock_cli_config):
+             patch('config_rule_prompts.cli_config.get_config_filepath', return_value=test_config):
 
             rule = api_target_schedule_rule_prompt(mock_config)
             self.assertEqual(
@@ -1083,8 +1068,7 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
-             patch('config_rule_prompts.cli_config.get_config_filepath', return_value=test_config), \
-             patch('config_rule_prompts.cli_config.config', mock_cli_config):
+             patch('config_rule_prompts.cli_config.get_config_filepath', return_value=test_config):
 
             rule = api_target_schedule_rule_prompt(mock_config)
             # Confirm correct rule returned
@@ -1095,8 +1079,7 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
-             patch('config_rule_prompts.cli_config.get_config_filepath', return_value=test_config), \
-             patch('config_rule_prompts.cli_config.config', mock_cli_config):
+             patch('config_rule_prompts.cli_config.get_config_filepath', return_value=test_config):
 
             rule = schedule_rule_prompt_router(mock_config)
             self.assertEqual(rule, 'Enabled')
@@ -1113,25 +1096,20 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
-             patch('config_rule_prompts.cli_config.get_config_filepath', return_value=test_config), \
-             patch('config_rule_prompts.cli_config.config', mock_cli_config):
+             patch('config_rule_prompts.cli_config.get_config_filepath', return_value=test_config):
 
             rule = default_rule_prompt_router(mock_config)
             self.assertEqual(rule, {"on": ["ignore"], "off": ["enable_in", "sensor5", "1800"]})
 
     def test_api_call_prompt_target_config_missing(self):
-        # Mock nodes.json to include node with fake config path
-        self.generator.existing_nodes = mock_cli_config['nodes']
-
-        # Confirm script exits with error when unable to open fake path
-        with patch('config_rule_prompts.cli_config.config', mock_cli_config):
-            with self.assertRaises(SystemExit):
-                api_call_prompt({'ip': '192.168.1.223'})
+        # Confirm script exits with error when unable to open config path
+        # (mock config doesn't actually exist on disk + no mock applied)
+        with self.assertRaises(SystemExit):
+            api_call_prompt({'ip': '192.168.1.234'})
 
         # Confirm script exits with error when IP not in nodes.json
-        with patch('config_rule_prompts.cli_config.config', mock_cli_config):
-            with self.assertRaises(SystemExit):
-                api_call_prompt({'ip': '10.0.0.1'})
+        with self.assertRaises(SystemExit):
+            api_call_prompt({'ip': '10.0.0.1'})
 
     def test_edit_existing_config(self):
         # Simulate user already completed all prompts
@@ -1169,13 +1147,8 @@ class TestGenerateConfigFile(TestCase):
             }
         }
 
-        # Mock config_directory path in cli_config.json, write to disk
-        with patch('config_generator.cli_config.config', {
-            'config_directory': mock_cli_config['config_directory']
-        }):
-            self.generator.write_to_disk()
-
-        # Confirm file exists
+        # Write to disk, confirm file exists
+        self.generator.write_to_disk()
         path = os.path.join(
             mock_cli_config['config_directory'],
             'unit-test-existing-config.json'
