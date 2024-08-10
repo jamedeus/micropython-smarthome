@@ -1,12 +1,13 @@
 '''Mock cli_config.json contents used by CLI unit tests'''
 
 import os
+import tempfile
+
+# Create temp directory to write config files to
+temp_dir = tempfile.gettempdir()
 
 # Get path to config_dir
-cli = os.path.dirname(os.path.realpath(__file__))
-tests = os.path.split(cli)[0]
-repo = os.path.dirname(tests)
-config_dir = os.path.join(repo, 'config_files')
+config_dir = os.path.join(temp_dir, 'config_files')
 
 mock_cli_config = {
     'nodes': {

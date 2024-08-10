@@ -1125,9 +1125,9 @@ class TestGenerateConfigFile(TestCase):
 
     def test_api_call_prompt_target_config_missing(self):
         # Confirm script exits with error when unable to open config path
-        # (mock config doesn't actually exist on disk + no mock applied)
-        with self.assertRaises(SystemExit):
-            api_call_prompt({'ip': '192.168.1.234'})
+        with patch('builtins.open', side_effect=FileNotFoundError):
+            with self.assertRaises(SystemExit):
+                api_call_prompt({'ip': '192.168.1.234'})
 
         # Confirm script exits with error when IP not in nodes.json
         with self.assertRaises(SystemExit):
