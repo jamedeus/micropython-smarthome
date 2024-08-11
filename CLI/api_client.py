@@ -383,7 +383,10 @@ def get_endpoint_options(status):
     '''Returns list of relevant endpoint options based on status object'''
 
     # Get list of all endpoints, add Done (breaks loop)
-    endpoint_options = list(example_usage.keys()) + ['Done']
+    endpoint_options = list(endpoint_map.keys()) + ['Done']
+
+    # Remove status endpoint (prints status automatically when node selected)
+    endpoint_options.remove('status')
 
     # Remove IR options if target node does not have IR Blaster
     if not status['metadata']['ir_blaster']:
@@ -395,10 +398,26 @@ def get_endpoint_options(status):
         endpoint_options = [option for option in endpoint_options
                             if option not in ['turn_on', 'turn_off']]
 
+    # Get list of sensor types
+    if 'sensors' in status:
+        sensor_types = [params['type'] for params in status['sensors'].values()]
+    else:
+        sensor_types = []
+
     # Remove sensor endpoints if target node does not have sensors
-    if 'sensors' not in status:
+    if not sensor_types:
         endpoint_options = [option for option in endpoint_options
                             if option not in ['trigger_sensor', 'condition_met']]
+
+    # Remove temp sensor endpoints if no temp sensor configured
+    if 'si7021' not in sensor_types and 'dht22' not in sensor_types:
+        endpoint_options = [option for option in endpoint_options
+                            if option not in ['get_temp', 'get_humid', 'get_climate']]
+
+    # Remove load cell endpoints if no load cell configured
+    if 'load-cell' not in sensor_types:
+        endpoint_options = [option for option in endpoint_options
+                            if not option.startswith('load_cell_')]
 
     return endpoint_options
 
