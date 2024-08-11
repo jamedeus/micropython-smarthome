@@ -406,6 +406,47 @@ class InteractiveMenuTests(TestCase):
                 ("192.168.1.123", ["status"])
             )
 
+    def test_reboot_endpoint(self):
+        # Simulate user selecting node1, reboot
+        self.mock_ask.unsafe_ask.side_effect = [
+            'node1',
+            'reboot',
+            'Done',
+            'Done'
+        ]
+
+        # Mock parse_command to return status, then API response from ESP32,
+        # then status again (prompt restarts)
+        with patch('api_client.parse_command', side_effect=[
+            mock_status_object,
+            mock_status_object,
+            mock_status_object
+        ]) as mock_parse_command:
+
+            # Run prompt, will complete immediately with mock input
+            api_prompt()
+
+            # Confirm called parse_command 3 times
+            self.assertEqual(mock_parse_command.call_count, 3)
+
+            # First call: requested status object from target node
+            self.assertEqual(
+                mock_parse_command.call_args_list[0][0],
+                ("192.168.1.123", ["status"])
+            )
+
+            # Second call: sent reboot command
+            self.assertEqual(
+                mock_parse_command.call_args_list[1][0],
+                ("192.168.1.123", ["reboot"])
+            )
+
+            # Third call: requested updated status object after API call
+            self.assertEqual(
+                mock_parse_command.call_args_list[2][0],
+                ("192.168.1.123", ["status"])
+            )
+
     def test_turn_on_endpoint(self):
         # Simulate user selecting node1, turn_on, device1
         self.mock_ask.unsafe_ask.side_effect = [
@@ -961,6 +1002,54 @@ class InteractiveIrBlasterMenuTests(TestCase):
             self.assertEqual(
                 mock_parse_command.call_args_list[2][0],
                 ("192.168.1.123", ["ir_run_macro", "start_ac"])
+            )
+
+            # Fourth call: requested updated status object after API call
+            self.assertEqual(
+                mock_parse_command.call_args_list[3][0],
+                ("192.168.1.123", ["status"])
+            )
+
+    def test_ir_get_existing_macros_endpoint(self):
+        # Simulate user selecting node1, ir_get_existing_macros
+        self.mock_ask.unsafe_ask.side_effect = [
+            'node1',
+            'ir_get_existing_macros',
+            'Done',
+            'Done'
+        ]
+
+        # Mock parse_command to return status, then existing macros, then
+        # API response from ESP32, then status again (prompt restarts)
+        with patch('api_client.parse_command', side_effect=[
+            mock_ir_status,
+            mock_ir_config['ir_blaster']['macros'],
+            mock_ir_config['ir_blaster']['macros'],
+            mock_ir_status
+        ]) as mock_parse_command:
+
+            # Run prompt, will complete immediately with mock input
+            api_prompt()
+
+            # Confirm called parse_command 4 times
+            self.assertEqual(mock_parse_command.call_count, 4)
+
+            # First call: requested status object from target node
+            self.assertEqual(
+                mock_parse_command.call_args_list[0][0],
+                ("192.168.1.123", ["status"])
+            )
+
+            # Second call: requested existing IR macros
+            self.assertEqual(
+                mock_parse_command.call_args_list[1][0],
+                ("192.168.1.123", ["ir_get_existing_macros"])
+            )
+
+            # Third call: requested ir_get_existing_macros
+            self.assertEqual(
+                mock_parse_command.call_args_list[2][0],
+                ("192.168.1.123", ["ir_get_existing_macros"])
             )
 
             # Fourth call: requested updated status object after API call

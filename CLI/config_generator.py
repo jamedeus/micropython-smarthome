@@ -143,7 +143,8 @@ class GenerateConfigFile:
         '''
 
         # Prompt user to select action
-        while True:
+        choice = None
+        while choice != 'Done':
             choice = questionary.select(
                 "\nWhat would you like to do?",
                 choices=[
@@ -170,8 +171,6 @@ class GenerateConfigFile:
             elif choice == 'Edit sensor targets':
                 # Prompt user to select targets for each sensor
                 self.select_sensor_targets()
-            elif choice == 'Done':
-                break
 
         # Validate finished config, print error if failed
         self.__validate()
@@ -235,7 +234,8 @@ class GenerateConfigFile:
         '''Recursively prompts user to add devices, sensors, or IR Blaster
         until user "Done" option. Adds a section to self.config for each.
         '''
-        while True:
+        choice = None
+        while choice != 'Done':
             choice = questionary.select(
                 "\nAdd instances?",
                 choices=self.category_options
@@ -252,8 +252,6 @@ class GenerateConfigFile:
                 self.config[f'sensor{index}'] = self.__configure_sensor()
             elif choice == 'IR Blaster':
                 self.configure_ir_blaster()
-            elif choice == 'Done':
-                break
 
     def delete_devices_and_sensors(self):
         '''Displays checkbox for each existing device and sensor, removes user
