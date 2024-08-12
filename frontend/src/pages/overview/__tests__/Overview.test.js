@@ -492,7 +492,7 @@ describe('App', () => {
         await user.click(within(modal).getByRole('button', { name: 'Delete' }));
         expect(global.fetch).toHaveBeenCalledWith('/delete_node', {
             method: 'POST',
-            body: JSON.stringify('Bathroom'),
+            body: JSON.stringify({'friendly_name': 'Bathroom'}),
             headers: postHeaders
         });
 

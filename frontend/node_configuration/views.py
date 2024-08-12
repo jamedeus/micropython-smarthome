@@ -162,20 +162,21 @@ def delete_config(data):
 
 @requires_post
 def delete_node(data):
-    '''Takes name of existing Node model entry, deletes Node and associated
-    Config entry from database.
+    '''Takes dict with friendly_name and/or ip key(s), finds node that matches
+    all values, deletes Node and associated Config entry from database.
     '''
+    print(data)
     try:
         # Get model entry
-        node = Node.objects.get(friendly_name=data)
+        node = Node.objects.get(**data)
     except Node.DoesNotExist:
         return error_response(
-            message=f"Failed to delete {data}, does not exist",
+            message=f"Failed to delete, matching node does not exist",
             status=404
         )
 
     node.delete()
-    return standard_response(message=f"Deleted {data}")
+    return standard_response(message=f"Deleted {node.friendly_name}")
 
 
 @requires_post

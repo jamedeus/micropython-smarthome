@@ -212,7 +212,27 @@ class DeleteNodeTests(TestCase):
         self.assertEqual(len(Node.objects.all()), 1)
 
         # Delete the Node created in setUp, confirm response message
-        response = self.client.post('/delete_node', json.dumps('Test Node'))
+        response = self.client.post(
+            '/delete_node',
+            json.dumps({'friendly_name': 'Test Node'})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['message'], 'Deleted Test Node')
+
+        # Confirm removed from database
+        self.assertEqual(len(Config.objects.all()), 0)
+        self.assertEqual(len(Node.objects.all()), 0)
+
+    def test_delete_existing_node_by_ip_address(self):
+        # Confirm node exists in database
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 1)
+
+        # Delete the Node using its IP address, confirm response message
+        response = self.client.post(
+            '/delete_node',
+            json.dumps({'ip': '192.168.1.123'})
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['message'], 'Deleted Test Node')
 
@@ -226,9 +246,15 @@ class DeleteNodeTests(TestCase):
         self.assertEqual(len(Node.objects.all()), 1)
 
         # Attempt to delete non-existing Node, confirm fails with correct message
-        response = self.client.post('/delete_node', json.dumps('Wrong Node'))
+        response = self.client.post(
+            '/delete_node',
+            json.dumps({'friendly_name': 'Wrong Node'})
+        )
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json()['message'], 'Failed to delete Wrong Node, does not exist')
+        self.assertEqual(
+            response.json()['message'],
+            'Failed to delete, matching node does not exist'
+        )
 
         # Confirm Node and Config still exist
         self.assertEqual(len(Config.objects.all()), 1)

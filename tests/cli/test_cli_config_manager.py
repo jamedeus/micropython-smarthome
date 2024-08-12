@@ -217,7 +217,7 @@ class TestCliConfigManager(TestCase):
             # Confirm delete_node payload was posted to django backend
             mock_post.assert_called_once_with(
                 f'{self.manager.config["django_backend"]}/delete_node',
-                json='Node3',
+                json={'ip': '192.168.1.111'},
                 headers={
                     'X-CSRFToken': None
                 },
@@ -264,15 +264,16 @@ class TestCliConfigManager(TestCase):
             # Confirm post was NOT called
             mock_post.assert_not_called()
 
-    def test_remove_node_file_not_found(self):
+    def test_remove_node_backend_offline(self):
         # Confirm config object contains node3
         self.assertIn('node3', self.manager.config['nodes'])
 
         # Mock _client.post to confirm not called
         # Mock os.path.exists to return False (config missing from disk)
         with patch.object(self.manager, '_client', MagicMock()) as mock_client, \
-             patch.object(mock_client, 'post') as mock_post, \
-             patch('os.path.exists', return_value=False):
+             patch.object(mock_client, 'post', side_effect=OSError) as mock_post, \
+             patch.object(self.manager, '_csrf_token', None), \
+             patch('builtins.print') as mock_print:
 
             # Call remove_node method with name of existing node
             self.manager.remove_node('node3')
@@ -283,9 +284,20 @@ class TestCliConfigManager(TestCase):
                 config = json.load(file)
             self.assertNotIn('node3', config['nodes'])
 
-            # Confirm mock post was NOT called (couldn't get friendly name due
-            # to missing config file on disk)
-            mock_post.assert_not_called()
+            # Confirm delete_node payload was posted to django backend
+            mock_post.assert_called_once_with(
+                f'{self.manager.config["django_backend"]}/delete_node',
+                json={'ip': '192.168.1.111'},
+                headers={
+                    'X-CSRFToken': None
+                },
+                timeout=5
+            )
+
+            # Confirm printed error when django request failed
+            mock_print.assert_called_with(
+                'Failed to delete from django database (connection error)'
+            )
 
     def test_remove_node_missing_from_backend(self):
         # Create mock response object simulating node missing from backend

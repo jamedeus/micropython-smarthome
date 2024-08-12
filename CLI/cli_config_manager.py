@@ -139,6 +139,10 @@ class CliConfigManager:
         name = get_cli_config_name(name)
 
         try:
+            # Get IP before deleting (used in django request payload)
+            ip = self.config['nodes'][name]
+
+            # Delete from cli_config.json, write to disk
             del self.config['nodes'][name]
             self.write_cli_config_to_disk()
 
@@ -147,14 +151,10 @@ class CliConfigManager:
                 print(f'Deleting {name} from django database...')
 
                 try:
-                    # Load config, get friendly name
-                    config = self.load_node_config_file(name)
-                    friendly_name = config['metadata']['id']
-
                     # Post friendly name to backend
                     response = self._client.post(
                         f'{self.config["django_backend"]}/delete_node',
-                        json=friendly_name,
+                        json={'ip': ip},
                         headers={
                             'X-CSRFToken': self._csrf_token
                         },
@@ -164,8 +164,8 @@ class CliConfigManager:
                         print('Done.')
                     else:
                         print(response.text)
-                except (FileNotFoundError, KeyError):
-                    print('Failed to delete from django database')
+                except (OSError):
+                    print('Failed to delete from django database (connection error)')
         except KeyError:
             pass
 
