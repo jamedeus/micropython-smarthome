@@ -537,6 +537,11 @@ def api_prompt():
         print(json.dumps(response, indent=4))
         questionary.press_any_key_to_continue().ask()
 
+        # Break loop after reboot command (status request at top of loop will
+        # time out because target node is offline during reboot)
+        if endpoint == 'reboot':
+            break
+
 
 def main():
     '''Parses CLI arguments and makes API call, or prints help message'''

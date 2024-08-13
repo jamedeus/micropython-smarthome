@@ -405,26 +405,24 @@ class InteractiveMenuTests(TestCase):
 
     def test_reboot_endpoint(self):
         # Simulate user selecting node1, reboot
+        # Only need to select Done once (loop exits after reboot command)
         self.mock_ask.unsafe_ask.side_effect = [
             'node1',
             'reboot',
-            'Done',
             'Done'
         ]
 
-        # Mock parse_command to return status, then API response from ESP32,
-        # then status again (prompt restarts)
+        # Mock parse_command to return status, then API response from ESP32
         with patch('api_client.parse_command', side_effect=[
             mock_status_object,
-            mock_status_object,
-            mock_status_object
+            'Rebooting'
         ]) as mock_parse_command:
 
             # Run prompt, will complete immediately with mock input
             api_prompt()
 
-            # Confirm called parse_command 3 times
-            self.assertEqual(mock_parse_command.call_count, 3)
+            # Confirm called parse_command 2 times
+            self.assertEqual(mock_parse_command.call_count, 2)
 
             # First call: requested status object from target node
             self.assertEqual(
@@ -436,12 +434,6 @@ class InteractiveMenuTests(TestCase):
             self.assertEqual(
                 mock_parse_command.call_args_list[1][0],
                 ("192.168.1.123", ["reboot"])
-            )
-
-            # Third call: requested updated status object after API call
-            self.assertEqual(
-                mock_parse_command.call_args_list[2][0],
-                ("192.168.1.123", ["status"])
             )
 
     def test_turn_on_endpoint(self):
@@ -1085,17 +1077,25 @@ class RegressionTests(TestCase):
         which expects a status dict and tries to access keys within dict.
         '''
 
-        # Simulate user selecting node1, reboot
+        # Simulate user selecting node1, set_rule, device1, Fade, and entering
+        # target=1023 duration=15 (lots of steps and short duration bottlenecks
+        # ESP32 and causes next request to time out).
+        #
+        # Do not simulate selecting 'Done' (prompt exits when request fails)
         self.mock_ask.unsafe_ask.side_effect = [
             'node1',
-            'reboot'
+            'set_rule',
+            'device1',
+            'Fade',
+            '1023',
+            '15'
         ]
 
-        # Mock parse_command to return status, then reboot API response from
-        # ESP32, then request timed out error (node offline during reboot)
+        # Mock parse_command to return status, timeout error (in response to
+        # set_rule), then timeout error again (in response to status request)
         with patch('api_client.parse_command', side_effect=[
             mock_status_object,
-            "Rebooting",
+            "Error: Timed out waiting for response",
             "Error: Timed out waiting for response"
         ]) as mock_parse_command:
 
