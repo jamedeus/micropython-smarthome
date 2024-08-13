@@ -441,6 +441,10 @@ def api_prompt():
         print(f'{node} status:')
         print(json.dumps(status, indent=4))
 
+        # Break loop if request failed
+        if str(status).startswith('Error:'):
+            break
+
         # Prompt to select endpoint (default to endpoint from previous loop)
         endpoint = questionary.select(
             "Select command",

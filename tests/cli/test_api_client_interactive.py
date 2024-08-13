@@ -1051,3 +1051,54 @@ class InteractiveIrBlasterMenuTests(TestCase):
                 mock_parse_command.call_args_list[3][0],
                 ("192.168.1.123", ["status"])
             )
+
+
+class RegressionTests(TestCase):
+    def setUp(self):
+        # Mock replaces .unsafe_ask() method to simulate user input
+        # Each test sets side_effect with list of simulated user inputs
+        self.mock_ask = MagicMock()
+
+        # Mock questionary prompts to return the next item in mock_ask lists
+        patch('questionary.select', return_value=self.mock_ask).start()
+        patch('questionary.text', return_value=self.mock_ask).start()
+
+        # Mock questionary press any key to continue
+        patch('questionary.press_any_key_to_continue').start()
+
+        # Mock config file read from disk in tests
+        # Note: This effects CliConfigManager singleton (shared between tests)
+        self.mock_load = patch(
+            'api_client.cli_config.load_node_config_file',
+            return_value=mock_config
+        )
+        self.mock_load.start()
+
+    def tearDown(self):
+        # Reset mock to prevent breaking tests in other files
+        self.mock_load.stop()
+
+    def test_status_command_failed(self):
+        '''Original bug: An unhandled TypeError was raised if a connection
+        error occurred during status request at the top of api_prompt loop.
+        This happened when the error string was passed to get_endpoint_options,
+        which expects a status dict and tries to access keys within dict.
+        '''
+
+        # Simulate user selecting node1, reboot
+        self.mock_ask.unsafe_ask.side_effect = [
+            'node1',
+            'reboot'
+        ]
+
+        # Mock parse_command to return status, then reboot API response from
+        # ESP32, then request timed out error (node offline during reboot)
+        with patch('api_client.parse_command', side_effect=[
+            mock_status_object,
+            "Rebooting",
+            "Error: Timed out waiting for response"
+        ]) as mock_parse_command:
+
+            # Run prompt, will complete immediately with mock input
+            # Should not raise TypeError after fix
+            api_prompt()
