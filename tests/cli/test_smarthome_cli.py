@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 from unittest import TestCase
 from unittest.mock import patch, MagicMock, mock_open
 from smarthome_cli import (
@@ -10,7 +11,7 @@ from smarthome_cli import (
     view_log_prompt,
     change_node_ip_prompt,
     delete_prompt,
-    sync_prompt
+    settings_prompt
 )
 from mock_cli_config import mock_cli_config
 
@@ -48,18 +49,18 @@ class TestMainPrompt(TestCase):
             # Confirm manage_nodes_prompt was called
             mock_manage_nodes_prompt.assert_called_once()
 
-    def test_sync_prompt(self):
+    def test_settings_prompt(self):
         # Mock user selecting "Settings", then "Done" (exit main menu loop)
         self.mock_ask.unsafe_ask.side_effect = ['Settings', 'Done']
 
         with patch('questionary.select', return_value=self.mock_ask), \
-             patch('smarthome_cli.sync_prompt') as mock_sync_prompt:
+             patch('smarthome_cli.settings_prompt') as mock_settings_prompt:
 
             # Run prompt, will complete immediately with mock input
             main_prompt()
 
-            # Confirm sync_prompt was called
-            mock_sync_prompt.assert_called_once()
+            # Confirm settings_prompt was called
+            mock_settings_prompt.assert_called_once()
 
 
 class TestManageNodesPrompt(TestCase):
@@ -202,7 +203,7 @@ class TestSettingsPrompt(TestCase):
              patch('smarthome_cli.cli_config.set_django_address') as mock_set_address:
 
             # Run prompt, will complete immediately with mock input
-            sync_prompt()
+            settings_prompt()
 
             # Confirm cli_config.set_django_address was called with user input
             mock_set_address.assert_called_once_with('http://192.168.1.100:8123')
@@ -219,7 +220,7 @@ class TestSettingsPrompt(TestCase):
              patch('smarthome_cli.cli_config.sync_from_django') as mock_sync:
 
             # Run prompt, will complete immediately with mock input
-            sync_prompt()
+            settings_prompt()
 
             # Confirm cli_config.sync_from_django was called
             mock_sync.assert_called_once()
@@ -236,7 +237,7 @@ class TestSettingsPrompt(TestCase):
              patch('smarthome_cli.cli_config.download_all_node_config_files_from_django') as mock_download:
 
             # Run prompt, will complete immediately with mock input
-            sync_prompt()
+            settings_prompt()
 
             # Confirm cli_config.download_all_node_config_files_from_django was called
             mock_download.assert_called_once()
@@ -255,7 +256,7 @@ class TestSettingsPrompt(TestCase):
              patch('smarthome_cli.cli_config.set_config_directory') as mock_set_dir:
 
             # Run prompt, will complete immediately with mock input
-            sync_prompt()
+            settings_prompt()
 
             # Confirm cli_config.set_config_directory was called with user input
             mock_set_dir.assert_called_once_with(
@@ -276,10 +277,56 @@ class TestSettingsPrompt(TestCase):
              patch('smarthome_cli.cli_config.set_webrepl_password') as mock_set_password:
 
             # Run prompt, will complete immediately with mock input
-            sync_prompt()
+            settings_prompt()
 
             # Confirm cli_config.set_webrepl_password was called with user input
             mock_set_password.assert_called_once_with('password')
+
+    def test_visible_prompt_options(self):
+        # Create mock cli_config.json with no django backend configured
+        mock_cli_config_no_backend = deepcopy(mock_cli_config)
+        del mock_cli_config_no_backend['django_backend']
+
+        # Mock user selecting "Done" (exit loop)
+        self.mock_ask.unsafe_ask.return_value = 'Done'
+
+        # Mock cli_config.json to simulate no django backend configured
+        # Mock questionary.select to confirm visible options
+        with patch('smarthome_cli.cli_config.config', mock_cli_config_no_backend), \
+             patch('questionary.select', return_value=self.mock_ask) as mock_select:
+
+            # Run prompt, will complete immediately with mock input
+            settings_prompt()
+
+            # Confirm did not display django sync options
+            mock_select.assert_called_once_with(
+                "\nWhat would you like to do?",
+                choices=[
+                    "Set django address",
+                    "Change config directory",
+                    "Change webrepl password",
+                    "Done"
+                ]
+            )
+
+        # Repeat test without mocking cli_config.json (simulate backend configured)
+        with patch('questionary.select', return_value=self.mock_ask) as mock_select:
+
+            # Run prompt, will complete immediately with mock input
+            settings_prompt()
+
+            # Confirm displayed all options
+            mock_select.assert_called_once_with(
+                "\nWhat would you like to do?",
+                choices=[
+                    "Set django address",
+                    "Sync nodes and keywords from django",
+                    "Download all config files from django",
+                    "Change config directory",
+                    "Change webrepl password",
+                    "Done"
+                ]
+            )
 
 
 class TestManageNodeFunctions(TestCase):

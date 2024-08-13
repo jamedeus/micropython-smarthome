@@ -19,14 +19,14 @@ from cli_config_manager import CliConfigManager
 cli_config = CliConfigManager()
 
 
-def sync_prompt():
+def settings_prompt():
     '''Prompt allows user to configure django server to sync from, update
     cli_config.json from django database, or download config files from django.
     '''
     while True:
-        choice = questionary.select(
-            "\nWhat would you like to do?",
-            choices=[
+        # Only show django sync options if address configured
+        if 'django_backend' in cli_config.config:
+            choices = [
                 "Set django address",
                 "Sync nodes and keywords from django",
                 "Download all config files from django",
@@ -34,6 +34,17 @@ def sync_prompt():
                 "Change webrepl password",
                 "Done"
             ]
+        else:
+            choices = [
+                "Set django address",
+                "Change config directory",
+                "Change webrepl password",
+                "Done"
+            ]
+
+        choice = questionary.select(
+            "\nWhat would you like to do?",
+            choices=choices
         ).unsafe_ask()
         if choice == 'Set django address':
             address = questionary.text(
@@ -267,7 +278,7 @@ def main_prompt():
         elif choice == 'Manage nodes':
             manage_nodes_prompt()
         elif choice == 'Settings':
-            sync_prompt()
+            settings_prompt()
         elif choice == 'Done':
             break
 
