@@ -133,7 +133,10 @@ class TestCliConfigManager(TestCase):
         mock_response.status_code = 200
 
         # Confirm config object does not contain name that will be added
-        self.assertNotIn('new-node', self.manager.config['nodes'])
+        self.assertNotIn('new', self.manager.config['nodes'])
+
+        # Confim with expected name does not exist in config_directory
+        self.assertFalse(os.path.exists(os.path.join(mock_config_dir, 'new.json')))
 
         # Mock _client.post to return mock response object
         # Mock load_node_config_file to return empty dict (mock config json)
@@ -143,21 +146,25 @@ class TestCliConfigManager(TestCase):
              patch.object(self.manager, 'load_node_config_file', return_value={}), \
              patch.object(self.manager, '_csrf_token', None):
 
-            # Call add_node method
-            self.manager.add_node('New Node', {}, '192.168.1.63')
+            # Call add_node method with mock config dict
+            self.manager.add_node(
+                'New',
+                {'metadata': {'id': 'New'}},
+                '192.168.1.63'
+            )
 
             # Confirm node was added to manager config attribute and file on disk
-            self.assertIn('new-node', self.manager.config['nodes'])
+            self.assertIn('new', self.manager.config['nodes'])
             with open(mock_cli_config_path, 'r') as file:
                 config = json.load(file)
-            self.assertIn('new-node', config['nodes'])
+            self.assertIn('new', config['nodes'])
 
             # Confirm new node was posted to django backend
             mock_post.assert_called_once_with(
                 f'{self.manager.config["django_backend"]}/add_node',
                 json={
                     'ip': '192.168.1.63',
-                    'config': {}
+                    'config': {'metadata': {'id': 'New'}}
                 },
                 headers={
                     'X-CSRFToken': None
@@ -165,9 +172,15 @@ class TestCliConfigManager(TestCase):
                 timeout=5
             )
 
+        # Confim mock config was written to config_directory
+        self.assertTrue(os.path.exists(os.path.join(mock_config_dir, 'new.json')))
+
     def test_add_node_no_backend_configured(self):
         # Confirm config object does not contain name that will be added
-        self.assertNotIn('new-node', self.manager.config['nodes'])
+        self.assertNotIn('new', self.manager.config['nodes'])
+
+        # Confim with expected name does not exist in config_directory
+        self.assertFalse(os.path.exists(os.path.join(mock_config_dir, 'new.json')))
 
         # Create mock cli_config.json with no django backend configured
         mock_cli_config_no_backend = deepcopy(mock_cli_config)
@@ -179,17 +192,24 @@ class TestCliConfigManager(TestCase):
              patch.object(self.manager, '_client', MagicMock()) as mock_client, \
              patch.object(mock_client, 'post') as mock_post:
 
-            # Call add_node method
-            self.manager.add_node('New Node', {}, '192.168.1.63')
+            # Call add_node method with mock config dict
+            self.manager.add_node(
+                'New',
+                {'metadata': {'id': 'New'}},
+                '192.168.1.63'
+            )
 
             # Confirm node was added to manager config attribute and file on disk
-            self.assertIn('new-node', self.manager.config['nodes'])
+            self.assertIn('new', self.manager.config['nodes'])
             with open(mock_cli_config_path, 'r') as file:
                 config = json.load(file)
-            self.assertIn('new-node', config['nodes'])
+            self.assertIn('new', config['nodes'])
 
             # Confirm no POST request was made
             mock_post.assert_not_called()
+
+        # Confim mock config was written to config_directory
+        self.assertTrue(os.path.exists(os.path.join(mock_config_dir, 'new.json')))
 
     def test_remove_node(self):
         # Create mock response object

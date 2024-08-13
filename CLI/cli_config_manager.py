@@ -134,6 +134,11 @@ class CliConfigManager:
             else:
                 print(response.text)
 
+        # Write config to config_directory if file doesn't exist (can happen
+        # if provision called with path to config file in other directory)
+        if not os.path.exists(self.get_config_filepath(name)):
+            self.save_node_config_file(config)
+
     def remove_node(self, name):
         '''Takes node config name, deletes from cli_config.json'''
 
