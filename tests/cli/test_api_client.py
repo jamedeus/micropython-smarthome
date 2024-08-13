@@ -411,7 +411,8 @@ class TestEndpoints(TestCase):
 
     def test_add_rule_keyword(self):
         # Mock request to return expected response
-        with patch('api_endpoints.request', return_value={'time': 'sunrise', 'Rule added': 'disabled'}):
+        with patch('api_endpoints.request', return_value={'time': 'sunrise', 'Rule added': 'disabled'}), \
+             patch('api_endpoints.get_schedule_keywords_dict', return_value=mock_cli_config['schedule_keywords']):
 
             # Send request, verify response
             response = parse_command('192.168.1.123', ['add_rule', 'device2', 'sunrise', 'disabled'])
@@ -426,7 +427,8 @@ class TestEndpoints(TestCase):
 
     def test_remove_rule_keyword(self):
         # Mock request to return expected response
-        with patch('api_endpoints.request', return_value={'Deleted': 'sunrise'}):
+        with patch('api_endpoints.request', return_value={'Deleted': 'sunrise'}), \
+             patch('api_endpoints.get_schedule_keywords_dict', return_value=mock_cli_config['schedule_keywords']):
 
             # Send request, verify response
             response = parse_command('192.168.1.123', ['remove_rule', 'device2', 'sunrise'])
