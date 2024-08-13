@@ -103,8 +103,10 @@ class CliConfigManager:
         '''Returns list of node names in cli_config.json nodes section'''
         return list(self.config['nodes'].keys())
 
-    def add_node(self, name, ip):
-        '''Takes name and IP of new node, adds to cli_config.json'''
+    def add_node(self, name, config, ip):
+        '''Takes name, config dict, and IP of new node, adds to cli_config.json.
+        If Django backend configured sends POST request to add to database.
+        '''
 
         # Ensure name has no spaces (cli_config.json syntax)
         name = get_cli_config_name(name)
@@ -120,7 +122,7 @@ class CliConfigManager:
                 f'{self.config["django_backend"]}/add_node',
                 json={
                     'ip': ip,
-                    'config': self.load_node_config_file(name)
+                    'config': config
                 },
                 headers={
                     'X-CSRFToken': self._csrf_token

@@ -170,7 +170,7 @@ def upload_config_to_ip(config_path, ip, webrepl_password):
 
     # Add to cli_config.json if upload successful
     if result['status'] == 200:
-        cli_config.add_node(config['metadata']['id'], ip)
+        cli_config.add_node(config['metadata']['id'], config, ip)
 
 
 def upload_tests(ip, webrepl_password):
