@@ -147,11 +147,7 @@ class TestCliConfigManager(TestCase):
              patch.object(self.manager, '_csrf_token', None):
 
             # Call add_node method with mock config dict
-            self.manager.add_node(
-                'New',
-                {'metadata': {'id': 'New'}},
-                '192.168.1.63'
-            )
+            self.manager.add_node({'metadata': {'id': 'New'}}, '192.168.1.63')
 
             # Confirm node was added to manager config attribute and file on disk
             self.assertIn('new', self.manager.config['nodes'])
@@ -193,11 +189,7 @@ class TestCliConfigManager(TestCase):
              patch.object(mock_client, 'post') as mock_post:
 
             # Call add_node method with mock config dict
-            self.manager.add_node(
-                'New',
-                {'metadata': {'id': 'New'}},
-                '192.168.1.63'
-            )
+            self.manager.add_node({'metadata': {'id': 'New'}}, '192.168.1.63')
 
             # Confirm node was added to manager config attribute and file on disk
             self.assertIn('new', self.manager.config['nodes'])
