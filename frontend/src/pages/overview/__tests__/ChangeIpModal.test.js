@@ -61,7 +61,8 @@ describe('ChangeIpModal', () => {
             method: 'POST',
             body: JSON.stringify({
                 "new_ip": "123.123.123.123",
-                "friendly_name": "Bathroom"
+                "friendly_name": "Bathroom",
+                "reupload": true
             }),
             headers: postHeaders
         });
@@ -110,7 +111,8 @@ describe('ChangeIpModal', () => {
             method: 'POST',
             body: JSON.stringify({
                 "new_ip": "123.123.123.123",
-                "friendly_name": "Bathroom"
+                "friendly_name": "Bathroom",
+                "reupload": true
             }),
             headers: postHeaders
         });

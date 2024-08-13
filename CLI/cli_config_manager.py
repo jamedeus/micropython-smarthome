@@ -4,6 +4,7 @@ import os
 import json
 import requests
 import questionary
+from provision_tools import get_modules, provision
 from helper_functions import get_cli_config_name, get_config_filename
 
 # Get path to cli_config.json (same directory as class)
@@ -176,6 +177,52 @@ class CliConfigManager:
                     print('Failed to delete from django database (connection error)')
         except KeyError:
             pass
+
+    def change_node_ip(self, name, ip):
+        '''Takes name of existing node and new IP address, reuploads config to
+        new IP and updates cli_config.json if successful. If Django backend is
+        configured sends POST request to update IP in django database.
+        '''
+
+        # Load node config file from disk
+        config = self.load_node_config_file(name)
+
+        # Upload config to new IP
+        result = provision(
+            ip=ip,
+            password=self.config['webrepl_password'],
+            config=config,
+            modules=get_modules(config, repo)
+        )
+
+        # Update IP in cli_config.json if upload successful
+        if result['status'] == 200:
+            self.config['nodes'][name] = ip
+            self.write_cli_config_to_disk()
+
+            # If django backend configured change IP in django database
+            if 'django_backend' in self.config:
+                print('Changing IP in django database...')
+                response = self._client.post(
+                    f'{self.config["django_backend"]}/change_node_ip',
+                    json={
+                        'friendly_name': config['metadata']['id'],
+                        'new_ip': ip,
+                        'reupload': False
+                    },
+                    headers={
+                        'X-CSRFToken': self._csrf_token
+                    },
+                    timeout=5
+                )
+                if response.status_code == 200:
+                    print('Done.')
+                else:
+                    print(response.text)
+
+        # Print error from provision if upload failed
+        else:
+            print(result['message'])
 
     def get_config_filepath(self, friendly_name):
         '''Takes friendly_name, returns path to config file. Does not check if

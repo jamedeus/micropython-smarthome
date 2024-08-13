@@ -65,6 +65,28 @@ def sync_prompt():
             break
 
 
+def change_node_ip_prompt():
+    '''Prompt allows user to change the IP address of an existing node (uploads
+    config to new IP and changes in cli_config.json). If a django server is
+    configured the IP is also changed in django database.
+    '''
+
+    # Prompt user to select existing node
+    node = questionary.select(
+        "\nSelect a node to change IP",
+        choices=list(cli_config.config['nodes'].keys())
+    ).unsafe_ask()
+
+    # Prompt user for valid IPv4 address
+    ip_address = questionary.text(
+        "Enter new IP address:",
+        validate=valid_ip
+    ).unsafe_ask()
+
+    # Reupload config to new IP and update cli_config.json if successful
+    cli_config.change_node_ip(node, ip_address)
+
+
 def delete_prompt():
     '''Prompt allows user to delete existing nodes from cli_config.json. If a
     django server is configured the node is also removed from django database.
@@ -192,6 +214,7 @@ def manage_nodes_prompt():
                 "Edit existing node config",
                 "Reupload config to node",
                 "Upload config file from disk",
+                "Change existing node IP",
                 "Delete existing node",
                 "View node log",
                 "Done"
@@ -213,6 +236,9 @@ def manage_nodes_prompt():
 
         elif choice == 'Upload config file from disk':
             upload_config_from_disk()
+
+        elif choice == 'Change existing node IP':
+            change_node_ip_prompt()
 
         elif choice == 'Delete existing node':
             delete_prompt()

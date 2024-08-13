@@ -339,6 +339,155 @@ class TestCliConfigManager(TestCase):
             # Confirm printed backend error response to console
             mock_print.assert_called_with('Failed to delete Node3, does not exist')
 
+    def test_change_node_ip(self):
+        # Create mock response object
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+
+        # Confirm node3 has expected IP in config object
+        self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.111')
+
+        # Mock provision to return success object
+        # Mock get_modules to return predictable value
+        # Mock _client.post to return mock response object
+        # Mock _csrf_token to predictable value
+        with patch('cli_config_manager.provision', return_value={'status': 200}) as mock_provision, \
+             patch('cli_config_manager.get_modules', return_value=['module']), \
+             patch.object(self.manager, '_client', MagicMock()) as mock_client, \
+             patch.object(mock_client, 'post', return_value=mock_response) as mock_post, \
+             patch.object(self.manager, '_csrf_token', None):
+
+            # Call change_node_ip method with name of existing node and new IP
+            self.manager.change_node_ip('node3', '192.168.1.222')
+
+            # Confirm provision was called with expected arguments
+            mock_provision.assert_called_once_with(
+                ip='192.168.1.222',
+                password=self.manager.config['webrepl_password'],
+                config={'metadata': {'id': 'Node3'}},
+                modules=['module']
+            )
+
+            # Confirm correct POST request was sent to django backend
+            mock_post.assert_called_once_with(
+                f'{self.manager.config["django_backend"]}/change_node_ip',
+                json={
+                    'friendly_name': 'Node3',
+                    'new_ip': '192.168.1.222',
+                    'reupload': False
+                },
+                headers={
+                    'X-CSRFToken': None
+                },
+                timeout=5
+            )
+
+            # Confirm IP changed in manager config and file on disk
+            self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.222')
+            with open(mock_cli_config_path, 'r') as file:
+                config = json.load(file)
+            self.assertEqual(config['nodes']['node3'], '192.168.1.222')
+
+    def test_change_node_ip_reupload_failed(self):
+        # Create mock provision response object simulating offline node
+        mock_response = {
+            'message': 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.',
+            'status': 404
+        }
+
+        # Confirm node3 has expected IP in config object
+        self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.111')
+
+        # Mock provision to return provision response object (error)
+        # Mock get_modules to return predictable value
+        # Mock _client.post to confirm not called
+        # Mock print to confirm correct error was printed
+        with patch('cli_config_manager.provision', return_value=mock_response) as mock_provision, \
+             patch('cli_config_manager.get_modules', return_value=['module']), \
+             patch.object(self.manager, '_client', MagicMock()) as mock_client, \
+             patch.object(mock_client, 'post', return_value=mock_response) as mock_post, \
+             patch('builtins.print') as mock_print:
+
+            # Call change_node_ip method with name of existing node and new IP
+            self.manager.change_node_ip('node3', '192.168.1.222')
+
+            # Confirm provision was called with expected arguments
+            mock_provision.assert_called_once_with(
+                ip='192.168.1.222',
+                password=self.manager.config['webrepl_password'],
+                config={'metadata': {'id': 'Node3'}},
+                modules=['module']
+            )
+
+            # Confirm no request was sent to backend
+            mock_post.assert_not_called()
+
+            # Confirm IP did NOT change in manager config or file on disk
+            self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.111')
+            with open(mock_cli_config_path, 'r') as file:
+                config = json.load(file)
+            self.assertEqual(config['nodes']['node3'], '192.168.1.111')
+
+            # Confirm provision error was printed
+            mock_print.assert_called_with(
+                'Error: Unable to connect to node, please make sure it is connected to wifi and try again.'
+            )
+
+    def test_change_node_ip_django_request_failed(self):
+        # Create mock response object simulating failed django request
+        mock_response = MagicMock()
+        mock_response.status_code = 400
+        mock_response.text = 'New IP must be different than old'
+
+        # Confirm node3 has expected IP in config object
+        self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.111')
+
+        # Mock provision to return success object
+        # Mock get_modules to return predictable value
+        # Mock _client.post to return mock error response object
+        # Mock _csrf_token to predictable value
+        # Mock print to confirm correct error was printed
+        with patch('cli_config_manager.provision', return_value={'status': 200}) as mock_provision, \
+             patch('cli_config_manager.get_modules', return_value=['module']), \
+             patch.object(self.manager, '_client', MagicMock()) as mock_client, \
+             patch.object(mock_client, 'post', return_value=mock_response) as mock_post, \
+             patch.object(self.manager, '_csrf_token', None), \
+             patch('builtins.print') as mock_print:
+
+            # Call change_node_ip method with name of existing node and new IP
+            self.manager.change_node_ip('node3', '192.168.1.222')
+
+            # Confirm provision was called with expected arguments
+            mock_provision.assert_called_once_with(
+                ip='192.168.1.222',
+                password=self.manager.config['webrepl_password'],
+                config={'metadata': {'id': 'Node3'}},
+                modules=['module']
+            )
+
+            # Confirm correct POST request was sent to django backend
+            mock_post.assert_called_once_with(
+                f'{self.manager.config["django_backend"]}/change_node_ip',
+                json={
+                    'friendly_name': 'Node3',
+                    'new_ip': '192.168.1.222',
+                    'reupload': False
+                },
+                headers={
+                    'X-CSRFToken': None
+                },
+                timeout=5
+            )
+
+            # Confirm IP changed in manager config and file on disk
+            self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.222')
+            with open(mock_cli_config_path, 'r') as file:
+                config = json.load(file)
+            self.assertEqual(config['nodes']['node3'], '192.168.1.222')
+
+            # Confirm django error was printed
+            mock_print.assert_called_with('New IP must be different than old')
+
     def test_load_config_file(self):
         # Call method with mock node name, confirm returns mock config file
         # created by mock_cli_config.json

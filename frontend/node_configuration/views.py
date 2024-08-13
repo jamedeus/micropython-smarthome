@@ -204,21 +204,29 @@ def change_node_ip(data):
             status=400
         )
 
-    # Get dependencies, upload to new IP
-    modules = get_modules(node.config.config, REPO_DIR)
-    response = provision(data["new_ip"], NODE_PASSWD, node.config.config, modules)
+    # Reupload config to new IP if reupload param is true
+    if data["reupload"]:
+        # Get dependencies, upload to new IP
+        modules = get_modules(node.config.config, REPO_DIR)
+        response = provision(data["new_ip"], NODE_PASSWD, node.config.config, modules)
 
-    if response['status'] == 200:
-        # Update model
-        node.ip = data["new_ip"]
-        node.save()
+        if response['status'] == 200:
+            # Update model if successful
+            node.ip = data["new_ip"]
+            node.save()
 
-        return standard_response(message="Successfully uploaded to new IP")
+            return standard_response(message="Successfully uploaded to new IP")
 
-    return error_response(
-        message=response['message'],
-        status=response['status']
-    )
+        return error_response(
+            message=response['message'],
+            status=response['status']
+        )
+
+    # Just update IP if reupload param is false (already reuploaded from CLI)
+    node.ip = data["new_ip"]
+    node.save()
+
+    return standard_response(message="Successfully changed IP")
 
 
 def config_overview(request):

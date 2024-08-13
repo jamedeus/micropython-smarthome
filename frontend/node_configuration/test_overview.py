@@ -817,7 +817,11 @@ class ChangeNodeIpTests(TestCase):
             mock_provision.return_value = {'message': 'Upload complete.', 'status': 200}
 
             # Make request, confirm response
-            request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
+            request_payload = {
+                'friendly_name': 'Test1',
+                'new_ip': '192.168.1.255',
+                'reupload': True
+            }
             response = self.client.post('/change_node_ip', request_payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], 'Successfully uploaded to new IP')
@@ -825,6 +829,29 @@ class ChangeNodeIpTests(TestCase):
             # Confirm node model IP changed, upload was called
             self.assertEqual(Node.objects.all()[0].ip, '192.168.1.255')
             self.assertEqual(mock_provision.call_count, 1)
+
+    def test_change_node_ip_no_reupload(self):
+        # Confirm starting IP
+        self.assertEqual(Node.objects.all()[0].ip, '192.168.1.123')
+
+        # Mock provision to confirm not called
+        with patch('node_configuration.views.provision') as mock_provision:
+
+            # Make request with reupload param set to False (changed IP from CLI)
+            request_payload = {
+                'friendly_name': 'Test1',
+                'new_ip': '192.168.1.255',
+                'reupload': False
+            }
+
+            # Confirm response, confirm node model IP changed
+            response = self.client.post('/change_node_ip', request_payload)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['message'], 'Successfully changed IP')
+            self.assertEqual(Node.objects.all()[0].ip, '192.168.1.255')
+
+            # Confirm provision was NOT called
+            mock_provision.assert_not_called()
 
     def test_target_ip_offline(self):
         # Mock provision to return failure message without doing anything
@@ -835,7 +862,11 @@ class ChangeNodeIpTests(TestCase):
             }
 
             # Make request, confirm error
-            request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
+            request_payload = {
+                'friendly_name': 'Test1',
+                'new_ip': '192.168.1.255',
+                'reupload': True
+            }
             response = self.client.post('/change_node_ip', request_payload)
             self.assertEqual(response.status_code, 404)
             self.assertEqual(
@@ -851,19 +882,31 @@ class ChangeNodeIpTests(TestCase):
 
     def test_invalid_parameters(self):
         # Make request with invalid IP, confirm error
-        request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.555'}
+        request_payload = {
+            'friendly_name': 'Test1',
+            'new_ip': '192.168.1.555',
+            'reupload': True
+        }
         response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['message'], 'Invalid IP 192.168.1.555')
 
         # Make request targeting non-existing node, confirm error
-        request_payload = {'friendly_name': 'Test9', 'new_ip': '192.168.1.255'}
+        request_payload = {
+            'friendly_name': 'Test9',
+            'new_ip': '192.168.1.255',
+            'reupload': True
+        }
         response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()['message'], "Unable to change IP, node does not exist")
 
         # Make request with current IP, confirm error
-        request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.123'}
+        request_payload = {
+            'friendly_name': 'Test1',
+            'new_ip': '192.168.1.123',
+            'reupload': True
+        }
         response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['message'], 'New IP must be different than old')

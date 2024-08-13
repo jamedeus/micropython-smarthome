@@ -8,6 +8,7 @@ from smarthome_cli import (
     create_new_node_prompt,
     upload_config_from_disk,
     view_log_prompt,
+    change_node_ip_prompt,
     delete_prompt,
     sync_prompt
 )
@@ -131,6 +132,22 @@ class TestManageNodesPrompt(TestCase):
             # Confirm upload_config_from_disk prompt was called
             mock_upload_config.assert_called_once()
 
+    def test_change_existing_node_ip(self):
+        # Mock user selecting "Change existing node IP", then "Done" (exit loop)
+        self.mock_ask.unsafe_ask.side_effect = [
+            'Change existing node IP',
+            'Done'
+        ]
+
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('smarthome_cli.change_node_ip_prompt') as mock_change_ip_prompt:
+
+            # Run prompt, will complete immediately with mock input
+            manage_nodes_prompt()
+
+            # Confirm change_node_ip_prompt was called
+            mock_change_ip_prompt.assert_called_once()
+
     def test_delete_existing_node(self):
         # Mock user selecting "Delete existing node", then "Done" (exit loop)
         self.mock_ask.unsafe_ask.side_effect = [
@@ -146,7 +163,6 @@ class TestManageNodesPrompt(TestCase):
 
             # Confirm delete_prompt was called with selected node + mock password
             mock_delete_prompt.assert_called_once()
-
 
     def test_view_node_log(self):
         # Mock user selecting "View node log", then "Done" (exit loop)
@@ -412,6 +428,25 @@ class TestManageNodeFunctions(TestCase):
             mock_file = mocked_open()
             mock_file.write.assert_called_once_with('mock_log')
 
+    def test_change_node_ip_prompt(self):
+        # Mock user selecting node name then entering new IP address
+        self.mock_ask.unsafe_ask.side_effect = [
+            'node1',
+            '192.168.1.222'
+        ]
+
+        # Mock select and text prompts to return mocked user input
+        # Mock cli_config.change_node_ip to confirm called with user input
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('smarthome_cli.cli_config.change_node_ip') as mock_change_ip:
+
+            # Run prompt, will complete immediately with mock input
+            change_node_ip_prompt()
+
+            # Confirm cli_config.change_node_ip was called with correct args
+            mock_change_ip.assert_called_once_with('node1', '192.168.1.222')
+
     def test_delete_prompt(self):
         # Mock user checking 2 nodes at checkbox prompt, then selecting "Yes"
         # at confirmation prompt
@@ -421,7 +456,7 @@ class TestManageNodeFunctions(TestCase):
         ]
 
         # Mock checkbox and select prompts to return mocked user input
-        # Mock cli_config.remove_node to confirm called with selected nod enames
+        # Mock cli_config.remove_node to confirm called with selected node names
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.checkbox', return_value=self.mock_ask), \
              patch('smarthome_cli.cli_config.remove_node') as mock_remove_node:
