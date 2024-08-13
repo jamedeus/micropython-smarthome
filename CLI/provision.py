@@ -122,7 +122,7 @@ def upload_all(webrepl_password):
     '''Iterate cli_config.json, reprovision all nodes'''
 
     # Iterate node names and IPs in config file
-    for name, ip in cli_config.config['nodes'].items():
+    for name in cli_config.config['nodes']:
         print(f"\n{name}\n")
 
         upload_node(name, webrepl_password)

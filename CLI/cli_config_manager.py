@@ -172,7 +172,7 @@ class CliConfigManager:
                         print('Done.')
                     else:
                         print(response.text)
-                except (OSError):
+                except OSError:
                     print('Failed to delete from django database (connection error)')
         except KeyError:
             pass
@@ -195,7 +195,7 @@ class CliConfigManager:
             return config
 
         # If missing from disk + django configured prompt user to download file
-        elif 'django_backend' in self.config:
+        if 'django_backend' in self.config:
             if questionary.confirm(
                 f'{friendly_name} config missing from disk, download from django?'
             ).ask():

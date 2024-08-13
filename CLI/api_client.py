@@ -122,7 +122,7 @@ def example_usage_error(endpoint):
         return endpoint_error()
 
 
-def missing_target_error(nodes):
+def missing_target_error():
     '''Prints available nodes from cli_config.json then exits scrip.
     Called when no target IP/node is given, or invalid node is given.
     '''
@@ -178,7 +178,7 @@ def parse_ip(args):
             return parse_command(ip, args)
 
     # No IP or node name found
-    return missing_target_error(nodes)
+    return missing_target_error()
 
 
 def parse_command(ip, args):
