@@ -100,7 +100,7 @@ def delete_prompt():
     print('The following nodes will be deleted:')
     for i in targets:
         print(f'  {i}')
-    if cli_config.config['django_backend']:
+    if 'django_backend' in cli_config.config:
         print('These nodes will also be deleted from the django database')
     choice = questionary.select(
         "\nThis cannot be undone, are you sure?",
