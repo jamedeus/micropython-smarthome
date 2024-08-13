@@ -123,9 +123,6 @@ class InteractiveMenuTests(TestCase):
         # Mock questionary press any key to continue
         patch('questionary.press_any_key_to_continue').start()
 
-        # Mock cli_config contents
-        patch('api_client.nodes', mock_cli_config['nodes']).start()
-
         # Mock config file read from disk in tests
         # Note: This effects CliConfigManager singleton (shared between tests)
         self.mock_load = patch(
@@ -682,9 +679,6 @@ class InteractiveIrBlasterMenuTests(TestCase):
 
         # Mock questionary press any key to continue
         patch('questionary.press_any_key_to_continue').start()
-
-        # Mock cli_config contents
-        patch('api_client.nodes', mock_cli_config['nodes']).start()
 
         # Mock config file read from disk in tests
         # Note: This effects CliConfigManager singleton (shared between tests)

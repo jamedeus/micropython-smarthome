@@ -46,9 +46,7 @@ class TestArgParser(TestCase):
         self.assertFalse(args.password)
 
     def test_node_friendly_name(self):
-        with patch.object(sys, 'argv', ['', 'node1']), \
-             patch('provision.cli_config.config', mock_cli_config):
-
+        with patch.object(sys, 'argv', ['', 'node1']):
             args, parser = parse_args()
 
         # Confirm node arg contains friendly name
@@ -121,14 +119,13 @@ class TestInstantiation(TestCase):
         # Mock args for --all
         args = Namespace(config=None, ip=None, node=None, all=True, test=None, password=None)
 
-        # Mock provision to do nothing, mock cli_config.json contents, mock
-        # os.path.exists to return True (pretend config file exists), mock
-        # open to return empty dict (mock config file contents)
+        # Mock provision to do nothing, mock os.path.exists to return True
+        # (pretend config file exists), mock open to return empty dict (mock
+        # config file contents)
         mock_file = mock_open(read_data=json.dumps({}))
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
              patch('helper_functions.os.path.exists', return_value=True), \
-             patch('provision.cli_config.config', mock_cli_config), \
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm provision called once for each node
@@ -143,14 +140,13 @@ class TestInstantiation(TestCase):
         # Mock args with node friendly name
         args = Namespace(config=None, ip=None, node='node1', all=None, test=None, password=None)
 
-        # Mock provision to do nothing, mock cli_config.json contents, mock
-        # os.path.exists to return True (pretend config file exists), mock
-        # open to return empty dict (mock config file contents)
+        # Mock provision to do nothing, mock os.path.exists to return True
+        # (pretend config file exists), mock open to return empty dict (mock
+        # config file contents)
         mock_file = mock_open(read_data=json.dumps({}))
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
              patch('helper_functions.os.path.exists', return_value=True), \
-             patch('provision.cli_config.config', mock_cli_config), \
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm provision called once with expected IP
@@ -185,15 +181,14 @@ class TestInstantiation(TestCase):
         mock_confirm = MagicMock()
         mock_confirm.ask.return_value = True
 
-        # Mock provision to do nothing, mock cli_config.json contents, mock
-        # os.path.exists to return False (simulate missing config file), mock
-        # questionary.confirm to simulate user selecting Yes, mock cli_config
-        # download method to confirm called when user selects Yes
+        # Mock provision to do nothing, mock os.path.exists to return False
+        # (simulate missing config file), mock questionary.confirm to simulate
+        # user selecting Yes, mock cli_config download method to confirm called
+        # when user selects Yes
         mock_file = mock_open(read_data=json.dumps({}))
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
              patch('helper_functions.os.path.exists', return_value=False), \
-             patch('provision.cli_config.config', mock_cli_config), \
              patch('questionary.confirm', return_value=mock_confirm), \
              patch('provision.cli_config.download_node_config_file_from_django') as mock_download:
 
@@ -272,11 +267,10 @@ class TestInstantiation(TestCase):
         # Mock args to upload unit tests to 192.168.1.123
         args = Namespace(config=None, ip=None, node=None, all=None, test='192.168.1.123', password=None)
 
-        # Mock provision to do nothing, mock cli_config.json, mock open to return empty dict (config file)
+        # Mock provision to do nothing, mock open to return empty dict (config file)
         mock_file = mock_open(read_data=json.dumps({}))
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
-             patch('provision.cli_config.config', mock_cli_config), \
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm called once with given IP + test modules
@@ -308,7 +302,7 @@ class TestInstantiation(TestCase):
         self.assertNotIn('node4', mock_cli_config['nodes'].keys())
 
         # Mock provision to do nothing
-        # Mock cli_config.json contents
+        # Mock cli_config.json contents (allows reading changes to mock)
         # Mock open, json.load and os.path.exists to return mock_file_contents
         # Mock cli_config._client.post to check POST request body
         response = {'message': 'Upload complete.', 'status': 200}
