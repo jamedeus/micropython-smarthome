@@ -347,9 +347,59 @@ class TestCliConfigManager(TestCase):
             {'metadata': {'id': 'Node1'}}
         )
 
-    def test_load_config_file_does_not_exist(self):
-        with self.assertRaises(FileNotFoundError):
-            self.manager.load_node_config_file('Fake node')
+    def test_load_config_file_does_not_exist_no_django(self):
+        # Create mock cli_config.json with no django backend configured
+        mock_cli_config_no_backend = deepcopy(mock_cli_config)
+        del mock_cli_config_no_backend['django_backend']
+
+        # Mock os.path.exists to simulate file missing from disk
+        # Mock cli_config.json to simulate no django backend
+        with self.assertRaises(FileNotFoundError), \
+             patch('os.path.exists', return_value=False), \
+             patch.object(self.manager, 'config', mock_cli_config_no_backend):
+
+            # Call method, should raise FileNotFoundError
+            self.manager.load_node_config_file('Node1')
+
+    def test_load_config_file_does_not_exist_django_configured(self):
+        # Mock questionary.confirm.ask() to simulate user selecting no
+        mock_confirm = MagicMock()
+        mock_confirm.ask.return_value = False
+
+        # Mock os.path.exists to simulate file missing from disk
+        # Mock questionary.confirm to simulate user selecting no
+        with self.assertRaises(FileNotFoundError), \
+             patch('os.path.exists', return_value=False), \
+             patch('questionary.confirm', return_value=mock_confirm):
+
+            # Call method, should raise FileNotFoundError if user selects no
+            self.manager.load_node_config_file('Node1')
+
+        # Mock questionary.confirm.ask() to simulate user selecting yes
+        mock_confirm.ask.return_value = True
+
+        # Mock download_node_config_file_from_django method to confirm arguments
+        # Mock save_node_config_file method to confirm arguments
+        # Mock os.path.exists to simulate file missing from disk
+        # Mock questionary.confirm to simulate user selecting yes
+        with patch.object(self.manager, 'download_node_config_file_from_django') as mock_download, \
+             patch.object(self.manager, 'save_node_config_file') as mock_save_config, \
+             patch('os.path.exists', return_value=False), \
+             patch('questionary.confirm', return_value=mock_confirm):
+
+            # Mock download_node_config_file_from_django to return missing config
+            mock_download.return_value = {'mock': 'config'}
+
+            # Call method, should not raise exception
+            self.manager.load_node_config_file('Node1')
+
+            # Confirm download_node_config_file_from_django was called with
+            # Node1 IP from cli_config.json
+            mock_download.assert_called_once_with('192.168.1.123')
+
+            # Confirm save_node_config_file was called with return value from
+            # download_node_config_file_from_django
+            mock_save_config.assert_called_once_with({'mock': 'config'})
 
     def test_save_node_config_file(self):
         # Confirm config file with expected name does not exist

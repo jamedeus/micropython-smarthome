@@ -63,7 +63,7 @@ def is_int_or_float(num):
 
 
 def get_cli_config_name(friendly_name):
-    '''Coverts friendly_name to format used in cli_config.json'''
+    '''Converts friendly_name to format used in cli_config.json'''
     return friendly_name.lower().replace(" ", "-")
 
 

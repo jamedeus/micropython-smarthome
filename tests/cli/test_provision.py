@@ -158,6 +158,56 @@ class TestInstantiation(TestCase):
             self.assertEqual(mock_provision.call_count, 1)
             self.assertEqual(mock_provision.call_args[1]['ip'], '192.168.1.123')
 
+    def test_provision_friendly_name_missing_config_file(self):
+        # Mock args with node friendly name
+        args = Namespace(config=None, ip=None, node='node1', all=None, test=None, password=None)
+
+        # Mock provision to do nothing, mock cli_config.load_node_config_file
+        # to simulate file missing from disk (django not configured, no prompt
+        # to download), mock print to confirm expected error appears
+        with patch('provision.provision') as mock_provision, \
+             patch('provision.cli_config.load_node_config_file', side_effect=FileNotFoundError), \
+             patch('builtins.print') as mock_print:
+
+            # Instantiate, confirm provision was NOT called
+            handle_cli_args(args, '')
+            mock_provision.assert_not_called()
+
+            # Confirm expected error was printed to console
+            mock_print.assert_called_with('ERROR: node1 config file missing from disk')
+
+    def test_provision_friendly_name_download_missing_config_from_django(self):
+        # Mock args with node friendly name
+        args = Namespace(config=None, ip=None, node='node1', all=None, test=None, password=None)
+
+        # Mock questionary.confirm.ask() to simulate user selecting Yes when
+        # prompted about downloading missing config file from django
+        mock_confirm = MagicMock()
+        mock_confirm.ask.return_value = True
+
+        # Mock provision to do nothing, mock cli_config.json contents, mock
+        # os.path.exists to return False (simulate missing config file), mock
+        # questionary.confirm to simulate user selecting Yes, mock cli_config
+        # download method to confirm called when user selects Yes
+        mock_file = mock_open(read_data=json.dumps({}))
+        response = {'message': 'Upload complete.', 'status': 200}
+        with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
+             patch('helper_functions.os.path.exists', return_value=False), \
+             patch('provision.cli_config.config', mock_cli_config), \
+             patch('questionary.confirm', return_value=mock_confirm), \
+             patch('provision.cli_config.download_node_config_file_from_django') as mock_download:
+
+            # Mock cli_config download method to return mock config
+            mock_download.return_value = {'metadata': {'id': 'Node1'}}
+
+            # Instantiate, confirm downloaded missing config from django
+            handle_cli_args(args, '')
+            mock_download.assert_called_once_with('192.168.1.123')
+
+            # Confirm provision called once with expected IP
+            self.assertEqual(mock_provision.call_count, 1)
+            self.assertEqual(mock_provision.call_args[1]['ip'], '192.168.1.123')
+
     def test_provision_unit_tests(self):
         # Expected test modules
         test_modules = {

@@ -125,33 +125,26 @@ def upload_all(webrepl_password):
     for name, ip in cli_config.config['nodes'].items():
         print(f"\n{name}\n")
 
-        # Load config from disk
-        config = cli_config.load_node_config_file(name)
-
-        # Upload
-        result = provision(
-            ip=ip,
-            password=webrepl_password,
-            config=config,
-            modules=get_modules(config, repo)
-        )
-        print(result['message'])
+        upload_node(name, webrepl_password)
 
 
 def upload_node(node, webrepl_password):
     '''Reprovision an existing node, accepts friendly name as arg'''
 
-    # Load requested node config from disk
-    config = cli_config.load_node_config_file(node)
+    try:
+        # Load requested node config from disk
+        config = cli_config.load_node_config_file(node)
 
-    # Upload
-    result = provision(
-        ip=cli_config.config['nodes'][node],
-        password=webrepl_password,
-        config=config,
-        modules=get_modules(config, repo)
-    )
-    print(result['message'])
+        # Upload
+        result = provision(
+            ip=cli_config.config['nodes'][node],
+            password=webrepl_password,
+            config=config,
+            modules=get_modules(config, repo)
+        )
+        print(result['message'])
+    except FileNotFoundError:
+        print(f'ERROR: {node} config file missing from disk')
 
 
 def upload_config_to_ip(config_path, ip, webrepl_password):

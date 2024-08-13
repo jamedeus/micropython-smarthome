@@ -3,6 +3,7 @@
 import os
 import json
 import requests
+import questionary
 from helper_functions import get_cli_config_name, get_config_filename
 
 # Get path to cli_config.json (same directory as class)
@@ -188,11 +189,25 @@ class CliConfigManager:
         config_directory (set in cli_config.json), returns contents.
         '''
         config_filepath = self.get_config_filepath(friendly_name)
-        if not os.path.exists(config_filepath):
-            raise FileNotFoundError
-        with open(config_filepath, 'r', encoding='utf-8') as file:
-            config = json.load(file)
-        return config
+        if os.path.exists(config_filepath):
+            with open(config_filepath, 'r', encoding='utf-8') as file:
+                config = json.load(file)
+            return config
+
+        # If missing from disk + django configured prompt user to download file
+        elif 'django_backend' in self.config:
+            if questionary.confirm(
+                f'{friendly_name} config missing from disk, download from django?'
+            ).ask():
+                # Download from django backend, write to disk, return
+                ip = self.config['nodes'][get_cli_config_name(friendly_name)]
+                config = self.download_node_config_file_from_django(ip)
+                self.save_node_config_file(config)
+                return config
+
+        # Raise exception if unable to load config
+        raise FileNotFoundError
+
 
     def save_node_config_file(self, config):
         '''Takes config file dict, generates filename from config.metadata.id,
