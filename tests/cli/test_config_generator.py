@@ -1245,7 +1245,7 @@ class TestCliUsage(TestCase):
              patch(
                  'config_generator.GenerateConfigFile',
                  new=MagicMock(spec=GenerateConfigFile)
-            ) as mock_class:
+             ) as mock_class:  # noqa: E122
 
             # Simulate calling from command line
             main()
@@ -1265,7 +1265,7 @@ class TestCliUsage(TestCase):
              patch(
                  'config_generator.GenerateConfigFile',
                  new=MagicMock(spec=GenerateConfigFile)
-            ) as mock_class:
+             ) as mock_class:  # noqa: E122
 
             # Simulate calling from command line
             main()

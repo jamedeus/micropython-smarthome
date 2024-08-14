@@ -12,9 +12,6 @@ from smarthome_cli import (
     change_node_ip_prompt,
     delete_prompt,
     manage_keywords_prompt,
-    add_schedule_keyword_prompt,
-    edit_schedule_keyword_prompt,
-    remove_schedule_keyword_prompt,
     settings_prompt
 )
 from mock_cli_config import mock_cli_config

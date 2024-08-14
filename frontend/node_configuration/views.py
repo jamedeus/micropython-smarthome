@@ -172,7 +172,7 @@ def delete_node(data):
         node = Node.objects.get(**data)
     except Node.DoesNotExist:
         return error_response(
-            message=f"Failed to delete, matching node does not exist",
+            message="Failed to delete, matching node does not exist",
             status=404
         )
 

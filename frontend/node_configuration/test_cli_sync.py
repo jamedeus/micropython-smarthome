@@ -28,10 +28,10 @@ class CliSyncTests(TestCase):
             response.json()['message'],
             {
                 'nodes': {
-                        'test1': '192.168.1.123',
-                        'test2': '192.168.1.124',
-                        'test3': '192.168.1.125',
-                    },
+                    'test1': '192.168.1.123',
+                    'test2': '192.168.1.124',
+                    'test3': '192.168.1.125',
+                },
                 'schedule_keywords': {
                     'morning': '08:00',
                     'sleep': '23:30',

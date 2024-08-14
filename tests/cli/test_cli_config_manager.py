@@ -1,9 +1,8 @@
 import os
 import json
-import tempfile
 from copy import deepcopy
 from unittest import TestCase
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch, MagicMock
 from cli_config_manager import CliConfigManager
 from mock_cli_config import mock_cli_config, mock_cli_config_path, mock_config_dir
 
@@ -101,7 +100,7 @@ class TestCliConfigManager(TestCase):
     def test_sync_from_django_failed_connection_(self):
         # Mock _client.get to simulate connection error
         with patch.object(self.manager, '_client', MagicMock()) as mock_client, \
-             patch.object(mock_client, 'get', side_effect=OSError) as mock_get, \
+             patch.object(mock_client, 'get', side_effect=OSError), \
              patch.object(self.manager, 'write_cli_config_to_disk') as mock_write_to_disk:
 
             # Call sync method, confirm write_cli_config_to_disk was NOT called
@@ -114,7 +113,7 @@ class TestCliConfigManager(TestCase):
 
         # Mock _client.get to return mock response object
         with patch.object(self.manager, '_client', MagicMock()) as mock_client, \
-             patch.object(mock_client, 'get', return_value=mock_response) as mock_get, \
+             patch.object(mock_client, 'get', return_value=mock_response), \
              patch.object(self.manager, 'write_cli_config_to_disk') as mock_write_to_disk:
 
             # Call sync method, confirm write_cli_config_to_disk was NOT called
@@ -323,7 +322,7 @@ class TestCliConfigManager(TestCase):
         # Mock _client.post to return mock response object
         # Mock _csrf_token to predictable value
         with patch.object(self.manager, '_client', MagicMock()) as mock_client, \
-             patch.object(mock_client, 'post', return_value=mock_response) as mock_post, \
+             patch.object(mock_client, 'post', return_value=mock_response), \
              patch.object(self.manager, '_csrf_token', None), \
              patch('builtins.print') as mock_print:
 
@@ -882,7 +881,7 @@ class TestCliConfigManager(TestCase):
         # Mock _client.get to return mock response object
         # Mock _csrf_token to predictable value
         with patch.object(self.manager, '_client', MagicMock()) as mock_client, \
-             patch.object(mock_client, 'get', return_value=mock_response) as mock_get, \
+             patch.object(mock_client, 'get', return_value=mock_response), \
              patch.object(self.manager, '_csrf_token', None):
 
             # Call method with IP of existing node, confirm returns False

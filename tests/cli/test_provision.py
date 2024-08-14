@@ -185,7 +185,6 @@ class TestInstantiation(TestCase):
         # (simulate missing config file), mock questionary.confirm to simulate
         # user selecting Yes, mock cli_config download method to confirm called
         # when user selects Yes
-        mock_file = mock_open(read_data=json.dumps({}))
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
              patch('helper_functions.os.path.exists', return_value=False), \

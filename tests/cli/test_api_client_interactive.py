@@ -7,7 +7,6 @@ the command line with no arguments.
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from api_client import api_prompt, main
-from mock_cli_config import mock_cli_config
 from test_api_client import mock_status_object
 
 mock_config = {
@@ -852,11 +851,11 @@ class InteractiveIrBlasterMenuTests(TestCase):
         # API response from ESP32, then status again (prompt restarts)
         with patch('questionary.confirm', MagicMock()) as mock_confirm, \
              patch('api_client.parse_command', side_effect=[
-            mock_ir_status,
-            mock_ir_config['ir_blaster']['macros'],
-            {'Macro action added': ['start_ac', 'tv', 'power', '500', '2']},
-            mock_ir_status
-        ]) as mock_parse_command:
+                 mock_ir_status,
+                 mock_ir_config['ir_blaster']['macros'],
+                 {'Macro action added': ['start_ac', 'tv', 'power', '500', '2']},
+                 mock_ir_status
+             ]) as mock_parse_command:
 
             # Answer Yes to optional arg prompts
             mock_confirm.return_value.unsafe_ask.return_value = True
@@ -908,11 +907,11 @@ class InteractiveIrBlasterMenuTests(TestCase):
         # API response from ESP32, then status again (prompt restarts)
         with patch('questionary.confirm', MagicMock()) as mock_confirm, \
              patch('api_client.parse_command', side_effect=[
-            mock_ir_status,
-            mock_ir_config['ir_blaster']['macros'],
-            {'Macro action added': ['start_ac', 'tv', 'power', '0', '1']},
-            mock_ir_status
-        ]) as mock_parse_command:
+                 mock_ir_status,
+                 mock_ir_config['ir_blaster']['macros'],
+                 {'Macro action added': ['start_ac', 'tv', 'power', '0', '1']},
+                 mock_ir_status
+             ]) as mock_parse_command:
 
             # Answer No to optional arg prompts
             mock_confirm.return_value.unsafe_ask.return_value = False
@@ -1094,10 +1093,10 @@ class RegressionTests(TestCase):
         # Mock parse_command to return status, timeout error (in response to
         # set_rule), then timeout error again (in response to status request)
         with patch('api_client.parse_command', side_effect=[
-            mock_status_object,
-            "Error: Timed out waiting for response",
-            "Error: Timed out waiting for response"
-        ]) as mock_parse_command:
+                mock_status_object,
+                "Error: Timed out waiting for response",
+                "Error: Timed out waiting for response"
+            ]):  # noqa: E122
 
             # Run prompt, will complete immediately with mock input
             # Should not raise TypeError after fix

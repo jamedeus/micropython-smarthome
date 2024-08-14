@@ -1,4 +1,3 @@
-import os
 import json
 from copy import deepcopy
 from django.test import TestCase
