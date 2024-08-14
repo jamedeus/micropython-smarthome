@@ -495,10 +495,10 @@ class TestCliConfigManager(TestCase):
         mock_response = MagicMock()
         mock_response.status_code = 200
 
-        # Mock bulk API call functions called by method
+        # Mock endpoints called by bulk API call functions
         # Mock _client.post to confirm correct request made to django backend
-        with patch('cli_config_manager.bulk_add_schedule_keyword') as mock_add_keyword, \
-             patch('cli_config_manager.bulk_save_schedule_keyword') as mock_save_keywords, \
+        with patch('api_helper_functions.add_schedule_keyword') as mock_add_keyword, \
+             patch('api_helper_functions.save_schedule_keywords') as mock_save_keywords, \
              patch.object(self.manager, '_client', MagicMock()) as mock_client, \
              patch.object(mock_client, 'post', return_value=mock_response) as mock_post, \
              patch.object(self.manager, '_csrf_token', None):
@@ -514,15 +514,19 @@ class TestCliConfigManager(TestCase):
             self.assertIn('NewName', config['schedule_keywords'])
             self.assertEqual(config['schedule_keywords']['NewName'], '12:34')
 
-            # Confirm bulk API call functions were called with expected args
-            mock_add_keyword.assert_called_once_with(
-                ['192.168.1.123', '192.168.1.234', '192.168.1.111'],
-                'NewName',
-                '12:34'
-            )
-            mock_save_keywords.assert_called_once_with(
-                ['192.168.1.123', '192.168.1.234', '192.168.1.111']
-            )
+            # Confirm add_schedule_keyword endpoint was called once for each node
+            self.assertEqual(mock_add_keyword.call_count, 3)
+            add_keyword_calls = mock_add_keyword.call_args_list
+            self.assertEqual(add_keyword_calls[0][0], ('192.168.1.123', ['NewName', '12:34']))
+            self.assertEqual(add_keyword_calls[1][0], ('192.168.1.234', ['NewName', '12:34']))
+            self.assertEqual(add_keyword_calls[2][0], ('192.168.1.111', ['NewName', '12:34']))
+
+            # Confirm save_schedule_keywords endpoint was called once for each node
+            self.assertEqual(mock_save_keywords.call_count, 3)
+            save_keyword_calls = mock_save_keywords.call_args_list
+            self.assertEqual(save_keyword_calls[0][0], ('192.168.1.123', ''))
+            self.assertEqual(save_keyword_calls[1][0], ('192.168.1.234', ''))
+            self.assertEqual(save_keyword_calls[2][0], ('192.168.1.111', ''))
 
             # Confirm new keyword was posted to django backend
             mock_post.assert_called_once_with(
@@ -546,11 +550,11 @@ class TestCliConfigManager(TestCase):
         mock_cli_config_no_backend = deepcopy(mock_cli_config)
         del mock_cli_config_no_backend['django_backend']
 
-        # Mock bulk API call functions called by method
+        # Mock endpoints called by bulk API call functions
         # Mock _client.post to confirm no request made
         # Mock cli_config.json to simulate no django backend
-        with patch('cli_config_manager.bulk_add_schedule_keyword') as mock_add_keyword, \
-             patch('cli_config_manager.bulk_save_schedule_keyword') as mock_save_keywords, \
+        with patch('api_helper_functions.add_schedule_keyword') as mock_add_keyword, \
+             patch('api_helper_functions.save_schedule_keywords') as mock_save_keywords, \
              patch.object(self.manager, '_client', MagicMock()) as mock_client, \
              patch.object(mock_client, 'post') as mock_post, \
              patch.object(self.manager, 'config', mock_cli_config_no_backend):
@@ -566,15 +570,10 @@ class TestCliConfigManager(TestCase):
             self.assertIn('NewName', config['schedule_keywords'])
             self.assertEqual(config['schedule_keywords']['NewName'], '12:34')
 
-            # Confirm bulk API call functions were called with expected args
-            mock_add_keyword.assert_called_once_with(
-                ['192.168.1.123', '192.168.1.234', '192.168.1.111'],
-                'NewName',
-                '12:34'
-            )
-            mock_save_keywords.assert_called_once_with(
-                ['192.168.1.123', '192.168.1.234', '192.168.1.111']
-            )
+            # Confirm add_schedule_keyword and save_schedule_keywords endpoints
+            # were called once for each node
+            self.assertEqual(mock_add_keyword.call_count, 3)
+            self.assertEqual(mock_save_keywords.call_count, 3)
 
             # Confirm no POST request was made
             mock_post.assert_not_called()
@@ -588,10 +587,11 @@ class TestCliConfigManager(TestCase):
         mock_response = MagicMock()
         mock_response.status_code = 200
 
-        # Mock bulk API call functions called by method
+        # Mock endpoints called by bulk API call functions
         # Mock _client.post to confirm correct request made to django backend
-        with patch('cli_config_manager.bulk_edit_schedule_keyword') as mock_edit_keyword, \
-             patch('cli_config_manager.bulk_save_schedule_keyword') as mock_save_keywords, \
+        with patch('api_helper_functions.add_schedule_keyword') as mock_add_keyword, \
+             patch('api_helper_functions.remove_schedule_keyword') as mock_rm_keyword, \
+             patch('api_helper_functions.save_schedule_keywords') as mock_save_keywords, \
              patch.object(self.manager, '_client', MagicMock()) as mock_client, \
              patch.object(mock_client, 'post', return_value=mock_response) as mock_post, \
              patch.object(self.manager, '_csrf_token', None):
@@ -612,16 +612,26 @@ class TestCliConfigManager(TestCase):
             self.assertIn('NewName', config['schedule_keywords'])
             self.assertEqual(config['schedule_keywords']['NewName'], '12:34')
 
-            # Confirm bulk API call functions were called with expected args
-            mock_edit_keyword.assert_called_once_with(
-                ['192.168.1.123', '192.168.1.234', '192.168.1.111'],
-                'sleep',
-                'NewName',
-                '12:34'
-            )
-            mock_save_keywords.assert_called_once_with(
-                ['192.168.1.123', '192.168.1.234', '192.168.1.111']
-            )
+            # Confirm remove_schedule_keyword endpoint was called once for each node
+            self.assertEqual(mock_rm_keyword.call_count, 3)
+            rm_keyword_calls = mock_rm_keyword.call_args_list
+            self.assertEqual(rm_keyword_calls[0][0], ('192.168.1.123', ['sleep']))
+            self.assertEqual(rm_keyword_calls[1][0], ('192.168.1.234', ['sleep']))
+            self.assertEqual(rm_keyword_calls[2][0], ('192.168.1.111', ['sleep']))
+
+            # Confirm add_schedule_keyword endpoint was called once for each node
+            self.assertEqual(mock_add_keyword.call_count, 3)
+            add_keyword_calls = mock_add_keyword.call_args_list
+            self.assertEqual(add_keyword_calls[0][0], ('192.168.1.123', ['NewName', '12:34']))
+            self.assertEqual(add_keyword_calls[1][0], ('192.168.1.234', ['NewName', '12:34']))
+            self.assertEqual(add_keyword_calls[2][0], ('192.168.1.111', ['NewName', '12:34']))
+
+            # Confirm save_schedule_keywords endpoint was called once for each node
+            self.assertEqual(mock_save_keywords.call_count, 3)
+            save_keyword_calls = mock_save_keywords.call_args_list
+            self.assertEqual(save_keyword_calls[0][0], ('192.168.1.123', ''))
+            self.assertEqual(save_keyword_calls[1][0], ('192.168.1.234', ''))
+            self.assertEqual(save_keyword_calls[2][0], ('192.168.1.111', ''))
 
             # Confirm new keyword was posted to django backend
             mock_post.assert_called_once_with(
@@ -629,6 +639,70 @@ class TestCliConfigManager(TestCase):
                 json={
                     'keyword_old': 'sleep',
                     'keyword_new': 'NewName',
+                    'timestamp_new': '12:34',
+                    'sync_nodes': False
+                },
+                headers={
+                    'X-CSRFToken': None
+                },
+                timeout=5
+            )
+
+    def test_edit_schedule_keyword_dont_change_name(self):
+        # Confirm config contains sleep keyword, does not contain NewName
+        self.assertIn('sleep', self.manager.config['schedule_keywords'])
+        self.assertNotIn('NewName', self.manager.config['schedule_keywords'])
+
+        # Create mock django response object
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+
+        # Mock endpoints called by bulk API call functions
+        # Mock _client.post to confirm correct request made to django backend
+        with patch('api_helper_functions.add_schedule_keyword') as mock_add_keyword, \
+             patch('api_helper_functions.remove_schedule_keyword') as mock_rm_keyword, \
+             patch('api_helper_functions.save_schedule_keywords') as mock_save_keywords, \
+             patch.object(self.manager, '_client', MagicMock()) as mock_client, \
+             patch.object(mock_client, 'post', return_value=mock_response) as mock_post, \
+             patch.object(self.manager, '_csrf_token', None):
+
+            # Call edit_schedule_keyword with same value for existing and new
+            # keyword names, new timestamp
+            self.manager.edit_schedule_keyword('sleep', 'sleep', '12:34')
+
+            # Confirm sleep keyword timestamp changed in manager config
+            self.assertIn('sleep', self.manager.config['schedule_keywords'])
+            self.assertEqual(self.manager.config['schedule_keywords']['sleep'], '12:34')
+
+            # Confirm sleep keyword timestamp changed in file on disk
+            with open(mock_cli_config_path, 'r') as file:
+                config = json.load(file)
+            self.assertIn('sleep', config['schedule_keywords'])
+            self.assertEqual(config['schedule_keywords']['sleep'], '12:34')
+
+            # Confirm remove_schedule_keyword endpoint was NOT called
+            self.assertEqual(mock_rm_keyword.call_count, 0)
+
+            # Confirm add_schedule_keyword endpoint was called once for each node
+            self.assertEqual(mock_add_keyword.call_count, 3)
+            add_keyword_calls = mock_add_keyword.call_args_list
+            self.assertEqual(add_keyword_calls[0][0], ('192.168.1.123', ['sleep', '12:34']))
+            self.assertEqual(add_keyword_calls[1][0], ('192.168.1.234', ['sleep', '12:34']))
+            self.assertEqual(add_keyword_calls[2][0], ('192.168.1.111', ['sleep', '12:34']))
+
+            # Confirm save_schedule_keywords endpoint was called once for each node
+            self.assertEqual(mock_save_keywords.call_count, 3)
+            save_keyword_calls = mock_save_keywords.call_args_list
+            self.assertEqual(save_keyword_calls[0][0], ('192.168.1.123', ''))
+            self.assertEqual(save_keyword_calls[1][0], ('192.168.1.234', ''))
+            self.assertEqual(save_keyword_calls[2][0], ('192.168.1.111', ''))
+
+            # Confirm new keyword was posted to django backend
+            mock_post.assert_called_once_with(
+                f'{self.manager.config["django_backend"]}/edit_schedule_keyword',
+                json={
+                    'keyword_old': 'sleep',
+                    'keyword_new': 'sleep',
                     'timestamp_new': '12:34',
                     'sync_nodes': False
                 },
@@ -647,10 +721,12 @@ class TestCliConfigManager(TestCase):
         mock_cli_config_no_backend = deepcopy(mock_cli_config)
         del mock_cli_config_no_backend['django_backend']
 
-        # Mock bulk API call functions called by method
-        # Mock _client.post to confirm correct request made to django backend
-        with patch('cli_config_manager.bulk_edit_schedule_keyword') as mock_edit_keyword, \
-             patch('cli_config_manager.bulk_save_schedule_keyword') as mock_save_keywords, \
+        # Mock endpoints called by bulk API call functions
+        # Mock _client.post to confirm no request made
+        # Mock cli_config.json to simulate no django backend
+        with patch('api_helper_functions.add_schedule_keyword') as mock_add_keyword, \
+             patch('api_helper_functions.remove_schedule_keyword') as mock_rm_keyword, \
+             patch('api_helper_functions.save_schedule_keywords') as mock_save_keywords, \
              patch.object(self.manager, '_client', MagicMock()) as mock_client, \
              patch.object(mock_client, 'post') as mock_post, \
              patch.object(self.manager, 'config', mock_cli_config_no_backend):
@@ -671,16 +747,11 @@ class TestCliConfigManager(TestCase):
             self.assertIn('NewName', config['schedule_keywords'])
             self.assertEqual(config['schedule_keywords']['NewName'], '12:34')
 
-            # Confirm bulk API call functions were called with expected args
-            mock_edit_keyword.assert_called_once_with(
-                ['192.168.1.123', '192.168.1.234', '192.168.1.111'],
-                'sleep',
-                'NewName',
-                '12:34'
-            )
-            mock_save_keywords.assert_called_once_with(
-                ['192.168.1.123', '192.168.1.234', '192.168.1.111']
-            )
+            # Confirm add_schedule_keyword, remove_schedule_keyword and
+            # save_schedule_keywords endpoints were called once for each node
+            self.assertEqual(mock_add_keyword.call_count, 3)
+            self.assertEqual(mock_rm_keyword.call_count, 3)
+            self.assertEqual(mock_save_keywords.call_count, 3)
 
             # Confirm no POST request was made
             mock_post.assert_not_called()
@@ -693,9 +764,10 @@ class TestCliConfigManager(TestCase):
         mock_response = MagicMock()
         mock_response.status_code = 200
 
-        # Mock bulk API call functions called by method
-        with patch('cli_config_manager.bulk_remove_schedule_keyword') as mock_rm_keyword, \
-             patch('cli_config_manager.bulk_save_schedule_keyword') as mock_save_keywords, \
+        # Mock endpoints called by bulk API call functions
+        # Mock _client.post to confirm correct request made to django backend
+        with patch('api_helper_functions.remove_schedule_keyword') as mock_rm_keyword, \
+             patch('api_helper_functions.save_schedule_keywords') as mock_save_keywords, \
              patch.object(self.manager, '_client', MagicMock()) as mock_client, \
              patch.object(mock_client, 'post', return_value=mock_response) as mock_post, \
              patch.object(self.manager, '_csrf_token', None):
@@ -709,14 +781,19 @@ class TestCliConfigManager(TestCase):
                 config = json.load(file)
             self.assertNotIn('sleep', config['schedule_keywords'])
 
-            # Confirm bulk API call functions were called with expected args
-            mock_rm_keyword.assert_called_once_with(
-                ['192.168.1.123', '192.168.1.234', '192.168.1.111'],
-                'sleep'
-            )
-            mock_save_keywords.assert_called_once_with(
-                ['192.168.1.123', '192.168.1.234', '192.168.1.111']
-            )
+            # Confirm remove_schedule_keyword endpoint was called once for each node
+            self.assertEqual(mock_rm_keyword.call_count, 3)
+            rm_keyword_calls = mock_rm_keyword.call_args_list
+            self.assertEqual(rm_keyword_calls[0][0], ('192.168.1.123', ['sleep']))
+            self.assertEqual(rm_keyword_calls[1][0], ('192.168.1.234', ['sleep']))
+            self.assertEqual(rm_keyword_calls[2][0], ('192.168.1.111', ['sleep']))
+
+            # Confirm save_schedule_keywords endpoint was called once for each node
+            self.assertEqual(mock_save_keywords.call_count, 3)
+            save_keyword_calls = mock_save_keywords.call_args_list
+            self.assertEqual(save_keyword_calls[0][0], ('192.168.1.123', ''))
+            self.assertEqual(save_keyword_calls[1][0], ('192.168.1.234', ''))
+            self.assertEqual(save_keyword_calls[2][0], ('192.168.1.111', ''))
 
             # Confirm keyword was removeed from django backend
             mock_post.assert_called_once_with(
@@ -739,10 +816,11 @@ class TestCliConfigManager(TestCase):
         mock_cli_config_no_backend = deepcopy(mock_cli_config)
         del mock_cli_config_no_backend['django_backend']
 
-        # Mock bulk API call functions called by method
-        # Mock _client.post to confirm correct request made to django backend
-        with patch('cli_config_manager.bulk_remove_schedule_keyword') as mock_rm_keyword, \
-             patch('cli_config_manager.bulk_save_schedule_keyword') as mock_save_keywords, \
+        # Mock endpoints called by bulk API call functions
+        # Mock _client.post to confirm no request made
+        # Mock cli_config.json to simulate no django backend
+        with patch('api_helper_functions.remove_schedule_keyword') as mock_rm_keyword, \
+             patch('api_helper_functions.save_schedule_keywords') as mock_save_keywords, \
              patch.object(self.manager, '_client', MagicMock()) as mock_client, \
              patch.object(mock_client, 'post') as mock_post, \
              patch.object(self.manager, 'config', mock_cli_config_no_backend):
@@ -756,14 +834,10 @@ class TestCliConfigManager(TestCase):
                 config = json.load(file)
             self.assertNotIn('sleep', config['schedule_keywords'])
 
-            # Confirm bulk API call functions were called with expected args
-            mock_rm_keyword.assert_called_once_with(
-                ['192.168.1.123', '192.168.1.234', '192.168.1.111'],
-                'sleep'
-            )
-            mock_save_keywords.assert_called_once_with(
-                ['192.168.1.123', '192.168.1.234', '192.168.1.111']
-            )
+            # Confirm remove_schedule_keyword and save_schedule_keywords
+            # endpoints were called once for each node
+            self.assertEqual(mock_rm_keyword.call_count, 3)
+            self.assertEqual(mock_save_keywords.call_count, 3)
 
             # Confirm no POST request was made
             mock_post.assert_not_called()
