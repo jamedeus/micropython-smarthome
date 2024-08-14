@@ -556,7 +556,8 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 keyword: 'New Keyword',
-                timestamp: '12:34'
+                timestamp: '12:34',
+                sync_nodes: true
             }),
             headers: postHeaders
         });
@@ -607,7 +608,8 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 keyword: 'New Keyword',
-                timestamp: '12:34'
+                timestamp: '12:34',
+                sync_nodes: true
             }),
             headers: postHeaders
         });
@@ -712,7 +714,8 @@ describe('App', () => {
             body: JSON.stringify({
                 keyword_old: 'morning',
                 keyword_new: 'New Name',
-                timestamp_new: '12:34'
+                timestamp_new: '12:34',
+                sync_nodes: true
             }),
             headers: postHeaders
         });
@@ -745,7 +748,8 @@ describe('App', () => {
             body: JSON.stringify({
                 keyword_old: 'morning',
                 keyword_new: 'New Name',
-                timestamp_new: '08:00'
+                timestamp_new: '08:00',
+                sync_nodes: true
             }),
             headers: postHeaders
         });
@@ -760,7 +764,8 @@ describe('App', () => {
             body: JSON.stringify({
                 keyword_old: 'New Name',
                 keyword_new: 'New Name',
-                timestamp_new: '12:34'
+                timestamp_new: '12:34',
+                sync_nodes: true
             }),
             headers: postHeaders
         });
@@ -819,7 +824,8 @@ describe('App', () => {
         expect(global.fetch).toHaveBeenCalledWith('/delete_schedule_keyword', {
             method: 'POST',
             body: JSON.stringify({
-                keyword: 'morning'
+                keyword: 'morning',
+                sync_nodes: true
             }),
             headers: postHeaders
         });

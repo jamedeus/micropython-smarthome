@@ -560,10 +560,11 @@ def add_schedule_keyword_config(data):
     except ValidationError as ex:
         return error_response(message=str(ex), status=400)
 
-    # Add keyword to all existing nodes in parallel
-    node_ips = [node.ip for node in Node.objects.all()]
-    bulk_add_schedule_keyword(node_ips, data["keyword"], data["timestamp"])
-    bulk_save_schedule_keyword(node_ips)
+    # Add keyword to all existing nodes in parallel if sync_nodes == True
+    if data["sync_nodes"]:
+        node_ips = [node.ip for node in Node.objects.all()]
+        bulk_add_schedule_keyword(node_ips, data["keyword"], data["timestamp"])
+        bulk_save_schedule_keyword(node_ips)
 
     # Add new keyword to all configs in database
     all_keywords = get_schedule_keywords_dict()
@@ -592,15 +593,16 @@ def edit_schedule_keyword_config(data):
     except ValidationError as ex:
         return error_response(message=str(ex), status=400)
 
-    # Edit keyword on all existing nodes in parallel
-    node_ips = [node.ip for node in Node.objects.all()]
-    bulk_edit_schedule_keyword(
-        node_ips,
-        data["keyword_old"],
-        data["keyword_new"],
-        data["timestamp_new"]
-    )
-    bulk_save_schedule_keyword(node_ips)
+    # Edit keyword on all existing nodes in parallel if sync_nodes == True
+    if data["sync_nodes"]:
+        node_ips = [node.ip for node in Node.objects.all()]
+        bulk_edit_schedule_keyword(
+            node_ips,
+            data["keyword_old"],
+            data["keyword_new"],
+            data["timestamp_new"]
+        )
+        bulk_save_schedule_keyword(node_ips)
 
     # Update keywords for all configs in database
     all_keywords = get_schedule_keywords_dict()
@@ -626,10 +628,11 @@ def delete_schedule_keyword_config(data):
     except IntegrityError as ex:
         return error_response(message=str(ex), status=400)
 
-    # Remove keyword from all existing nodes in parallel
-    node_ips = [node.ip for node in Node.objects.all()]
-    bulk_remove_schedule_keyword(node_ips, data["keyword"])
-    bulk_save_schedule_keyword(node_ips)
+    # Remove keyword from all existing nodes in parallel if sync_nodes == True
+    if data["sync_nodes"]:
+        node_ips = [node.ip for node in Node.objects.all()]
+        bulk_remove_schedule_keyword(node_ips, data["keyword"])
+        bulk_save_schedule_keyword(node_ips)
 
     # Remove keyword from all configs in database
     all_keywords = get_schedule_keywords_dict()

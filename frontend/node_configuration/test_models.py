@@ -282,13 +282,17 @@ class ScheduleKeywordTests(TestCase):
             {'sunrise': '06:00', 'sunset': '18:00', 'first': '00:00'}
         )
 
-        # Mock all keyword endpoints, prevent failed network requests
+        # Mock bulk API call endpoints to prevent failed network requests
         with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
              patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
              patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request, confirm response, confirm model created
-            data = {'keyword': 'morning', 'timestamp': '08:00'}
+            data = {
+                'keyword': 'morning',
+                'timestamp': '08:00',
+                'sync_nodes': True
+            }
             response = self.client.post('/add_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], 'Keyword created')
@@ -311,6 +315,33 @@ class ScheduleKeywordTests(TestCase):
             '08:00'
         )
 
+    def test_add_schedule_keyword_no_sync(self):
+        # Confirm starting conditions
+        self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+
+        # Mock bulk API call endpoints to prevent failed network requests
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
+
+            # Send request with sync_nodes param set to False
+            data = {
+                'keyword': 'morning',
+                'timestamp': '08:00',
+                'sync_nodes': False
+            }
+            response = self.client.post('/add_schedule_keyword', data)
+
+            # Confirm response, confirm model created
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['message'], 'Keyword created')
+            self.assertEqual(len(ScheduleKeyword.objects.all()), 4)
+
+            # Confirm no requests were sent to nodes
+            self.mock_add.assert_not_called()
+            self.mock_remove.assert_not_called()
+            self.mock_save.assert_not_called()
+
     def test_edit_schedule_keyword_timestamp(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
         self.assertEqual(
@@ -322,13 +353,18 @@ class ScheduleKeywordTests(TestCase):
             {'sunrise': '06:00', 'sunset': '18:00', 'first': '00:00'}
         )
 
-        # Mock all keyword endpoints, prevent failed network requests
+        # Mock bulk API call endpoints to prevent failed network requests
         with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
              patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
              patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request to change timestamp only, should overwrite existing keyword
-            data = {'keyword_old': 'first', 'keyword_new': 'first', 'timestamp_new': '01:00'}
+            data = {
+                'keyword_old': 'first',
+                'keyword_new': 'first',
+                'timestamp_new': '01:00',
+                'sync_nodes': True
+            }
             response = self.client.post('/edit_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], 'Keyword updated')
@@ -359,13 +395,18 @@ class ScheduleKeywordTests(TestCase):
     def test_edit_schedule_keyword_keyword(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
-        # Mock all keyword endpoints, prevent failed network requests
+        # Mock bulk API call endpoints to prevent failed network requests
         with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
              patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
              patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request to change keyword, should remove and replace existing keyword
-            data = {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '08:00'}
+            data = {
+                'keyword_old': 'first',
+                'keyword_new': 'second',
+                'timestamp_new': '08:00',
+                'sync_nodes': True
+            }
             response = self.client.post('/edit_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], 'Keyword updated')
@@ -395,17 +436,49 @@ class ScheduleKeywordTests(TestCase):
             '08:00'
         )
 
+    def test_edit_schedule_keyword_no_sync(self):
+        # Confirm starting conditions
+        self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+
+        # Mock bulk API call endpoints to prevent failed network requests
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
+
+            # Send request with sync_nodes param set to False
+            data = {
+                'keyword_old': 'first',
+                'keyword_new': 'second',
+                'timestamp_new': '08:00',
+                'sync_nodes': False
+            }
+            response = self.client.post('/edit_schedule_keyword', data)
+
+            # Confirm response, confirm no additional model created
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['message'], 'Keyword updated')
+            self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+
+            # Confirm no requests were sent to nodes
+            self.mock_add.assert_not_called()
+            self.mock_remove.assert_not_called()
+            self.mock_save.assert_not_called()
+
     def test_delete_schedule_keyword(self):
         # Confirm starting condition
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
-        # Mock all keyword endpoints, prevent failed network requests
+        # Mock bulk API call endpoints to prevent failed network requests
         with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
              patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
              patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request to delete keyword, verify response
-            response = self.client.post('/delete_schedule_keyword', {'keyword': 'first'})
+            data = {
+                'keyword': 'first',
+                'sync_nodes': True
+            }
+            response = self.client.post('/delete_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], 'Keyword deleted')
 
@@ -422,6 +495,32 @@ class ScheduleKeywordTests(TestCase):
         self.config2.refresh_from_db()
         self.assertNotIn('first', self.node1.config.config['metadata']['schedule_keywords'].keys())
         self.assertNotIn('first', self.config2.config['metadata']['schedule_keywords'].keys())
+
+    def test_delete_schedule_keyword_no_sync(self):
+        # Confirm starting conditions
+        self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+
+        # Mock bulk API call endpoints to prevent failed network requests
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
+
+            # Send request with sync_nodes param set to False
+            data = {
+                'keyword': 'first',
+                'sync_nodes': False
+            }
+            response = self.client.post('/delete_schedule_keyword', data)
+
+            # Confirm response, confirm model deleted
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['message'], 'Keyword deleted')
+            self.assertEqual(len(ScheduleKeyword.objects.all()), 2)
+
+            # Confirm no requests were sent to nodes
+            self.mock_add.assert_not_called()
+            self.mock_remove.assert_not_called()
+            self.mock_save.assert_not_called()
 
 
 # Confirm schedule keyword management endpoints raise correct errors

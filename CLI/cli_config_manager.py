@@ -244,6 +244,21 @@ class CliConfigManager:
         bulk_add_schedule_keyword(node_ips, keyword, timestamp)
         bulk_save_schedule_keyword(node_ips)
 
+        # If django configured make API call to add keyword to database
+        if 'django_backend' in self.config:
+            self._client.post(
+                f'{self.config["django_backend"]}/add_schedule_keyword',
+                json={
+                    'keyword': keyword,
+                    'timestamp': timestamp,
+                    'sync_nodes': False
+                },
+                headers={
+                    'X-CSRFToken': self._csrf_token
+                },
+                timeout=5
+            )
+
     def edit_schedule_keyword(self, keyword_old, keyword_new, timestamp):
         '''Takes name of existing keyword, new name (can be same), and new
         timestamp (can be same). Updates cli_config.json and makes API calls
@@ -263,6 +278,22 @@ class CliConfigManager:
         bulk_edit_schedule_keyword(node_ips, keyword_old, keyword_new, timestamp)
         bulk_save_schedule_keyword(node_ips)
 
+        # If django configured make API call to edit keyword in database
+        if 'django_backend' in self.config:
+            self._client.post(
+                f'{self.config["django_backend"]}/edit_schedule_keyword',
+                json={
+                    'keyword_old': keyword_old,
+                    'keyword_new': keyword_new,
+                    'timestamp_new': timestamp,
+                    'sync_nodes': False
+                },
+                headers={
+                    'X-CSRFToken': self._csrf_token
+                },
+                timeout=5
+            )
+
     def remove_schedule_keyword(self, keyword):
         '''Takes name of existing keyword, removes from cli_config.json and
         makes API calls to remove from all existing nodes.
@@ -276,6 +307,20 @@ class CliConfigManager:
         node_ips = list(self.config['nodes'].values())
         bulk_remove_schedule_keyword(node_ips, keyword)
         bulk_save_schedule_keyword(node_ips)
+
+        # If django configured make API call to remove keyword from database
+        if 'django_backend' in self.config:
+            self._client.post(
+                f'{self.config["django_backend"]}/delete_schedule_keyword',
+                json={
+                    'keyword': keyword,
+                    'sync_nodes': False
+                },
+                headers={
+                    'X-CSRFToken': self._csrf_token
+                },
+                timeout=5
+            )
 
     def get_config_filepath(self, friendly_name):
         '''Takes friendly_name, returns path to config file. Does not check if
