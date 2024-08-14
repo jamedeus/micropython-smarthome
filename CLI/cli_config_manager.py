@@ -6,6 +6,12 @@ import requests
 import questionary
 from provision_tools import get_modules, provision
 from helper_functions import get_cli_config_name, get_config_filename
+from api_helper_functions import (
+    bulk_add_schedule_keyword,
+    bulk_edit_schedule_keyword,
+    bulk_remove_schedule_keyword,
+    bulk_save_schedule_keyword
+)
 
 # Get path to cli_config.json (same directory as class)
 cli = os.path.dirname(os.path.realpath(__file__))
@@ -224,6 +230,53 @@ class CliConfigManager:
         else:
             print(result['message'])
 
+    def add_schedule_keyword(self, keyword, timestamp):
+        '''Takes new keyword name and timestamp, adds to cli_config.json and
+        makes API calls to add keyword to all existing nodes.
+        '''
+
+        # Add to cli_config.json, write to disk
+        self.config['schedule_keywords'][keyword] = timestamp
+        self.write_cli_config_to_disk()
+
+        # Add keyword to all existing nodes in parallel
+        node_ips = list(self.config['nodes'].values())
+        bulk_add_schedule_keyword(node_ips, keyword, timestamp)
+        bulk_save_schedule_keyword(node_ips)
+
+    def edit_schedule_keyword(self, keyword_old, keyword_new, timestamp):
+        '''Takes name of existing keyword, new name (can be same), and new
+        timestamp (can be same). Updates cli_config.json and makes API calls
+        to update keyword on all existing nodes.
+        '''
+
+        # If keyword name was changed delete old keyword
+        if keyword_old != keyword_new:
+            del self.config['schedule_keywords'][keyword_old]
+
+        # Add new keyword to cli_config.json, write to disk
+        self.config['schedule_keywords'][keyword_new] = timestamp
+        self.write_cli_config_to_disk()
+
+        # Update keyword on all existing nodes in parallel
+        node_ips = list(self.config['nodes'].values())
+        bulk_edit_schedule_keyword(node_ips, keyword_old, keyword_new, timestamp)
+        bulk_save_schedule_keyword(node_ips)
+
+    def remove_schedule_keyword(self, keyword):
+        '''Takes name of existing keyword, removes from cli_config.json and
+        makes API calls to remove from all existing nodes.
+        '''
+
+        # Remove from cli_config.json, write to disk
+        del self.config['schedule_keywords'][keyword]
+        self.write_cli_config_to_disk()
+
+        # Update keyword on all existing nodes in parallel
+        node_ips = list(self.config['nodes'].values())
+        bulk_remove_schedule_keyword(node_ips, keyword)
+        bulk_save_schedule_keyword(node_ips)
+
     def get_config_filepath(self, friendly_name):
         '''Takes friendly_name, returns path to config file. Does not check if
         file exists, can be used to get path for new file or to find existing.
@@ -254,7 +307,6 @@ class CliConfigManager:
 
         # Raise exception if unable to load config
         raise FileNotFoundError
-
 
     def save_node_config_file(self, config):
         '''Takes config file dict, generates filename from config.metadata.id,

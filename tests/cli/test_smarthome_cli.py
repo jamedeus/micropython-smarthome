@@ -11,6 +11,10 @@ from smarthome_cli import (
     view_log_prompt,
     change_node_ip_prompt,
     delete_prompt,
+    manage_keywords_prompt,
+    add_schedule_keyword_prompt,
+    edit_schedule_keyword_prompt,
+    remove_schedule_keyword_prompt,
     settings_prompt
 )
 from mock_cli_config import mock_cli_config
@@ -48,6 +52,23 @@ class TestMainPrompt(TestCase):
 
             # Confirm manage_nodes_prompt was called
             mock_manage_nodes_prompt.assert_called_once()
+
+    def test_manage_schedule_keywords_prompt(self):
+        # Mock user selecting "Manage schedule keywords", then "Done" (exit
+        # main menu loop)
+        self.mock_ask.unsafe_ask.side_effect = [
+            'Manage schedule keywords',
+            'Done'
+        ]
+
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('smarthome_cli.manage_keywords_prompt') as mock_keywords_prompt:
+
+            # Run prompt, will complete immediately with mock input
+            main_prompt()
+
+            # Confirm manage_keywords_prompt was called
+            mock_keywords_prompt.assert_called_once()
 
     def test_settings_prompt(self):
         # Mock user selecting "Settings", then "Done" (exit main menu loop)
@@ -180,6 +201,124 @@ class TestManageNodesPrompt(TestCase):
 
             # Confirm view_log_prompt was called with selected node + mock password
             mock_view_log_prompt.assert_called_once()
+
+
+class TestManageScheduleKeywordsPrompt(TestCase):
+    '''Tests the schedule keywords prompt, confirms options call correct function'''
+
+    def setUp(self):
+        # Mock replaces .ask() method to simulate user input
+        self.mock_ask = MagicMock()
+
+    def test_add_schedule_keyword(self):
+        # Mock user selecting "Add new schedule keyword", entering keyword name
+        # and timestamp, then selecting "Done" (exit loop)
+        self.mock_ask.unsafe_ask.side_effect = [
+            'Add new schedule keyword',
+            'NewName',
+            '12:34',
+            'Done'
+        ]
+
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('smarthome_cli.cli_config.add_schedule_keyword') as mock_add_keyword:
+
+            # Run prompt, will complete immediately with mock input
+            manage_keywords_prompt()
+
+            # Confirm cli_config.add_schedule_keyword was called with user input
+            mock_add_keyword.assert_called_once_with('NewName', '12:34')
+
+    def test_edit_schedule_keyword_change_both(self):
+        # Mock user selecting "Edit schedule keyword", selecting keyword name,
+        # changing both name and timestamp, then selecting "Done" (exit loop)
+        self.mock_ask.unsafe_ask.side_effect = [
+            'Edit schedule keyword',
+            'sleep',
+            True,
+            'NewName',
+            True,
+            '12:34',
+            'Done'
+        ]
+
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('smarthome_cli.cli_config.edit_schedule_keyword') as mock_edit_keyword:
+
+            # Run prompt, will complete immediately with mock input
+            manage_keywords_prompt()
+
+            # Confirm cli_config.edit_schedule_keyword was called with user input
+            mock_edit_keyword.assert_called_once_with('sleep', 'NewName', '12:34')
+
+    def test_edit_schedule_keyword_change_name(self):
+        # Mock user selecting "Edit schedule keyword", selecting keyword name,
+        # changing name but not timestamp, then selecting "Done" (exit loop)
+        self.mock_ask.unsafe_ask.side_effect = [
+            'Edit schedule keyword',
+            'sleep',
+            True,
+            'NewName',
+            False,
+            'Done'
+        ]
+
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('smarthome_cli.cli_config.edit_schedule_keyword') as mock_edit_keyword:
+
+            # Run prompt, will complete immediately with mock input
+            manage_keywords_prompt()
+
+            # Confirm cli_config.edit_schedule_keyword was called with user input
+            mock_edit_keyword.assert_called_once_with('sleep', 'NewName', '22:00')
+
+    def test_edit_schedule_keyword_change_timestamp(self):
+        # Mock user selecting "Edit schedule keyword", selecting keyword name,
+        # changing timestamp but not name, then selecting "Done" (exit loop)
+        self.mock_ask.unsafe_ask.side_effect = [
+            'Edit schedule keyword',
+            'sleep',
+            False,
+            True,
+            '12:34',
+            'Done'
+        ]
+
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('smarthome_cli.cli_config.edit_schedule_keyword') as mock_edit_keyword:
+
+            # Run prompt, will complete immediately with mock input
+            manage_keywords_prompt()
+
+            # Confirm cli_config.edit_schedule_keyword was called with user input
+            mock_edit_keyword.assert_called_once_with('sleep', 'sleep', '12:34')
+
+    def test_delete_schedule_keyword(self):
+        # Mock user selecting "Delete schedule keyword", selecting keyword name,
+        # then selecting "Done" (exit loop)
+        self.mock_ask.unsafe_ask.side_effect = [
+            'Delete schedule keyword',
+            'sleep',
+            'Done'
+        ]
+
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('smarthome_cli.cli_config.remove_schedule_keyword') as mock_rm_keyword:
+
+            # Run prompt, will complete immediately with mock input
+            manage_keywords_prompt()
+
+            # Confirm cli_config.remove_schedule_keyword was called with user selection
+            mock_rm_keyword.assert_called_once_with('sleep')
 
 
 class TestSettingsPrompt(TestCase):

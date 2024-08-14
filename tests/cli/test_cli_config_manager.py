@@ -488,6 +488,97 @@ class TestCliConfigManager(TestCase):
             # Confirm django error was printed
             mock_print.assert_called_with('New IP must be different than old')
 
+    def test_add_schedule_keyword(self):
+        # Confirm config does not contain NewName keyword
+        self.assertNotIn('NewName', self.manager.config['schedule_keywords'])
+
+        # Mock bulk API call functions called by method
+        with patch('cli_config_manager.bulk_add_schedule_keyword') as mock_add_keyword, \
+             patch('cli_config_manager.bulk_save_schedule_keyword') as mock_save_keywords:
+
+            # Call add_schedule_keyword with new keyword name and timestamp
+            self.manager.add_schedule_keyword('NewName', '12:34')
+
+            # Confirm added to manager config and file on disk
+            self.assertIn('NewName', self.manager.config['schedule_keywords'])
+            self.assertEqual(self.manager.config['schedule_keywords']['NewName'], '12:34')
+            with open(mock_cli_config_path, 'r') as file:
+                config = json.load(file)
+            self.assertIn('NewName', config['schedule_keywords'])
+            self.assertEqual(config['schedule_keywords']['NewName'], '12:34')
+
+            # Confirm bulk API call functions were called with expected args
+            mock_add_keyword.assert_called_once_with(
+                ['192.168.1.123', '192.168.1.234', '192.168.1.111'],
+                'NewName',
+                '12:34'
+            )
+            mock_save_keywords.assert_called_once_with(
+                ['192.168.1.123', '192.168.1.234', '192.168.1.111']
+            )
+
+    def test_edit_schedule_keyword(self):
+        # Confirm config contains sleep keyword, does not contain NewName
+        self.assertIn('sleep', self.manager.config['schedule_keywords'])
+        self.assertNotIn('NewName', self.manager.config['schedule_keywords'])
+
+        # Mock bulk API call functions called by method
+        with patch('cli_config_manager.bulk_edit_schedule_keyword') as mock_edit_keyword, \
+             patch('cli_config_manager.bulk_save_schedule_keyword') as mock_save_keywords:
+
+            # Call edit_schedule_keyword with existing keyword name, new name,
+            # new timestamp
+            self.manager.edit_schedule_keyword('sleep', 'NewName', '12:34')
+
+            # Confirm manager config no longer contains sleep, does contain NewName
+            self.assertNotIn('sleep', self.manager.config['schedule_keywords'])
+            self.assertIn('NewName', self.manager.config['schedule_keywords'])
+            self.assertEqual(self.manager.config['schedule_keywords']['NewName'], '12:34')
+
+            # Confirm file on disk no longer contains sleep, does contain NewName
+            with open(mock_cli_config_path, 'r') as file:
+                config = json.load(file)
+            self.assertNotIn('sleep', config['schedule_keywords'])
+            self.assertIn('NewName', config['schedule_keywords'])
+            self.assertEqual(config['schedule_keywords']['NewName'], '12:34')
+
+            # Confirm bulk API call functions were called with expected args
+            mock_edit_keyword.assert_called_once_with(
+                ['192.168.1.123', '192.168.1.234', '192.168.1.111'],
+                'sleep',
+                'NewName',
+                '12:34'
+            )
+            mock_save_keywords.assert_called_once_with(
+                ['192.168.1.123', '192.168.1.234', '192.168.1.111']
+            )
+
+    def test_remove_schedule_keyword(self):
+        # Confirm config contains sleep keyword
+        self.assertIn('sleep', self.manager.config['schedule_keywords'])
+
+        # Mock bulk API call functions called by method
+        with patch('cli_config_manager.bulk_remove_schedule_keyword') as mock_rm_keyword, \
+             patch('cli_config_manager.bulk_save_schedule_keyword') as mock_save_keywords:
+
+            # Call remove_schedule_keyword with existing keyword name
+            self.manager.remove_schedule_keyword('sleep')
+
+            # Confirm added to manager config and file on disk
+            self.assertNotIn('sleep', self.manager.config['schedule_keywords'])
+            with open(mock_cli_config_path, 'r') as file:
+                config = json.load(file)
+            self.assertNotIn('sleep', config['schedule_keywords'])
+
+            # Confirm bulk API call functions were called with expected args
+            mock_rm_keyword.assert_called_once_with(
+                ['192.168.1.123', '192.168.1.234', '192.168.1.111'],
+                'sleep'
+            )
+            mock_save_keywords.assert_called_once_with(
+                ['192.168.1.123', '192.168.1.234', '192.168.1.111']
+            )
+
     def test_load_config_file(self):
         # Call method with mock node name, confirm returns mock config file
         # created by mock_cli_config.json

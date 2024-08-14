@@ -7,7 +7,7 @@ import json
 import pydoc
 import questionary
 from Webrepl import Webrepl
-from helper_functions import valid_ip, valid_uri, get_config_filename
+from helper_functions import valid_ip, valid_uri, valid_timestamp, get_config_filename
 from config_generator import GenerateConfigFile
 from config_prompt_validators import LengthRange
 from provision import upload_node, upload_config_to_ip
@@ -261,6 +261,97 @@ def manage_nodes_prompt():
             break
 
 
+def add_schedule_keyword_prompt():
+    '''Prompts user to enter name and timestamp of new schedule keyword.
+    Adds keyword to cli_config.json and makes API calls to all existing nodes.
+    '''
+
+    # Prompt user to enter keyword name and timestamp
+    keyword = questionary.text("Enter new keyword name").unsafe_ask()
+    timestamp = questionary.text(
+        'Enter new keyword timestamp',
+        validate=valid_timestamp
+    ).unsafe_ask()
+
+    print('Adding keyword to all existing nodes...')
+    cli_config.add_schedule_keyword(keyword, timestamp)
+    print('Done')
+
+
+def edit_schedule_keyword_prompt():
+    '''Prompts user to select an existing schedule keyword and change its name,
+    timestamp, or both. Updates keyword in cli_config.json and makes API calls
+    to all existing nodes.
+    '''
+
+    # Prompt to select keyword
+    keyword_old = questionary.select(
+        "\nSelect keyword to edit",
+        choices=list(cli_config.config['schedule_keywords'].keys())
+    ).unsafe_ask()
+
+    # Prompt user to change name (optional)
+    if questionary.confirm('Change name?').unsafe_ask():
+        keyword_new = questionary.text("Enter new name").unsafe_ask()
+    else:
+        keyword_new = keyword_old
+
+    # Prompt user to change timestamp (optional)
+    if questionary.confirm('Change timestamp?').unsafe_ask():
+        timestamp = questionary.text(
+            'Enter new keyword timestamp',
+            validate=valid_timestamp
+        ).unsafe_ask()
+    else:
+        timestamp = cli_config.config['schedule_keywords'][keyword_old]
+
+    print('Updating keyword on all existing nodes...')
+    cli_config.edit_schedule_keyword(keyword_old, keyword_new, timestamp)
+    print('Done')
+
+
+def remove_schedule_keyword_prompt():
+    '''Prompts user to select an existing schedule keyword to delete.
+    Removes from cli_config.json and makes API calls to all existing nodes.
+    '''
+
+    # Prompt to select keyword
+    keyword = questionary.select(
+        "\nSelect keyword to delete",
+        choices=list(cli_config.config['schedule_keywords'].keys())
+    ).unsafe_ask()
+
+    print('Removing keyword from all existing nodes...')
+    cli_config.remove_schedule_keyword(keyword)
+    print('Done')
+
+
+def manage_keywords_prompt():
+    '''Prompt allows user to create, edit, and delete schedule keywords'''
+    while True:
+        choice = questionary.select(
+            "\nWhat would you like to do?",
+            choices=[
+                "Add new schedule keyword",
+                "Edit schedule keyword",
+                "Delete schedule keyword",
+                "Done"
+            ]
+        ).unsafe_ask()
+
+        if choice == 'Add new schedule keyword':
+            add_schedule_keyword_prompt()
+
+        elif choice == 'Edit schedule keyword':
+            edit_schedule_keyword_prompt()
+
+        elif choice == 'Delete schedule keyword':
+            remove_schedule_keyword_prompt()
+
+        elif choice == 'Done':
+            break
+
+
 def main_prompt():
     '''Main menu prompt'''
     while True:
@@ -269,6 +360,7 @@ def main_prompt():
             choices=[
                 "API client",
                 "Manage nodes",
+                "Manage schedule keywords",
                 "Settings",
                 "Done"
             ]
@@ -277,6 +369,8 @@ def main_prompt():
             api_prompt()
         elif choice == 'Manage nodes':
             manage_nodes_prompt()
+        elif choice == 'Manage schedule keywords':
+            manage_keywords_prompt()
         elif choice == 'Settings':
             settings_prompt()
         elif choice == 'Done':
