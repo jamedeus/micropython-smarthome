@@ -283,9 +283,9 @@ class ScheduleKeywordTests(TestCase):
         )
 
         # Mock all keyword endpoints, prevent failed network requests
-        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
-             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove), \
-             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save):
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request, confirm response, confirm model created
             data = {'keyword': 'morning', 'timestamp': '08:00'}
@@ -323,9 +323,9 @@ class ScheduleKeywordTests(TestCase):
         )
 
         # Mock all keyword endpoints, prevent failed network requests
-        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
-             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove), \
-             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save):
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request to change timestamp only, should overwrite existing keyword
             data = {'keyword_old': 'first', 'keyword_new': 'first', 'timestamp_new': '01:00'}
@@ -360,9 +360,9 @@ class ScheduleKeywordTests(TestCase):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
         # Mock all keyword endpoints, prevent failed network requests
-        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
-             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove), \
-             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save):
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request to change keyword, should remove and replace existing keyword
             data = {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '08:00'}
@@ -400,9 +400,9 @@ class ScheduleKeywordTests(TestCase):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
         # Mock all keyword endpoints, prevent failed network requests
-        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
-             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove), \
-             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save):
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request to delete keyword, verify response
             response = self.client.post('/delete_schedule_keyword', {'keyword': 'first'})
@@ -422,23 +422,6 @@ class ScheduleKeywordTests(TestCase):
         self.config2.refresh_from_db()
         self.assertNotIn('first', self.node1.config.config['metadata']['schedule_keywords'].keys())
         self.assertNotIn('first', self.config2.config['metadata']['schedule_keywords'].keys())
-
-    # Original issue: Views directly imported 3 endpoint functions from api_endpoints.
-    # Decorators adding wrapper functions were later added to api_endpoints to reduce
-    # code repetition. This removed the original reference from module namespace,
-    # leading views to import NoneType objects instead of functions. Attempting to call
-    # NoneType objects in ThreadPoolExecutor resulted in an immediate return, without
-    # calling any endpoints. All unit tests above continued to pass because they mock
-    # the endpoints in question.
-    # Fixed by importing decorated functions from endpoint_map object
-    def test_regression_endpoints_imported_as_nonetype(self):
-        from node_configuration import views
-        self.assertIsNotNone(views.add_schedule_keyword)
-        self.assertIsNotNone(views.remove_schedule_keyword)
-        self.assertIsNotNone(views.save_schedule_keywords)
-        self.assertEqual(type(views.add_schedule_keyword), types.FunctionType)
-        self.assertEqual(type(views.remove_schedule_keyword), types.FunctionType)
-        self.assertEqual(type(views.save_schedule_keywords), types.FunctionType)
 
 
 # Confirm schedule keyword management endpoints raise correct errors

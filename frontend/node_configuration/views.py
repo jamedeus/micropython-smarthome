@@ -13,11 +13,12 @@ from django.templatetags.static import static
 from django.views.decorators.csrf import ensure_csrf_cookie
 from Webrepl import Webrepl
 from provision_tools import get_modules, provision
-from api_endpoints import (
-    add_schedule_keyword,
-    remove_schedule_keyword,
-    save_schedule_keywords,
-    set_gps_coords
+from api_endpoints import set_gps_coords
+from api_helper_functions import (
+    bulk_add_schedule_keyword,
+    bulk_edit_schedule_keyword,
+    bulk_remove_schedule_keyword,
+    bulk_save_schedule_keyword
 )
 from validate_config import validate_full_config
 from helper_functions import (
@@ -560,13 +561,9 @@ def add_schedule_keyword_config(data):
         return error_response(message=str(ex), status=400)
 
     # Add keyword to all existing nodes in parallel
-    commands = [(node.ip, [data["keyword"], data["timestamp"]])
-                for node in Node.objects.all()]
-    with ThreadPoolExecutor(max_workers=20) as executor:
-        executor.map(add_schedule_keyword, *zip(*commands))
-
-    # Save keywords on all nodes
-    save_all_schedule_keywords()
+    node_ips = [node.ip for node in Node.objects.all()]
+    bulk_add_schedule_keyword(node_ips, data["keyword"], data["timestamp"])
+    bulk_save_schedule_keyword(node_ips)
 
     # Add new keyword to all configs in database
     all_keywords = get_schedule_keywords_dict()
@@ -595,30 +592,15 @@ def edit_schedule_keyword_config(data):
     except ValidationError as ex:
         return error_response(message=str(ex), status=400)
 
-    # If timestamp changed: Call add to overwrite existing keyword
-    if data["keyword_old"] == data["keyword_new"]:
-        # Update keyword on all existing nodes in parallel
-        commands = [(node.ip, [data["keyword_new"], data["timestamp_new"]])
-                    for node in Node.objects.all()]
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            executor.map(add_schedule_keyword, *zip(*commands))
-
-    # If keyword changed: Remove existing keyword, add new keyword
-    else:
-        # Remove keyword from all existing nodes in parallel
-        commands = [(node.ip, [data["keyword_old"]])
-                    for node in Node.objects.all()]
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            executor.map(remove_schedule_keyword, *zip(*commands))
-
-        # Add keyword to all existing nodes in parallel
-        commands = [(node.ip, [data["keyword_new"], data["timestamp_new"]])
-                    for node in Node.objects.all()]
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            executor.map(add_schedule_keyword, *zip(*commands))
-
-    # Save keywords on all nodes
-    save_all_schedule_keywords()
+    # Edit keyword on all existing nodes in parallel
+    node_ips = [node.ip for node in Node.objects.all()]
+    bulk_edit_schedule_keyword(
+        node_ips,
+        data["keyword_old"],
+        data["keyword_new"],
+        data["timestamp_new"]
+    )
+    bulk_save_schedule_keyword(node_ips)
 
     # Update keywords for all configs in database
     all_keywords = get_schedule_keywords_dict()
@@ -645,12 +627,9 @@ def delete_schedule_keyword_config(data):
         return error_response(message=str(ex), status=400)
 
     # Remove keyword from all existing nodes in parallel
-    commands = [(node.ip, [data["keyword"]]) for node in Node.objects.all()]
-    with ThreadPoolExecutor(max_workers=20) as executor:
-        executor.map(remove_schedule_keyword, *zip(*commands))
-
-    # Save keywords on all nodes
-    save_all_schedule_keywords()
+    node_ips = [node.ip for node in Node.objects.all()]
+    bulk_remove_schedule_keyword(node_ips, data["keyword"])
+    bulk_save_schedule_keyword(node_ips)
 
     # Remove keyword from all configs in database
     all_keywords = get_schedule_keywords_dict()
@@ -659,15 +638,6 @@ def delete_schedule_keyword_config(data):
         node.config.save()
 
     return standard_response(message='Keyword deleted')
-
-
-def save_all_schedule_keywords():
-    '''Makes parallel API calls all ESP32s (Node entries) to write current
-    schedule keywords to disk. Called by endpoints that modify keywords.
-    '''
-    commands = [(node.ip, "") for node in Node.objects.all()]
-    with ThreadPoolExecutor(max_workers=20) as executor:
-        executor.map(save_schedule_keywords, *zip(*commands))
 
 
 @ensure_csrf_cookie
