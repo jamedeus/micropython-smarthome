@@ -10,7 +10,7 @@ from smarthome_cli import (
     upload_config_from_disk,
     view_log_prompt,
     change_node_ip_prompt,
-    delete_prompt,
+    delete_node_prompt,
     manage_keywords_prompt,
     settings_prompt
 )
@@ -175,13 +175,13 @@ class TestManageNodesPrompt(TestCase):
         ]
 
         with patch('questionary.select', return_value=self.mock_ask), \
-             patch('smarthome_cli.delete_prompt') as mock_delete_prompt:
+             patch('smarthome_cli.delete_node_prompt') as mock_delete_node_prompt:
 
             # Run prompt, will complete immediately with mock input
             manage_nodes_prompt()
 
-            # Confirm delete_prompt was called with selected node + mock password
-            mock_delete_prompt.assert_called_once()
+            # Confirm delete_node_prompt was called with selected node + mock password
+            mock_delete_node_prompt.assert_called_once()
 
     def test_view_node_log(self):
         # Mock user selecting "View node log", then "Done" (exit loop)
@@ -630,7 +630,7 @@ class TestManageNodeFunctions(TestCase):
             # Confirm cli_config.change_node_ip was called with correct args
             mock_change_ip.assert_called_once_with('node1', '192.168.1.222')
 
-    def test_delete_prompt(self):
+    def test_delete_node_prompt(self):
         # Mock user checking 2 nodes at checkbox prompt, then selecting "Yes"
         # at confirmation prompt
         self.mock_ask.unsafe_ask.side_effect = [
@@ -645,7 +645,7 @@ class TestManageNodeFunctions(TestCase):
              patch('smarthome_cli.cli_config.remove_node') as mock_remove_node:
 
             # Run prompt, will complete immediately with mock input
-            delete_prompt()
+            delete_node_prompt()
 
             # Confirm cli_config.remove_node was called with both selected nodes
             self.assertEqual(len(mock_remove_node.call_args_list), 2)

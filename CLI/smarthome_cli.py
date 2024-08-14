@@ -76,6 +76,114 @@ def settings_prompt():
             break
 
 
+def manage_nodes_prompt():
+    '''Prompt allows user to create config files, provision nodes, etc'''
+    while True:
+        choice = questionary.select(
+            "\nWhat would you like to do?",
+            choices=[
+                "Create new node",
+                "Edit existing node config",
+                "Reupload config to node",
+                "Upload config file from disk",
+                "Change existing node IP",
+                "Delete existing node",
+                "View node log",
+                "Done"
+            ]
+        ).unsafe_ask()
+
+        if choice == 'Create new node':
+            create_new_node_prompt()
+
+        elif choice == 'Edit existing node config':
+            edit_node_config_prompt()
+
+        elif choice == 'Reupload config to node':
+            node = questionary.select(
+                "\nSelect a node to reprovision",
+                choices=list(cli_config.config['nodes'].keys())
+            ).unsafe_ask()
+            upload_node(node, cli_config.config['webrepl_password'])
+
+        elif choice == 'Upload config file from disk':
+            upload_config_from_disk()
+
+        elif choice == 'Change existing node IP':
+            change_node_ip_prompt()
+
+        elif choice == 'Delete existing node':
+            delete_node_prompt()
+
+        elif choice == 'View node log':
+            view_log_prompt()
+
+        elif choice == 'Done':
+            break
+
+
+def create_new_node_prompt():
+    '''Prompt allows user to create config file, upload to new node'''
+
+    # Show config generator prompt
+    generator = GenerateConfigFile()
+    generator.run_prompt()
+    if generator.passed_validation:
+        generator.write_to_disk()
+
+    if questionary.confirm('Upload config to ESP32?').ask():
+        filename = get_config_filename(generator.config['metadata']['id'])
+        upload_config_from_disk(filename)
+
+
+def edit_node_config_prompt():
+    '''Prompt allows user to select existing node, edit config, reupload'''
+
+    # Prompt to select node
+    node = questionary.select(
+        "\nSelect a node to edit",
+        choices=list(cli_config.config['nodes'].keys())
+    ).unsafe_ask()
+
+    # Instantiate generator with path to node config
+    generator = GenerateConfigFile(cli_config.get_config_filepath(node))
+    generator.run_prompt()
+    if generator.passed_validation:
+        generator.write_to_disk()
+
+    # Upload modified config to node
+    if questionary.confirm('Reupload now?'):
+        print(f'Reuploading {node}.json... ')
+        upload_node(node, cli_config.config['webrepl_password'])
+
+
+def upload_config_from_disk(config=None):
+    '''Prompt allows user to select file in config_directory, upload to IP.
+    Only prompts for IP if path to config file given as argument.
+    '''
+
+    # Prompt user for valid IPv4 address
+    ip_address = questionary.text(
+        "Enter IP address:",
+        validate=valid_ip
+    ).unsafe_ask()
+
+    # Prompt user to select file from config_directory
+    if not config:
+        config = questionary.select(
+            "\nSelect config file",
+            choices=os.listdir(cli_config.config['config_directory'])
+        ).unsafe_ask()
+    print(config)
+
+    # Upload config to target IP (also adds to cli_config.json)
+    upload_config_to_ip(
+        config_path=os.path.join(cli_config.config['config_directory'], config),
+        ip=ip_address,
+        webrepl_password=cli_config.config['webrepl_password']
+    )
+
+
 def change_node_ip_prompt():
     '''Prompt allows user to change the IP address of an existing node (uploads
     config to new IP and changes in cli_config.json). If a django server is
@@ -98,7 +206,7 @@ def change_node_ip_prompt():
     cli_config.change_node_ip(node, ip_address)
 
 
-def delete_prompt():
+def delete_node_prompt():
     '''Prompt allows user to delete existing nodes from cli_config.json. If a
     django server is configured the node is also removed from django database.
     '''
@@ -153,109 +261,27 @@ def view_log_prompt():
         print(f'Log saved as {filename}')
 
 
-def upload_config_from_disk(config=None):
-    '''Prompt allows user to select file in config_directory, upload to IP.
-    Only prompts for IP if path to config file given as argument.
-    '''
-
-    # Prompt user for valid IPv4 address
-    ip_address = questionary.text(
-        "Enter IP address:",
-        validate=valid_ip
-    ).unsafe_ask()
-
-    # Prompt user to select file from config_directory
-    if not config:
-        config = questionary.select(
-            "\nSelect config file",
-            choices=os.listdir(cli_config.config['config_directory'])
-        ).unsafe_ask()
-    print(config)
-
-    # Upload config to target IP (also adds to cli_config.json)
-    upload_config_to_ip(
-        config_path=os.path.join(cli_config.config['config_directory'], config),
-        ip=ip_address,
-        webrepl_password=cli_config.config['webrepl_password']
-    )
-
-
-def create_new_node_prompt():
-    '''Prompt allows user to create config file, upload to new node'''
-
-    # Show config generator prompt
-    generator = GenerateConfigFile()
-    generator.run_prompt()
-    if generator.passed_validation:
-        generator.write_to_disk()
-
-    if questionary.confirm('Upload config to ESP32?').ask():
-        filename = get_config_filename(generator.config['metadata']['id'])
-        upload_config_from_disk(filename)
-
-
-def edit_node_config_prompt():
-    '''Prompt allows user to select existing node, edit config, reupload'''
-
-    # Prompt to select node
-    node = questionary.select(
-        "\nSelect a node to edit",
-        choices=list(cli_config.config['nodes'].keys())
-    ).unsafe_ask()
-
-    # Instantiate generator with path to node config
-    generator = GenerateConfigFile(cli_config.get_config_filepath(node))
-    generator.run_prompt()
-    if generator.passed_validation:
-        generator.write_to_disk()
-
-    # Upload modified config to node
-    if questionary.confirm('Reupload now?'):
-        print(f'Reuploading {node}.json... ')
-        upload_node(node, cli_config.config['webrepl_password'])
-
-
-def manage_nodes_prompt():
-    '''Prompt allows user to create config files, provision nodes, etc'''
+def manage_keywords_prompt():
+    '''Prompt allows user to create, edit, and delete schedule keywords'''
     while True:
         choice = questionary.select(
             "\nWhat would you like to do?",
             choices=[
-                "Create new node",
-                "Edit existing node config",
-                "Reupload config to node",
-                "Upload config file from disk",
-                "Change existing node IP",
-                "Delete existing node",
-                "View node log",
+                "Add new schedule keyword",
+                "Edit schedule keyword",
+                "Delete schedule keyword",
                 "Done"
             ]
         ).unsafe_ask()
 
-        if choice == 'Create new node':
-            create_new_node_prompt()
+        if choice == 'Add new schedule keyword':
+            add_schedule_keyword_prompt()
 
-        elif choice == 'Edit existing node config':
-            edit_node_config_prompt()
+        elif choice == 'Edit schedule keyword':
+            edit_schedule_keyword_prompt()
 
-        elif choice == 'Reupload config to node':
-            node = questionary.select(
-                "\nSelect a node to reprovision",
-                choices=list(cli_config.config['nodes'].keys())
-            ).unsafe_ask()
-            upload_node(node, cli_config.config['webrepl_password'])
-
-        elif choice == 'Upload config file from disk':
-            upload_config_from_disk()
-
-        elif choice == 'Change existing node IP':
-            change_node_ip_prompt()
-
-        elif choice == 'Delete existing node':
-            delete_prompt()
-
-        elif choice == 'View node log':
-            view_log_prompt()
+        elif choice == 'Delete schedule keyword':
+            remove_schedule_keyword_prompt()
 
         elif choice == 'Done':
             break
@@ -324,32 +350,6 @@ def remove_schedule_keyword_prompt():
     print('Removing keyword from all existing nodes...')
     cli_config.remove_schedule_keyword(keyword)
     print('Done')
-
-
-def manage_keywords_prompt():
-    '''Prompt allows user to create, edit, and delete schedule keywords'''
-    while True:
-        choice = questionary.select(
-            "\nWhat would you like to do?",
-            choices=[
-                "Add new schedule keyword",
-                "Edit schedule keyword",
-                "Delete schedule keyword",
-                "Done"
-            ]
-        ).unsafe_ask()
-
-        if choice == 'Add new schedule keyword':
-            add_schedule_keyword_prompt()
-
-        elif choice == 'Edit schedule keyword':
-            edit_schedule_keyword_prompt()
-
-        elif choice == 'Delete schedule keyword':
-            remove_schedule_keyword_prompt()
-
-        elif choice == 'Done':
-            break
 
 
 def main_prompt():
