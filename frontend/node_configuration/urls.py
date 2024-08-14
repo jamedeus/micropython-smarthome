@@ -35,9 +35,9 @@ urlpatterns = [
     path('set_default_location', views.set_default_location, name='set_default_location'),
 
     # Schedule keyword management endpoints
-    path('add_schedule_keyword', views.add_schedule_keyword_config, name='add_schedule_keyword'),
-    path('edit_schedule_keyword', views.edit_schedule_keyword_config, name='edit_schedule_keyword'),
-    path('delete_schedule_keyword', views.delete_schedule_keyword_config, name='delete_schedule_keyword'),
+    path('add_schedule_keyword', views.add_schedule_keyword, name='add_schedule_keyword'),
+    path('edit_schedule_keyword', views.edit_schedule_keyword, name='edit_schedule_keyword'),
+    path('delete_schedule_keyword', views.delete_schedule_keyword, name='delete_schedule_keyword'),
 
     # Template views: overview, create new config, edit existing config
     path('config_overview', views.config_overview, name='config_overview'),

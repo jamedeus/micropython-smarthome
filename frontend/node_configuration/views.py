@@ -546,7 +546,7 @@ def restore_config(data):
 
 
 @requires_post
-def add_schedule_keyword_config(data):
+def add_schedule_keyword(data):
     '''Creates ScheduleKeyword model entry, makes API calls to add new keyword
     to all ESP32s (Node entries) in parallel.
     '''
@@ -576,7 +576,7 @@ def add_schedule_keyword_config(data):
 
 
 @requires_post
-def edit_schedule_keyword_config(data):
+def edit_schedule_keyword(data):
     '''Updates existing ScheduleKeyword model entry, makes API calls to update
     keyword on all ESP32s (Node entries) in parallel.
     '''
@@ -614,7 +614,7 @@ def edit_schedule_keyword_config(data):
 
 
 @requires_post
-def delete_schedule_keyword_config(data):
+def delete_schedule_keyword(data):
     '''Deletes an existing ScheduleKeyword model entry, makes API calls to
     remove keyword from all ESP32s (Node entries) in parallel.
     '''
