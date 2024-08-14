@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long, missing-function-docstring, missing-module-docstring, missing-class-docstring, protected-access
+
 import os
 from unittest import TestCase
 from unittest.mock import patch, MagicMock

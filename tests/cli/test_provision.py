@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long, missing-function-docstring, missing-module-docstring, missing-class-docstring
+
 import os
 import sys
 import json
@@ -18,7 +20,7 @@ class TestArgParser(TestCase):
 
     def test_all(self):
         with patch.object(sys, 'argv', ['', '--all']):
-            args, parser = parse_args()
+            args, _ = parse_args()
 
         # Confirm all arg is set
         self.assertTrue(args.all)
@@ -32,7 +34,7 @@ class TestArgParser(TestCase):
 
     def test_unit_test(self):
         with patch.object(sys, 'argv', ['', '--test', '192.168.1.123']):
-            args, parser = parse_args()
+            args, _ = parse_args()
 
         # Confirm test arg contains target IP
         self.assertTrue(args.test)
@@ -47,7 +49,7 @@ class TestArgParser(TestCase):
 
     def test_node_friendly_name(self):
         with patch.object(sys, 'argv', ['', 'node1']):
-            args, parser = parse_args()
+            args, _ = parse_args()
 
         # Confirm node arg contains friendly name
         self.assertTrue(args.node)
@@ -61,10 +63,10 @@ class TestArgParser(TestCase):
         self.assertFalse(args.password)
 
     def test_manual_parameters(self):
-        open('node1.json', 'w')
+        open('node1.json', 'w', encoding='utf-8')
         cli_args = ['', '--config', 'node1.json', '--ip', '192.168.1.123', '--password', 'hunter2']
         with patch.object(sys, 'argv', cli_args):
-            args, parser = parse_args()
+            args, _ = parse_args()
 
         # Confirm parameters matched to correct args
         self.assertEqual(args.config, 'node1.json')
@@ -79,10 +81,10 @@ class TestArgParser(TestCase):
 
     def test_manual_parameters_config_relative_path(self):
         config_path = os.path.join(mock_cli_config['config_directory'], 'node1.json')
-        open(config_path, 'w')
+        open(config_path, 'w', encoding='utf-8')
         cli_args = ['', '--config', 'node1.json', '--ip', '192.168.1.123', '--password', 'hunter2']
         with patch.object(sys, 'argv', cli_args):
-            args, parser = parse_args()
+            args, _ = parse_args()
 
         # Confirm parameters matched to correct args
         self.assertEqual(args.config, os.path.abspath(config_path))
@@ -350,7 +352,8 @@ class TestInstantiation(TestCase):
 
 class TestGetModules(TestCase):
     def setUp(self):
-        with open(os.path.join(repo, "tests", "cli", "unit-test-config.json"), 'r') as file:
+        unit_test_config_path = os.path.join(repo, "tests", "cli", "unit-test-config.json")
+        with open(unit_test_config_path, 'r', encoding='utf-8') as file:
             self.config = json.load(file)
 
     def test_get_modules_full_config(self):

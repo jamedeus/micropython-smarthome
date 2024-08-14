@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long, missing-function-docstring, missing-module-docstring, missing-class-docstring
+
 import os
 import json
 import struct
@@ -14,7 +16,7 @@ repo = os.path.split(cli)[0]
 test_config_path = os.path.join(repo, "tests", "cli", "unit-test-config.json")
 
 # Binary contents of test config file, used as payload in simulated Webrepl connections
-with open(test_config_path, 'r') as file:
+with open(test_config_path, 'r', encoding='utf-8') as file:
     binary_unit_test_config = json.dumps(json.load(file)).encode()
 
 # Used to track current position in binary_unit_test_config (read function called multiple times)
@@ -255,8 +257,7 @@ class WebreplTests(TestCase):
         def simulate_failed_read(size):
             if size == 2:
                 return b'\x00\x01'
-            else:
-                return b''
+            return b''
 
         # Mock open_connection to return True without doing anything
         # Mock websocket.read to simulate failed read
@@ -292,7 +293,7 @@ class WebreplTests(TestCase):
         node = Webrepl('123.45.67.89', 'password')
 
         # Read file into variable
-        with open(test_config_path, 'r') as file:
+        with open(test_config_path, 'r', encoding='utf-8') as file:
             config = json.load(file)
 
         # Mock websocket and read_resp to allow send to complete

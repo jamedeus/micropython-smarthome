@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long, missing-function-docstring, missing-module-docstring, missing-class-docstring
+
 import os
 import json
 from copy import deepcopy
@@ -150,7 +152,7 @@ class TestCliConfigManager(TestCase):
 
             # Confirm node was added to manager config attribute and file on disk
             self.assertIn('new', self.manager.config['nodes'])
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertIn('new', config['nodes'])
 
@@ -192,7 +194,7 @@ class TestCliConfigManager(TestCase):
 
             # Confirm node was added to manager config attribute and file on disk
             self.assertIn('new', self.manager.config['nodes'])
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertIn('new', config['nodes'])
 
@@ -221,7 +223,7 @@ class TestCliConfigManager(TestCase):
 
             # Confirm node3 was removed from manager config attribute and file on disk
             self.assertNotIn('node3', self.manager.config['nodes'])
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertNotIn('node3', config['nodes'])
 
@@ -254,7 +256,7 @@ class TestCliConfigManager(TestCase):
 
             # Confirm node3 was removed from manager config attribute and file on disk
             self.assertNotIn('node3', self.manager.config['nodes'])
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertNotIn('node3', config['nodes'])
 
@@ -291,7 +293,7 @@ class TestCliConfigManager(TestCase):
 
             # Confirm node3 was removed from manager config attribute and file on disk
             self.assertNotIn('node3', self.manager.config['nodes'])
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertNotIn('node3', config['nodes'])
 
@@ -331,7 +333,7 @@ class TestCliConfigManager(TestCase):
 
             # Confirm node3 was removed from manager config attribute and file on disk
             self.assertNotIn('node3', self.manager.config['nodes'])
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertNotIn('node3', config['nodes'])
 
@@ -383,7 +385,7 @@ class TestCliConfigManager(TestCase):
 
             # Confirm IP changed in manager config and file on disk
             self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.222')
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertEqual(config['nodes']['node3'], '192.168.1.222')
 
@@ -423,7 +425,7 @@ class TestCliConfigManager(TestCase):
 
             # Confirm IP did NOT change in manager config or file on disk
             self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.111')
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertEqual(config['nodes']['node3'], '192.168.1.111')
 
@@ -480,7 +482,7 @@ class TestCliConfigManager(TestCase):
 
             # Confirm IP changed in manager config and file on disk
             self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.222')
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertEqual(config['nodes']['node3'], '192.168.1.222')
 
@@ -509,7 +511,7 @@ class TestCliConfigManager(TestCase):
             # Confirm added to manager config and file on disk
             self.assertIn('NewName', self.manager.config['schedule_keywords'])
             self.assertEqual(self.manager.config['schedule_keywords']['NewName'], '12:34')
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertIn('NewName', config['schedule_keywords'])
             self.assertEqual(config['schedule_keywords']['NewName'], '12:34')
@@ -565,7 +567,7 @@ class TestCliConfigManager(TestCase):
             # Confirm added to manager config and file on disk
             self.assertIn('NewName', self.manager.config['schedule_keywords'])
             self.assertEqual(self.manager.config['schedule_keywords']['NewName'], '12:34')
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertIn('NewName', config['schedule_keywords'])
             self.assertEqual(config['schedule_keywords']['NewName'], '12:34')
@@ -606,7 +608,7 @@ class TestCliConfigManager(TestCase):
             self.assertEqual(self.manager.config['schedule_keywords']['NewName'], '12:34')
 
             # Confirm file on disk no longer contains sleep, does contain NewName
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertNotIn('sleep', config['schedule_keywords'])
             self.assertIn('NewName', config['schedule_keywords'])
@@ -675,7 +677,7 @@ class TestCliConfigManager(TestCase):
             self.assertEqual(self.manager.config['schedule_keywords']['sleep'], '12:34')
 
             # Confirm sleep keyword timestamp changed in file on disk
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertIn('sleep', config['schedule_keywords'])
             self.assertEqual(config['schedule_keywords']['sleep'], '12:34')
@@ -741,7 +743,7 @@ class TestCliConfigManager(TestCase):
             self.assertEqual(self.manager.config['schedule_keywords']['NewName'], '12:34')
 
             # Confirm file on disk no longer contains sleep, does contain NewName
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertNotIn('sleep', config['schedule_keywords'])
             self.assertIn('NewName', config['schedule_keywords'])
@@ -777,7 +779,7 @@ class TestCliConfigManager(TestCase):
 
             # Confirm added to manager config and file on disk
             self.assertNotIn('sleep', self.manager.config['schedule_keywords'])
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertNotIn('sleep', config['schedule_keywords'])
 
@@ -830,7 +832,7 @@ class TestCliConfigManager(TestCase):
 
             # Confirm added to manager config and file on disk
             self.assertNotIn('sleep', self.manager.config['schedule_keywords'])
-            with open(mock_cli_config_path, 'r') as file:
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
                 config = json.load(file)
             self.assertNotIn('sleep', config['schedule_keywords'])
 
@@ -1026,7 +1028,7 @@ class TestCliConfigManager(TestCase):
             self.manager.config['django_backend'],
             'http://10.0.0.1:9999'
         )
-        with open(mock_cli_config_path, 'r') as file:
+        with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
             config = json.load(file)
         self.assertEqual(config['django_backend'], 'http://10.0.0.1:9999')
 
@@ -1038,7 +1040,7 @@ class TestCliConfigManager(TestCase):
             self.manager.config['django_backend'],
             'http://192.168.1.100'
         )
-        with open(mock_cli_config_path, 'r') as file:
+        with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
             config = json.load(file)
         self.assertEqual(config['django_backend'], 'http://192.168.1.100')
 
@@ -1051,7 +1053,7 @@ class TestCliConfigManager(TestCase):
             self.manager.config['config_directory'],
             '/fake/config/path'
         )
-        with open(mock_cli_config_path, 'r') as file:
+        with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
             config = json.load(file)
         self.assertEqual(config['config_directory'], '/fake/config/path')
 
@@ -1063,7 +1065,7 @@ class TestCliConfigManager(TestCase):
             self.manager.config['config_directory'],
             mock_config_dir
         )
-        with open(mock_cli_config_path, 'r') as file:
+        with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
             config = json.load(file)
         self.assertEqual(config['config_directory'], mock_config_dir)
 
@@ -1073,7 +1075,7 @@ class TestCliConfigManager(TestCase):
 
         # Confirm changed in class attribute and on disk
         self.assertEqual(self.manager.config['webrepl_password'], 'newpass')
-        with open(mock_cli_config_path, 'r') as file:
+        with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
             config = json.load(file)
         self.assertEqual(config['webrepl_password'], 'newpass')
 
@@ -1082,6 +1084,6 @@ class TestCliConfigManager(TestCase):
 
         # Confirm changed back in class attribute and on disk
         self.assertEqual(self.manager.config['webrepl_password'], 'password')
-        with open(mock_cli_config_path, 'r') as file:
+        with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
             config = json.load(file)
         self.assertEqual(config['webrepl_password'], 'password')

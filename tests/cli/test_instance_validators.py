@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long, missing-function-docstring, missing-module-docstring, missing-class-docstring
+
 from unittest import TestCase
 from helper_functions import load_unit_test_config
 from instance_validators import (

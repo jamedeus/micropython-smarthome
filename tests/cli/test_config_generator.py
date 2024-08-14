@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long, missing-function-docstring, missing-module-docstring, missing-class-docstring, protected-access
+
 import os
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
@@ -1222,7 +1224,7 @@ class TestGenerateConfigFile(TestCase):
 
     def test_edit_invalid_config_path(self):
         # Create non-json config file
-        with open('fake_config_file.txt', 'w'):
+        with open('fake_config_file.txt', 'w', encoding='utf-8'):
             pass
 
         # Attempt to instantiate with non-json config file, confirm raises error

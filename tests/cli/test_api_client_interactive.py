@@ -2,7 +2,7 @@
 the command line with no arguments.
 '''
 
-# pylint: disable=missing-function-docstring, missing-class-docstring
+# pylint: disable=missing-function-docstring, missing-class-docstring, missing-class-docstring
 
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
