@@ -121,41 +121,49 @@ class TestInitialSetup(TestCase):
         # Simulate user selecting "Yes" at each confirmation
         self.mock_ask.unsafe_ask.return_value = True
 
-        # Mock functions to confirm called
+        # Mock prompt functions to confirm called
         with patch('questionary.confirm', return_value=self.mock_ask), \
              patch('smarthome_cli.config_directory_prompt') as mock_config_prompt, \
              patch('smarthome_cli.webrepl_password_prompt') as mock_webrepl_prompt, \
              patch('smarthome_cli.django_address_prompt') as mock_django_prompt, \
-             patch('smarthome_cli.cli_config.sync_from_django') as mock_sync:
+             patch('smarthome_cli.cli_config.sync_from_django') as mock_sync, \
+             patch('smarthome_cli.cli_config.write_cli_config_to_disk') as mock_write_to_disk:
 
             # Run prompt, will complete immediately
             setup_prompt()
 
-            # Confirm all functions were called
+            # Confirm all prompt functions were called
             mock_config_prompt.assert_called_once()
             mock_webrepl_prompt.assert_called_once()
             mock_django_prompt.assert_called_once()
             mock_sync.assert_called_once()
 
+            # Confirm cli_config.json was written to disk
+            mock_write_to_disk.assert_called_once()
+
     def test_setup_prompt_use_defaults(self):
         # Simulate user selecting "No" at each confirmation
         self.mock_ask.unsafe_ask.return_value = False
 
-        # Mock functions to confirm called
+        # Mock prompt functions to confirm called
         with patch('questionary.confirm', return_value=self.mock_ask), \
              patch('smarthome_cli.config_directory_prompt') as mock_config_prompt, \
              patch('smarthome_cli.webrepl_password_prompt') as mock_webrepl_prompt, \
              patch('smarthome_cli.django_address_prompt') as mock_django_prompt, \
-             patch('smarthome_cli.cli_config.sync_from_django') as mock_sync:
+             patch('smarthome_cli.cli_config.sync_from_django') as mock_sync, \
+             patch('smarthome_cli.cli_config.write_cli_config_to_disk') as mock_write_to_disk:
 
             # Run prompt, will complete immediately
             setup_prompt()
 
-            # Confirm no functions were called
+            # Confirm no prompt functions were called
             mock_config_prompt.assert_not_called()
             mock_webrepl_prompt.assert_not_called()
             mock_django_prompt.assert_not_called()
             mock_sync.assert_not_called()
+
+            # Confirm cli_config.json was written to disk
+            mock_write_to_disk.assert_called_once()
 
 
 class TestManageNodesPrompt(TestCase):
