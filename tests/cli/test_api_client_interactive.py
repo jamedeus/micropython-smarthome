@@ -143,6 +143,49 @@ class InteractiveMenuTests(TestCase):
             main()
             mock_interactive_prompt.assert_called()
 
+    def test_enter_node_ip_address(self):
+        # Simulate user selecting "Enter node IP" instead of node name, typing
+        # IP address, then selecting clear_log endpoint
+        self.mock_ask.unsafe_ask.side_effect = [
+            'Enter node IP',
+            '192.168.1.101',
+            'clear_log',
+            'Done',
+            'Done'
+        ]
+
+        # Mock parse_command to return status, then API response from ESP32,
+        # then status again (prompt restarts)
+        with patch('api_client.parse_command', side_effect=[
+            mock_status_object,
+            {'clear_log': 'success'},
+            mock_status_object
+        ]) as mock_parse_command:
+
+            # Run prompt, will complete immediately with mock input
+            api_prompt()
+
+            # Confirm called parse_command 3 times
+            self.assertEqual(mock_parse_command.call_count, 3)
+
+            # First call: requested status object from target node
+            self.assertEqual(
+                mock_parse_command.call_args_list[0][0],
+                ("192.168.1.101", ["status"])
+            )
+
+            # Second call: sent clear_log command
+            self.assertEqual(
+                mock_parse_command.call_args_list[1][0],
+                ("192.168.1.101", ["clear_log"])
+            )
+
+            # Third call: requested updated status object after API call
+            self.assertEqual(
+                mock_parse_command.call_args_list[2][0],
+                ("192.168.1.101", ["status"])
+            )
+
     def test_enable_endpoint(self):
         # Simulate user selecting node1, enable, sensor1
         self.mock_ask.unsafe_ask.side_effect = [

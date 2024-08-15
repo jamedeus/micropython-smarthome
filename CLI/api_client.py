@@ -205,6 +205,7 @@ def api_target_node_prompt():
     '''Prompts user to select a Node for api_prompt'''
 
     node_options = list(nodes.keys())
+    node_options.append('Enter node IP')
     node_options.append('Done')
 
     return questionary.select(
@@ -427,9 +428,21 @@ def api_prompt():
 
     # Prompt to select existing node, get name and IP address
     node = api_target_node_prompt()
+
+    # Exit prompt if user selected "Done"
     if node == 'Done':
         return
-    node_ip = nodes[node]
+
+    # Prompt for IP address if user selected "Enter node IP"
+    if node == 'Enter node IP':
+        node = node_ip = questionary.text(
+            "Enter IP address:",
+            validate=valid_ip
+        ).unsafe_ask()
+
+    # Loop up IP in cli_config.json if user selected existing node
+    else:
+        node_ip = nodes[node]
 
     # Prevent traceback on first loop
     # Replaced by chosen endpoint on each loop, used as default for next loop
