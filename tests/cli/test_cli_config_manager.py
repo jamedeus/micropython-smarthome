@@ -489,6 +489,44 @@ class TestCliConfigManager(TestCase):
             # Confirm django error was printed
             mock_print.assert_called_with('New IP must be different than old')
 
+    def test_change_node_ip_no_django(self):
+        # Confirm node3 has expected IP in config object
+        self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.111')
+
+        # Create mock cli_config.json with no django backend configured
+        mock_cli_config_no_backend = deepcopy(mock_cli_config)
+        del mock_cli_config_no_backend['django_backend']
+
+        # Mock provision to return success object
+        # Mock get_modules to return predictable value
+        # Mock _client.post to confirm not called
+        # Mock cli_config.json to simulate no django backend
+        with patch('cli_config_manager.provision', return_value={'status': 200}) as mock_provision, \
+             patch('cli_config_manager.get_modules', return_value=['module']), \
+             patch.object(self.manager, '_client', MagicMock()) as mock_client, \
+             patch.object(mock_client, 'post') as mock_post, \
+             patch('smarthome_cli.cli_config.config', mock_cli_config_no_backend):
+
+            # Call change_node_ip method with name of existing node and new IP
+            self.manager.change_node_ip('node3', '192.168.1.222')
+
+            # Confirm provision was called with expected arguments
+            mock_provision.assert_called_once_with(
+                ip='192.168.1.222',
+                password=self.manager.config['webrepl_password'],
+                config={'metadata': {'id': 'Node3'}},
+                modules=['module']
+            )
+
+            # Confirm did NOT make POST request (no django backend configured)
+            mock_post.assert_not_called()
+
+            # Confirm IP changed in manager config and file on disk
+            self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.222')
+            with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
+                config = json.load(file)
+            self.assertEqual(config['nodes']['node3'], '192.168.1.222')
+
     def test_add_schedule_keyword(self):
         # Confirm config does not contain NewName keyword
         self.assertNotIn('NewName', self.manager.config['schedule_keywords'])
@@ -1087,3 +1125,105 @@ class TestCliConfigManager(TestCase):
         with open(mock_cli_config_path, 'r', encoding='utf-8') as file:
             config = json.load(file)
         self.assertEqual(config['webrepl_password'], 'password')
+
+
+class TestInstantiation(TestCase):
+    '''Tests CliConfigManager singleton initial instantiation'''
+
+    def setUp(self):
+        # Mock path to cli_config.json (prevent overwriting real file)
+        self.cli_config_patch = patch(
+            'cli_config_manager.cli_config_path',
+            mock_cli_config_path
+        )
+        self.cli_config_patch.start()
+
+    def tearDown(self):
+        self.cli_config_patch.stop()
+
+        # Overwrite mock_cli_config with original contents
+        with open(mock_cli_config_path, 'w', encoding='utf-8') as file:
+            json.dump(mock_cli_config, file)
+
+    def test_instantiate_with_django_backend(self):
+        # Create mock to replace CliConfigManager._client
+        mock_client = MagicMock()
+
+        # Create mock /get_cli_config endpoint response
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            'status': 'success',
+            'message': {
+                'nodes': {
+                    'node1': '192.168.1.123',
+                    'node2': '192.168.1.234',
+                    'node3': '192.168.1.111'
+                },
+                'schedule_keywords': {
+                    'sunrise': '06:00',
+                    'sunset': '18:00',
+                    'sleep': '22:00'
+                }
+            }
+        }
+
+        # Mock requests.session to return mock_client
+        # Mock _client.get to confirm correct request made
+        # Mock _client.get return value to simulate actual response
+        # Mock attributes to trick singleton into creating new instance
+        with patch('cli_config_manager.requests.session', return_value=mock_client), \
+             patch.object(mock_client, 'get') as mock_get, \
+             patch.object(mock_get, 'get', return_value=mock_response), \
+             patch.object(CliConfigManager, '_instance', None), \
+             patch.object(CliConfigManager, '_initialized', False):
+
+            # Instantiate class (should create new instance due to mocks)
+            manager = CliConfigManager()
+
+            # Confirm singleton attributes were set to prevent creating duplicate
+            self.assertTrue(manager._initialized)
+            self.assertIsNotNone(manager._instance)
+
+            # Confirm config attribute contains config file read from disk
+            self.assertEqual(manager.config, mock_cli_config)
+
+            # Confirm _client was created, correct GET request was made
+            self.assertIsNotNone(manager._client)
+            self.assertEqual(manager._client, mock_client)
+            mock_get.assert_called_once_with(
+                f'{mock_cli_config["django_backend"]}/get_cli_config',
+                timeout=5
+            )
+
+    def test_instantiate_without_django_backend(self):
+        # Create mock cli_config.json with no django backend configured
+        mock_cli_config_no_backend = deepcopy(mock_cli_config)
+        del mock_cli_config_no_backend['django_backend']
+
+        # Create mock to replace CliConfigManager._client
+        mock_client = MagicMock()
+
+        # Mock requests.session to return mock_client
+        # Mock _client.get to confirm no request made
+        # Mock attributes to trick singleton into creating new instance
+        # Mock cli_config.json to simulate no django backend
+        with patch('cli_config_manager.requests.session', return_value=mock_client), \
+             patch.object(mock_client, 'get') as mock_get, \
+             patch.object(CliConfigManager, '_instance', None), \
+             patch.object(CliConfigManager, '_initialized', False), \
+             patch('cli_config_manager.json.load', return_value=mock_cli_config_no_backend):
+
+            # Instantiate class (should create new instance due to mocks)
+            manager = CliConfigManager()
+
+            # Confirm singleton attributes were set to prevent creating duplicate
+            self.assertTrue(manager._initialized)
+            self.assertIsNotNone(manager._instance)
+
+            # Confirm config attribute contains config file read from disk
+            self.assertEqual(manager.config, mock_cli_config_no_backend)
+
+            # Confirm did NOT create client, did NOT make GET request
+            self.assertIsNone(manager._client)
+            mock_get.assert_not_called()
