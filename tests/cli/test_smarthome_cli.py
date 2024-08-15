@@ -438,7 +438,7 @@ class TestSettingsPrompt(TestCase):
 
             # Confirm did not display django sync options
             mock_select.assert_called_once_with(
-                "\nWhat would you like to do?",
+                "Settings menu",
                 choices=[
                     "Set django address",
                     "Change config directory",
@@ -455,7 +455,7 @@ class TestSettingsPrompt(TestCase):
 
             # Confirm displayed all options
             mock_select.assert_called_once_with(
-                "\nWhat would you like to do?",
+                "Settings menu",
                 choices=[
                     "Set django address",
                     "Sync nodes and keywords from django",

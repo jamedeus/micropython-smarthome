@@ -6,6 +6,7 @@ import os
 import json
 import pydoc
 import questionary
+from questionary import Style
 from Webrepl import Webrepl
 from helper_functions import valid_ip, valid_uri, valid_timestamp, get_config_filename
 from config_generator import GenerateConfigFile
@@ -44,7 +45,7 @@ def settings_prompt():
             ]
 
         choice = questionary.select(
-            "\nWhat would you like to do?",
+            "Settings menu",
             choices=choices
         ).unsafe_ask()
         if choice == 'Set django address':
@@ -82,7 +83,7 @@ def manage_nodes_prompt():
     choice = None
     while choice != 'Done':
         choice = questionary.select(
-            "\nWhat would you like to do?",
+            "Manage nodes",
             choices=[
                 "Create new node",
                 "Edit existing node config",
@@ -103,7 +104,7 @@ def manage_nodes_prompt():
 
         elif choice == 'Reupload config to node':
             node = questionary.select(
-                "\nSelect a node to reprovision",
+                "Select a node to reprovision",
                 choices=list(cli_config.config['nodes'].keys())
             ).unsafe_ask()
             upload_node(node, cli_config.config['webrepl_password'])
@@ -140,7 +141,7 @@ def edit_node_config_prompt():
 
     # Prompt to select node
     node = questionary.select(
-        "\nSelect a node to edit",
+        "Select a node to edit",
         choices=list(cli_config.config['nodes'].keys())
     ).unsafe_ask()
 
@@ -170,7 +171,7 @@ def upload_config_from_disk(config=None):
     # Prompt user to select file from config_directory
     if not config:
         config = questionary.select(
-            "\nSelect config file",
+            "Select config file",
             choices=os.listdir(cli_config.config['config_directory'])
         ).unsafe_ask()
     print(config)
@@ -191,7 +192,7 @@ def change_node_ip_prompt():
 
     # Prompt user to select existing node
     node = questionary.select(
-        "\nSelect a node to change IP",
+        "Select a node to change IP",
         choices=list(cli_config.config['nodes'].keys())
     ).unsafe_ask()
 
@@ -215,7 +216,7 @@ def delete_node_prompt():
     ).unsafe_ask()
 
     # Print warning, show confirmation prompt
-    print('The following nodes will be deleted:')
+    print('\nThe following nodes will be deleted:')
     for i in targets:
         print(f'  {i}')
     if 'django_backend' in cli_config.config:
@@ -225,7 +226,11 @@ def delete_node_prompt():
         choices=[
             "Yes",
             "No"
-        ]
+        ],
+        qmark='',
+        style=Style([
+            ('question', 'fg:#ff0000 bold'),
+        ])
     ).unsafe_ask()
 
     if choice == 'Yes':
@@ -236,7 +241,7 @@ def delete_node_prompt():
 def view_log_prompt():
     '''Prompt allows user to download and view log from an existing node'''
     node = questionary.select(
-        "\nSelect a node to view log",
+        "Select a node to view log",
         choices=list(cli_config.config['nodes'].keys())
     ).unsafe_ask()
 
@@ -265,7 +270,7 @@ def manage_keywords_prompt():
     choice = None
     while choice != 'Done':
         choice = questionary.select(
-            "\nWhat would you like to do?",
+            "Manage schedule keywords",
             choices=[
                 "Add new schedule keyword",
                 "Edit schedule keyword",
@@ -309,7 +314,7 @@ def edit_schedule_keyword_prompt():
 
     # Prompt to select keyword
     keyword_old = questionary.select(
-        "\nSelect keyword to edit",
+        "Select keyword to edit",
         choices=list(cli_config.config['schedule_keywords'].keys())
     ).unsafe_ask()
 
@@ -340,7 +345,7 @@ def remove_schedule_keyword_prompt():
 
     # Prompt to select keyword
     keyword = questionary.select(
-        "\nSelect keyword to delete",
+        "Select keyword to delete",
         choices=list(cli_config.config['schedule_keywords'].keys())
     ).unsafe_ask()
 
@@ -361,7 +366,8 @@ def main_prompt():
                 "Manage schedule keywords",
                 "Settings",
                 "Done"
-            ]
+            ],
+            qmark=''
         ).unsafe_ask()
         if choice == 'API client':
             api_prompt()
