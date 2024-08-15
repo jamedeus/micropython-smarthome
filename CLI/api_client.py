@@ -202,16 +202,33 @@ def parse_command(ip, args):
 
 
 def api_target_node_prompt():
-    '''Prompts user to select a Node for api_prompt'''
+    '''Prompts user to select a Node for api_prompt, returns node name and IP'''
 
     node_options = list(nodes.keys())
     node_options.append('Enter node IP')
     node_options.append('Done')
 
-    return questionary.select(
+    node = questionary.select(
         "Select target node",
         choices=node_options
     ).unsafe_ask()
+
+    # Return placeholder strings if user selected "Done"
+    if node == 'Done':
+        return 'Done', 'Done'
+
+    # Prompt for IP address if user selected "Enter node IP"
+    if node == 'Enter node IP':
+        node_ip = questionary.text(
+            "Enter IP address:",
+            validate=valid_ip
+        ).unsafe_ask()
+
+        # Return IP for both name and IP
+        return node_ip, node_ip
+
+    # Loop up IP in cli_config.json if user selected existing node
+    return node, nodes[node]
 
 
 def device_or_sensor_rule_prompt(node, target):
@@ -427,22 +444,11 @@ def api_prompt():
     '''Prompt allows user to send API commands to existing nodes'''
 
     # Prompt to select existing node, get name and IP address
-    node = api_target_node_prompt()
+    node, node_ip = api_target_node_prompt()
 
     # Exit prompt if user selected "Done"
     if node == 'Done':
         return
-
-    # Prompt for IP address if user selected "Enter node IP"
-    if node == 'Enter node IP':
-        node = node_ip = questionary.text(
-            "Enter IP address:",
-            validate=valid_ip
-        ).unsafe_ask()
-
-    # Loop up IP in cli_config.json if user selected existing node
-    else:
-        node_ip = nodes[node]
 
     # Prevent traceback on first loop
     # Replaced by chosen endpoint on each loop, used as default for next loop
