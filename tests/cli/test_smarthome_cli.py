@@ -31,7 +31,8 @@ class TestMainPrompt(TestCase):
         # Mock user selecting "API client", then "Done" (exit main menu loop)
         self.mock_ask.unsafe_ask.side_effect = ['API client', 'Done']
 
-        with patch('questionary.select', return_value=self.mock_ask), \
+        with patch('os.path.exists', return_value=True), \
+             patch('questionary.select', return_value=self.mock_ask), \
              patch('smarthome_cli.api_prompt') as mock_api_prompt:
 
             # Run prompt, will complete immediately with mock input
@@ -44,7 +45,8 @@ class TestMainPrompt(TestCase):
         # Mock user selecting "Manage nodes", then "Done" (exit main menu loop)
         self.mock_ask.unsafe_ask.side_effect = ['Manage nodes', 'Done']
 
-        with patch('questionary.select', return_value=self.mock_ask), \
+        with patch('os.path.exists', return_value=True), \
+             patch('questionary.select', return_value=self.mock_ask), \
              patch('smarthome_cli.manage_nodes_prompt') as mock_manage_nodes_prompt:
 
             # Run prompt, will complete immediately with mock input
@@ -61,7 +63,8 @@ class TestMainPrompt(TestCase):
             'Done'
         ]
 
-        with patch('questionary.select', return_value=self.mock_ask), \
+        with patch('os.path.exists', return_value=True), \
+             patch('questionary.select', return_value=self.mock_ask), \
              patch('smarthome_cli.manage_keywords_prompt') as mock_keywords_prompt:
 
             # Run prompt, will complete immediately with mock input
@@ -74,7 +77,8 @@ class TestMainPrompt(TestCase):
         # Mock user selecting "Settings", then "Done" (exit main menu loop)
         self.mock_ask.unsafe_ask.side_effect = ['Settings', 'Done']
 
-        with patch('questionary.select', return_value=self.mock_ask), \
+        with patch('os.path.exists', return_value=True), \
+             patch('questionary.select', return_value=self.mock_ask), \
              patch('smarthome_cli.settings_prompt') as mock_settings_prompt:
 
             # Run prompt, will complete immediately with mock input
