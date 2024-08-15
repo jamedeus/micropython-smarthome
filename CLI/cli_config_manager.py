@@ -60,7 +60,6 @@ class CliConfigManager:
             with open(cli_config_path, 'r', encoding='utf-8') as file:
                 return json.load(file)
         except FileNotFoundError:
-            print("Warning: Unable to find cli_config.json, using template")
             return {
                 'nodes': {},
                 'schedule_keywords': {},

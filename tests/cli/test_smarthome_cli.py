@@ -6,6 +6,7 @@ from unittest import TestCase
 from unittest.mock import patch, MagicMock, mock_open
 from smarthome_cli import (
     main_prompt,
+    setup_prompt,
     manage_nodes_prompt,
     edit_node_config_prompt,
     create_new_node_prompt,
@@ -81,6 +82,80 @@ class TestMainPrompt(TestCase):
 
             # Confirm settings_prompt was called
             mock_settings_prompt.assert_called_once()
+
+
+class TestInitialSetup(TestCase):
+    '''Tests the setup prompt called when cli_config.json is missing'''
+
+    def setUp(self):
+        # Mock replaces .ask() method to simulate user input
+        self.mock_ask = MagicMock()
+
+    def test_automatically_shows_setup_prompt(self):
+        # Mock user selecting "Done" at main menu prompt (exit loop)
+        self.mock_ask.unsafe_ask.return_value = 'Done'
+
+        # Mock os.path.exists to return False (simulate missing cli_config.json)
+        with patch('os.path.exists', return_value=False), \
+             patch('questionary.select', return_value=self.mock_ask), \
+             patch('smarthome_cli.setup_prompt') as mock_setup_prompt:
+
+            # Run prompt, will complete immediately with mock input
+            main_prompt()
+
+            # Confirm setup prompt was called (cli_config.json missing)
+            mock_setup_prompt.assert_called_once()
+
+        # Mock os.path.exists to return True (simulate cli_config.json exists)
+        with patch('os.path.exists', return_value=True), \
+             patch('questionary.select', return_value=self.mock_ask), \
+             patch('smarthome_cli.setup_prompt') as mock_setup_prompt:
+
+            # Run prompt, will complete immediately with mock input
+            main_prompt()
+
+            # Confirm setup prompt was NOT called (cli_config.json exists)
+            mock_setup_prompt.assert_not_called()
+
+    def test_setup_prompt(self):
+        # Simulate user selecting "Yes" at each confirmation
+        self.mock_ask.unsafe_ask.return_value = True
+
+        # Mock functions to confirm called
+        with patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('smarthome_cli.config_directory_prompt') as mock_config_prompt, \
+             patch('smarthome_cli.webrepl_password_prompt') as mock_webrepl_prompt, \
+             patch('smarthome_cli.django_address_prompt') as mock_django_prompt, \
+             patch('smarthome_cli.cli_config.sync_from_django') as mock_sync:
+
+            # Run prompt, will complete immediately
+            setup_prompt()
+
+            # Confirm all functions were called
+            mock_config_prompt.assert_called_once()
+            mock_webrepl_prompt.assert_called_once()
+            mock_django_prompt.assert_called_once()
+            mock_sync.assert_called_once()
+
+    def test_setup_prompt_use_defaults(self):
+        # Simulate user selecting "No" at each confirmation
+        self.mock_ask.unsafe_ask.return_value = False
+
+        # Mock functions to confirm called
+        with patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('smarthome_cli.config_directory_prompt') as mock_config_prompt, \
+             patch('smarthome_cli.webrepl_password_prompt') as mock_webrepl_prompt, \
+             patch('smarthome_cli.django_address_prompt') as mock_django_prompt, \
+             patch('smarthome_cli.cli_config.sync_from_django') as mock_sync:
+
+            # Run prompt, will complete immediately
+            setup_prompt()
+
+            # Confirm no functions were called
+            mock_config_prompt.assert_not_called()
+            mock_webrepl_prompt.assert_not_called()
+            mock_django_prompt.assert_not_called()
+            mock_sync.assert_not_called()
 
 
 class TestManageNodesPrompt(TestCase):

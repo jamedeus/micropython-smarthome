@@ -13,7 +13,7 @@ from config_generator import GenerateConfigFile
 from config_prompt_validators import LengthRange
 from provision import upload_node, upload_config_to_ip
 from api_client import api_prompt
-from cli_config_manager import CliConfigManager
+from cli_config_manager import CliConfigManager, cli_config_path
 
 
 # Read cli_config.json from disk
@@ -49,33 +49,52 @@ def settings_prompt():
             choices=choices
         ).unsafe_ask()
         if choice == 'Set django address':
-            address = questionary.text(
-                "Enter django address:",
-                validate=valid_uri
-            ).unsafe_ask()
-            cli_config.set_django_address(address)
+            django_address_prompt()
             print('Address set')
+
         elif choice == 'Sync nodes and keywords from django':
             cli_config.sync_from_django()
             print('Updated cli_config.json:')
             print(json.dumps(cli_config.config, indent=4))
+
         elif choice == 'Download all config files from django':
             cli_config.download_all_node_config_files_from_django()
+
         elif choice == 'Change config directory':
-            directory = questionary.path(
-                'Enter absolute path to config directory',
-                default=cli_config.config['config_directory'],
-                validate=os.path.exists
-            ).unsafe_ask()
-            cli_config.set_config_directory(directory)
+            config_directory_prompt()
             print('Config directory set')
+
         elif choice == 'Change webrepl password':
-            password = questionary.text(
-                'Enter new password',
-                validate=LengthRange(4, 9)
-            ).unsafe_ask()
-            cli_config.set_webrepl_password(password)
+            webrepl_password_prompt()
             print('Password set')
+
+
+def config_directory_prompt():
+    '''Prompts user to enter config directory, writes to cli_config.json'''
+    directory = questionary.path(
+        'Enter absolute path to config directory',
+        default=cli_config.config['config_directory'],
+        validate=os.path.exists
+    ).unsafe_ask()
+    cli_config.set_config_directory(directory)
+
+
+def django_address_prompt():
+    '''Prompts user to enter django address, writes to cli_config.json'''
+    address = questionary.text(
+        "Enter django address:",
+        validate=valid_uri
+    ).unsafe_ask()
+    cli_config.set_django_address(address)
+
+
+def webrepl_password_prompt():
+    '''Prompts user to enter webrepl password, writes to cli_config.json'''
+    password = questionary.text(
+        'Enter password (must match password entered during node setup)',
+        validate=LengthRange(4, 9)
+    ).unsafe_ask()
+    cli_config.set_webrepl_password(password)
 
 
 def manage_nodes_prompt():
@@ -354,8 +373,39 @@ def remove_schedule_keyword_prompt():
     print('Done')
 
 
+def setup_prompt():
+    '''Prompts user to enter values for cli_config.json.
+    Runs when cli_config.json is missing.
+    '''
+    print('\nSetup:')
+
+    if questionary.confirm('Set config file directory?').unsafe_ask():
+        config_directory_prompt()
+    else:
+        print(f'Using default ({cli_config.config["config_directory"]})')
+
+    if questionary.confirm('Set webrepl password?').unsafe_ask():
+        webrepl_password_prompt()
+    else:
+        print(f'Using default ({cli_config.config["webrepl_password"]})')
+
+    if questionary.confirm(
+        'Automatically sync config with web frontend?'
+    ).unsafe_ask():
+        django_address_prompt()
+        cli_config.sync_from_django()
+
+    cli_config.write_cli_config_to_disk()
+    print('Setup complete')
+
+
 def main_prompt():
     '''Main menu prompt'''
+
+    # Run first time setup if cli_config.json does not exist
+    if not os.path.exists(cli_config_path):
+        setup_prompt()
+
     choice = None
     while choice != 'Done':
         choice = questionary.select(
