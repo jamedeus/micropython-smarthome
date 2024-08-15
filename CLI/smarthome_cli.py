@@ -61,8 +61,10 @@ def settings_prompt():
         elif choice == 'Download all config files from django':
             cli_config.download_all_node_config_files_from_django()
         elif choice == 'Change config directory':
-            directory = questionary.text(
-                'Enter absolute path to config directory'
+            directory = questionary.path(
+                'Enter absolute path to config directory',
+                default=cli_config.config['config_directory'],
+                validate=os.path.exists
             ).unsafe_ask()
             cli_config.set_config_directory(directory)
             print('Config directory set')

@@ -390,7 +390,7 @@ class TestSettingsPrompt(TestCase):
         ]
 
         with patch('questionary.select', return_value=self.mock_ask), \
-             patch('questionary.text', return_value=self.mock_ask), \
+             patch('questionary.path', return_value=self.mock_ask), \
              patch('smarthome_cli.cli_config.set_config_directory') as mock_set_dir:
 
             # Run prompt, will complete immediately with mock input
