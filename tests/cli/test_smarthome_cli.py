@@ -490,7 +490,7 @@ class TestManageNodeFunctions(TestCase):
              patch('questionary.confirm', MagicMock()) as mock_confirm:
 
             # Answer "Yes" to "Upload config to ESP32?" prompt
-            mock_confirm.return_value.unsafe_ask.return_value = True
+            mock_confirm.return_value.ask.return_value = True
 
             # Call function
             create_new_node_prompt()
@@ -505,8 +505,40 @@ class TestManageNodeFunctions(TestCase):
             # Confirm requested filename for new config
             mock_get_filename.assert_called_once()
 
-            # Confirm called upload prompt with filename as arg
+            # Confirm called upload_config_from_disk with filename as arg
             mock_upload_config.assert_called_once_with('mock.json')
+
+    def test_create_new_node_prompt_no_upload(self):
+        # Create mock GenerateConfigFile instance to confirm methods were called
+        mock_generator = MagicMock()
+        mock_generator.run_prompt = MagicMock()
+        mock_generator.passed_validation = True
+        mock_generator.write_to_disk = MagicMock()
+        mock_generator.config = {'metadata': {'id': 'mock_name'}}
+
+        # Mock GenerateConfigFile class to return mock instance
+        # Mock helper functions called after user completes config prompts
+        with patch('smarthome_cli.GenerateConfigFile', return_value=mock_generator) as mock_generator_class, \
+             patch('smarthome_cli.get_config_filename', return_value='mock.json') as mock_get_filename, \
+             patch('smarthome_cli.upload_config_from_disk') as mock_upload_config, \
+             patch('questionary.confirm', MagicMock()) as mock_confirm:
+
+            # Answer "No" to "Upload config to ESP32?" prompt
+            mock_confirm.return_value.ask.return_value = False
+
+            # Call function
+            create_new_node_prompt()
+
+            # Confirm GenerateConfigFile was instantiated
+            mock_generator_class.assert_called_once()
+
+            # Confirm prompt was shown, config was written to disk
+            mock_generator.run_prompt.assert_called_once()
+            mock_generator.write_to_disk.assert_called_once()
+
+            # Confirm did NOT call upload_config_from_disk or get_config_filename
+            mock_get_filename.assert_not_called()
+            mock_upload_config.assert_not_called()
 
     def test_edit_existing_node_config(self):
         # Mock user selecting name of existing node
@@ -547,6 +579,45 @@ class TestManageNodeFunctions(TestCase):
             # Confirm called upload_node with node name and webrepl password
             mock_upload_node.assert_called_once_with('node1', 'password')
 
+    def test_edit_existing_node_config_no_reupload(self):
+        # Mock user selecting name of existing node
+        self.mock_ask.unsafe_ask.return_value = 'node1'
+
+        # Create mock GenerateConfigFile instance to confirm methods were called
+        mock_generator = MagicMock()
+        mock_generator.run_prompt = MagicMock()
+        mock_generator.passed_validation = True
+        mock_generator.write_to_disk = MagicMock()
+        mock_generator.config = {'metadata': {'id': 'Node1'}}
+
+        # Mock select prompt to return mocked node selection
+        # Mock GenerateConfigFile class to return mock instance
+        # Mock helper functions called after user completes config prompts
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('smarthome_cli.GenerateConfigFile', return_value=mock_generator) as mock_generator_class, \
+             patch('smarthome_cli.cli_config.get_config_filepath', return_value='node1.json') as mock_get_path, \
+             patch('smarthome_cli.upload_node') as mock_upload_node, \
+             patch('questionary.confirm', MagicMock()) as mock_confirm:
+
+            # Answer "No" to "Reupload now?" prompt
+            mock_confirm.return_value.ask.return_value = False
+
+            # Call function
+            edit_node_config_prompt()
+
+            # Confirm requested path to selected node config file
+            mock_get_path.assert_called_once_with('node1')
+
+            # Confirm GenerateConfigFile was instantiated with path to config file
+            mock_generator_class.assert_called_once_with('node1.json')
+
+            # Confirm prompt was shown, config was written to disk
+            mock_generator.run_prompt.assert_called_once()
+            mock_generator.write_to_disk.assert_called_once()
+
+            # Confirm did NOT call upload_node
+            mock_upload_node.assert_not_called()
+
     def test_upload_config_from_disk(self):
         # Mock user entering IP address, then selecting existing config file
         self.mock_ask.unsafe_ask.side_effect = [
@@ -563,6 +634,29 @@ class TestManageNodeFunctions(TestCase):
 
             # Confirm called upload_config_to_ip with user-entered IP, absolute
             # path to selected config file
+            mock_upload_config.assert_called_once_with(
+                config_path=os.path.join(
+                    mock_cli_config['config_directory'], 'node2.json'
+                ),
+                ip='192.168.1.123',
+                webrepl_password='password'
+            )
+
+    def test_upload_config_from_disk_with_config_path_as_arg(self):
+        # Mock user entering IP address
+        self.mock_ask.unsafe_ask.side_effect = [
+            '192.168.1.123'
+        ]
+
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('smarthome_cli.upload_config_to_ip') as mock_upload_config:
+
+            # Call prompt path to config file as argument
+            upload_config_from_disk('node2.json')
+
+            # Confirm called upload_config_to_ip with user-entered IP, absolute
+            # path to config file given as argument
             mock_upload_config.assert_called_once_with(
                 config_path=os.path.join(
                     mock_cli_config['config_directory'], 'node2.json'
@@ -613,6 +707,45 @@ class TestManageNodeFunctions(TestCase):
             mock_file = mocked_open()
             mock_file.write.assert_called_once_with('mock_log')
 
+    def test_view_log_prompt_dont_save(self):
+        # Mock user selecting name of existing node
+        self.mock_ask.unsafe_ask.side_effect = [
+            'node1'
+        ]
+
+        # Create mock Webrepl instance to confirm methods were called
+        mock_connection = MagicMock()
+        mock_connection.get_file_mem = MagicMock(return_value=b'mock_log')
+
+        # Mock select prompt to return mocked node selection
+        # Mock text prompt to return mocked log filename
+        # Mock Webrepl class to return mock instance
+        # Mock pydoc.pager (called to display log)
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('smarthome_cli.Webrepl', return_value=mock_connection) as mock_webrepl_class, \
+             patch('smarthome_cli.pydoc.pager') as mock_pager, \
+             patch('questionary.confirm', MagicMock()) as mock_confirm, \
+             patch("builtins.open", mock_open()) as mocked_open:
+
+            # Answer "No" to "Save log?" prompt
+            mock_confirm.return_value.ask.return_value = False
+
+            # Call function
+            view_log_prompt()
+
+            # Confirm Webrepl was instantiated with selected node IP + webrepl password
+            mock_webrepl_class.assert_called_once_with('192.168.1.123', 'password')
+
+            # Confirm get_file_mem was called with name of log file
+            mock_connection.get_file_mem.assert_called_once_with('app.log')
+
+            # Confirm pager was called with decoded log
+            mock_pager.assert_called_once_with('mock_log')
+
+            # Confirm did not open file to write log to disk
+            mocked_open.assert_not_called()
+
     def test_change_node_ip_prompt(self):
         # Mock user selecting node name then entering new IP address
         self.mock_ask.unsafe_ask.side_effect = [
@@ -653,3 +786,50 @@ class TestManageNodeFunctions(TestCase):
             self.assertEqual(len(mock_remove_node.call_args_list), 2)
             self.assertEqual(mock_remove_node.call_args_list[0][0][0], 'node1')
             self.assertEqual(mock_remove_node.call_args_list[1][0][0], 'node3')
+
+    def test_delete_node_prompt_cancel(self):
+        # Mock user checking 2 nodes at checkbox prompt, then selecting "No" at
+        # confirmation prompt
+        self.mock_ask.unsafe_ask.side_effect = [
+            ['node1', 'node3'],
+            'No'
+        ]
+
+        # Mock checkbox and select prompts to return mocked user input
+        # Mock cli_config.remove_node to confirm not called
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.checkbox', return_value=self.mock_ask), \
+             patch('smarthome_cli.cli_config.remove_node') as mock_remove_node:
+
+            # Run prompt, will complete immediately with mock input
+            delete_node_prompt()
+
+            # Confirm cli_config.remove_node was NOT called (canceled)
+            mock_remove_node.assert_not_called()
+
+    def test_delete_node_prompt_no_django(self):
+        # Mock user checking 2 nodes at checkbox prompt, then selecting "Yes"
+        # at confirmation prompt
+        self.mock_ask.unsafe_ask.side_effect = [
+            ['node1', 'node3'],
+            'Yes'
+        ]
+
+        # Create mock cli_config.json with no django backend configured
+        mock_cli_config_no_backend = deepcopy(mock_cli_config)
+        del mock_cli_config_no_backend['django_backend']
+
+        # Mock checkbox and select prompts to return mocked user input
+        # Mock CliConfigManager _client.post to confirm no request made
+        # Mock cli_config.json to simulate no django backend
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.checkbox', return_value=self.mock_ask), \
+             patch('smarthome_cli.cli_config._client', MagicMock()) as mock_client, \
+             patch.object(mock_client, 'post') as mock_post, \
+             patch('smarthome_cli.cli_config.config', mock_cli_config_no_backend):
+
+            # Run prompt, will complete immediately with mock input
+            delete_node_prompt()
+
+            # Confirm no post request was made (django not configured)
+            mock_post.assert_not_called()

@@ -23,7 +23,8 @@ def settings_prompt():
     '''Prompt allows user to configure django server to sync from, update
     cli_config.json from django database, or download config files from django.
     '''
-    while True:
+    choice = None
+    while choice != 'Done':
         # Only show django sync options if address configured
         if 'django_backend' in cli_config.config:
             choices = [
@@ -72,13 +73,12 @@ def settings_prompt():
             ).unsafe_ask()
             cli_config.set_webrepl_password(password)
             print('Password set')
-        elif choice == 'Done':
-            break
 
 
 def manage_nodes_prompt():
     '''Prompt allows user to create config files, provision nodes, etc'''
-    while True:
+    choice = None
+    while choice != 'Done':
         choice = questionary.select(
             "\nWhat would you like to do?",
             choices=[
@@ -118,9 +118,6 @@ def manage_nodes_prompt():
         elif choice == 'View node log':
             view_log_prompt()
 
-        elif choice == 'Done':
-            break
-
 
 def create_new_node_prompt():
     '''Prompt allows user to create config file, upload to new node'''
@@ -152,7 +149,7 @@ def edit_node_config_prompt():
         generator.write_to_disk()
 
     # Upload modified config to node
-    if questionary.confirm('Reupload now?'):
+    if questionary.confirm('Reupload now?').ask():
         print(f'Reuploading {node}.json... ')
         upload_node(node, cli_config.config['webrepl_password'])
 
@@ -263,7 +260,8 @@ def view_log_prompt():
 
 def manage_keywords_prompt():
     '''Prompt allows user to create, edit, and delete schedule keywords'''
-    while True:
+    choice = None
+    while choice != 'Done':
         choice = questionary.select(
             "\nWhat would you like to do?",
             choices=[
@@ -282,9 +280,6 @@ def manage_keywords_prompt():
 
         elif choice == 'Delete schedule keyword':
             remove_schedule_keyword_prompt()
-
-        elif choice == 'Done':
-            break
 
 
 def add_schedule_keyword_prompt():
@@ -354,7 +349,8 @@ def remove_schedule_keyword_prompt():
 
 def main_prompt():
     '''Main menu prompt'''
-    while True:
+    choice = None
+    while choice != 'Done':
         choice = questionary.select(
             "\nWhat would you like to do?",
             choices=[
@@ -373,8 +369,6 @@ def main_prompt():
             manage_keywords_prompt()
         elif choice == 'Settings':
             settings_prompt()
-        elif choice == 'Done':
-            break
 
 
 if __name__ == '__main__':  # pragma: no cover
