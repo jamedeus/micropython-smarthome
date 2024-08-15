@@ -826,7 +826,8 @@ class TestManageNodeFunctions(TestCase):
              patch('questionary.checkbox', return_value=self.mock_ask), \
              patch('smarthome_cli.cli_config._client', MagicMock()) as mock_client, \
              patch.object(mock_client, 'post') as mock_post, \
-             patch('smarthome_cli.cli_config.config', mock_cli_config_no_backend):
+             patch('smarthome_cli.cli_config.config', mock_cli_config_no_backend), \
+             patch('smarthome_cli.cli_config.write_cli_config_to_disk'):
 
             # Run prompt, will complete immediately with mock input
             delete_node_prompt()
