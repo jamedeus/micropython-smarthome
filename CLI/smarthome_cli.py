@@ -92,6 +92,7 @@ def webrepl_password_prompt():
     '''Prompts user to enter webrepl password, writes to cli_config.json'''
     password = questionary.text(
         'Enter password (must match password entered during node setup)',
+        default=cli_config.config['webrepl_password'],
         validate=LengthRange(4, 9)
     ).unsafe_ask()
     cli_config.set_webrepl_password(password)
