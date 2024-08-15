@@ -6,7 +6,7 @@ the command line with no arguments.
 
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
-from api_client import api_prompt, main
+from api_client import api_prompt, main, get_endpoint_options
 from test_api_client import mock_status_object
 
 mock_config = {
@@ -1144,3 +1144,258 @@ class RegressionTests(TestCase):
             # Run prompt, will complete immediately with mock input
             # Should not raise TypeError after fix
             api_prompt()
+
+
+class GetEndpointOptionsTests(TestCase):
+    def test_no_devices_or_sensors(self):
+        # Call function with status with no devices or sensors
+        options = get_endpoint_options({'metadata': {'ir_blaster': False}})
+
+        # Confirm options do not include device/sensor/IrBlaster endpoints
+        self.assertEqual(
+            options,
+            [
+                'reboot',
+                'disable',
+                'disable_in',
+                'enable',
+                'enable_in',
+                'set_rule',
+                'increment_rule',
+                'reset_rule',
+                'reset_all_rules',
+                'get_schedule_rules',
+                'add_rule',
+                'remove_rule',
+                'save_rules',
+                'get_schedule_keywords',
+                'add_schedule_keyword',
+                'remove_schedule_keyword',
+                'save_schedule_keywords',
+                'get_attributes',
+                'clear_log',
+                'set_gps_coords',
+                'Done'
+            ]
+        )
+
+    def test_no_devices(self):
+        # Call function with status containing sensors but no devices
+        options = get_endpoint_options({
+            'metadata': {
+                'ir_blaster': False
+            },
+            'sensors': {
+                'sensor1': {
+                    'type': 'pir'
+                }
+            }
+        })
+
+        # Confirm options do not include device or IrBlaster endpoints, but do
+        # contain sensor endpoints (condition_met, trigger_sensor)
+        self.assertEqual(
+            options,
+            [
+                'reboot',
+                'disable',
+                'disable_in',
+                'enable',
+                'enable_in',
+                'set_rule',
+                'increment_rule',
+                'reset_rule',
+                'reset_all_rules',
+                'get_schedule_rules',
+                'add_rule',
+                'remove_rule',
+                'save_rules',
+                'get_schedule_keywords',
+                'add_schedule_keyword',
+                'remove_schedule_keyword',
+                'save_schedule_keywords',
+                'get_attributes',
+                'clear_log',
+                'condition_met',
+                'trigger_sensor',
+                'set_gps_coords',
+                'Done'
+            ]
+        )
+
+    def test_no_sensors(self):
+        # Call function with status containing devices but no sensors
+        options = get_endpoint_options({
+            'metadata': {
+                'ir_blaster': False
+            },
+            'devices': {
+                'device1': {
+                    'type': 'pwm'
+                }
+            }
+        })
+
+        # Confirm options do not include sensor or IrBlaster endpoints, but do
+        # contain device endpoints (turn_on, turn_off)
+        self.assertEqual(
+            options,
+            [
+                'reboot',
+                'disable',
+                'disable_in',
+                'enable',
+                'enable_in',
+                'set_rule',
+                'increment_rule',
+                'reset_rule',
+                'reset_all_rules',
+                'get_schedule_rules',
+                'add_rule',
+                'remove_rule',
+                'save_rules',
+                'get_schedule_keywords',
+                'add_schedule_keyword',
+                'remove_schedule_keyword',
+                'save_schedule_keywords',
+                'get_attributes',
+                'clear_log',
+                'turn_on',
+                'turn_off',
+                'set_gps_coords',
+                'Done'
+            ]
+        )
+
+    def test_ir_blaster(self):
+        # Call function with status with ir_blaster configured
+        options = get_endpoint_options({'metadata': {'ir_blaster': True}})
+
+        # Confirm options do not include device/sensor endpoints but do include
+        # IR Blaster endpoints
+        self.assertEqual(
+            options,
+            [
+                'reboot',
+                'disable',
+                'disable_in',
+                'enable',
+                'enable_in',
+                'set_rule',
+                'increment_rule',
+                'reset_rule',
+                'reset_all_rules',
+                'get_schedule_rules',
+                'add_rule',
+                'remove_rule',
+                'save_rules',
+                'get_schedule_keywords',
+                'add_schedule_keyword',
+                'remove_schedule_keyword',
+                'save_schedule_keywords',
+                'get_attributes',
+                'ir',
+                'ir_get_existing_macros',
+                'ir_create_macro',
+                'ir_delete_macro',
+                'ir_save_macros',
+                'ir_add_macro_action',
+                'ir_run_macro',
+                'clear_log',
+                'set_gps_coords',
+                'Done'
+            ]
+        )
+
+    def test_temperature_sensor(self):
+        # Call function with status containing temperature sensor
+        options = get_endpoint_options({
+            'metadata': {
+                'ir_blaster': False
+            },
+            'sensors': {
+                'sensor1': {
+                    'type': 'si7021'
+                }
+            }
+        })
+
+        # Confirm options include temperature sensor endpoints (get_temp,
+        # get_humid, get_climate) and sensor endpoints (condition_met, trigger_sensor)
+        self.assertEqual(
+            options,
+            [
+                'reboot',
+                'disable',
+                'disable_in',
+                'enable',
+                'enable_in',
+                'set_rule',
+                'increment_rule',
+                'reset_rule',
+                'reset_all_rules',
+                'get_schedule_rules',
+                'add_rule',
+                'remove_rule',
+                'save_rules',
+                'get_schedule_keywords',
+                'add_schedule_keyword',
+                'remove_schedule_keyword',
+                'save_schedule_keywords',
+                'get_attributes',
+                'get_temp',
+                'get_humid',
+                'get_climate',
+                'clear_log',
+                'condition_met',
+                'trigger_sensor',
+                'set_gps_coords',
+                'Done'
+            ]
+        )
+
+    def test_load_cell_sensor(self):
+        # Call function with status containing load cell sensor
+        options = get_endpoint_options({
+            'metadata': {
+                'ir_blaster': False
+            },
+            'sensors': {
+                'sensor1': {
+                    'type': 'load-cell'
+                }
+            }
+        })
+
+        # Confirm options include load cell endpoints (load_cell_tare,
+        # load_cell_read) and sensor endpoints (condition_met, trigger_sensor)
+        self.assertEqual(
+            options,
+            [
+                'reboot',
+                'disable',
+                'disable_in',
+                'enable',
+                'enable_in',
+                'set_rule',
+                'increment_rule',
+                'reset_rule',
+                'reset_all_rules',
+                'get_schedule_rules',
+                'add_rule',
+                'remove_rule',
+                'save_rules',
+                'get_schedule_keywords',
+                'add_schedule_keyword',
+                'remove_schedule_keyword',
+                'save_schedule_keywords',
+                'get_attributes',
+                'clear_log',
+                'condition_met',
+                'trigger_sensor',
+                'set_gps_coords',
+                'load_cell_tare',
+                'load_cell_read',
+                'Done'
+            ]
+        )
