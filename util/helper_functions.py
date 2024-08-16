@@ -137,9 +137,9 @@ def get_device_and_sensor_metadata():
 
     metadata = {'devices': {}, 'sensors': {}}
 
-    # Resolve paths to devices/metadata/ and sensors/metadata/
-    device_metadata = os.path.join(repo, 'devices', 'metadata')
-    sensor_metadata = os.path.join(repo, 'sensors', 'metadata')
+    # Resolve paths to util/metadata/devices and util/metadata/sensors
+    device_metadata = os.path.join(util, 'metadata', 'devices')
+    sensor_metadata = os.path.join(util, 'metadata', 'sensors')
 
     # Load each device metadata and add to output object
     for i in os.listdir(device_metadata):

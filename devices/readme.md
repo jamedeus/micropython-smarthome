@@ -2,13 +2,13 @@
 
 This module contains hardware drivers for all supported devices.
 
-The metadata directory contains metadata used to integrate each class with various tools (config generation, provisioning, etc).
+Metadata for each device can be found in [util/metadata/devices](util/metadata/devices).
 
 ## Development
 
 Adding new device types requires 2 files:
 - A micropython device class which interfaces with the hardware and integrates it into the API
-- A JSON metadata file used to integrate the device with client-side tooling
+- A JSON metadata file used to integrate the device with client-side tools (web frontend and CLI tools)
 
 Some hardware devices (especially i2c devices) may require driver libraries that are not part of the micropython stdlib, these should be placed in [`lib/`](lib/).
 
@@ -33,6 +33,8 @@ All device classes **must** include a `send` method which accepts a boolean argu
 By default all devices support the rules `Enabled` and `Disabled`. If more rules are required the device must include a `validator` method. This method accepts a rule as argument, returns `False` if it is invalid, and returns the rule if it is valid. Returning a modified rule is encouraged in some situations - for example, a class which expects an integer rule should return `int(rule)` to avoid incorrectly accepting string representations of integers.
 
 ### Device Metadata
+
+Metadata files must have the same name as the corresponding class (eg `Wled.py` and `Wled.json`) and should be placed in [util/metadata/devices](util/metadata/devices).
 
 The JSON metadata must follow this syntax:
 ```
