@@ -16,11 +16,11 @@ def get_hardware_classes():
     '''
     output = {'devices': {}, 'sensors': {}}
 
-    # Resolve paths to devices/metadata/ and sensors/metadata/
+    # Resolve paths to util/metadata/devices and util/metadata/sensors
     lib = os.path.dirname(os.path.realpath(__file__))
     repo = os.path.split(lib)[0]
-    device_metadata = os.path.join(repo, 'devices', 'metadata')
-    sensor_metadata = os.path.join(repo, 'sensors', 'metadata')
+    device_metadata = os.path.join(repo, 'util', 'metadata', 'devices')
+    sensor_metadata = os.path.join(repo, 'util', 'metadata', 'sensors')
 
     # Load each device metadata, map config name to python class name
     for i in os.listdir(device_metadata):
