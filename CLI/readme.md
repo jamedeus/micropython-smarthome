@@ -15,17 +15,22 @@ Most users will only need [smarthome_cli.py](CLI/smarthome_cli.py), which contai
 
 ## Setup
 
-The [util module](util/) must be installed before using the CLI tools:
+Install the CLI tools package (includes all dependencies):
 ```
-pip3 install -e util/
-```
-
-Run [smarthome_cli.py](CLI/smarthome_cli.py) and follow the setup prompt:
-```
-pipenv run CLI/smarthome_cli.py
+pip install CLI/
 ```
 
-This will allow you to set:
+The interactive script can now be accessed from any directory by calling `smarthome_cli`.
+
+A setup prompt will appear the first time the script is run:
+```
+$ smarthome_cli
+
+Setup:
+? Set config file directory? (Y/n)
+```
+
+This allows you to customize:
 * Config file directory: The location where ESP32 config files will be saved
     * Using the default is fine in most cases
 * Webrepl password: The password used to push updates to ESP32s
@@ -33,7 +38,9 @@ This will allow you to set:
 * Django backend address: The [web frontend](frontend/README.md) base URL (optional)
     * If set changes made in the web frontend will automatically sync to CLI and vice versa
 
-The settings are stored in `CLI/cli_config.json`. To change these settings later run `smarthome_cli.py` and select `Settings` at the main menu.
+These can be changed at any time by calling `smarthome_cli` and selecting `Settings` at the main menu.
+
+Settings are stored in `cli_config.json` inside your site-packages directory (this will be moved somewhere that makes more sense eventually).
 
 ### Advanced
 
