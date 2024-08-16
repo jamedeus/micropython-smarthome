@@ -4,10 +4,10 @@ import setuptools
 
 setuptools.setup(
     name='util',
-    packages=['util'],
-    package_dir={'util': '.'},
+    packages=[''],
+    package_dir={'': '.'},
     package_data={
-        'util': [
+        '': [
             'metadata/devices/*.json',
             'metadata/sensors/*.json',
         ],
