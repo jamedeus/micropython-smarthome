@@ -4,15 +4,32 @@ import os
 import json
 import tempfile
 
-# Create temp directory to write config files to
-temp_dir = tempfile.gettempdir()
+# Create temp directory where files will be written during tests
+temp_dir = os.path.join(tempfile.gettempdir(), 'smarthome_cli_unit_tests')
+if not os.path.exists(temp_dir):
+    os.mkdir(temp_dir)
 
-# Get path to mock config_directory
-mock_config_dir = os.path.join(temp_dir, 'config_files')
-
-# Get path to mock CLI dir
+# Create mock CLI directory (mock to replace <repo>/CLI)
 mock_cli_dir = os.path.join(temp_dir, 'CLI')
+if not os.path.exists(mock_cli_dir):
+    os.mkdir(mock_cli_dir)
 
+# Create mock system config directory (mock to replace ~/.config)
+mock_system_config_dir = os.path.join(temp_dir, 'system_config')
+if not os.path.exists(mock_system_config_dir):
+    os.mkdir(mock_system_config_dir)
+
+# Create mock app config directory (mock to replace ~/.config/smarthome_cli)
+mock_smarthome_config_dir = os.path.join(mock_system_config_dir, 'smarthome_cli')
+if not os.path.exists(mock_smarthome_config_dir):
+    os.mkdir(mock_smarthome_config_dir)
+
+# Create mock ESP32 config directory (mock to replace ~/.config/config_files)
+mock_config_dir = os.path.join(mock_system_config_dir, 'config_files')
+if not os.path.exists(mock_config_dir):
+    os.mkdir(mock_config_dir)
+
+# Create mock ~/.config/smarthome_cli/cli_config.json contents
 mock_cli_config = {
     'nodes': {
         'node1': '192.168.1.123',
@@ -29,16 +46,9 @@ mock_cli_config = {
     'django_backend': 'http://192.168.1.100'
 }
 
-# Create mock config directory if it doesn't exist
-if not os.path.exists(mock_cli_config['config_directory']):
-    os.mkdir(mock_cli_config['config_directory'])
 
-# Create mock CLI directory if it doesn't exist
-if not os.path.exists(mock_cli_dir):
-    os.mkdir(mock_cli_dir)
-
-# Create mock cli_config.json on disk
-mock_cli_config_path = os.path.join(mock_cli_dir, 'cli_config.json')
+# Write mock cli_config.json to disk (in temp directory)
+mock_cli_config_path = os.path.join(mock_smarthome_config_dir, 'cli_config.json')
 with open(mock_cli_config_path, 'w', encoding='utf-8') as file:
     json.dump(mock_cli_config, file)
 

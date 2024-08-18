@@ -13,7 +13,7 @@ from config_generator import GenerateConfigFile
 from config_prompt_validators import LengthRange
 from provision import upload_node, upload_config_to_ip
 from api_client import api_prompt
-from cli_config_manager import CliConfigManager, cli_config_path
+from cli_config_manager import CliConfigManager, get_cli_config_path
 
 
 # Read cli_config.json from disk
@@ -404,7 +404,7 @@ def main_prompt():
     '''Main menu prompt'''
 
     # Run first time setup if cli_config.json does not exist
-    if not os.path.exists(cli_config_path):
+    if not os.path.exists(get_cli_config_path()):
         setup_prompt()
 
     choice = None

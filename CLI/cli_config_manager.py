@@ -13,10 +13,68 @@ from api_helper_functions import (
     bulk_save_schedule_keyword
 )
 
-# Get path to cli_config.json (same directory as class)
+# Get path repository root directory
 cli = os.path.dirname(os.path.realpath(__file__))
 repo = os.path.split(cli)[0]
-cli_config_path = os.path.join(cli, 'cli_config.json')
+
+
+def get_system_config_directory():
+    '''Returns platform-dependent path to user config directory.
+    Unix: Returns ~/.config
+    Windows: Returns AppData path
+    '''
+    return os.environ.get('APPDATA') or os.environ.get('XDG_CONFIG_HOME') or os.path.join(
+        os.environ.get('HOME'),
+        '.config'
+    )
+
+
+def get_app_config_directory():
+    '''Returns platform-dependent path to smarthome_cli config directory.'''
+
+    # Get path to smarthome_cli subdir inside system config directory
+    app_config_dir = os.path.join(
+        get_system_config_directory(),
+        'smarthome_cli'
+    )
+
+    # Create smarthome_cli subdir if it doesn't exist
+    if not os.path.exists(app_config_dir):
+        os.mkdir(app_config_dir)
+
+    return app_config_dir
+
+
+def get_cli_config_path():
+    '''Returns path to cli_config.json inside smarthome_cli config directory.
+    Unix: Returns ~/.config/smarthome_cli/cli_config.json
+    Windows: Returns path to smarthome_cli/cli_config.json inside AppData
+    '''
+    return os.path.join(get_app_config_directory(), 'cli_config.json')
+
+
+def get_default_cli_config():
+    '''Returns default cli_config.json template, called when cli_config.json
+    does not exist on disk. Creates directory for ESP32 config files if the
+    default directory does not exist.
+    '''
+
+    # Get default config_directory, create if doesn't exist
+    # Unix: ~/.config/smarthome_cli/config_files/
+    # Windows: AppData/smarthome_cli/config_files/
+    config_directory = os.path.join(
+        get_app_config_directory(),
+        'config_files'
+    )
+    if not os.path.exists(config_directory):
+        os.mkdir(config_directory)
+
+    return {
+        'nodes': {},
+        'schedule_keywords': {},
+        'webrepl_password': 'password',
+        'config_directory': config_directory
+    }
 
 
 class CliConfigManager:
@@ -57,19 +115,14 @@ class CliConfigManager:
     def read_cli_config_from_disk(self):
         '''Reads cli_config.json from disk and returns parsed contents'''
         try:
-            with open(cli_config_path, 'r', encoding='utf-8') as file:
+            with open(get_cli_config_path(), 'r', encoding='utf-8') as file:
                 return json.load(file)
         except FileNotFoundError:
-            return {
-                'nodes': {},
-                'schedule_keywords': {},
-                'webrepl_password': 'password',
-                'config_directory': os.path.join(repo, 'config_files')
-            }
+            return get_default_cli_config()
 
     def write_cli_config_to_disk(self):
         '''Overwrites cli_config.json with current contents of self.config'''
-        with open(cli_config_path, 'w', encoding='utf-8') as file:
+        with open(get_cli_config_path(), 'w', encoding='utf-8') as file:
             json.dump(self.config, file, indent=4)
 
     def sync_from_django(self):

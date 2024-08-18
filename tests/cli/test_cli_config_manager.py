@@ -5,16 +5,156 @@ import json
 from copy import deepcopy
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
-from cli_config_manager import CliConfigManager
-from mock_cli_config import mock_cli_config, mock_cli_config_path, mock_config_dir
+from cli_config_manager import (
+    CliConfigManager,
+    get_system_config_directory,
+    get_app_config_directory,
+    get_cli_config_path,
+    get_default_cli_config
+)
+from mock_cli_config import (
+    mock_cli_config,
+    mock_cli_config_path,
+    mock_config_dir
+)
+
+
+class TestGetFilesystemPaths(TestCase):
+    '''Test functions used to get paths to files and directories inside
+    platform-dependent system config directory (eg ~/.config).
+    '''
+
+    def test_get_system_config_directory(self):
+        # Expected output for each platform
+        windows = 'C:\\Users\\TestUser\\AppData\\Roaming'
+        xdg_config_home = '/home/testuser/.config'
+        unix_home = '/home/testuser'
+
+        # Simulate windows env var, confirm expected path returned
+        with patch(
+            'os.environ',
+            {'APPDATA': windows, 'XDG_CONFIG_HOME': None, 'HOME': None}
+        ):
+            self.assertEqual(get_system_config_directory(), windows)
+
+        # Simulate XDG_CONFIG_HOME env var, confirm expected path returned
+        with patch(
+            'os.environ',
+            {'APPDATA': None, 'XDG_CONFIG_HOME': xdg_config_home, 'HOME': None}
+        ):
+            self.assertEqual(get_system_config_directory(), xdg_config_home)
+
+        # Simulate HOME env var, confirm expected path returned
+        with patch(
+            'os.environ',
+            {'APPDATA': None, 'XDG_CONFIG_HOME': None, 'HOME': unix_home}
+        ):
+            self.assertEqual(
+                get_system_config_directory(),
+                os.path.join(unix_home, '.config')
+            )
+
+    def test_get_app_config_directory(self):
+        # Mock path returned by get_system_config_directory
+        # Mock os.path.exists to simulate directory already exists
+        # Mock os.mkdir to confirm no directory created
+        config_dir = '/home/test/.config'
+        with patch('cli_config_manager.get_system_config_directory', return_value=config_dir), \
+             patch('os.path.exists', return_value=True), \
+             patch('os.mkdir') as mock_mkdir:
+
+            # Confirm returns expected path
+            self.assertEqual(
+                get_app_config_directory(),
+                '/home/test/.config/smarthome_cli'
+            )
+
+            # Confirm did NOT create directory (already exists)
+            mock_mkdir.assert_not_called()
+
+        # Mock path returned by get_system_config_directory
+        # Mock os.path.exists to simulate directory does not exist
+        # Mock os.mkdir to confirm directory was created
+        config_dir = '/home/test/.config'
+        with patch('cli_config_manager.get_system_config_directory', return_value=config_dir), \
+             patch('os.path.exists', return_value=False), \
+             patch('os.mkdir') as mock_mkdir:
+
+            # Confirm returns expected path
+            self.assertEqual(
+                get_app_config_directory(),
+                '/home/test/.config/smarthome_cli'
+            )
+
+            # Confirm created missing directory
+            mock_mkdir.assert_called_once_with('/home/test/.config/smarthome_cli')
+
+    def test_get_cli_config_path(self):
+        # Mock path returned by get_app_config_directory
+        with patch(
+            'cli_config_manager.get_app_config_directory',
+            return_value='/home/test/.config/smarthome_cli'
+        ):
+            # Confirm returns expected path
+            self.assertEqual(
+                get_cli_config_path(),
+                '/home/test/.config/smarthome_cli/cli_config.json'
+            )
+
+    def test_get_default_cli_config(self):
+        # Mock path returned by get_app_config_directory
+        # Mock os.path.exists to simulate directory does not exist
+        # Mock os.mkdir to confirm directory was created
+        app_dir = '/home/test/.config/smarthome_cli'
+        config_dir = '/home/test/.config/smarthome_cli/config_files'
+        with patch('cli_config_manager.get_app_config_directory', return_value=app_dir), \
+             patch('os.path.exists', return_value=False), \
+             patch('os.mkdir') as mock_mkdir:
+
+            # Confirm returns expected object
+            self.assertEqual(
+                get_default_cli_config(),
+                {
+                    'nodes': {},
+                    'schedule_keywords': {},
+                    'webrepl_password': 'password',
+                    'config_directory': config_dir
+                }
+            )
+
+            # Confirm created missing directory
+            mock_mkdir.assert_called_once_with(config_dir)
+
+        # Mock path returned by get_app_config_directory
+        # Mock os.path.exists to simulate directory already exists
+        # Mock os.mkdir to confirm directory was NOT created
+        app_dir = '/home/test/.config/smarthome_cli'
+        config_dir = '/home/test/.config/smarthome_cli/config_files'
+        with patch('cli_config_manager.get_app_config_directory', return_value=app_dir), \
+             patch('os.path.exists', return_value=True), \
+             patch('os.mkdir') as mock_mkdir:
+
+            # Confirm returns expected object
+            self.assertEqual(
+                get_default_cli_config(),
+                {
+                    'nodes': {},
+                    'schedule_keywords': {},
+                    'webrepl_password': 'password',
+                    'config_directory': config_dir
+                }
+            )
+
+            # Confirm did NOT create directory
+            mock_mkdir.assert_not_called()
 
 
 class TestCliConfigManager(TestCase):
     def setUp(self):
         # Mock path to cli_config.json (prevent overwriting real file)
         self.cli_config_patch = patch(
-            'cli_config_manager.cli_config_path',
-            mock_cli_config_path
+            'cli_config_manager.get_cli_config_path',
+            return_value=mock_cli_config_path
         )
         self.cli_config_patch.start()
 
@@ -1133,8 +1273,8 @@ class TestInstantiation(TestCase):
     def setUp(self):
         # Mock path to cli_config.json (prevent overwriting real file)
         self.cli_config_patch = patch(
-            'cli_config_manager.cli_config_path',
-            mock_cli_config_path
+            'cli_config_manager.get_cli_config_path',
+            return_value=mock_cli_config_path
         )
         self.cli_config_patch.start()
 

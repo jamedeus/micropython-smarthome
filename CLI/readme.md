@@ -40,7 +40,7 @@ This allows you to customize:
 
 These can be changed at any time by calling `smarthome_cli` and selecting `Settings` at the main menu.
 
-Settings are stored in `cli_config.json` inside your site-packages directory (this will be moved somewhere that makes more sense eventually).
+Settings are stored in `cli_config.json` inside your user config directory (usually `~/.config/smarthome_cli/cli_config.json` on unix, `AppData` on windows).
 
 ### Advanced
 

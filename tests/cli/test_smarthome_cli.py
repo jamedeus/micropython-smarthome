@@ -17,7 +17,7 @@ from smarthome_cli import (
     manage_keywords_prompt,
     settings_prompt
 )
-from mock_cli_config import mock_cli_config
+from mock_cli_config import mock_cli_config, mock_cli_config_path
 
 
 class TestMainPrompt(TestCase):
@@ -100,7 +100,9 @@ class TestInitialSetup(TestCase):
         self.mock_ask.unsafe_ask.return_value = 'Done'
 
         # Mock os.path.exists to return False (simulate missing cli_config.json)
+        # Mock get_cli_config_path to return mock path in temp directory
         with patch('os.path.exists', return_value=False), \
+             patch('smarthome_cli.get_cli_config_path', return_value=mock_cli_config_path), \
              patch('questionary.select', return_value=self.mock_ask), \
              patch('smarthome_cli.setup_prompt') as mock_setup_prompt:
 
