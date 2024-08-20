@@ -1,9 +1,9 @@
 [![pipeline status](https://gitlab.com/jamedeus/micropython-smarthome/badges/master/pipeline.svg)](https://gitlab.com/jamedeus/micropython-smarthome/-/commits/master)
 [![CLI tool coverage report](https://gitlab.com/jamedeus/micropython-smarthome/badges/master/coverage.svg?job=test_cli&key_text=CLI+Coverage&key_width=90)](https://gitlab.com/jamedeus/micropython-smarthome/-/commits/master)
 
-# Advanced Command Line Tools
+# Legacy tools
 
-This page documents individual tools called by the interactive menus in [`smarthome_cli`](CLI/smarthome_cli.py). These were originally standalone tools but have been deprecated in favor of the more user-friendly combined script. All of the arguments documented below can also be passed to `smarthome_cli` (see [here](CLI/readme.md#command-line-arguments) for details).
+This page documents individual tools called by the interactive menus in [`smarthome_cli`](CLI/smarthome_cli.py). These were originally standalone tools but have been deprecated in favor of the more user-friendly combined script. All of the arguments documented below can also be passed to `smarthome_cli` (see [here](CLI/readme.md#command-line-arguments) for details). This page is mostly retained for development documentation.
 
 Tools:
 * [`api_client.py`](CLI/api_client.py): Send API commands and view responses
