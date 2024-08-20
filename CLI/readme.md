@@ -10,7 +10,7 @@ These tools can be used to create and manage ESP32 nodes from the command line, 
 * Upload config files and their dependencies to new ESP32 nodes
 * View ESP32 node logs remotely
 
-The interactive menu displayed by [smarthome_cli.py](CLI/smarthome_cli.py) can be used to access all functions of the other scripts, no command line arguments are required.
+The interactive menu displayed by [`smarthome_cli.py`](CLI/smarthome_cli.py) can be used to access all functions of the other scripts, no command line arguments are required.
 
 For documentation on each script called by the interactive menu see [here](CLI/readme_advanced.md).
 
@@ -62,9 +62,9 @@ These can be changed at any time by calling `smarthome_cli` and selecting `Setti
 
 Settings are stored in `cli_config.json` inside your user config directory (usually `~/.config/smarthome_cli/cli_config.json` on unix, `AppData` on windows).
 
-## Usage
+## Interactive prompt
 
-An interactive menu will appear when [smarthome_cli](CLI/smarthome_cli.py) is called:
+An interactive menu appears when [`smarthome_cli`](CLI/smarthome_cli.py) is called:
 ```
 $ smarthome_cli
 
@@ -90,3 +90,73 @@ If a django backend is configured in `cli_config.json` the script will automatic
 
 This ensures that changes made from CLI will appear on the web frontend and vice versa.
 
+### Command line arguments
+
+The script supports command line arguments as a shortcut instead of going throught the interactive prompt. This can be useful for power users or for scripting.
+
+#### API commands
+
+Call with `--api` to go directly to the interactive API prompt:
+```
+$ smarthome_cli --api
+? Select target node (Use arrow keys)
+ » kitchen
+   bedroom
+   living-room
+```
+
+To run a single command with no interactive prompt use the following syntax:
+```
+smarthome_cli --api <target> <command> [args]
+```
+* `target` must be an IP address or friendly name of an existing node from `cli_config.json`.
+* `command` must be a valid API endpoint (prints full list of options if missing).
+* `args` are required for some endpoints (see endpoint options for syntax).
+
+This can be very useful for scripting or bash aliases.
+
+#### Config generator
+
+The `--config` argument skips the menu and opens the config generation prompt:
+```
+$ smarthome_cli --config
+? Enter a descriptive name for this node:
+```
+
+To edit an existing config file add its path as the second argument:
+```
+$ smarthome_cli --config ~/.config/smarthome_cli/config_files/bedroom.json
+Editing existing config:
+...
+```
+
+Finished config files will be saved to the `config_directory` set in `cli_config.json`.
+
+Note: The user will not be prompted to upload config files when finished. Use the [interactive menu](#interactive-prompt) to be automatically prompted.
+
+#### Provisioner
+
+Config files can be uploaded to nodes with no interactive prompt using the `--provision` argument, which requires additional arguments.
+
+To reprovision all existing nodes in `cli_config.json` pass `--all` as the second argument:
+```
+$ smarthome_cli --provision --all
+```
+
+To reprovision a single node pass its name as the second argument:
+```
+$ smarthome_cli --provision bedroom
+```
+
+Specify an arbitrary config file path with `--config` and an arbitrary IPv4 address with `--ip`:
+```
+$ smarthome_cli --provision --config thermostat.json --ip 192.168.1.123
+```
+* This will add the node to `cli_config.json` just like the interactive script.
+
+To upload firmware unit tests to an arbitrary IP use `--test`:
+```
+$ pipenv run CLI/smarthome_cli.py --provision --test 192.168.1.123
+```
+* NOTE: This does not work when smarthome_cli is installed globally (package doesn't include tests), the [`smarthome_cli.py`](CLI/smarthome_cli.py) script in the repo must be called directly.
+* See [Firmware test documentation](https://gitlab.com/jamedeus/micropython-smarthome/-/tree/master/tests?ref_type=heads#firmware) for details about running tests.

@@ -3,12 +3,12 @@
 
 # Advanced Command Line Tools
 
-This page documents individual tools called by the interactive menus in [smarthome_cli.py](CLI/smarthome_cli.py). These were originally standalone tools but have been deprecated in favor of the more user-friendly interactive script. They may still be useful scripting or other edge use cases.
+This page documents individual tools called by the interactive menus in [`smarthome_cli`](CLI/smarthome_cli.py). These were originally standalone tools but have been deprecated in favor of the more user-friendly combined script. All of the arguments documented below can also be passed to `smarthome_cli` (see [here](CLI/readme.md#command-line-arguments) for details).
 
 Tools:
-* [api_client.py](CLI/api_client.py): Send API commands and view responses
-* [config_generator.py](CLI/config_generator.py): Generate new config files, edit existing config files
-* [provision.py](CLI/provision.py): Upload config files and all their dependencies to new nodes
+* [`api_client.py`](CLI/api_client.py): Send API commands and view responses
+* [`config_generator.py`](CLI/config_generator.py): Generate new config files, edit existing config files
+* [`provision.py`](CLI/provision.py): Upload config files and all their dependencies to new nodes
 
 ## Setup
 
@@ -18,7 +18,7 @@ pipenv install --dev
 pipenv shell
 ```
 
-In addition to PyPi packages this also adds the [util](util/) package to the python path, which contains several modules imported by these tools.
+In addition to PyPi packages this also adds the [`util`](util/) package to the python path, which contains several modules imported by these tools.
 
 Once the venv is activated tools can be called directly as scripts:
 ```
