@@ -3,6 +3,7 @@
 '''Main CLI script'''
 
 import os
+import sys
 import json
 import pydoc
 import questionary
@@ -11,8 +12,8 @@ from Webrepl import Webrepl
 from helper_functions import valid_ip, valid_uri, valid_timestamp, get_config_filename
 from config_generator import GenerateConfigFile
 from config_prompt_validators import LengthRange
-from provision import upload_node, upload_config_to_ip
-from api_client import api_prompt
+from provision import upload_node, upload_config_to_ip, handle_cli_args, parse_args
+from api_client import api_prompt, parse_ip
 from cli_config_manager import CliConfigManager, get_cli_config_path
 
 
@@ -430,8 +431,41 @@ def main_prompt():
             settings_prompt()
 
 
+def parse_cli_args():
+    '''Called when smarthome_cli receives command line arguments.
+    Passes arguments to api_client.py if --api argument passed.
+    Passes arguments to provision.py if --provision argument passed.
+    Shows usage message if invalid arguments passed.
+    '''
+    if sys.argv[0] == '--api':
+        # Remove --api arg
+        sys.argv.pop(0)
+
+        # Use api_client arg parser for remaining args, print API response/error
+        response = parse_ip(sys.argv)
+        print(json.dumps(response, indent=4) + "\n")
+
+    elif sys.argv[0] == '--provision':
+        # Use provision arg parser to run correct action
+        handle_cli_args(*parse_args())
+
+    else:
+        print('Invalid argument, example usage:')
+        print('smarthome_cli --api <node> <command>')
+        print('smarthome_cli --provision --config /path/to/config.json -ip <ip>')
+
+
 if __name__ == '__main__':  # pragma: no cover
-    try:
-        main_prompt()
-    except KeyboardInterrupt as interrupt:
-        raise SystemExit from interrupt
+    # Remove name of application from args
+    sys.argv.pop(0)
+
+    # Show interactive prompt if no args
+    if len(sys.argv) == 0:
+        try:
+            main_prompt()
+        except KeyboardInterrupt as interrupt:  # pragma: no cover
+            raise SystemExit from interrupt
+
+    # Parse arguments and run correct action
+    else:
+        parse_cli_args()
