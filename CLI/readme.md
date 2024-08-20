@@ -3,26 +3,45 @@
 
 # Command Line Tools
 
-These tools enable full management of smarthome nodes from the command line, duplicating all frontend functionality.
+These tools can be used to create and manage ESP32 nodes from the command line, including all functionality of the web frontend.
+* Send API commands and view responses
+* Generate config files
+* Edit existing config files
+* Upload config files and their dependencies to new ESP32 nodes
+* View ESP32 node logs remotely
 
-Tools:
-* [api_client.py](CLI/api_client.py): Send API commands and view responses
-* [config_generator.py](CLI/config_generator.py): Generate new config files, edit existing config files
-* [provision.py](CLI/provision.py): Upload config files and all their dependencies to new nodes
-* [smarthome_cli.py](CLI/smarthome_cli.py): Interactive menu containing functionality of all other scripts
+The interactive menu displayed by [smarthome_cli.py](CLI/smarthome_cli.py) can be used to access all functions of the other scripts, no command line arguments are required.
 
-Most users will only need [smarthome_cli.py](CLI/smarthome_cli.py), which contains all functionality and is much more user-friendly. The other scripts are older and require command line arguments, but they might still be useful for power users.
+For documentation on each script called by the interactive menu see [here](CLI/readme_advanced.md).
 
 ## Setup
 
-Install the CLI tools package (includes all dependencies):
+The interactive menu can be called using pipenv or installed as a global CLI tool. Global installation is recommended if you plan to use the CLI tools heavily as this will allow them to be called from any directory.
+
+### Pipenv (testing)
+
+Install dependencies:
 ```
-pip install CLI/
+pipenv install
+```
+
+Then call the script using the virtual environment:
+```
+pipenv run CLI/smarthome_cli.py
+```
+
+### Global installation
+
+Install the `smarthome_cli` package (includes all dependencies) by running this in the repository root:
+```
+pip install .
 ```
 
 The interactive script can now be accessed from any directory by calling `smarthome_cli`.
 
-A setup prompt will appear the first time the script is run:
+## Configuration
+
+A setup prompt will appear the first time `smarthome_cli` is run:
 ```
 $ smarthome_cli
 
@@ -30,9 +49,10 @@ Setup:
 ? Set config file directory? (Y/n)
 ```
 
-This allows you to customize:
+Follow the prompts to customize:
 * Config file directory: The location where ESP32 config files will be saved
-    * Using the default is fine in most cases
+    * The default is fine in most cases
+    * You do not need to remember this directory when using the interactive script
 * Webrepl password: The password used to push updates to ESP32s
     * This must match the password set during ESP32 wifi setup (should be the same for all nodes)
 * Django backend address: The [web frontend](frontend/README.md) base URL (optional)
@@ -42,20 +62,11 @@ These can be changed at any time by calling `smarthome_cli` and selecting `Setti
 
 Settings are stored in `cli_config.json` inside your user config directory (usually `~/.config/smarthome_cli/cli_config.json` on unix, `AppData` on windows).
 
-### Advanced
-
-To install bash completions for scripts which take command line arguments copy this line:
-```
-sudo cp CLI/bash_completion/* /etc/bash_completion.d/
-```
-
-The changes will take effect after opening a new shell.
-
 ## Usage
 
-Simply call [smarthome_cli.py](CLI/smarthome_cli.py) to display the interactive menu:
+An interactive menu will appear when [smarthome_cli](CLI/smarthome_cli.py) is called:
 ```
-$ pipenv run CLI/smarthome_cli.py
+$ smarthome_cli
 
 What would you like to do? (Use arrow keys)
  » API client
@@ -79,89 +90,3 @@ If a django backend is configured in `cli_config.json` the script will automatic
 
 This ensures that changes made from CLI will appear on the web frontend and vice versa.
 
-## Advanced Users
-
-### API Client
-
-The API client supports all available endpoints and options. The basic syntax is:
-```
-./CLI/api_client.py <target> <command> [args]
-```
-* `target` must be an IP address or friendly name of an existing node from `cli_config.json`.
-* `command` must be a valid API endpoint. Run the client with no command to see a full list of options.
-* `args` are required for some endpoints, example syntax is shown if the client is run without a required argument.
-
-The API client has extensive context-dependent bash completions:
-* Suggests existing node names for first argument
-* Suggests all endpoints for second argument
-* Suggests device and sensor IDs for endpoints which require a device or sensor argument
-
-When called with no arguments an interactive menu is displayed, allowing the user to select a target node and API endpoint:
-```
-$ ./api_client.py
-? Select target node (Use arrow keys)
- » bathroom
-   kitchen
-   living-room
-   Enter node IP
-   Done
-```
-
-### Config Generator
-
-Note: The config generator menu can also be accessed through [smarthome_cli.py](CLI/smarthome_cli.py), which also walks the user through uploading the config file to an ESP32 node. Configs generated with `config_generator.py` must be provisioned manually.
-
-The config generator runs an interactive [questionary-based](https://questionary.readthedocs.io/en/stable/) menu used to generate config files. Simply call the script and follow the prompts:
-```
-$ ./CLI/config_generator.py
-? Enter a descriptive name for this node: Example
-? Enter floor number: 2
-? Enter a brief note about the node's physical location: CLI Readme
-?
-Add instances? (Use arrow keys)
- » Device
-   Sensor
-   IR Blaster
-   Done
-```
-
-The script can also be used to edit an existing config file by passing a path as argument:
-```
-./CLI/config_generator.py config_files/example.json
-```
-
-The config generator has no bash completions, everything is in the interactive menu.
-
-### Provision
-
-The provisioning script accepts multiple command line flags
-* `--all`: Re-provision all nodes listed in `cli_config.json`
-    * No other args are required if this option is used
-* `--config`: Expects relative path to the config file to be uploaded
-* `--ip`: Accepts IPv4 address that will receive the upload
-* `--password`: Expects a webrepl password for the target node
-    * Optional, reads password from `cli_config.json` if omitted
-* `--test`: Expects an IPv4 address that will receive unit tests
-    * See [Firmware test documentation](https://gitlab.com/jamedeus/micropython-smarthome/-/tree/master/tests?ref_type=heads#firmware) for details
-
-The provision script can also send over-the-air updates to existing nodes (rather than flashing new firmware). Simply call the script with the node's friendly name (from `cli_config.json`) as argument. The IP and config file specified in `cli_config.json` will be used automatically.
-
-Example usage:
-```
-# Upload to new node
-./CLI/provision.py --ip 192.168.1.123 --config config_files/node1.json --password example
-
-# Upload to new node using default password
-./CLI/provision.py --ip 192.168.1.123 --config config_files/node1.json
-
-# Upload unit tests
-./CLI/provision.py --test 192.168.1.123
-
-# Re-provision all nodes
-./CLI/provision.py --all
-
-# Re-provision a single node
-./CLI/provision.py node1
-```
-
-When a new node is successfully provisioned it will be automatically added to `cli_config.json`.
