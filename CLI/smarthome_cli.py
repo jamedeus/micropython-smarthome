@@ -12,7 +12,8 @@ from Webrepl import Webrepl
 from helper_functions import valid_ip, valid_uri, valid_timestamp, get_config_filename
 from config_generator import GenerateConfigFile
 from config_prompt_validators import LengthRange
-from provision import upload_node, upload_config_to_ip, handle_cli_args, parse_args
+from provision import upload_node, upload_config_to_ip
+from provision import main as provision_main
 from api_client import api_prompt, parse_ip
 from cli_config_manager import CliConfigManager, get_cli_config_path
 
@@ -446,8 +447,8 @@ def parse_cli_args():
         print(json.dumps(response, indent=4) + "\n")
 
     elif sys.argv[0] == '--provision':
-        # Use provision arg parser to run correct action
-        handle_cli_args(*parse_args())
+        # Pass arguments to provision
+        provision_main()
 
     elif sys.argv[0] == '--config':
         # Show config generation prompt

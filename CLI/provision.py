@@ -209,8 +209,10 @@ def upload_tests(ip, webrepl_password):
     print(result['message'])
 
 
-def handle_cli_args(args, parser):
-    '''Takes return value of parse_args, runs requested actions'''
+def main():
+    '''Parses command line arguments, runs requested actions'''
+
+    args, parser = parse_args()
 
     # Use configured password if arg omitted
     if args.password:
@@ -239,5 +241,4 @@ def handle_cli_args(args, parser):
 
 
 if __name__ == "__main__":  # pragma: no cover
-    # Instantiate with validated CLI args
-    handle_cli_args(*parse_args())
+    main()
