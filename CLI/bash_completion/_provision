@@ -5,15 +5,14 @@ _provision()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    # Get directory containing provision.py and cli_config.json
-    script_path=$(which "${COMP_WORDS[0]}")
-    script_dir="$(dirname "$script_path")"
+    # Path to cli_config.json (contains existing nodes and IPs)
+    config_path="$HOME/.config/smarthome_cli/cli_config.json"
 
     # Get all node friendly names in space-seperated list
-    node_opts=$(cat "$script_dir/cli_config.json" | jq '.nodes | keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+    node_opts=$(cat "$config_path" | jq '.nodes | keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
 
     # Read config directory from cli_config.json
-    config_dir=`cat "$script_dir/cli_config.json" | jq .config_directory | sed 's/"//g'`
+    config_dir=`cat "$config_path" | jq .config_directory | sed 's/"//g'`
 
     # Group options into categories
     ip_opts="--ip"

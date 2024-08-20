@@ -36,6 +36,8 @@ sudo cp CLI/bash_completion/* /etc/bash_completion.d/
 
 The changes will take effect after opening a new shell.
 
+Note: Bash completion will not work if `~/.config/smarthome_cli/cli_config.json` does not exist (see below).
+
 ### Configuration
 
 Names of existing ESP32 nodes are stored in `~/.config/smarthome_cli/cli_config.json`. This file will be created automatically the first time a node is provisioned, or when `smarthome_cli.py` is called.
