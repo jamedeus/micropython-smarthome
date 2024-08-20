@@ -28,6 +28,11 @@ _smarthome_cli()
         _provision
         return 0
 
+    elif [[ "$first_arg" == "--config" ]]; then
+        # Display nothing if --config flag passed (does not take args)
+        COMPREPLY=( $(compgen -W "" -- "${cur}") )
+        return 0
+
     else
         # Show available tool args
         COMPREPLY=( $(compgen -W "${cmds}" -- "${cur}") )

@@ -11,10 +11,12 @@ from questionary import Style
 from Webrepl import Webrepl
 from helper_functions import valid_ip, valid_uri, valid_timestamp, get_config_filename
 from config_generator import GenerateConfigFile
+from config_generator import main as config_generator_main
 from config_prompt_validators import LengthRange
 from provision import upload_node, upload_config_to_ip
 from provision import main as provision_main
-from api_client import api_prompt, parse_ip
+from api_client import api_prompt
+from api_client import main as api_client_main
 from cli_config_manager import CliConfigManager, get_cli_config_path
 
 
@@ -439,27 +441,21 @@ def parse_cli_args():
     Shows usage message if invalid arguments passed.
     '''
     if sys.argv[0] == '--api':
-        # Remove --api arg
-        sys.argv.pop(0)
-
-        # Use api_client arg parser for remaining args, print API response/error
-        response = parse_ip(sys.argv)
-        print(json.dumps(response, indent=4) + "\n")
+        # Pass arguments to api_client.main
+        api_client_main()
 
     elif sys.argv[0] == '--provision':
         # Pass arguments to provision
         provision_main()
 
     elif sys.argv[0] == '--config':
-        # Show config generation prompt
-        generator = GenerateConfigFile()
-        generator.run_prompt()
-        if generator.passed_validation:
-            generator.write_to_disk()
+        # Show config generator prompt
+        config_generator_main()
 
     else:
         print('Invalid argument, example usage:')
         print('smarthome_cli --api <node> <command>')
+        print('smarthome_cli --config')
         print('smarthome_cli --provision --config /path/to/config.json -ip <ip>')
 
 
