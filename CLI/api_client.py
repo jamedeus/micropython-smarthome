@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 '''Command line utility used to control ESP32 nodes with API calls'''
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 '''
 Script used to generate micropython-smarthome config files on the command line.
