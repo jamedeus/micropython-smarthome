@@ -6,7 +6,7 @@ _smarthome_cli()
     first_arg="${COMP_WORDS[1]}"
 
     # Available tools
-    cmds="--api --provision"
+    cmds="--api --provision --config"
 
     if [[ "$first_arg" == "--api" ]]; then
         # Remove tool arg, replace smarthome_cli with api_client.py

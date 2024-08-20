@@ -449,6 +449,13 @@ def parse_cli_args():
         # Use provision arg parser to run correct action
         handle_cli_args(*parse_args())
 
+    elif sys.argv[0] == '--config':
+        # Show config generation prompt
+        generator = GenerateConfigFile()
+        generator.run_prompt()
+        if generator.passed_validation:
+            generator.write_to_disk()
+
     else:
         print('Invalid argument, example usage:')
         print('smarthome_cli --api <node> <command>')
