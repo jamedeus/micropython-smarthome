@@ -40,3 +40,4 @@ _smarthome_cli()
     fi
 }
 complete -F _smarthome_cli smarthome_cli.py
+complete -F _smarthome_cli smarthome_cli

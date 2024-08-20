@@ -47,7 +47,7 @@ setuptools.setup(
     ],
     entry_points={
         'console_scripts': [
-            'smarthome_cli=smarthome_cli.CLI.entrypoint:main',
+            'smarthome_cli=smarthome_cli.CLI.entrypoint:entrypoint',
         ],
     }
 )

@@ -1,7 +1,7 @@
 '''Entrypoint for smarthome_cli command (available after installing CLI tools).
 
-Wrapper adds util and CLI packages to path and runs smarthome_cli.main_prompt
-(expects util and CLI modules to be importable without relative paths).
+Wrapper adds util and CLI packages to path and runs smarthome_cli.main (expects
+util and CLI modules to be importable without relative paths).
 
 Not necessary in development (pipenv adds util to path).
 '''
@@ -16,10 +16,10 @@ sys.path.insert(0, util)
 sys.path.insert(0, cli)
 
 
-def main():
-    '''Runs smarthome_cli main prompt, exits if KeyboardInterrupt raised'''
+def entrypoint():
+    '''Runs smarthome_cli.main, exits if KeyboardInterrupt raised'''
     try:
-        from smarthome_cli.CLI.smarthome_cli import main_prompt
-        main_prompt()
+        from smarthome_cli.CLI.smarthome_cli import main
+        main()
     except KeyboardInterrupt as interrupt:
         raise SystemExit from interrupt
