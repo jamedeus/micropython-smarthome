@@ -90,11 +90,11 @@ If a django backend is configured in `cli_config.json` the script will automatic
 
 This ensures that changes made from CLI will appear on the web frontend and vice versa.
 
-### Command line arguments
+## Command line arguments
 
 The script supports command line arguments as a shortcut instead of going throught the interactive prompt. This can be useful for power users or for scripting.
 
-#### API commands
+### API commands
 
 Call with `--api` to go directly to the interactive API prompt:
 ```
@@ -115,7 +115,7 @@ smarthome_cli --api <target> <command> [args]
 
 This can be very useful for scripting or bash aliases.
 
-#### Config generator
+### Config generator
 
 The `--config` argument skips the menu and opens the config generation prompt:
 ```
@@ -134,7 +134,7 @@ Finished config files will be saved to the `config_directory` set in `cli_config
 
 Note: The user will not be prompted to upload config files when finished. Use the [interactive menu](#interactive-prompt) to be automatically prompted.
 
-#### Provisioner
+### Provisioner
 
 Config files can be uploaded to nodes with no interactive prompt using the `--provision` argument, which requires additional arguments.
 
