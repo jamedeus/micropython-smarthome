@@ -5,6 +5,7 @@ from copy import deepcopy
 from unittest import TestCase
 from unittest.mock import patch, MagicMock, mock_open
 from smarthome_cli import (
+    main,
     main_prompt,
     setup_prompt,
     manage_nodes_prompt,
@@ -18,6 +19,67 @@ from smarthome_cli import (
     settings_prompt
 )
 from mock_cli_config import mock_cli_config, mock_cli_config_path
+
+
+class TestCommandLineArguments(TestCase):
+    '''Tests command line argument handling'''
+
+    def test_no_arg(self):
+        # Mock empty sys.argv (should show main prompt)
+        with patch('sys.argv', ['smarthome_cli']), \
+             patch('smarthome_cli.main_prompt') as mock_main_prompt:
+
+            # Simulate calling from command line, confirm shows main prompt
+            main()
+            mock_main_prompt.assert_called_once()
+
+    def test_api_arg(self):
+        # Mock --api arg (should call api_client.main to parse remaining args)
+        with patch('sys.argv', ['smarthome_cli', '--api']), \
+             patch('smarthome_cli.api_client_main') as mock_api_main:
+
+            # Simulate calling from command line, confirm calls api_client.main
+            main()
+            mock_api_main.assert_called_once()
+
+    def test_provision_arg(self):
+        # Mock --provision arg (should call provision.main to parse remaining args)
+        with patch('sys.argv', ['smarthome_cli', '--provision']), \
+             patch('smarthome_cli.provision_main') as mock_provision_main:
+
+            # Simulate calling from command line, confirm calls provision.main
+            main()
+            mock_provision_main.assert_called_once()
+
+    def test_config_arg(self):
+        # Mock --config arg (should call config_generator.main to show prompt)
+        with patch('sys.argv', ['smarthome_cli', '--config']), \
+             patch('smarthome_cli.config_generator_main') as mock_config_main:
+
+            # Simulate calling from command line, confirm calls config_generator.main
+            main()
+            mock_config_main.assert_called_once()
+
+    def test_invalid_arg(self):
+        # Mock invalid arg (should print example usage)
+        with patch('sys.argv', ['smarthome_cli', '--invalid']), \
+             patch('smarthome_cli.main_prompt') as mock_main_prompt, \
+             patch('smarthome_cli.api_client_main') as mock_api_main, \
+             patch('smarthome_cli.provision_main') as mock_provision_main, \
+             patch('smarthome_cli.config_generator_main') as mock_config_main, \
+             patch('builtins.print') as mock_print:
+
+            # Simulate calling from command line
+            main()
+
+            # Confirm does not call any prompt function
+            mock_main_prompt.assert_not_called()
+            mock_api_main.assert_not_called()
+            mock_provision_main.assert_not_called()
+            mock_config_main.assert_not_called()
+
+            # Confirm called print 4 times (example usage)
+            self.assertEqual(mock_print.call_count, 4)
 
 
 class TestMainPrompt(TestCase):

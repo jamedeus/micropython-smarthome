@@ -434,42 +434,42 @@ def main_prompt():
             settings_prompt()
 
 
-def parse_cli_args():
-    '''Called when smarthome_cli receives command line arguments.
-    Passes arguments to api_client.py if --api argument passed.
-    Passes arguments to provision.py if --provision argument passed.
-    Shows usage message if invalid arguments passed.
+def main():
+    '''Entrypoint, shows interactive prompt when smarthome_cli called without
+    arguments. Forwards remaining arguments to requested script when first arg
+    is --api, --provision, or --config.
     '''
-    if sys.argv[0] == '--api':
-        # Pass arguments to api_client.main
-        api_client_main()
-
-    elif sys.argv[0] == '--provision':
-        # Pass arguments to provision
-        provision_main()
-
-    elif sys.argv[0] == '--config':
-        # Show config generator prompt
-        config_generator_main()
-
-    else:
-        print('Invalid argument, example usage:')
-        print('smarthome_cli --api <node> <command>')
-        print('smarthome_cli --config')
-        print('smarthome_cli --provision --config /path/to/config.json -ip <ip>')
-
-
-if __name__ == '__main__':  # pragma: no cover
-    # Remove name of application from args
-    sys.argv.pop(0)
 
     # Show interactive prompt if no args
-    if len(sys.argv) == 0:
+    if len(sys.argv) == 1:
         try:
             main_prompt()
         except KeyboardInterrupt as interrupt:  # pragma: no cover
             raise SystemExit from interrupt
 
-    # Parse arguments and run correct action
     else:
-        parse_cli_args()
+        # Remove name of application from args
+        sys.argv.pop(0)
+
+        # Call correct script based on first argument
+        if sys.argv[0] == '--api':
+            # Pass arguments to api_client.main
+            api_client_main()
+
+        elif sys.argv[0] == '--provision':
+            # Pass arguments to provision
+            provision_main()
+
+        elif sys.argv[0] == '--config':
+            # Show config generator prompt
+            config_generator_main()
+
+        else:
+            print('Invalid argument, example usage:')
+            print('smarthome_cli --api <node> <command>')
+            print('smarthome_cli --config')
+            print('smarthome_cli --provision --config /path/to/config.json -ip <ip>')
+
+
+if __name__ == '__main__':  # pragma: no cover
+    main()
