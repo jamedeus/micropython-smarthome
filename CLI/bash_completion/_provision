@@ -92,19 +92,19 @@ _provision()
 
     # Add remaining available options to command completion list (may be overwritten in loops below)
     # stderr redirected to /dev/null due to error when completing words starting with -- on Ubuntu (default config bug)
-    COMPREPLY=( $(compgen -W "${all}" ${cur} 2>/dev/null) )
+    COMPREPLY=( $(compgen -W "${all}" -- "${cur}" 2>/dev/null) )
 
     # Display nothing if prev is a password flag (user must enter password before next option)
     for i in $password_opts; do
         if [[ $i == $prev ]]; then
-            COMPREPLY=( $(compgen -W "" ${cur}) )
+            COMPREPLY=( $(compgen -W "" -- "${cur}") )
         fi
     done
 
     # Display nothing if prev is an ip flag (user must enter IP before next option)
     for i in $ip_opts; do
         if [[ $i == $prev ]]; then
-            COMPREPLY=( $(compgen -W "" ${cur}) )
+            COMPREPLY=( $(compgen -W "" -- "${cur}") )
         fi
     done
 
@@ -112,7 +112,7 @@ _provision()
     for i in $config_opts; do
         if [[ $i == $prev ]]; then
             config_files=$(ls -CF $config_dir)
-            COMPREPLY=( $(compgen -W "${config_files}" ${cur}) )
+            COMPREPLY=( $(compgen -W "${config_files}" -- "${cur}") )
         fi
     done
 
