@@ -3,6 +3,7 @@
 import os
 import sys
 import json
+from copy import deepcopy
 from unittest import TestCase
 from unittest.mock import patch, MagicMock, mock_open
 from argparse import Namespace, ArgumentParser
@@ -306,8 +307,11 @@ class TestInstantiation(TestCase):
             password='hunter2'
         )
 
+        # Create copy of mock_cli_config (will be modified in tests)
+        mock_cli_config_copy = deepcopy(mock_cli_config)
+
         # Confirm ID from mock config not in cli_config.json nodes section
-        self.assertNotIn('node4', mock_cli_config['nodes'].keys())
+        self.assertNotIn('node4', mock_cli_config_copy['nodes'].keys())
 
         # Mock provision to do nothing, mock parse_args to return mock args
         # Mock cli_config.json contents (allows reading changes to mock)
@@ -316,7 +320,7 @@ class TestInstantiation(TestCase):
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
              patch('provision.parse_args', return_value=(args, '')), \
-             patch('provision.cli_config.config', mock_cli_config), \
+             patch('provision.cli_config.config', mock_cli_config_copy), \
              patch('provision.json.load', MagicMock(return_value=mock_file_contents)), \
              patch('builtins.open', mock_file), \
              patch('os.path.exists', return_value=True), \
@@ -343,8 +347,61 @@ class TestInstantiation(TestCase):
             )
 
         # Confirm ID from mock config was added to cli_config.json nodes section
-        self.assertIn('node4', mock_cli_config['nodes'].keys())
-        self.assertEqual(mock_cli_config['nodes']['node4'], '192.168.1.123')
+        self.assertIn('node4', mock_cli_config_copy['nodes'].keys())
+        self.assertEqual(mock_cli_config_copy['nodes']['node4'], '192.168.1.123')
+
+    def test_provision_manual_args_upload_failed(self):
+        # Mock config file contents with ID parameter set (used as key in cli_config.json nodes section)
+        mock_file_contents = {'metadata': {'id': 'Node4'}}
+
+        # Mock file object to simulate config arg
+        mock_file = mock_open(read_data=json.dumps(mock_file_contents))
+        mock_file.name = '../config/node4.json'
+
+        # Mock args with manually specified config file, IP, password
+        args = Namespace(
+            config=mock_file.name,
+            ip='192.168.1.123',
+            node=None,
+            all=None,
+            test=None,
+            password='hunter2'
+        )
+
+        # Create copy of mock_cli_config (will be modified in tests)
+        mock_cli_config_copy = deepcopy(mock_cli_config)
+
+        # Confirm ID from mock config not in cli_config.json nodes section
+        self.assertNotIn('node4', mock_cli_config_copy['nodes'].keys())
+
+        # Mock provision to simulate failed upload, mock parse_args to return mock args
+        # Mock cli_config.json contents (allows reading changes to mock)
+        # Mock open, json.load and os.path.exists to return mock_file_contents
+        # Mock cli_config._client.post to check POST request body
+        response = {'message': 'Error: Unable to connect to node.', 'status': 404}
+        with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
+             patch('provision.parse_args', return_value=(args, '')), \
+             patch('provision.cli_config.config', mock_cli_config_copy), \
+             patch('provision.json.load', MagicMock(return_value=mock_file_contents)), \
+             patch('builtins.open', mock_file), \
+             patch('os.path.exists', return_value=True), \
+             patch('provision.cli_config._client.post') as mock_post:
+
+            # Confirm provision called once with expected IP, password, config
+            main()
+            self.assertEqual(mock_provision.call_count, 1)
+            kwargs = mock_provision.call_args[1]
+            self.assertEqual(kwargs['ip'], '192.168.1.123')
+            self.assertEqual(kwargs['password'], 'hunter2')
+            self.assertEqual(kwargs['config'], mock_file_contents)
+
+            # Confirm node was NOT uploaded to django database (only uploads if
+            # successfully provisioned node)
+            mock_post.assert_not_called
+
+        # Confirm ID from mock config was NOT added to cli_config.json nodes
+        # section (only adds if successfully uploaded to node)
+        self.assertNotIn('node4', mock_cli_config_copy['nodes'].keys())
 
     def test_provision_no_args(self):
         # Mock args, all blank

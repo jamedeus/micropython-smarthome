@@ -22,6 +22,10 @@ from config_rule_prompts import (
     float_rule_prompt,
     string_rule_prompt
 )
+from validation_constants import (
+    valid_device_pins,
+    valid_sensor_pins
+)
 from mock_cli_config import mock_cli_config
 
 
@@ -617,6 +621,67 @@ class TestGenerateConfigFile(TestCase):
         # Confirm valid config received after second loop
         self.assertEqual(config, valid_config)
 
+    def test_configure_device_prompt_config_key_handling(self):
+        # Create mock config template with fake device type, 3 real params with
+        # placeholder value (should trigger prompts), 1 param with value set
+        # (should not prompt) and 1 invalid param (should not prompt)
+        template = {
+            "_type": "test-device",
+            "nickname": "placeholder",
+            "pin_data": "placeholder",
+            "pin_clock": "placeholder",
+            "default_rule": "50",
+            "invalid_param": "placeholder"
+        }
+
+        # Expected config after values added to real params (invalid param
+        # should still have placeholder)
+        expected_output = {
+            "_type": "test-device",
+            "nickname": "nickname",
+            "pin_data": "14",
+            "pin_clock": "22",
+            "default_rule": "50",
+            "invalid_param": "placeholder"
+        }
+
+        # Mock prompt methods called for each key in config template
+        # Mock schedule_rule_prompt (called regardless of config template)
+        # Mock validate_rules to return True (would fail due to fake device type)
+        with patch.object(self.generator, '_GenerateConfigFile__nickname_prompt') as mock_nickname_prompt, \
+             patch.object(self.generator, '_GenerateConfigFile__pin_prompt') as mock_pin_prompt, \
+             patch.object(self.generator, '_GenerateConfigFile__schedule_rule_prompt') as mock_schedule_prompt, \
+             patch('config_generator.default_rule_prompt_router') as mock_default_rule_prompt, \
+             patch('config_generator.validate_rules', return_value=True):
+
+            # Mock user responses to each prompt
+            mock_nickname_prompt.return_value = 'nickname'
+            mock_pin_prompt.side_effect = ['14', '22']
+
+            # Call configure_device method with mock config template
+            self.generator._GenerateConfigFile__configure_device(template)
+
+            # Confirm nickname prompt was called
+            mock_nickname_prompt.assert_called_once()
+
+            # Confirm pin prompt was called twice (pin_data and pin_clock)
+            self.assertEqual(mock_pin_prompt.call_count, 2)
+            self.assertEqual(
+                mock_pin_prompt.call_args_list[0][0],
+                (valid_device_pins, "Select data pin")
+            )
+            self.assertEqual(
+                mock_pin_prompt.call_args_list[1][0],
+                (valid_device_pins, "Select clock pin")
+            )
+
+            # Confirm default_rule prompt was NOT called (value already set)
+            mock_default_rule_prompt.assert_not_called()
+
+            # Confirm schedule rule prompt (receives finished config template)
+            # was called with expected output
+            mock_schedule_prompt.assert_called_once_with(expected_output)
+
     def test_configure_sensor_prompt(self):
         expected_output = {
             "_type": "pir",
@@ -832,6 +897,67 @@ class TestGenerateConfigFile(TestCase):
 
         # Confirm valid config received after second loop
         self.assertEqual(config, valid_config)
+
+    def test_configure_sensor_prompt_config_key_handling(self):
+        # Create mock config template with fake sensor type, 3 real params with
+        # placeholder value (should trigger prompts), 1 param with value set
+        # (should not prompt) and 1 invalid param (should not prompt)
+        template = {
+            "_type": "test-sensor",
+            "nickname": "placeholder",
+            "pin_data": "placeholder",
+            "pin_clock": "placeholder",
+            "default_rule": "50",
+            "invalid_param": "placeholder"
+        }
+
+        # Expected config after values added to real params (invalid param
+        # should still have placeholder)
+        expected_output = {
+            "_type": "test-sensor",
+            "nickname": "nickname",
+            "pin_data": "14",
+            "pin_clock": "22",
+            "default_rule": "50",
+            "invalid_param": "placeholder"
+        }
+
+        # Mock prompt methods called for each key in config template
+        # Mock schedule_rule_prompt (called regardless of config template)
+        # Mock validate_rules to return True (would fail due to fake sensor type)
+        with patch.object(self.generator, '_GenerateConfigFile__nickname_prompt') as mock_nickname_prompt, \
+             patch.object(self.generator, '_GenerateConfigFile__pin_prompt') as mock_pin_prompt, \
+             patch.object(self.generator, '_GenerateConfigFile__schedule_rule_prompt') as mock_schedule_prompt, \
+             patch('config_generator.default_rule_prompt_router') as mock_default_rule_prompt, \
+             patch('config_generator.validate_rules', return_value=True):
+
+            # Mock user responses to each prompt
+            mock_nickname_prompt.return_value = 'nickname'
+            mock_pin_prompt.side_effect = ['14', '22']
+
+            # Call configure_sensor method with mock config template
+            self.generator._GenerateConfigFile__configure_sensor(template)
+
+            # Confirm nickname prompt was called
+            mock_nickname_prompt.assert_called_once()
+
+            # Confirm pin prompt was called twice (pin_data and pin_clock)
+            self.assertEqual(mock_pin_prompt.call_count, 2)
+            self.assertEqual(
+                mock_pin_prompt.call_args_list[0][0],
+                (valid_sensor_pins, "Select data pin")
+            )
+            self.assertEqual(
+                mock_pin_prompt.call_args_list[1][0],
+                (valid_sensor_pins, "Select clock pin")
+            )
+
+            # Confirm default_rule prompt was NOT called (value already set)
+            mock_default_rule_prompt.assert_not_called()
+
+            # Confirm schedule rule prompt (receives finished config template)
+            # was called with expected output
+            mock_schedule_prompt.assert_called_once_with(expected_output)
 
     def test_reset_config_template(self):
         # Pass config with invalid values to reset_config_template
@@ -1279,3 +1405,28 @@ class TestCliUsage(TestCase):
             mock_instance = mock_class.return_value
             mock_instance.run_prompt.assert_called_once()
             mock_instance.write_to_disk.assert_called_once()
+
+    def test_failed_validation(self):
+        # Mock empty sys.argv (should show new config prompt)
+        # Mock GenerateConfigFile class to confirm correct methods called
+        with patch('sys.argv', ['./config_generator.py']), \
+             patch(
+                 'config_generator.GenerateConfigFile',
+                 new=MagicMock(spec=GenerateConfigFile)
+             ) as mock_class:  # noqa: E122
+
+            # Simulate user creating config that fails validation
+            mock_class.return_value.passed_validation = False
+
+            # Simulate calling from command line
+            main()
+
+            # Confirm class was instantiated with no argument
+            mock_class.assert_called_once_with()
+
+            # Get instance created by main, confirm expected methods were called
+            mock_instance = mock_class.return_value
+            mock_instance.run_prompt.assert_called_once()
+
+            # Confirm did NOT write invalid config to disk
+            mock_instance.write_to_disk.assert_not_called()
