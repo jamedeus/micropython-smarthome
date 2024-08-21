@@ -419,7 +419,7 @@ class TestInstantiation(TestCase):
 
 class TestGetModules(TestCase):
     def setUp(self):
-        unit_test_config_path = os.path.join(repo, "tests", "cli", "unit-test-config.json")
+        unit_test_config_path = os.path.join(repo, "util", "unit-test-config.json")
         with open(unit_test_config_path, 'r', encoding='utf-8') as file:
             self.config = json.load(file)
 

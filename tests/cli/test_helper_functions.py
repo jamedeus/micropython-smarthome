@@ -16,6 +16,7 @@ from helper_functions import (
     valid_uri,
     valid_timestamp,
     get_schedule_keywords_dict,
+    load_unit_test_config,
     get_device_and_sensor_metadata,
     celsius_to_fahrenheit,
     celsius_to_kelvin,
@@ -25,9 +26,12 @@ from helper_functions import (
 )
 from mock_cli_config import mock_cli_config
 
+# Get full path to repository root directory
+tests = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
+repo = os.path.split(tests)[0]
+
 # Read unit-test-config.json from disk
-tests = os.path.dirname(os.path.realpath(__file__))
-config_path = os.path.join(tests, 'unit-test-config.json')
+config_path = os.path.join(repo, 'util', 'unit-test-config.json')
 with open(config_path, 'r', encoding='utf-8') as file:
     unit_test_config = json.load(file)
 
@@ -179,6 +183,10 @@ class TestHelperFunctions(TestCase):
         with patch('builtins.open', side_effect=FileNotFoundError):
             output = get_schedule_keywords_dict()
             self.assertEqual(output, {})
+
+    def test_load_unit_test_config(self):
+        # Should return contents of util/unit-test-config.json
+        self.assertEqual(load_unit_test_config(), unit_test_config)
 
     def test_get_device_and_sensor_metadata(self):
         # Should return dict with device and sensors keys

@@ -13,7 +13,7 @@ cli = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
 repo = os.path.split(cli)[0]
 
 # Get absolute path to test config
-test_config_path = os.path.join(repo, "tests", "cli", "unit-test-config.json")
+test_config_path = os.path.join(repo, "util", "unit-test-config.json")
 
 # Binary contents of test config file, used as payload in simulated Webrepl connections
 with open(test_config_path, 'r', encoding='utf-8') as file:
