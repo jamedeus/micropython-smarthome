@@ -1,4 +1,5 @@
 [run]
+branch = True
 omit =
     tests/*
     run_cli_tests.py
