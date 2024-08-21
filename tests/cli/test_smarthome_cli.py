@@ -691,6 +691,35 @@ class TestManageNodeFunctions(TestCase):
             mock_get_filename.assert_not_called()
             mock_upload_config.assert_not_called()
 
+    def test_create_new_node_prompt_config_failed_validation(self):
+        # Create mock GenerateConfigFile instance to confirm methods were called
+        # Set passed_validation to False (simulate invalid config file)
+        mock_generator = MagicMock()
+        mock_generator.run_prompt = MagicMock()
+        mock_generator.passed_validation = False
+        mock_generator.write_to_disk = MagicMock()
+        mock_generator.config = {'metadata': {'id': 'mock_name'}}
+
+        # Mock GenerateConfigFile class to return mock instance
+        # Mock helper functions called after user completes config prompts
+        with patch('smarthome_cli.GenerateConfigFile', return_value=mock_generator) as mock_generator_class, \
+             patch('smarthome_cli.upload_config_from_disk') as mock_upload_config, \
+             patch('questionary.confirm', MagicMock()) as mock_confirm:
+
+            # Call function
+            create_new_node_prompt()
+
+            # Confirm GenerateConfigFile was instantiated, prompt was shown
+            mock_generator_class.assert_called_once()
+            mock_generator.run_prompt.assert_called_once()
+
+            # Confirm did NOT write invalid config to disk
+            mock_generator.write_to_disk.assert_not_called()
+
+            # Confirm did NOT prompt user to upload invalid config
+            mock_confirm.assert_not_called()
+            mock_upload_config.assert_not_called()
+
     def test_edit_existing_node_config(self):
         # Mock user selecting name of existing node
         self.mock_ask.unsafe_ask.return_value = 'node1'
@@ -767,6 +796,45 @@ class TestManageNodeFunctions(TestCase):
             mock_generator.write_to_disk.assert_called_once()
 
             # Confirm did NOT call upload_node
+            mock_upload_node.assert_not_called()
+
+    def test_edit_existing_node_config_failed_validation(self):
+        # Mock user selecting name of existing node
+        self.mock_ask.unsafe_ask.return_value = 'node1'
+
+        # Create mock GenerateConfigFile instance to confirm methods were called
+        # Set passed_validation to False (simulate invalid config file)
+        mock_generator = MagicMock()
+        mock_generator.run_prompt = MagicMock()
+        mock_generator.passed_validation = False
+        mock_generator.write_to_disk = MagicMock()
+        mock_generator.config = {'metadata': {'id': 'Node1'}}
+
+        # Mock select prompt to return mocked node selection
+        # Mock GenerateConfigFile class to return mock instance
+        # Mock helper functions called after user completes config prompts
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('smarthome_cli.GenerateConfigFile', return_value=mock_generator) as mock_generator_class, \
+             patch('smarthome_cli.cli_config.get_config_filepath', return_value='node1.json') as mock_get_path, \
+             patch('smarthome_cli.upload_node') as mock_upload_node, \
+             patch('questionary.confirm', MagicMock()) as mock_confirm:
+
+            # Call function
+            edit_node_config_prompt()
+
+            # Confirm requested path to selected node config file
+            mock_get_path.assert_called_once_with('node1')
+
+            # Confirm GenerateConfigFile was instantiated with path to config
+            # file, confirm prompt was shown
+            mock_generator_class.assert_called_once_with('node1.json')
+            mock_generator.run_prompt.assert_called_once()
+
+            # Confirm did NOT write invalid config to disk
+            mock_generator.write_to_disk.assert_not_called()
+
+            # Confirm did NOT prompt user to upload invalid config
+            mock_confirm.assert_not_called()
             mock_upload_node.assert_not_called()
 
     def test_upload_config_from_disk(self):

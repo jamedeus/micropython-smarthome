@@ -155,9 +155,9 @@ def create_new_node_prompt():
     if generator.passed_validation:
         generator.write_to_disk()
 
-    if questionary.confirm('Upload config to ESP32?').ask():
-        filename = get_config_filename(generator.config['metadata']['id'])
-        upload_config_from_disk(filename)
+        if questionary.confirm('Upload config to ESP32?').ask():
+            filename = get_config_filename(generator.config['metadata']['id'])
+            upload_config_from_disk(filename)
 
 
 def edit_node_config_prompt():
@@ -175,10 +175,10 @@ def edit_node_config_prompt():
     if generator.passed_validation:
         generator.write_to_disk()
 
-    # Upload modified config to node
-    if questionary.confirm('Reupload now?').ask():
-        print(f'Reuploading {node}.json... ')
-        upload_node(node, cli_config.config['webrepl_password'])
+        # Upload modified config to node
+        if questionary.confirm('Reupload now?').ask():
+            print(f'Reuploading {node}.json... ')
+            upload_node(node, cli_config.config['webrepl_password'])
 
 
 def upload_config_from_disk(config=None):
