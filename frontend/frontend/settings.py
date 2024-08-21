@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Read SECRET_KEY from env var, or gen new key if not present
 SECRET_KEY = os.environ.get('SECRET_KEY')
-if SECRET_KEY is None:
+if SECRET_KEY is None:  # pragma: no branch
     SECRET_KEY = get_random_secret_key()
 
 # Read ALLOWED_HOSTS from env var, or use wildcard if not present
@@ -40,7 +40,7 @@ for i in ALLOWED_HOSTS:
 
 # Read webrepl password from env var, use default if not set
 NODE_PASSWD = os.environ.get('NODE_PASSWD')
-if not NODE_PASSWD:
+if not NODE_PASSWD:  # pragma: no branch
     NODE_PASSWD = 'password'
 
 # Project root directory, used to upload firmware files
