@@ -4,7 +4,7 @@ import os
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from questionary import ValidationError
-from validation_constants import valid_device_pins
+from validation_constants import valid_device_pins, valid_sensor_pins
 from config_generator import GenerateConfigFile, main
 from config_prompt_validators import (
     IntRange,
@@ -21,10 +21,6 @@ from config_rule_prompts import (
     int_rule_prompt,
     float_rule_prompt,
     string_rule_prompt
-)
-from validation_constants import (
-    valid_device_pins,
-    valid_sensor_pins
 )
 from mock_cli_config import mock_cli_config
 
@@ -1259,6 +1255,17 @@ class TestGenerateConfigFile(TestCase):
 
         # Confirm script exits with error when IP not in nodes.json
         with self.assertRaises(SystemExit):
+            api_call_prompt({'ip': '10.0.0.1'})
+
+    def test_api_call_prompt_invalid_instance_selected(self):
+        # Simulate user selecting instance that is not device or sensor
+        # Should be impossible in production, need coverage of else clause
+        self.mock_ask.unsafe_ask.return_value = 'invalid-instance'
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('config_rule_prompts.load_config_from_ip', return_value={}), \
+             self.assertRaises(ValueError):
+
+            # Call prompt, confirm ValueError raised after invalid selection
             api_call_prompt({'ip': '10.0.0.1'})
 
     def test_edit_existing_config(self):
