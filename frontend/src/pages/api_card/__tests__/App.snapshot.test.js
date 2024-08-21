@@ -3,8 +3,12 @@ import App from '../ApiCard';
 import { ApiCardContextProvider } from 'root/ApiCardContext';
 import { MetadataContextProvider } from 'root/MetadataContext';
 import createMockContext from 'src/testUtils/createMockContext';
-import { mockContext, mockContextIrRemotes } from './mockContext';
 import { api_card_metadata } from 'src/testUtils/mockMetadataContext';
+import {
+    mockContext,
+    mockContextIrRemotes,
+    mockContextNoDevicesOrSensors
+} from './mockContext';
 
 describe('App', () => {
     beforeAll(() => {
@@ -77,6 +81,21 @@ describe('App', () => {
                 ...mockContextIrRemotes.status.metadata, ir_targets: [ 'ac' ]
             }
         });
+
+        // Render App, confirm matches snapshot
+        const component = render(
+            <MetadataContextProvider>
+                <ApiCardContextProvider>
+                    <App />
+                </ApiCardContextProvider>
+            </MetadataContextProvider>
+        );
+        expect(component).toMatchSnapshot();
+    });
+
+    it('matches snapshot when no devices, sensors, or ir_blaster configured', () => {
+        // Create mock status object with no devices, sensors, or ir_blaster
+        createMockContext('status', mockContextNoDevicesOrSensors.status);
 
         // Render App, confirm matches snapshot
         const component = render(

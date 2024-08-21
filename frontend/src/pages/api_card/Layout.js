@@ -6,7 +6,6 @@ import InstanceCard from './InstanceCard';
 import IrRemotes from './IrRemotes';
 
 const Layout = () => {
-    // Get status object, function to make API calls
     const {status} = useContext(ApiCardContext);
 
     return (
