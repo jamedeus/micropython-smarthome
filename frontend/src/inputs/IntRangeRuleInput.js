@@ -12,6 +12,9 @@ const IntRangeRuleInput = ({
     scaleDisplayValue=true,
     onBlur=() => {}
 }) => {
+    // Calculate 1% of range
+    const buttonStep = Math.round((max - min) / 100);
+
     return (
         <RuleSlider
             rule={rule}
@@ -22,7 +25,7 @@ const IntRangeRuleInput = ({
             displayMax={displayMax}
             scaleDisplayValue={scaleDisplayValue}
             sliderStep={1}
-            buttonStep={1}
+            buttonStep={buttonStep}
             displayType={"int"}
             onBlur={onBlur}
         />

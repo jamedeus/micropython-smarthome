@@ -563,7 +563,7 @@ describe('EditConfig', () => {
         await user.click(app.getByText('sensor5').parentElement.parentElement
             .querySelector('.bi-dash-lg'));
 
-        // Change device3 default_rule to 766
+        // Change device3 default_rule to 757
         await user.click(app.getByText('device3').parentElement.parentElement
             .querySelector('.bi-dash-lg'));
 
@@ -600,7 +600,7 @@ describe('EditConfig', () => {
                 },
                 device3: {
                     ...existingConfigContext.config.device3,
-                    default_rule: 766
+                    default_rule: 757
                 },
                 device7: {
                     ...existingConfigContext.config.device7,
