@@ -25,11 +25,15 @@ from helper_functions import (
     is_device,
     is_sensor,
     is_device_or_sensor,
-    get_existing_nodes,
+    valid_timestamp,
     get_device_and_sensor_metadata,
     convert_celsius_temperature
 )
 from config_prompt_validators import IntRange, FloatRange
+from cli_config_manager import CliConfigManager
+
+# Read cli_config.json from disk (contains existing nodes)
+cli_config = CliConfigManager()
 
 
 def build_rule_prompt_maps():
@@ -416,17 +420,42 @@ def load_config_from_ip(ip):
     reads matching config file and returns contents.
     Used by api_call_prompt to get options, determine correct rule prompt, etc.
     '''
-    existing_nodes = get_existing_nodes()
+    existing_nodes = cli_config.config['nodes']
     try:
         for i in existing_nodes:
-            if existing_nodes[i]['ip'] == ip:
-                with open(existing_nodes[i]['config'], 'r', encoding='utf-8') as file:
+            if existing_nodes[i] == ip:
+                config_path = cli_config.get_config_filepath(i)
+                with open(config_path, 'r', encoding='utf-8') as file:
                     return json.load(file)
         raise FileNotFoundError
     except FileNotFoundError as interrupt:
         print(f"\n{Fore.RED}FATAL ERROR{Fore.RESET}: Target node config file missing from disk")
-        print("Unable to get options, please check the config path in cli_config.json")
+        print("Unable to get options, please check the config_directory in cli_config.json")
         raise SystemExit from interrupt
+
+
+def schedule_rule_timestamp_or_keyword_prompt(keyword_options):
+    '''Prompts user to enter a schedule rule timestamp or select keyword from
+    list passed as arg. Returns input or selection.
+    '''
+    choice = questionary.select(
+        "\nTimestamp or keyword?",
+        choices=['Timestamp', 'Keyword']
+    ).unsafe_ask()
+    if choice == 'Timestamp':
+        return schedule_rule_timestamp_prompt()
+    return questionary.select(
+        "\nSelect keyword",
+        choices=keyword_options
+    ).unsafe_ask()
+
+
+def schedule_rule_timestamp_prompt():
+    '''Prompts user to enter a schedule rule timestamp, returns input.'''
+    return questionary.text(
+        "Enter timestamp (HH:MM):",
+        validate=valid_timestamp
+    ).unsafe_ask()
 
 
 # Build mapping dict (must call after functions are declared)

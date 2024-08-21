@@ -526,16 +526,18 @@ describe('NewConfig', () => {
         // Mock fetch function to simulate filesystem error when deleting config
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
-            status: 500,
+            status: 404,
             json: () => Promise.resolve({
                 status: 'success',
-                message: 'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
+                message: 'Failed to delete Basement, does not exist'
             })
         }));
 
         // Click overwrite button, confirm not redirected + error modal appears
         await user.click(app.getByRole('button', { name: 'Overwrite' }));
-        expect(app.queryByText(/Failed to delete, permission denied/)).not.toBeNull();
+        expect(app.queryByText(
+            'Failed to delete Basement, does not exist'
+        )).not.toBeNull();
         expect(window.location.href).not.toBe('/config_overview');
     });
 });

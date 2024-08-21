@@ -1,18 +1,7 @@
 '''Django database models'''
 
-import os
-import json
-from django.conf import settings
-from django.dispatch import receiver
 from django.db import models, IntegrityError
-from django.db.models.signals import post_save, post_delete
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
-from helper_functions import (
-    get_schedule_keywords_dict,
-    get_cli_config,
-    add_node_to_cli_config,
-    remove_node_from_cli_config
-)
 
 
 class TimeStampField(models.CharField):
@@ -44,22 +33,9 @@ class Node(models.Model):
     )
 
     # Validate all fields before saving
-    # Add to cli_config.json if CLI_SYNC enabled
     def save(self, *args, **kwargs):
         self.full_clean()
-        if settings.CLI_SYNC and hasattr(self, 'config'):
-            config_path = os.path.join(settings.CONFIG_DIR, self.config.filename)  # pylint: disable=no-member
-            add_node_to_cli_config(self.friendly_name, config_path, self.ip)
         return super().save(*args, **kwargs)
-
-    # Remove from cli_config.json if CLI_SYNC enabled
-    def delete(self, *args, **kwargs):
-        if settings.CLI_SYNC:
-            # Delete config file on disk
-            if hasattr(self, 'config'):
-                self.config.delete()
-            remove_node_from_cli_config(self.friendly_name)
-        return super().delete(*args, **kwargs)
 
 
 class Config(models.Model):
@@ -83,52 +59,10 @@ class Config(models.Model):
         blank=True
     )
 
-    def read_from_disk(self):
-        '''Reads JSON config file from disk and creates database entry.
-        CLI_SYNC environment variable must be set to True.
-        '''
-        if settings.CLI_SYNC:
-            config_path = os.path.join(settings.CONFIG_DIR, self.filename)
-            with open(config_path, 'r', encoding='utf-8') as file:
-                self.config = json.load(file)
-                self.save()
-        else:
-            print('WARNING: read_from_disk called with CLI_SYNC disabled, ignoring.')
-
-    def write_to_disk(self):
-        '''Writes config file from database to JSON file on disk.
-        CLI_SYNC environment variable must be set to True.
-        '''
-        if settings.CLI_SYNC:
-            # Write config file to disk
-            config_path = os.path.join(settings.CONFIG_DIR, self.filename)
-            with open(config_path, 'w', encoding='utf-8') as file:
-                json.dump(self.config, file)
-
-            # Add to cli_config.json
-            if self.node:
-                add_node_to_cli_config(self.node.friendly_name, config_path, self.node.ip)
-        else:
-            print('WARNING: write_to_disk called with CLI_SYNC disabled, ignoring.')
-
     # Validate all fields before saving
     def save(self, *args, **kwargs):
         self.full_clean()
-
-        # Write to disk if CLI_SYNC enabled
-        if settings.CLI_SYNC:
-            self.write_to_disk()
-
         return super().save(*args, **kwargs)
-
-    # Remove file from disk if CLI_SYNC enabled
-    def delete(self, *args, **kwargs):
-        if settings.CLI_SYNC:
-            try:
-                os.remove(os.path.join(settings.CONFIG_DIR, self.filename))
-            except FileNotFoundError:
-                pass
-        return super().delete(*args, **kwargs)
 
 
 class GpsCoordinates(models.Model):
@@ -164,15 +98,3 @@ class ScheduleKeyword(models.Model):
         if self.keyword in ["sunrise", "sunset"]:
             raise IntegrityError(f"{self.keyword} is required and cannot be deleted")
         return super().delete(*args, **kwargs)
-
-
-@receiver(post_save, sender=ScheduleKeyword)
-@receiver(post_delete, sender=ScheduleKeyword)
-def write_to_disk(**kwargs):
-    '''Write schedule keywords to json file when modified (sync with CLI client).'''
-    if settings.CLI_SYNC:
-        config = get_cli_config()
-        config['schedule_keywords'] = get_schedule_keywords_dict()
-        cli_config = os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')
-        with open(cli_config, 'w', encoding='utf-8') as file:
-            json.dump(config, file)

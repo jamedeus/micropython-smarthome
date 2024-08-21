@@ -273,10 +273,9 @@ def sync_schedule_rules(data):
         config_file = webrepl.get_file_mem('config.json')
         webrepl.close_connection()
 
-        # Overwrite config in database, write config to disk
+        # Overwrite config in database
         node.config.config = json.loads(config_file)
         node.config.save()
-        node.config.write_to_disk()
 
         return standard_response('Done syncing schedule rules')
 

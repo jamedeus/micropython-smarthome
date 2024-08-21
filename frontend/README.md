@@ -27,8 +27,6 @@ Copy the [docker-compose.yaml example](frontend/docker/docker-compose.yaml) and 
 
 Supported Env Vars:
 - `ALLOWED_HOSTS`: Comma-separated list of domains and IPs where the app can be reached, all others will be blocked. Defaults to wildcard if omitted (not recommended).
-- `CLI_SYNC`: True or False, if True config files will be written to disk where CLI tools can read them. If False config files are only stored in the database, making it possible to run diskless (with an external database server). Defaults to False.
-- `CONFIG_DIR`: Path to directory where config files are written if `CLI_SYNC` is True. Defaults to `micropython-smarthome/config_files` if omitted.
 - `NODE_PASSWD`: Webrepl password of all ESP32s, defaults to `password` if omitted.
 - `SECRET_KEY`: Your django secret key, if omitted a new key will be generated each time the app starts (may break active sessions).
 - `VIRTUAL_HOST`: Reverse proxy domain, make sure to add the same domain to `ALLOWED_HOSTS`.
@@ -73,22 +71,6 @@ npm run watch
 ```
 
 All react bundles are served from django templates, so the django development server (above) must be running to access the app. There is no node backend.
-
-## Management commands
-
-Custom management commands can be used to export all config files from the SQL database to `CONFIG_DIR`, or to read the contents of `CONFIG_DIR` into the database. This can be useful to create backups, recover from a corrupted database, or to migrate to another host. However, unless the CLI tools are used heavily it is recommended to just backup the database itself.
-
-Export:
-```
-cd frontend/
-python3 manage.py export_configs_to_disk
-```
-
-Import:
-```
-cd frontend/
-python3 manage.py import_configs_from_disk
-```
 
 ## Unit tests
 

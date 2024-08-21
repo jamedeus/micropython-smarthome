@@ -36,8 +36,6 @@ services:
     volumes:
       # Persistent storage between sessions
       - smarthome-data:/repo
-      # Optional: Generated config files will be written here if present
-      - /home/pi/docker/smarthome/config:/repo/config
     ports:
       - 8456:8456
     networks:

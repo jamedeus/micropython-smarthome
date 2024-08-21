@@ -3,37 +3,19 @@ import json
 import socket
 from unittest.mock import patch, MagicMock
 from django.conf import settings
+from django.test import TestCase
 from Webrepl import websocket, Webrepl, handshake_message
-
-# Functions used to manage cli_config.json
-from helper_functions import get_cli_config, load_unit_test_config
-
+from helper_functions import load_unit_test_config
 # Large JSON objects, helper functions
 from .unit_test_helpers import (
-    TestCaseBackupRestore,
     binary_unit_test_config,
     simulate_read_file_over_webrepl,
     simulated_read_position,
 )
 
-# Ensure CLI_SYNC is True (writes test configs to disk when created)
-settings.CLI_SYNC = True
-
-# Create CONFIG_DIR if it does not exist
-if not os.path.exists(settings.CONFIG_DIR):
-    os.mkdir(settings.CONFIG_DIR, mode=0o775)
-    with open(os.path.join(settings.CONFIG_DIR, 'readme'), 'w') as file:
-        file.write('This directory was automatically created for frontend unit tests.\n')
-        file.write('You can safely delete it, it will be recreated each time tests run.')
-
-# Create cli_config.json if it does not exist
-if not os.path.exists(os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')):
-    from helper_functions import write_cli_config
-    write_cli_config(get_cli_config())
-
 
 # Test websocket class used by Webrepl
-class WebsocketTests(TestCaseBackupRestore):
+class WebsocketTests(TestCase):
 
     def test_write_method(self):
         # Mock socket and client_handshake to do nothing
@@ -119,7 +101,7 @@ class WebsocketTests(TestCaseBackupRestore):
 
 
 # Test the Webrepl class used to upload config + dependencies to nodes
-class WebreplTests(TestCaseBackupRestore):
+class WebreplTests(TestCase):
 
     def test_open_and_close_connection(self):
         node = Webrepl('123.45.67.89', 'password')

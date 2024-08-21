@@ -1,41 +1,18 @@
-import os
-import json
-import types
 from unittest.mock import patch, MagicMock
-from django.conf import settings
+from django.test import TestCase
 from django.core.exceptions import ValidationError
 from .models import Config, Node, ScheduleKeyword, GpsCoordinates
 
-# Functions used to manage cli_config.json
-from helper_functions import get_cli_config, remove_node_from_cli_config
-
 # Large JSON objects, helper functions
 from .unit_test_helpers import (
-    TestCaseBackupRestore,
     JSONClient,
     test_config_1,
-    test_config_2,
     create_config_and_node_from_json
 )
 
-# Ensure CLI_SYNC is True (writes test configs to disk when created)
-settings.CLI_SYNC = True
-
-# Create CONFIG_DIR if it does not exist
-if not os.path.exists(settings.CONFIG_DIR):
-    os.mkdir(settings.CONFIG_DIR, mode=0o775)
-    with open(os.path.join(settings.CONFIG_DIR, 'readme'), 'w') as file:
-        file.write('This directory was automatically created for frontend unit tests.\n')
-        file.write('You can safely delete it, it will be recreated each time tests run.')
-
-# Create cli_config.json if it does not exist
-if not os.path.exists(os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')):
-    from helper_functions import write_cli_config
-    write_cli_config(get_cli_config())
-
 
 # Test the Node model
-class NodeTests(TestCaseBackupRestore):
+class NodeTests(TestCase):
     def test_create_node(self):
         self.assertEqual(len(Node.objects.all()), 0)
 
@@ -105,33 +82,6 @@ class NodeTests(TestCaseBackupRestore):
         # Confirm no nodes created in db
         self.assertEqual(len(Node.objects.all()), 1)
 
-    def test_cli_sync(self):
-        # Path to config file that will be created
-        config_path = os.path.join(settings.CONFIG_DIR, 'test1.json')
-
-        # Confirm node not in cli_config.json, config not on disk
-        remove_node_from_cli_config('Unit Test Node')
-        self.assertFalse(os.path.exists(config_path))
-
-        # Create node, should not be added to cli_config.json (node has no config file)
-        node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='2')
-        cli_config = get_cli_config()
-        self.assertNotIn('unit-test-node', cli_config['nodes'].keys())
-        self.assertFalse(os.path.exists(config_path))
-
-        # Create Config with reverse relation, node should be added to cli_config.json
-        Config.objects.create(config=test_config_1, filename='test1.json', node=node)
-        cli_config = get_cli_config()
-        self.assertIn('unit-test-node', cli_config['nodes'].keys())
-        self.assertEqual(cli_config['nodes']['unit-test-node']['ip'], '123.45.67.89')
-        self.assertEqual(cli_config['nodes']['unit-test-node']['config'], config_path)
-
-        # Delete node, should removed node from cli_config.json, should remove config from disk
-        node.delete()
-        cli_config = get_cli_config()
-        self.assertNotIn('unit-test-node', cli_config['nodes'].keys())
-        self.assertFalse(os.path.exists(config_path))
-
     # Original issue: Node model validator raised ValidationError if floor was
     # negative, but config validator and edit_config page only require floor to
     # be between -999 and 999. If the user created a config with negative floor
@@ -146,16 +96,15 @@ class NodeTests(TestCaseBackupRestore):
 
 
 # Test the Config model
-class ConfigTests(TestCaseBackupRestore):
+class ConfigTests(TestCase):
     def test_create_config(self):
         # Confirm starting condition
         self.assertEqual(len(Config.objects.all()), 0)
 
-        # Create node, confirm exists in database, file exists on disk
+        # Create node, confirm exists in database
         config = Config.objects.create(config=test_config_1, filename='test1.json')
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertIsInstance(config, Config)
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'test1.json')))
 
         # Confirm filename shown when instance printed
         self.assertEqual(config.__str__(), 'test1.json')
@@ -204,92 +153,8 @@ class ConfigTests(TestCaseBackupRestore):
         # Confirm no configs created in db
         self.assertEqual(len(Config.objects.all()), 1)
 
-    def test_write_to_disk(self):
-        # Create config
-        config = Config.objects.create(config=test_config_1, filename='write_to_disk.json')
 
-        # Delete from disk, confirm removed
-        os.remove(os.path.join(settings.CONFIG_DIR, 'write_to_disk.json'))
-        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'write_to_disk.json')))
-
-        # Call method, should exist
-        config.write_to_disk()
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'write_to_disk.json')))
-
-        # Contents should match config attribute
-        with open(os.path.join(settings.CONFIG_DIR, 'write_to_disk.json'), 'r') as file:
-            output = json.load(file)
-            self.assertEqual(config.config, output)
-
-        # Remove file, prevent test failing after first run
-        os.remove(os.path.join(settings.CONFIG_DIR, 'write_to_disk.json'))
-
-    def test_read_from_disk(self):
-        # Create config
-        config = Config.objects.create(config=test_config_1, filename='read_from_disk.json')
-
-        # Write different config to expected config path
-        with open(os.path.join(settings.CONFIG_DIR, 'read_from_disk.json'), 'w') as file:
-            json.dump(test_config_2, file)
-
-        # Confirm configs are different
-        self.assertNotEqual(config.config, test_config_2)
-
-        # Call method, configs should now be identical
-        config.read_from_disk()
-        self.assertEqual(config.config, test_config_2)
-
-        # Remove file
-        os.remove(os.path.join(settings.CONFIG_DIR, 'read_from_disk.json'))
-
-    def test_cli_sync(self):
-        # Path to config file that will be created, confirm does not exist
-        config_path = os.path.join(settings.CONFIG_DIR, 'test1.json')
-        self.assertFalse(os.path.exists(config_path))
-
-        # Create Config, should write config file to disk automatically
-        config = Config.objects.create(config=test_config_1, filename='test1.json')
-        self.assertTrue(os.path.exists(config_path))
-
-        # Delete from disk, call save method, should be written again
-        os.remove(config_path)
-        config.save()
-        self.assertTrue(os.path.exists(config_path))
-
-        # Delete model, file should be removed from disk automatically
-        config.delete()
-        self.assertFalse(os.path.exists(config_path))
-
-    def test_cli_sync_disabled(self):
-        # Set CLI_SYNC to False
-        settings.CLI_SYNC = False
-
-        # Path to config file that would be created with CLI_SYNC, confirm does not exist
-        config_path = os.path.join(settings.CONFIG_DIR, 'test1.json')
-        self.assertFalse(os.path.exists(config_path))
-
-        # Create Config, config should NOT be written to disk
-        config = Config.objects.create(config=test_config_1, filename='test1.json')
-        self.assertFalse(os.path.exists(config_path))
-
-        # Call write_to_disk, confirm correctly ignored
-        config.write_to_disk()
-        self.assertFalse(os.path.exists(config_path))
-
-        # Write empty dict to expected config path
-        with open(config_path, 'w') as file:
-            json.dump({}, file)
-
-        # Call read_from_disk, confirm correctly ignored, config not effected
-        config.read_from_disk()
-        self.assertEqual(config.config, test_config_1)
-
-        # Revert
-        settings.CLI_SYNC = True
-        os.remove(config_path)
-
-
-class GpsCoordinatesTests(TestCaseBackupRestore):
+class GpsCoordinatesTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -366,7 +231,7 @@ class GpsCoordinatesTests(TestCaseBackupRestore):
 
 
 # Test views used to manage schedule keywords from config overview
-class ScheduleKeywordTests(TestCaseBackupRestore):
+class ScheduleKeywordTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -416,13 +281,17 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             {'sunrise': '06:00', 'sunset': '18:00', 'first': '00:00'}
         )
 
-        # Mock all keyword endpoints, prevent failed network requests
-        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
-             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove), \
-             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save):
+        # Mock bulk API call endpoints to prevent failed network requests
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request, confirm response, confirm model created
-            data = {'keyword': 'morning', 'timestamp': '08:00'}
+            data = {
+                'keyword': 'morning',
+                'timestamp': '08:00',
+                'sync_nodes': True
+            }
             response = self.client.post('/add_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], 'Keyword created')
@@ -445,6 +314,33 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             '08:00'
         )
 
+    def test_add_schedule_keyword_no_sync(self):
+        # Confirm starting conditions
+        self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+
+        # Mock bulk API call endpoints to prevent failed network requests
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
+
+            # Send request with sync_nodes param set to False
+            data = {
+                'keyword': 'morning',
+                'timestamp': '08:00',
+                'sync_nodes': False
+            }
+            response = self.client.post('/add_schedule_keyword', data)
+
+            # Confirm response, confirm model created
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['message'], 'Keyword created')
+            self.assertEqual(len(ScheduleKeyword.objects.all()), 4)
+
+            # Confirm no requests were sent to nodes
+            self.mock_add.assert_not_called()
+            self.mock_remove.assert_not_called()
+            self.mock_save.assert_not_called()
+
     def test_edit_schedule_keyword_timestamp(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
         self.assertEqual(
@@ -456,13 +352,18 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             {'sunrise': '06:00', 'sunset': '18:00', 'first': '00:00'}
         )
 
-        # Mock all keyword endpoints, prevent failed network requests
-        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
-             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove), \
-             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save):
+        # Mock bulk API call endpoints to prevent failed network requests
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request to change timestamp only, should overwrite existing keyword
-            data = {'keyword_old': 'first', 'keyword_new': 'first', 'timestamp_new': '01:00'}
+            data = {
+                'keyword_old': 'first',
+                'keyword_new': 'first',
+                'timestamp_new': '01:00',
+                'sync_nodes': True
+            }
             response = self.client.post('/edit_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], 'Keyword updated')
@@ -493,13 +394,18 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
     def test_edit_schedule_keyword_keyword(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
-        # Mock all keyword endpoints, prevent failed network requests
-        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
-             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove), \
-             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save):
+        # Mock bulk API call endpoints to prevent failed network requests
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request to change keyword, should remove and replace existing keyword
-            data = {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '08:00'}
+            data = {
+                'keyword_old': 'first',
+                'keyword_new': 'second',
+                'timestamp_new': '08:00',
+                'sync_nodes': True
+            }
             response = self.client.post('/edit_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], 'Keyword updated')
@@ -529,17 +435,49 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             '08:00'
         )
 
+    def test_edit_schedule_keyword_no_sync(self):
+        # Confirm starting conditions
+        self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+
+        # Mock bulk API call endpoints to prevent failed network requests
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
+
+            # Send request with sync_nodes param set to False
+            data = {
+                'keyword_old': 'first',
+                'keyword_new': 'second',
+                'timestamp_new': '08:00',
+                'sync_nodes': False
+            }
+            response = self.client.post('/edit_schedule_keyword', data)
+
+            # Confirm response, confirm no additional model created
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['message'], 'Keyword updated')
+            self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+
+            # Confirm no requests were sent to nodes
+            self.mock_add.assert_not_called()
+            self.mock_remove.assert_not_called()
+            self.mock_save.assert_not_called()
+
     def test_delete_schedule_keyword(self):
         # Confirm starting condition
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
-        # Mock all keyword endpoints, prevent failed network requests
-        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
-             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove), \
-             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save):
+        # Mock bulk API call endpoints to prevent failed network requests
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request to delete keyword, verify response
-            response = self.client.post('/delete_schedule_keyword', {'keyword': 'first'})
+            data = {
+                'keyword': 'first',
+                'sync_nodes': True
+            }
+            response = self.client.post('/delete_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], 'Keyword deleted')
 
@@ -557,26 +495,35 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
         self.assertNotIn('first', self.node1.config.config['metadata']['schedule_keywords'].keys())
         self.assertNotIn('first', self.config2.config['metadata']['schedule_keywords'].keys())
 
-    # Original issue: Views directly imported 3 endpoint functions from api_endpoints.
-    # Decorators adding wrapper functions were later added to api_endpoints to reduce
-    # code repetition. This removed the original reference from module namespace,
-    # leading views to import NoneType objects instead of functions. Attempting to call
-    # NoneType objects in ThreadPoolExecutor resulted in an immediate return, without
-    # calling any endpoints. All unit tests above continued to pass because they mock
-    # the endpoints in question.
-    # Fixed by importing decorated functions from endpoint_map object
-    def test_regression_endpoints_imported_as_nonetype(self):
-        from node_configuration import views
-        self.assertIsNotNone(views.add_schedule_keyword)
-        self.assertIsNotNone(views.remove_schedule_keyword)
-        self.assertIsNotNone(views.save_schedule_keywords)
-        self.assertEqual(type(views.add_schedule_keyword), types.FunctionType)
-        self.assertEqual(type(views.remove_schedule_keyword), types.FunctionType)
-        self.assertEqual(type(views.save_schedule_keywords), types.FunctionType)
+    def test_delete_schedule_keyword_no_sync(self):
+        # Confirm starting conditions
+        self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+
+        # Mock bulk API call endpoints to prevent failed network requests
+        with patch('api_helper_functions.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('api_helper_functions.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('api_helper_functions.save_schedule_keywords', side_effect=self.mock_save):
+
+            # Send request with sync_nodes param set to False
+            data = {
+                'keyword': 'first',
+                'sync_nodes': False
+            }
+            response = self.client.post('/delete_schedule_keyword', data)
+
+            # Confirm response, confirm model deleted
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['message'], 'Keyword deleted')
+            self.assertEqual(len(ScheduleKeyword.objects.all()), 2)
+
+            # Confirm no requests were sent to nodes
+            self.mock_add.assert_not_called()
+            self.mock_remove.assert_not_called()
+            self.mock_save.assert_not_called()
 
 
 # Confirm schedule keyword management endpoints raise correct errors
-class ScheduleKeywordErrorTests(TestCaseBackupRestore):
+class ScheduleKeywordErrorTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()

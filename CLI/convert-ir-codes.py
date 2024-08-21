@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 '''
 Tool for converting IR hex codes to array of pulse/space durations (microseconds).

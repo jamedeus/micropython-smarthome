@@ -2,13 +2,13 @@
 
 This module contains hardware drivers for all supported sensors.
 
-The metadata directory contains metadata used to integrate each class with various tools (config generation, provisioning, etc).
+Metadata for each sensor can be found in [util/metadata/sensors](util/metadata/sensors).
 
 ## Development
 
 Adding new sensor types requires 2 files:
 - A micropython sensor class which interfaces with the hardware and integrates it into the API
-- A JSON metadata file used to integrate the sensor with client-side tooling
+- A JSON metadata file used to integrate the sensor with client-side tools (web frontend and CLI tools)
 
 Some hardware sensors (especially i2c devices) may require driver libraries that are not part of the micropython stdlib, these should be placed in [`lib/`](lib/).
 
@@ -36,6 +36,8 @@ Sensors may implement an optional `trigger` method which simulates the condition
 By default all sensors support the rules `Enabled` and `Disabled`. If more rules are required the sensor must include a `validator` method. This method accepts a rule as argument, returns `False` if it is invalid, and returns the rule if it is valid. Returning a modified rule is encouraged in some situations - for example, a class which expects an integer rule should return `int(rule)` to avoid incorrectly accepting string representations of integers.
 
 ### Sensor Metadata
+
+Metadata files must have the same name as the corresponding class (eg `Switch.py` and `Switch.json`) and should be placed in [util/metadata/sensors](util/metadata/sensors).
 
 The JSON metadata must follow this syntax:
 ```

@@ -4,11 +4,24 @@ import re
 import os
 import json
 
-
 # Get full path to repository root directory
 util = os.path.dirname(os.path.realpath(__file__))
 repo = os.path.split(util)[0]
 cli_config_path = os.path.join(repo, 'CLI', 'cli_config.json')
+
+# Build URI regex, requires http or https followed by domain or IP
+# Accepts optional subdomains, ports, and subpaths
+ip_regex = (
+    r'((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
+    r'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
+)
+domain_regex = (r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}')
+port_regex = (r'(:[0-9]{1,5})?')
+path_regex = (r'(/[^\s]*)?')
+uri_regex = re.compile(
+    r'^(http|https)://'
+    r'(' + ip_regex + '|' + domain_regex + ')' + port_regex + path_regex + '$'
+)
 
 
 def is_device_or_sensor(string):
@@ -50,7 +63,7 @@ def is_int_or_float(num):
 
 
 def get_cli_config_name(friendly_name):
-    '''Coverts friendly_name to format used in cli_config.json'''
+    '''Converts friendly_name to format used in cli_config.json'''
     return friendly_name.lower().replace(" ", "-")
 
 
@@ -77,62 +90,14 @@ def valid_ip(ip):
     ))
 
 
+def valid_uri(uri):
+    '''Returns True if arg is a valid URI, otherwise False.'''
+    return bool(uri_regex.match(uri))
+
+
 def valid_timestamp(timestamp):
     '''Returns True if arg matches HH:MM timestamp regex, otherwise False'''
     return bool(re.match(r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$', timestamp))
-
-
-def get_cli_config():
-    '''Returns contents of cli_config.json loaded into dict.
-    If file does not exist returns template with default values.
-    '''
-    try:
-        with open(cli_config_path, 'r', encoding='utf-8') as file:
-            return json.load(file)
-    except FileNotFoundError:
-        print("Warning: Unable to find cli_config.json, friendly names will not work")
-        return {
-            'nodes': {},
-            'schedule_keywords': {},
-            'webrepl_password': 'password',
-            'config_directory': os.path.join(repo, 'config_files')
-        }
-
-
-def add_node_to_cli_config(friendly_name, config_path, ip):
-    '''Takes node friendly_name, config abs path, and IP of existing node.
-    Adds (or overwrites) entry in nodes section of cli_config.json.
-    '''
-
-    # Remove spaces (breaks CLI tool bash completion)
-    name = get_cli_config_name(friendly_name)
-
-    cli_config = get_cli_config()
-    cli_config['nodes'][name] = {
-        'config': os.path.abspath(config_path),
-        'ip': ip
-    }
-    write_cli_config(cli_config)
-
-
-def remove_node_from_cli_config(friendly_name):
-    '''Takes node friendly name, deletes from cli_config.json'''
-
-    # Remove spaces (breaks CLI tool bash completion)
-    name = get_cli_config_name(friendly_name)
-
-    try:
-        cli_config = get_cli_config()
-        del cli_config['nodes'][name]
-        write_cli_config(cli_config)
-    except KeyError:
-        pass
-
-
-def write_cli_config(config):
-    '''Takes dict, overwrites cli_config.json'''
-    with open(cli_config_path, 'w', encoding='utf-8') as file:
-        json.dump(config, file)
 
 
 def get_schedule_keywords_dict():
@@ -149,17 +114,12 @@ def get_schedule_keywords_dict():
                 for keyword in ScheduleKeyword.objects.all()}
 
     # Load from config file on disk
-    config = get_cli_config()
-    return config['schedule_keywords']
-
-
-def get_existing_nodes():
-    '''Returns nodes section from cli_config.json as dict.
-    Contains all existing node friendly names as keys, sub-dict with IP and
-    path to config file as values.
-    '''
-    config = get_cli_config()
-    return config['nodes']
+    try:
+        with open(cli_config_path, 'r', encoding='utf-8') as file:
+            config = json.load(file)
+            return config['schedule_keywords']
+    except FileNotFoundError:
+        return {}
 
 
 def load_unit_test_config():
@@ -177,9 +137,9 @@ def get_device_and_sensor_metadata():
 
     metadata = {'devices': {}, 'sensors': {}}
 
-    # Resolve paths to devices/metadata/ and sensors/metadata/
-    device_metadata = os.path.join(repo, 'devices', 'metadata')
-    sensor_metadata = os.path.join(repo, 'sensors', 'metadata')
+    # Resolve paths to util/metadata/devices and util/metadata/sensors
+    device_metadata = os.path.join(util, 'metadata', 'devices')
+    sensor_metadata = os.path.join(util, 'metadata', 'sensors')
 
     # Load each device metadata and add to output object
     for i in os.listdir(device_metadata):

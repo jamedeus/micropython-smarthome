@@ -18,9 +18,11 @@ To run the CLI tests go to the repo root and paste this:
 
 ```
 export PYTHONPATH=$PYTHONPATH:`pwd`/CLI
-pipenv run coverage run -m unittest discover tests/cli
+pipenv run coverage run run_cli_tests.py
 pipenv run coverage report
 ```
+
+Note: The `run_cli_tests.py` script applies mocks that prevent `CLI/cli_config.json` from being read (if it exists). Running tests without the script will likely fail.
 
 ## Client
 
@@ -44,18 +46,23 @@ Coverage measurement is not possible since the code under test runs on a remote 
 
 The firmware tests require an ESP32 connected via USB. Flash the [firmware](https://gitlab.com/jamedeus/micropython-smarthome/-/releases) if you haven't already and run through setup to connect the node to your wifi.
 
+Once the ESP32 is set up use [mpremote](https://docs.micropython.org/en/latest/reference/mpremote.html) to view serial output:
+```
+mpremote connect /dev/ttyUSB0
+```
+
 Firmware tests can be uploaded to the ESP32 in a single step with [provision.py](/CLI/provision.py):
 ```
 ./CLI/provision.py --test <target-node-ip>
 ```
 
-When the upload completes the node will reboot and run the first group of tests. Due to memory fragmentation issues the tests run in 4 groups:
+When the upload completes the node will reboot and run the first group of tests. To prevent memory fragmentation issues the test are split into 4 groups:
 - core
 - api
 - device
 - sensors
 
-Once the core tests complete the results will be printed followed by a menu used to select the next group of tests. Complete results from all tests can be viewed by pressing 6 at the menu.
+A results summary is printed at the end of each group followed by a menu used to select the next group of tests. Complete results from all groups can be viewed by pressing 6 at the menu.
 
 ## Frontend
 

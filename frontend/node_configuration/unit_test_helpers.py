@@ -1,56 +1,15 @@
 import os
 import json
-import shutil
 import struct
-import tempfile
-from django.conf import settings
-from django.test import Client, TestCase
+from django.test import Client
 from .models import Config, Node
-from helper_functions import get_cli_config, write_cli_config, load_unit_test_config
+from helper_functions import load_unit_test_config
 
 
 # Subclass Client, add default for content_type arg
 class JSONClient(Client):
     def post(self, path, data=None, content_type='application/json', **extra):
         return super().post(path, data, content_type, **extra)
-
-
-# Subclass TestCase, back up cli_config.json contents, replace with
-# template, restore after tests. Prevents tests modifying production.
-class TestCaseBackupRestore(TestCase):
-    # Get path to cli_config.json
-    cli_config_path = os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')
-
-    # Create temp directory to back up existing config files
-    backup_path = os.path.join(tempfile.gettempdir(), 'smarthome_config_file_backups')
-    if not os.path.exists(backup_path):
-        os.mkdir(backup_path)
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        # Back up cli_config.json to class attribute
-        with open(cls.cli_config_path, 'r') as file:
-            cls.original_cli_config_backup = json.load(file)
-
-        # Delete from disk, replace with template
-        os.remove(cls.cli_config_path)
-        write_cli_config(get_cli_config())
-
-        # Move existing config dir to tmp, create blank dir for tests
-        cls.backup_dir = shutil.move(settings.CONFIG_DIR, cls.backup_path)
-        os.mkdir(settings.CONFIG_DIR)
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        # Write cli_config.json backup back to disk
-        with open(cls.cli_config_path, 'w') as file:
-            json.dump(cls.original_cli_config_backup, file)
-
-        # Delete test config files, move originals back
-        shutil.rmtree(settings.CONFIG_DIR)
-        shutil.move(cls.backup_dir, settings.CONFIG_DIR)
 
 
 # Get directory containing unit_test_helpers.py
@@ -92,9 +51,6 @@ def create_config_and_node_from_json(config_json, ip='192.168.1.123'):
     friendly_name = config_json['metadata']['id']
     filename = f'{friendly_name.lower()}.json'
 
-    with open(os.path.join(settings.CONFIG_DIR, filename), 'w') as file:
-        json.dump(config_json, file)
-
     node = Node.objects.create(friendly_name=friendly_name, ip=ip, floor=config_json['metadata']['floor'])
     config = Config.objects.create(config=config_json, filename=filename, node=node)
 
@@ -106,15 +62,6 @@ def create_test_nodes():
     create_config_and_node_from_json(test_config_1, '192.168.1.123')
     create_config_and_node_from_json(test_config_2, '192.168.1.124')
     create_config_and_node_from_json(test_config_3, '192.168.1.125')
-
-
-# Deletes files written to disk by create_test_nodes
-def clean_up_test_nodes():
-    for i in range(1, 4):
-        try:
-            os.remove(os.path.join(settings.CONFIG_DIR, f'test{i}.json'))
-        except FileNotFoundError:
-            pass
 
 
 # Replaces provision view to simulate partially successful reupload_all

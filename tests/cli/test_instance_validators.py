@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long, missing-function-docstring, missing-module-docstring, missing-class-docstring
+
 from unittest import TestCase
 from helper_functions import load_unit_test_config
 from instance_validators import (
@@ -284,6 +286,14 @@ class ValidatorErrorTests(TestCase):
         result = validate_rules(self.config['device6'])
         self.assertEqual(result, 'Cabinet Lights: Invalid schedule rule 1023')
 
+        # Reset
+        self.config['device6']['max_rule'] = 1023
+
+        # Confirm correct error when schedule rule timestamp missing
+        self.config['device6']['schedule'][''] = 1023
+        result = validate_rules(self.config['device6'])
+        self.assertEqual(result, 'Cabinet Lights: Missing schedule rule timestamp')
+
         # Confirm validators which return own error message work correctly
         # Placeholder, not currently possible
 
@@ -369,3 +379,10 @@ class ValidatorErrorTests(TestCase):
     def test_regression_motion_sensor_accepts_nan(self):
         self.assertFalse(motion_sensor_validator(float('NaN'), min_rule='1', max_rule='100'))
         self.assertFalse(load_cell_validator(float('NaN')))
+
+    # Original bug: motion_sensor_validator cast rule to float in a conditional
+    # and only returned True if the conditional passed. If rule was 0.0 (valid)
+    # the conditional was not matched (0.0 == False) and nothing was returned.
+    def test_regression_motion_sensor_returns_none_when_rule_is_0(self):
+        self.assertTrue(motion_sensor_validator(0))
+        self.assertTrue(motion_sensor_validator(0.0))

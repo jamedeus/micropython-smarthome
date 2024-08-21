@@ -1,0 +1,43 @@
+_smarthome_cli()
+{
+    # Get current arg, first arg (name of tool to call)
+    local cur first_arg cmds
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    first_arg="${COMP_WORDS[1]}"
+
+    # Available tools
+    cmds="--api --provision --config"
+
+    if [[ "$first_arg" == "--api" ]]; then
+        # Remove tool arg, replace smarthome_cli with api_client.py
+        local cmd="api_client.py ${COMP_WORDS[@]:2}"
+        COMP_WORDS=($cmd)
+        COMP_CWORD=$((COMP_CWORD-1))
+        compopt -o nospace
+        # Forward args to api_client completions
+        _api_client
+        return 0
+
+    elif [[ "$first_arg" == "--provision" ]]; then
+        # Remove tool arg, replace smarthome_cli with provision.py
+        local cmd="provision.py ${COMP_WORDS[@]:2}"
+        COMP_WORDS=($cmd)
+        COMP_CWORD=$((COMP_CWORD-1))
+        compopt -o nospace
+        # Forward args to provision completions
+        _provision
+        return 0
+
+    elif [[ "$first_arg" == "--config" ]]; then
+        # Display nothing if --config flag passed (does not take args)
+        COMPREPLY=( $(compgen -W "" -- "${cur}") )
+        return 0
+
+    else
+        # Show available tool args
+        COMPREPLY=( $(compgen -W "${cmds}" -- "${cur}") )
+        return 0
+    fi
+}
+complete -F _smarthome_cli smarthome_cli.py
+complete -F _smarthome_cli smarthome_cli

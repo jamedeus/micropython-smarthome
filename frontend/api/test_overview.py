@@ -1,17 +1,16 @@
 import json
 from unittest.mock import patch
+from django.test import TestCase
 from django.db import IntegrityError
 from .models import Macro
 from node_configuration.unit_test_helpers import (
     create_test_nodes,
-    clean_up_test_nodes,
-    TestCaseBackupRestore,
     JSONClient
 )
 
 
 # Test api overview page
-class OverviewPageTests(TestCaseBackupRestore):
+class OverviewPageTests(TestCase):
     def test_overview_page_no_nodes(self):
         # Request page, confirm correct template used
         response = self.client.get('/api')
@@ -35,9 +34,6 @@ class OverviewPageTests(TestCaseBackupRestore):
         self.assertEqual(len(response.context['nodes'][1]), 2)
         self.assertEqual(len(response.context['nodes'][2]), 1)
         self.assertEqual(response.context['macros'], {})
-
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_overview_page_with_macro(self):
         # Create 3 test nodes
@@ -91,9 +87,6 @@ class OverviewPageTests(TestCaseBackupRestore):
         self.assertTemplateUsed(response, 'api/overview.html')
         self.assertEqual(response.context['macros'], test_macro_context)
 
-        # Remove test configs from disk
-        clean_up_test_nodes()
-
     def test_overview_page_record_macro(self):
         # Create 3 test nodes
         create_test_nodes()
@@ -111,18 +104,11 @@ class OverviewPageTests(TestCaseBackupRestore):
         response = self.client.get('/api/recording/New Macro Name')
         self.assertEqual(response.status_code, 200)
 
-        # Remove test configs from disk
-        clean_up_test_nodes()
-
 
 # Test actions in overview top-right dropdown menu
-class TestGlobalCommands(TestCaseBackupRestore):
+class TestGlobalCommands(TestCase):
     def setUp(self):
         create_test_nodes()
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_reset_all(self):
         # Mock request to return expected response for each node
@@ -162,7 +148,7 @@ class TestGlobalCommands(TestCaseBackupRestore):
 
 
 # Test endpoint that sets cookie to skip macro instructions modal
-class SkipInstructionsTests(TestCaseBackupRestore):
+class SkipInstructionsTests(TestCase):
     def test_get_skip_instructions_cookie(self):
         response = self.client.get('/skip_instructions')
         self.assertEqual(response.status_code, 200)
@@ -171,7 +157,7 @@ class SkipInstructionsTests(TestCaseBackupRestore):
 
 
 # Test model that stores and plays recorded macros
-class MacroModelTests(TestCaseBackupRestore):
+class MacroModelTests(TestCase):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
@@ -198,10 +184,6 @@ class MacroModelTests(TestCaseBackupRestore):
             "target": "192.168.1.123",
             "friendly_name": "Countertop LEDs"
         }
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     # Test instantiation, name standardization, __str__ method
     def test_instantiation(self):
@@ -263,9 +245,6 @@ class MacroModelTests(TestCaseBackupRestore):
         macro.del_action(0)
         actions = json.loads(macro.actions)
         self.assertEqual(len(actions), 0)
-
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_add_action_invalid(self):
         # Create test macro
@@ -368,7 +347,7 @@ class MacroModelTests(TestCaseBackupRestore):
 
 
 # Test endpoints used to record and edit macros
-class MacroTests(TestCaseBackupRestore):
+class MacroTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -395,10 +374,6 @@ class MacroTests(TestCaseBackupRestore):
                 "friendly_name": "Cabinet Lights"
             }
         }
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_macro_name_available(self):
         # Should be available
@@ -498,17 +473,13 @@ class MacroTests(TestCaseBackupRestore):
         )
 
 
-class InvalidMacroTests(TestCaseBackupRestore):
+class InvalidMacroTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
 
         # Create 3 test nodes
         create_test_nodes()
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_add_macro_action_get_request(self):
         # Requires POST request

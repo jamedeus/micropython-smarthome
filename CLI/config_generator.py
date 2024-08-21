@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 '''
 Script used to generate micropython-smarthome config files on the command line.
@@ -25,15 +25,10 @@ from validation_constants import (
 )
 from helper_functions import (
     valid_ip,
-    valid_timestamp,
     is_device,
     is_sensor,
     is_device_or_sensor,
-    is_int,
-    get_schedule_keywords_dict,
-    get_existing_nodes,
-    get_config_filename,
-    get_cli_config
+    is_int
 )
 from config_prompt_validators import (
     IntRange,
@@ -44,8 +39,14 @@ from config_prompt_validators import (
 from config_rule_prompts import (
     default_rule_prompt_router,
     schedule_rule_prompt_router,
-    rule_limits_map
+    rule_limits_map,
+    schedule_rule_timestamp_prompt,
+    schedule_rule_timestamp_or_keyword_prompt
 )
+from cli_config_manager import CliConfigManager
+
+# Read cli_config.json from disk (contains existing nodes and schedule keywords)
+cli_config = CliConfigManager()
 
 
 class GenerateConfigFile:
@@ -64,7 +65,7 @@ class GenerateConfigFile:
                     'id': '',
                     'floor': '',
                     'location': '',
-                    'schedule_keywords': get_schedule_keywords_dict()
+                    'schedule_keywords': cli_config.config['schedule_keywords']
                 }
             }
 
@@ -82,7 +83,7 @@ class GenerateConfigFile:
                 print('Example usage: ./CLI/config_generator.py /path/to/existing_config.json')
                 raise SystemExit
             if not os.path.exists(path):
-                print(f'Error: Config file "{sys.argv[1]}" not found')
+                print(f'Error: Config file "{edit}" not found')
                 print('Example usage: ./CLI/config_generator.py /path/to/existing_config.json')
                 raise SystemExit
 
@@ -101,7 +102,7 @@ class GenerateConfigFile:
         self.category_options = ['Device', 'Sensor', 'IR Blaster', 'Done']
 
         # List of schedule keywords from config file
-        self.schedule_keyword_options = list(get_schedule_keywords_dict().keys())
+        self.schedule_keyword_options = list(cli_config.config['schedule_keywords'].keys())
 
     def run_prompt(self):
         '''Main entrypoint, displays a series of interactive menus used to
@@ -142,7 +143,8 @@ class GenerateConfigFile:
         '''
 
         # Prompt user to select action
-        while True:
+        choice = None
+        while choice != 'Done':
             choice = questionary.select(
                 "\nWhat would you like to do?",
                 choices=[
@@ -169,8 +171,6 @@ class GenerateConfigFile:
             elif choice == 'Edit sensor targets':
                 # Prompt user to select targets for each sensor
                 self.select_sensor_targets()
-            elif choice == 'Done':
-                break
 
         # Validate finished config, print error if failed
         self.__validate()
@@ -202,16 +202,8 @@ class GenerateConfigFile:
 
     def write_to_disk(self):
         '''Writes self.config to config_directory set in cli_config.json.'''
-
-        # Get filename (all lowercase, replace spaces with hyphens)
-        filename = get_config_filename(self.config["metadata"]["id"])
-
-        # Write to config_directory (set in cli_config.json)
-        config_path = os.path.join(get_cli_config()['config_directory'], filename)
-        with open(config_path, 'w', encoding='utf-8') as file:
-            json.dump(self.config, file)
-
-        print(f"\nConfig saved as {filename}")
+        config_path = cli_config.save_node_config_file(self.config)
+        print(f"\nConfig saved as {os.path.split(config_path)[1]}")
 
     def metadata_prompt(self, name="", floor="", location=""):
         '''Prompts user for node name, location, and floor; adds to self.config.
@@ -242,7 +234,8 @@ class GenerateConfigFile:
         '''Recursively prompts user to add devices, sensors, or IR Blaster
         until user "Done" option. Adds a section to self.config for each.
         '''
-        while True:
+        choice = None
+        while choice != 'Done':
             choice = questionary.select(
                 "\nAdd instances?",
                 choices=self.category_options
@@ -259,8 +252,6 @@ class GenerateConfigFile:
                 self.config[f'sensor{index}'] = self.__configure_sensor()
             elif choice == 'IR Blaster':
                 self.configure_ir_blaster()
-            elif choice == 'Done':
-                break
 
     def delete_devices_and_sensors(self):
         '''Displays checkbox for each existing device and sensor, removes user
@@ -377,15 +368,12 @@ class GenerateConfigFile:
         cli_config.json, returns IP address of selected node.
         '''
 
-        # Get dict of existing nodes from cli_config.json
-        existing_nodes = get_existing_nodes()
-
         # Show prompt with names of all existing nodes
         target = questionary.select(
             "Select target node",
-            choices=list(existing_nodes.keys())
+            choices=list(cli_config.config['nodes'].keys())
         ).unsafe_ask()
-        return existing_nodes[target]['ip']
+        return cli_config.config['nodes'][target]
 
     def __configure_device(self, config=None):
         '''Prompts user to select device type followed by all required params
@@ -615,38 +603,20 @@ class GenerateConfigFile:
 
         # Prompt user to select timestamp or keyword if keywords are configured
         if self.schedule_keyword_options:
-            timestamp = self.__schedule_rule_timestamp_or_keyword_prompt()
+            timestamp = schedule_rule_timestamp_or_keyword_prompt(
+                self.schedule_keyword_options
+            )
         # Prompt for timestamp if no keywords are available
         else:
-            timestamp = self.__schedule_rule_timestamp_prompt()
+            timestamp = schedule_rule_timestamp_prompt()
         rule = schedule_rule_prompt_router(config)
         config['schedule'][timestamp] = rule
         return config
 
-    def __schedule_rule_timestamp_prompt(self):
-        '''Prompts user to enter a schedule rule timestamp, returns input.'''
-        return questionary.text(
-            "Enter timestamp (HH:MM):",
-            validate=valid_timestamp
-        ).unsafe_ask()
 
-    def __schedule_rule_timestamp_or_keyword_prompt(self):
-        '''Prompts user to pick a schedule rule timestamp or keyword. Returns
-        user input if timestamp selected, or list choice if keyword selected.
-        '''
-        choice = questionary.select(
-            "\nTimestamp or keyword?",
-            choices=['Timestamp', 'Keyword']
-        ).unsafe_ask()
-        if choice == 'Timestamp':
-            return self.__schedule_rule_timestamp_prompt()
-        return questionary.select(
-            "\nSelect keyword",
-            choices=self.schedule_keyword_options
-        ).unsafe_ask()
+def main():
+    '''Command line entrypoint, handles args and shows prompt'''
 
-
-if __name__ == '__main__':
     if len(sys.argv) > 1:
         # Instantiate in edit mode with path to existing config
         generator = GenerateConfigFile(sys.argv[1])
@@ -655,9 +625,13 @@ if __name__ == '__main__':
 
     try:
         generator.run_prompt()
-    except KeyboardInterrupt as interrupt:
+    except KeyboardInterrupt as interrupt:  # pragma: no cover
         raise SystemExit from interrupt
 
     # Write to disk if passed validation
     if generator.passed_validation:
         generator.write_to_disk()
+
+
+if __name__ == '__main__':  # pragma: no cover
+    main()

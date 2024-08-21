@@ -10,19 +10,22 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.templatetags.static import static
+from django.views.decorators.csrf import ensure_csrf_cookie
 from Webrepl import Webrepl
 from provision_tools import get_modules, provision
-from api_endpoints import (
-    add_schedule_keyword,
-    remove_schedule_keyword,
-    save_schedule_keywords,
-    set_gps_coords
+from api_endpoints import set_gps_coords
+from api_helper_functions import (
+    bulk_add_schedule_keyword,
+    bulk_edit_schedule_keyword,
+    bulk_remove_schedule_keyword,
+    bulk_save_schedule_keyword
 )
 from validate_config import validate_full_config
 from helper_functions import (
     valid_ip,
     get_schedule_keywords_dict,
     get_config_filename,
+    get_cli_config_name,
     get_device_and_sensor_metadata
 )
 from .get_api_target_menu_options import get_api_target_menu_options
@@ -136,7 +139,7 @@ def reupload_all(request):
 
 @requires_post
 def delete_config(data):
-    '''Takes filename of existing config file, deletes from database and disk.
+    '''Takes filename of existing config file, deletes from database.
     If Config was uploaded also deletes associated Node model entry.
     '''
     try:
@@ -148,45 +151,33 @@ def delete_config(data):
             status=404
         )
 
-    try:
-        # If config has been uploaded delete related node (also deletes config)
-        if target.node:
-            target.node.delete()
-        # Otherwise delete config
-        else:
-            target.delete()
+    # If config has been uploaded delete related node (also deletes config)
+    if target.node:
+        target.node.delete()
+    # Otherwise delete config
+    else:
+        target.delete()
 
-        return standard_response(message=f"Deleted {data}")
-    except PermissionError:
-        return error_response(
-            message="Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
-            status=500
-        )
+    return standard_response(message=f"Deleted {data}")
 
 
 @requires_post
 def delete_node(data):
-    '''Takes name of existing Node model entry, deletes Node and associated
-    Config entry from database, deletes config file from disk.
+    '''Takes dict with friendly_name and/or ip key(s), finds node that matches
+    all values, deletes Node and associated Config entry from database.
     '''
+    print(data)
     try:
         # Get model entry
-        node = Node.objects.get(friendly_name=data)
+        node = Node.objects.get(**data)
     except Node.DoesNotExist:
         return error_response(
-            message=f"Failed to delete {data}, does not exist",
+            message="Failed to delete, matching node does not exist",
             status=404
         )
 
-    try:
-        # Delete from database and disk
-        node.delete()
-        return standard_response(message=f"Deleted {data}")
-    except PermissionError:
-        return error_response(
-            message="Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
-            status=500
-        )
+    node.delete()
+    return standard_response(message=f"Deleted {node.friendly_name}")
 
 
 @requires_post
@@ -201,7 +192,6 @@ def change_node_ip(data):
         )
 
     try:
-        # Get model entry, delete from disk + database
         node = Node.objects.get(friendly_name=data['friendly_name'])
     except Node.DoesNotExist:
         return error_response(
@@ -215,21 +205,29 @@ def change_node_ip(data):
             status=400
         )
 
-    # Get dependencies, upload to new IP
-    modules = get_modules(node.config.config, REPO_DIR)
-    response = provision(data["new_ip"], NODE_PASSWD, node.config.config, modules)
+    # Reupload config to new IP if reupload param is true
+    if data["reupload"]:
+        # Get dependencies, upload to new IP
+        modules = get_modules(node.config.config, REPO_DIR)
+        response = provision(data["new_ip"], NODE_PASSWD, node.config.config, modules)
 
-    if response['status'] == 200:
-        # Update model
-        node.ip = data["new_ip"]
-        node.save()
+        if response['status'] == 200:
+            # Update model if successful
+            node.ip = data["new_ip"]
+            node.save()
 
-        return standard_response(message="Successfully uploaded to new IP")
+            return standard_response(message="Successfully uploaded to new IP")
 
-    return error_response(
-        message=response['message'],
-        status=response['status']
-    )
+        return error_response(
+            message=response['message'],
+            status=response['status']
+        )
+
+    # Just update IP if reupload param is false (already reuploaded from CLI)
+    node.ip = data["new_ip"]
+    node.save()
+
+    return standard_response(message="Successfully changed IP")
 
 
 def config_overview(request):
@@ -421,12 +419,11 @@ def generate_config_file(data, edit_existing=False):
         print(f"\nERROR: {valid}\n")
         return error_response(message=valid, status=400)
 
-    # If creating new config, add to models + write to disk
+    # If creating new config, add to models
     if not edit_existing:
-        new = Config.objects.create(config=data, filename=filename)
-        new.write_to_disk()
+        Config.objects.create(config=data, filename=filename)
 
-    # If modifying old config, update JSON object and write to disk
+    # If modifying old config update JSON object
     else:
         try:
             model_entry = Config.objects.get(filename=filename)
@@ -549,7 +546,7 @@ def restore_config(data):
 
 
 @requires_post
-def add_schedule_keyword_config(data):
+def add_schedule_keyword(data):
     '''Creates ScheduleKeyword model entry, makes API calls to add new keyword
     to all ESP32s (Node entries) in parallel.
     '''
@@ -563,16 +560,13 @@ def add_schedule_keyword_config(data):
     except ValidationError as ex:
         return error_response(message=str(ex), status=400)
 
-    # Add keyword to all existing nodes in parallel
-    commands = [(node.ip, [data["keyword"], data["timestamp"]])
-                for node in Node.objects.all()]
-    with ThreadPoolExecutor(max_workers=20) as executor:
-        executor.map(add_schedule_keyword, *zip(*commands))
+    # Add keyword to all existing nodes in parallel if sync_nodes == True
+    if data["sync_nodes"]:
+        node_ips = [node.ip for node in Node.objects.all()]
+        bulk_add_schedule_keyword(node_ips, data["keyword"], data["timestamp"])
+        bulk_save_schedule_keyword(node_ips)
 
-    # Save keywords on all nodes
-    save_all_schedule_keywords()
-
-    # Add new keyword to all configs in database and on disk
+    # Add new keyword to all configs in database
     all_keywords = get_schedule_keywords_dict()
     for node in Node.objects.all():
         node.config.config['metadata']['schedule_keywords'] = all_keywords
@@ -582,7 +576,7 @@ def add_schedule_keyword_config(data):
 
 
 @requires_post
-def edit_schedule_keyword_config(data):
+def edit_schedule_keyword(data):
     '''Updates existing ScheduleKeyword model entry, makes API calls to update
     keyword on all ESP32s (Node entries) in parallel.
     '''
@@ -599,32 +593,18 @@ def edit_schedule_keyword_config(data):
     except ValidationError as ex:
         return error_response(message=str(ex), status=400)
 
-    # If timestamp changed: Call add to overwrite existing keyword
-    if data["keyword_old"] == data["keyword_new"]:
-        # Update keyword on all existing nodes in parallel
-        commands = [(node.ip, [data["keyword_new"], data["timestamp_new"]])
-                    for node in Node.objects.all()]
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            executor.map(add_schedule_keyword, *zip(*commands))
+    # Edit keyword on all existing nodes in parallel if sync_nodes == True
+    if data["sync_nodes"]:
+        node_ips = [node.ip for node in Node.objects.all()]
+        bulk_edit_schedule_keyword(
+            node_ips,
+            data["keyword_old"],
+            data["keyword_new"],
+            data["timestamp_new"]
+        )
+        bulk_save_schedule_keyword(node_ips)
 
-    # If keyword changed: Remove existing keyword, add new keyword
-    else:
-        # Remove keyword from all existing nodes in parallel
-        commands = [(node.ip, [data["keyword_old"]])
-                    for node in Node.objects.all()]
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            executor.map(remove_schedule_keyword, *zip(*commands))
-
-        # Add keyword to all existing nodes in parallel
-        commands = [(node.ip, [data["keyword_new"], data["timestamp_new"]])
-                    for node in Node.objects.all()]
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            executor.map(add_schedule_keyword, *zip(*commands))
-
-    # Save keywords on all nodes
-    save_all_schedule_keywords()
-
-    # Update keywords for all configs in database and on disk
+    # Update keywords for all configs in database
     all_keywords = get_schedule_keywords_dict()
     for node in Node.objects.all():
         node.config.config['metadata']['schedule_keywords'] = all_keywords
@@ -634,7 +614,7 @@ def edit_schedule_keyword_config(data):
 
 
 @requires_post
-def delete_schedule_keyword_config(data):
+def delete_schedule_keyword(data):
     '''Deletes an existing ScheduleKeyword model entry, makes API calls to
     remove keyword from all ESP32s (Node entries) in parallel.
     '''
@@ -648,15 +628,13 @@ def delete_schedule_keyword_config(data):
     except IntegrityError as ex:
         return error_response(message=str(ex), status=400)
 
-    # Remove keyword from all existing nodes in parallel
-    commands = [(node.ip, [data["keyword"]]) for node in Node.objects.all()]
-    with ThreadPoolExecutor(max_workers=20) as executor:
-        executor.map(remove_schedule_keyword, *zip(*commands))
+    # Remove keyword from all existing nodes in parallel if sync_nodes == True
+    if data["sync_nodes"]:
+        node_ips = [node.ip for node in Node.objects.all()]
+        bulk_remove_schedule_keyword(node_ips, data["keyword"])
+        bulk_save_schedule_keyword(node_ips)
 
-    # Save keywords on all nodes
-    save_all_schedule_keywords()
-
-    # Remove keyword from all configs in database and from disk
+    # Remove keyword from all configs in database
     all_keywords = get_schedule_keywords_dict()
     for node in Node.objects.all():
         node.config.config['metadata']['schedule_keywords'] = all_keywords
@@ -665,10 +643,69 @@ def delete_schedule_keyword_config(data):
     return standard_response(message='Keyword deleted')
 
 
-def save_all_schedule_keywords():
-    '''Makes parallel API calls all ESP32s (Node entries) to write current
-    schedule keywords to disk. Called by endpoints that modify keywords.
+@ensure_csrf_cookie
+def get_cli_config(request):
+    '''Returns dict containing all existing Nodes and ScheduleKeywords.
+    Called by CLI tools to update cli_config.json.
     '''
-    commands = [(node.ip, "") for node in Node.objects.all()]
-    with ThreadPoolExecutor(max_workers=20) as executor:
-        executor.map(save_schedule_keywords, *zip(*commands))
+    nodes = {get_cli_config_name(node.friendly_name): node.ip
+             for node in Node.objects.all()}
+    keywords = get_schedule_keywords_dict()
+    return standard_response(message={
+        'nodes': nodes,
+        'schedule_keywords': keywords
+    })
+
+
+def get_node_config(request, ip):
+    '''Takes IP of existing Node model entry, returns config JSON.
+    Called by CLI tools to download config file.
+    '''
+    try:
+        node = Node.objects.get(ip=ip)
+        return standard_response(message=node.config.config)
+    except Node.DoesNotExist:
+        return error_response(
+            message=f'Node with IP {ip} not found',
+            status=404
+        )
+
+
+@requires_post
+def add_node(data):
+    '''Creates Node entry with parameters and config JSON from POST body.
+    Called by CLI tools when a new node is created from the command line.
+    '''
+
+    # Confirm IP is valid
+    if not valid_ip(data['ip']):
+        return error_response(message=f'Invalid IP {data["ip"]}', status=400)
+
+    # Confirm config JSON is valid
+    valid = validate_full_config(data['config'])
+    if valid is not True:
+        print(f'\nERROR: {valid}\n')
+        return error_response(message=valid, status=400)
+
+    # Confirm name is not duplicate
+    friendly_name = data['config']['metadata']['id']
+    filename = get_config_filename(friendly_name)
+    if is_duplicate(filename, friendly_name):
+        return error_response(
+            message='Config already exists with identical name',
+            status=409
+        )
+
+    # Create Node and Config models
+    node = Node.objects.create(
+        friendly_name=friendly_name,
+        ip=data['ip'],
+        floor=data['config']['metadata']['floor']
+    )
+    Config.objects.create(
+        config=data['config'],
+        filename=filename,
+        node=node
+    )
+
+    return standard_response(message='Node created')

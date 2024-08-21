@@ -60,11 +60,13 @@ test_cli:
   tags:
     - nas
     - docker
-  script:
+  before_script:
     - pip3 install pipenv
     - pipenv install --dev
     - export PYTHONPATH=$PYTHONPATH:`pwd`/CLI
-    - pipenv run coverage run -m unittest discover tests/cli
+    - mkdir /root/.config
+  script:
+    - pipenv run coverage run run_cli_tests.py
     - pipenv run coverage report
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
 

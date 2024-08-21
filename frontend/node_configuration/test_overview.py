@@ -3,44 +3,25 @@ import json
 from copy import deepcopy
 from unittest.mock import patch
 from django.conf import settings
+from django.test import TestCase
 from .views import get_modules, provision
 from .models import Config, Node, ScheduleKeyword
 from Webrepl import Webrepl
-
-# Functions used to manage cli_config.json
-from helper_functions import get_cli_config, remove_node_from_cli_config, load_unit_test_config
-
+from helper_functions import load_unit_test_config
 # Large JSON objects, helper functions
 from .unit_test_helpers import (
-    TestCaseBackupRestore,
     JSONClient,
     request_payload,
     create_test_nodes,
-    clean_up_test_nodes,
     test_config_1,
     simulate_reupload_all_partial_success,
     simulate_corrupt_filesystem_upload,
     simulate_reupload_all_fail_for_different_reasons
 )
 
-# Ensure CLI_SYNC is True (writes test configs to disk when created)
-settings.CLI_SYNC = True
-
-# Create CONFIG_DIR if it does not exist
-if not os.path.exists(settings.CONFIG_DIR):
-    os.mkdir(settings.CONFIG_DIR, mode=0o775)
-    with open(os.path.join(settings.CONFIG_DIR, 'readme'), 'w') as file:
-        file.write('This directory was automatically created for frontend unit tests.\n')
-        file.write('You can safely delete it, it will be recreated each time tests run.')
-
-# Create cli_config.json if it does not exist
-if not os.path.exists(os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')):
-    from helper_functions import write_cli_config
-    write_cli_config(get_cli_config())
-
 
 # Test main overview page
-class OverviewPageTests(TestCaseBackupRestore):
+class OverviewPageTests(TestCase):
     def test_overview_page_no_nodes(self):
         # Request page, confirm correct template used
         response = self.client.get('/config_overview')
@@ -85,9 +66,6 @@ class OverviewPageTests(TestCaseBackupRestore):
                 }
             ]
         )
-
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_overview_page_with_configs(self):
         # Create test config that hasn't been uploaded
@@ -153,7 +131,7 @@ class OverviewPageTests(TestCaseBackupRestore):
 
 
 # Test delete config
-class DeleteConfigTests(TestCaseBackupRestore):
+class DeleteConfigTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -161,18 +139,16 @@ class DeleteConfigTests(TestCaseBackupRestore):
         # Generate Config, will be deleted below
         response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
     def test_delete_existing_config(self):
         # Confirm starting condition
         self.assertEqual(len(Config.objects.all()), 1)
 
-        # Delete Config created in setUp, confirm response, confirm removed from database + disk
+        # Delete Config created in setUp, confirm response, confirm removed from database
         response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['message'], 'Deleted unit-test-config.json')
         self.assertEqual(len(Config.objects.all()), 0)
-        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
     def test_delete_non_existing_config(self):
         # Confirm starting condition
@@ -188,41 +164,6 @@ class DeleteConfigTests(TestCaseBackupRestore):
 
         # Confirm Config still exists
         self.assertEqual(len(Config.objects.all()), 1)
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
-
-    def test_delete_invalid_permission(self):
-        # Confirm starting condition
-        self.assertEqual(len(Config.objects.all()), 1)
-
-        # Mock file with read-only file permissions
-        with patch('os.remove', side_effect=PermissionError):
-            # Attempt to delete, confirm fails with permission denied error
-            response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
-            self.assertEqual(response.status_code, 500)
-            self.assertEqual(
-                response.json()['message'],
-                'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
-            )
-
-        # Confirm Config still exists
-        self.assertEqual(len(Config.objects.all()), 1)
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
-
-    # Original bug: Frontend threw error when attempting to delete a config that was already
-    # deleted from disk, preventing the model entry from being removed. Now catches error,
-    # deletes model entry, and returns normal response message.
-    def test_regression_deleted_from_disk(self):
-        # Delete config file, confirm still exists in database but not on disk
-        os.remove(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'))
-        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
-        self.assertEqual(len(Config.objects.all()), 1)
-
-        # Simulate deleting through frontend, confirm normal response, confirm removed from database
-        response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['message'], 'Deleted unit-test-config.json')
-        self.assertEqual(len(Config.objects.all()), 0)
-        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
     # Original bug: The delete_config endpoint did not check if the config had
     # a Node reverse relation. If the user created a new config with the same
@@ -250,7 +191,7 @@ class DeleteConfigTests(TestCaseBackupRestore):
         self.assertEqual(len(Config.objects.all()), 0)
 
 
-class DeleteNodeTests(TestCaseBackupRestore):
+class DeleteNodeTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -258,7 +199,6 @@ class DeleteNodeTests(TestCaseBackupRestore):
         # Generate Config for test Node
         response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
         # Create Node, add Config reverse relation
         self.node = Node.objects.create(friendly_name="Test Node", ip="192.168.1.123", floor="5")
@@ -267,23 +207,38 @@ class DeleteNodeTests(TestCaseBackupRestore):
         self.config.save()
 
     def test_delete_existing_node(self):
-        # Confirm node exists in database and cli_config.json
+        # Confirm node exists in database
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
-        cli_config = get_cli_config()
-        self.assertIn('test-node', cli_config['nodes'].keys())
 
         # Delete the Node created in setUp, confirm response message
-        response = self.client.post('/delete_node', json.dumps('Test Node'))
+        response = self.client.post(
+            '/delete_node',
+            json.dumps({'friendly_name': 'Test Node'})
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['message'], 'Deleted Test Node')
 
-        # Confirm removed from database, disk, and cli_config.json
+        # Confirm removed from database
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertEqual(len(Node.objects.all()), 0)
-        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
-        cli_config = get_cli_config()
-        self.assertNotIn('test-node', cli_config['nodes'].keys())
+
+    def test_delete_existing_node_by_ip_address(self):
+        # Confirm node exists in database
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 1)
+
+        # Delete the Node using its IP address, confirm response message
+        response = self.client.post(
+            '/delete_node',
+            json.dumps({'ip': '192.168.1.123'})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['message'], 'Deleted Test Node')
+
+        # Confirm removed from database
+        self.assertEqual(len(Config.objects.all()), 0)
+        self.assertEqual(len(Node.objects.all()), 0)
 
     def test_delete_non_existing_node(self):
         # Confirm starting conditions
@@ -291,55 +246,23 @@ class DeleteNodeTests(TestCaseBackupRestore):
         self.assertEqual(len(Node.objects.all()), 1)
 
         # Attempt to delete non-existing Node, confirm fails with correct message
-        response = self.client.post('/delete_node', json.dumps('Wrong Node'))
+        response = self.client.post(
+            '/delete_node',
+            json.dumps({'friendly_name': 'Wrong Node'})
+        )
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json()['message'], 'Failed to delete Wrong Node, does not exist')
+        self.assertEqual(
+            response.json()['message'],
+            'Failed to delete, matching node does not exist'
+        )
 
         # Confirm Node and Config still exist
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
-
-    def test_delete_invalid_permission(self):
-        # Confirm starting conditions
-        self.assertEqual(len(Config.objects.all()), 1)
-        self.assertEqual(len(Node.objects.all()), 1)
-
-        # Mock file with read-only file permissions
-        with patch('os.remove', side_effect=PermissionError):
-            # Attempt to delete, confirm fails with permission denied error
-            response = self.client.post('/delete_node', json.dumps('Test Node'))
-            self.assertEqual(response.status_code, 500)
-            self.assertEqual(
-                response.json()['message'],
-                'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
-            )
-
-        # Confirm Node and Config still exist
-        self.assertEqual(len(Config.objects.all()), 1)
-        self.assertEqual(len(Node.objects.all()), 1)
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
-
-    # Original bug: Impossible to delete node if config file deleted
-    # from disk, traceback when file not found. Fixed in 1af01a00.
-    def test_regression_delete_node_config_not_on_disk(self):
-        # Delete config from disk but not database, confirm removed
-        os.remove(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'))
-        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
-        self.assertEqual(len(Config.objects.all()), 1)
-        self.assertEqual(len(Node.objects.all()), 1)
-
-        # Delete Node, should ignore missing file on disk
-        response = self.client.post('/delete_node', json.dumps('Test Node'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['message'], 'Deleted Test Node')
-        self.assertEqual(len(Config.objects.all()), 0)
-        self.assertEqual(len(Node.objects.all()), 0)
-        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
 
 # Test endpoint called by frontend upload buttons (calls get_modules and provision)
-class UploadTests(TestCaseBackupRestore):
+class UploadTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -349,9 +272,8 @@ class UploadTests(TestCaseBackupRestore):
         Config.objects.create(config=test_config_1, filename='test1.json')
         self.assertEqual(len(Config.objects.all()), 1)
 
-        # Confirm no nodes in database or cli_config.json
+        # Confirm no nodes in database
         self.assertEqual(len(Node.objects.all()), 0)
-        remove_node_from_cli_config('Test1')
 
         # Mock Webrepl to return True without doing anything
         with patch.object(Webrepl, 'open_connection', return_value=True), \
@@ -370,15 +292,6 @@ class UploadTests(TestCaseBackupRestore):
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
         self.assertTrue(Node.objects.get(friendly_name='Test1'))
-
-        # Should exist in cli_config.json
-        cli_config = get_cli_config()
-        self.assertIn('test1', cli_config['nodes'].keys())
-        self.assertEqual(cli_config['nodes']['test1']['ip'], '123.45.67.89')
-        self.assertEqual(
-            cli_config['nodes']['test1']['config'],
-            os.path.join(settings.CONFIG_DIR, 'test1.json')
-        )
 
     def test_reupload_existing(self):
         # Create test config, confirm database
@@ -402,9 +315,6 @@ class UploadTests(TestCaseBackupRestore):
         # Should have same number of configs and nodes
         self.assertEqual(len(Config.objects.all()), 3)
         self.assertEqual(len(Node.objects.all()), 3)
-
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_upload_non_existing_config(self):
         # Confirm database empty
@@ -490,7 +400,7 @@ class UploadTests(TestCaseBackupRestore):
 
 
 # Test view that uploads completed configs and dependencies to esp32 nodes
-class ProvisionTests(TestCaseBackupRestore):
+class ProvisionTests(TestCase):
     def test_provision(self):
         modules = get_modules(test_config_1, settings.REPO_DIR)
 
@@ -547,7 +457,7 @@ class ProvisionTests(TestCaseBackupRestore):
 
 
 # Test function that takes config file, returns list of dependencies for upload
-class GetModulesTests(TestCaseBackupRestore):
+class GetModulesTests(TestCase):
     def setUp(self):
         self.config = load_unit_test_config()
 
@@ -701,17 +611,15 @@ class GetModulesTests(TestCaseBackupRestore):
 
 
 # Test view that connects to existing node, downloads config file, writes to database
-class RestoreConfigViewTest(TestCaseBackupRestore):
+class RestoreConfigViewTest(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
 
     def test_restore_config(self):
-        # Database should be empty, config file should not exist on disk
+        # Database should be empty
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertEqual(len(Node.objects.all()), 0)
-        if os.path.exists(os.path.join(settings.CONFIG_DIR, 'test1.json')):
-            os.remove(os.path.join(settings.CONFIG_DIR, 'test1.json'))
 
         # Mock Webrepl to return byte-encoded test_config_1 (simulate receiving from ESP32)
         with patch.object(Webrepl, 'open_connection', return_value=True), \
@@ -729,12 +637,11 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
                 }
             )
 
-        # Config and Node should now exist, config file should exist on disk
+        # Config and Node should now exist
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
         self.assertTrue(Config.objects.get(filename='test1.json'))
         self.assertTrue(Node.objects.get(friendly_name='Test1'))
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'test1.json')))
 
         # Config should be identical to input object
         config = Config.objects.get(filename='test1.json').config
@@ -785,9 +692,6 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
         self.assertEqual(len(Config.objects.all()), 3)
         self.assertEqual(len(Node.objects.all()), 3)
 
-        # Remove test configs from disk
-        clean_up_test_nodes()
-
     # Verify correct error when passed an invalid IP
     def test_invalid_ip(self):
         response = self.client.post('/restore_config', {'ip': '123.456.678.90'})
@@ -820,7 +724,7 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
 
 
 # Test endpoint called by reupload all option in config overview
-class ReuploadAllTests(TestCaseBackupRestore):
+class ReuploadAllTests(TestCase):
     def setUp(self):
         create_test_nodes()
 
@@ -828,10 +732,6 @@ class ReuploadAllTests(TestCaseBackupRestore):
             'message': 'Unable to connect to node, please make sure it is connected to wifi and try again.',
             'status': 404
         }
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_reupload_all(self):
         # Mock provision to return success message without doing anything
@@ -900,7 +800,7 @@ class ReuploadAllTests(TestCaseBackupRestore):
 
 
 # Test endpoint used to change an existing node's IP
-class ChangeNodeIpTests(TestCaseBackupRestore):
+class ChangeNodeIpTests(TestCase):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -908,22 +808,20 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
         # Create 3 test nodes
         create_test_nodes()
 
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
-
     def test_change_node_ip(self):
-        # Confirm starting IP, confirm same IP in cli_config.json
+        # Confirm starting IP
         self.assertEqual(Node.objects.all()[0].ip, '192.168.1.123')
-        cli_config = get_cli_config()
-        self.assertEqual(cli_config['nodes']['test1']['ip'], '192.168.1.123')
 
         # Mock provision to return success message
         with patch('node_configuration.views.provision') as mock_provision:
             mock_provision.return_value = {'message': 'Upload complete.', 'status': 200}
 
             # Make request, confirm response
-            request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
+            request_payload = {
+                'friendly_name': 'Test1',
+                'new_ip': '192.168.1.255',
+                'reupload': True
+            }
             response = self.client.post('/change_node_ip', request_payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], 'Successfully uploaded to new IP')
@@ -932,9 +830,28 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
             self.assertEqual(Node.objects.all()[0].ip, '192.168.1.255')
             self.assertEqual(mock_provision.call_count, 1)
 
-            # Confirm IP changed in cli_config.json
-            cli_config = get_cli_config()
-            self.assertEqual(cli_config['nodes']['test1']['ip'], '192.168.1.255')
+    def test_change_node_ip_no_reupload(self):
+        # Confirm starting IP
+        self.assertEqual(Node.objects.all()[0].ip, '192.168.1.123')
+
+        # Mock provision to confirm not called
+        with patch('node_configuration.views.provision') as mock_provision:
+
+            # Make request with reupload param set to False (changed IP from CLI)
+            request_payload = {
+                'friendly_name': 'Test1',
+                'new_ip': '192.168.1.255',
+                'reupload': False
+            }
+
+            # Confirm response, confirm node model IP changed
+            response = self.client.post('/change_node_ip', request_payload)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['message'], 'Successfully changed IP')
+            self.assertEqual(Node.objects.all()[0].ip, '192.168.1.255')
+
+            # Confirm provision was NOT called
+            mock_provision.assert_not_called()
 
     def test_target_ip_offline(self):
         # Mock provision to return failure message without doing anything
@@ -945,7 +862,11 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
             }
 
             # Make request, confirm error
-            request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
+            request_payload = {
+                'friendly_name': 'Test1',
+                'new_ip': '192.168.1.255',
+                'reupload': True
+            }
             response = self.client.post('/change_node_ip', request_payload)
             self.assertEqual(response.status_code, 404)
             self.assertEqual(
@@ -961,19 +882,31 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
 
     def test_invalid_parameters(self):
         # Make request with invalid IP, confirm error
-        request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.555'}
+        request_payload = {
+            'friendly_name': 'Test1',
+            'new_ip': '192.168.1.555',
+            'reupload': True
+        }
         response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['message'], 'Invalid IP 192.168.1.555')
 
         # Make request targeting non-existing node, confirm error
-        request_payload = {'friendly_name': 'Test9', 'new_ip': '192.168.1.255'}
+        request_payload = {
+            'friendly_name': 'Test9',
+            'new_ip': '192.168.1.255',
+            'reupload': True
+        }
         response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()['message'], "Unable to change IP, node does not exist")
 
         # Make request with current IP, confirm error
-        request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.123'}
+        request_payload = {
+            'friendly_name': 'Test1',
+            'new_ip': '192.168.1.123',
+            'reupload': True
+        }
         response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['message'], 'New IP must be different than old')

@@ -36,7 +36,8 @@ const ChangeIpModal = () => {
         // Send API call, wait for backend to download config file from target node
         const body = {
             new_ip: ipAddress,
-            friendly_name: target
+            friendly_name: target,
+            reupload: true
         };
         const response = await send_post_request("/change_node_ip", body);
 

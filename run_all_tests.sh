@@ -6,7 +6,7 @@ failed=0
 # Run CLI tests
 repo=$(pwd)
 export PYTHONPATH="$PYTHONPATH:$repo/CLI"
-pipenv run coverage run --data-file=.coverage.cli -m unittest discover tests/cli || failed=1
+pipenv run coverage run --data-file=.coverage.cli run_cli_tests.py || failed=1
 
 # Run frontend tests
 cd frontend/ || { printf "ERROR: Unable to find frontend directory\n"; exit 1; }

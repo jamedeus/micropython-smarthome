@@ -1,13 +1,16 @@
+# pylint: disable=line-too-long, missing-function-docstring, missing-module-docstring, missing-class-docstring, protected-access
+
 import os
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from questionary import ValidationError
-from validation_constants import valid_device_pins
-from config_generator import (
-    GenerateConfigFile,
+from validation_constants import valid_device_pins, valid_sensor_pins
+from config_generator import GenerateConfigFile, main
+from config_prompt_validators import (
     IntRange,
     FloatRange,
     MinLength,
+    LengthRange,
     NicknameValidator
 )
 from config_rule_prompts import (
@@ -19,32 +22,7 @@ from config_rule_prompts import (
     float_rule_prompt,
     string_rule_prompt
 )
-
-# Get paths to test dir, CLI dir, repo dir
-tests = os.path.dirname(os.path.realpath(__file__))
-cli = os.path.split(tests)[0]
-repo = os.path.dirname(cli)
-test_config = os.path.join(repo, 'util', 'unit-test-config.json')
-
-# Mock cli_config.json contents
-mock_cli_config = {
-    'nodes': {
-        "node1": {
-            "config": test_config,
-            "ip": "192.168.1.123"
-        },
-        "node2": {
-            "config": '/not/a/real/directory',
-            "ip": "192.168.1.223"
-        }
-    },
-    'webrepl_password': 'password',
-    'config_directory': os.path.join(repo, 'config_files')
-}
-
-# Create config directory if itt doesn't exist
-if not os.path.exists(mock_cli_config['config_directory']):
-    os.mkdir(mock_cli_config['config_directory'])
+from mock_cli_config import mock_cli_config
 
 
 # Simulate user input object passed to validators
@@ -109,6 +87,28 @@ class TestValidators(TestCase):
         with self.assertRaises(ValidationError):
             validator.validate(SimulatedInput("x"))
 
+        with self.assertRaises(ValidationError):
+            validator.validate(SimulatedInput(5))
+
+    def test_length_range_validator(self):
+        # Create validator requiring between 4 and 9 characters
+        validator = LengthRange(4, 9)
+
+        # Should accept strings with 4-9 characters
+        self.assertTrue(validator.validate(SimulatedInput("1234")))
+        self.assertTrue(validator.validate(SimulatedInput("12345")))
+        self.assertTrue(validator.validate(SimulatedInput("123456")))
+        self.assertTrue(validator.validate(SimulatedInput("1234567")))
+        self.assertTrue(validator.validate(SimulatedInput("12345678")))
+        self.assertTrue(validator.validate(SimulatedInput("123456789")))
+
+        # Should reject strings with fewer than 4 or greater than 9 characters
+        with self.assertRaises(ValidationError):
+            self.assertFalse(validator.validate(SimulatedInput("123")))
+        with self.assertRaises(ValidationError):
+            self.assertFalse(validator.validate(SimulatedInput("1234567890")))
+
+        # Should reject integers
         with self.assertRaises(ValidationError):
             validator.validate(SimulatedInput(5))
 
@@ -378,6 +378,9 @@ class TestGenerateConfigFile(TestCase):
             },
             "sensor2": {
                 "pin": "32"
+            },
+            "ir_blaster": {
+                "pin": "27"
             }
         }
 
@@ -392,7 +395,7 @@ class TestGenerateConfigFile(TestCase):
             _, kwargs = mock_select.call_args
             self.assertEqual(
                 kwargs['choices'],
-                ['16', '17', '18', '21', '22', '23', '25', '26', '27', '33']
+                ['16', '17', '18', '21', '22', '23', '25', '26', '33']
             )
 
     def test_add_devices_and_sensors_prompt(self):
@@ -614,6 +617,67 @@ class TestGenerateConfigFile(TestCase):
         # Confirm valid config received after second loop
         self.assertEqual(config, valid_config)
 
+    def test_configure_device_prompt_config_key_handling(self):
+        # Create mock config template with fake device type, 3 real params with
+        # placeholder value (should trigger prompts), 1 param with value set
+        # (should not prompt) and 1 invalid param (should not prompt)
+        template = {
+            "_type": "test-device",
+            "nickname": "placeholder",
+            "pin_data": "placeholder",
+            "pin_clock": "placeholder",
+            "default_rule": "50",
+            "invalid_param": "placeholder"
+        }
+
+        # Expected config after values added to real params (invalid param
+        # should still have placeholder)
+        expected_output = {
+            "_type": "test-device",
+            "nickname": "nickname",
+            "pin_data": "14",
+            "pin_clock": "22",
+            "default_rule": "50",
+            "invalid_param": "placeholder"
+        }
+
+        # Mock prompt methods called for each key in config template
+        # Mock schedule_rule_prompt (called regardless of config template)
+        # Mock validate_rules to return True (would fail due to fake device type)
+        with patch.object(self.generator, '_GenerateConfigFile__nickname_prompt') as mock_nickname_prompt, \
+             patch.object(self.generator, '_GenerateConfigFile__pin_prompt') as mock_pin_prompt, \
+             patch.object(self.generator, '_GenerateConfigFile__schedule_rule_prompt') as mock_schedule_prompt, \
+             patch('config_generator.default_rule_prompt_router') as mock_default_rule_prompt, \
+             patch('config_generator.validate_rules', return_value=True):
+
+            # Mock user responses to each prompt
+            mock_nickname_prompt.return_value = 'nickname'
+            mock_pin_prompt.side_effect = ['14', '22']
+
+            # Call configure_device method with mock config template
+            self.generator._GenerateConfigFile__configure_device(template)
+
+            # Confirm nickname prompt was called
+            mock_nickname_prompt.assert_called_once()
+
+            # Confirm pin prompt was called twice (pin_data and pin_clock)
+            self.assertEqual(mock_pin_prompt.call_count, 2)
+            self.assertEqual(
+                mock_pin_prompt.call_args_list[0][0],
+                (valid_device_pins, "Select data pin")
+            )
+            self.assertEqual(
+                mock_pin_prompt.call_args_list[1][0],
+                (valid_device_pins, "Select clock pin")
+            )
+
+            # Confirm default_rule prompt was NOT called (value already set)
+            mock_default_rule_prompt.assert_not_called()
+
+            # Confirm schedule rule prompt (receives finished config template)
+            # was called with expected output
+            mock_schedule_prompt.assert_called_once_with(expected_output)
+
     def test_configure_sensor_prompt(self):
         expected_output = {
             "_type": "pir",
@@ -830,6 +894,67 @@ class TestGenerateConfigFile(TestCase):
         # Confirm valid config received after second loop
         self.assertEqual(config, valid_config)
 
+    def test_configure_sensor_prompt_config_key_handling(self):
+        # Create mock config template with fake sensor type, 3 real params with
+        # placeholder value (should trigger prompts), 1 param with value set
+        # (should not prompt) and 1 invalid param (should not prompt)
+        template = {
+            "_type": "test-sensor",
+            "nickname": "placeholder",
+            "pin_data": "placeholder",
+            "pin_clock": "placeholder",
+            "default_rule": "50",
+            "invalid_param": "placeholder"
+        }
+
+        # Expected config after values added to real params (invalid param
+        # should still have placeholder)
+        expected_output = {
+            "_type": "test-sensor",
+            "nickname": "nickname",
+            "pin_data": "14",
+            "pin_clock": "22",
+            "default_rule": "50",
+            "invalid_param": "placeholder"
+        }
+
+        # Mock prompt methods called for each key in config template
+        # Mock schedule_rule_prompt (called regardless of config template)
+        # Mock validate_rules to return True (would fail due to fake sensor type)
+        with patch.object(self.generator, '_GenerateConfigFile__nickname_prompt') as mock_nickname_prompt, \
+             patch.object(self.generator, '_GenerateConfigFile__pin_prompt') as mock_pin_prompt, \
+             patch.object(self.generator, '_GenerateConfigFile__schedule_rule_prompt') as mock_schedule_prompt, \
+             patch('config_generator.default_rule_prompt_router') as mock_default_rule_prompt, \
+             patch('config_generator.validate_rules', return_value=True):
+
+            # Mock user responses to each prompt
+            mock_nickname_prompt.return_value = 'nickname'
+            mock_pin_prompt.side_effect = ['14', '22']
+
+            # Call configure_sensor method with mock config template
+            self.generator._GenerateConfigFile__configure_sensor(template)
+
+            # Confirm nickname prompt was called
+            mock_nickname_prompt.assert_called_once()
+
+            # Confirm pin prompt was called twice (pin_data and pin_clock)
+            self.assertEqual(mock_pin_prompt.call_count, 2)
+            self.assertEqual(
+                mock_pin_prompt.call_args_list[0][0],
+                (valid_sensor_pins, "Select data pin")
+            )
+            self.assertEqual(
+                mock_pin_prompt.call_args_list[1][0],
+                (valid_sensor_pins, "Select clock pin")
+            )
+
+            # Confirm default_rule prompt was NOT called (value already set)
+            mock_default_rule_prompt.assert_not_called()
+
+            # Confirm schedule rule prompt (receives finished config template)
+            # was called with expected output
+            mock_schedule_prompt.assert_called_once_with(expected_output)
+
     def test_reset_config_template(self):
         # Pass config with invalid values to reset_config_template
         invalid_config = {
@@ -884,6 +1009,10 @@ class TestGenerateConfigFile(TestCase):
 
             # Run prompt
             self.generator.add_devices_and_sensors()
+
+        # Confirm correct section added
+        self.assertEqual(self.generator.config['ir_blaster'], expected_config)
+        self.assertNotIn('IR Blaster', self.generator.category_options)
 
     def test_select_sensor_targets_prommpt(self):
         # Set partial config expected when user reaching targets prompt
@@ -1004,8 +1133,7 @@ class TestGenerateConfigFile(TestCase):
     def test_api_target_ip_prompt(self):
         # Simulate user selecting first option, confirm correct IP returned
         self.mock_ask.unsafe_ask.side_effect = ['node1']
-        with patch('questionary.select', return_value=self.mock_ask), \
-             patch('config_generator.get_existing_nodes', return_value=mock_cli_config['nodes']):
+        with patch('questionary.select', return_value=self.mock_ask):
             output = self.generator._GenerateConfigFile__apitarget_ip_prompt()
             self.assertEqual(output, '192.168.1.123')
 
@@ -1036,6 +1164,12 @@ class TestGenerateConfigFile(TestCase):
         # Mock nodes.json to include unit-test-config.json
         self.generator.existing_nodes = mock_cli_config['nodes']
 
+        # Get absolute path to unit-test-config.json
+        tests = os.path.dirname(os.path.realpath(__file__))
+        cli = os.path.split(tests)[0]
+        repo = os.path.dirname(cli)
+        test_config = os.path.join(repo, 'util', 'unit-test-config.json')
+
         # Simulate user at rule prompt after selecting IP matching unit-test-config.json
         mock_config = {
             "_type": "api-target",
@@ -1060,7 +1194,7 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
-             patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
+             patch('config_rule_prompts.cli_config.get_config_filepath', return_value=test_config):
 
             rule = api_target_schedule_rule_prompt(mock_config)
             self.assertEqual(
@@ -1080,7 +1214,7 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
-             patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
+             patch('config_rule_prompts.cli_config.get_config_filepath', return_value=test_config):
 
             rule = api_target_schedule_rule_prompt(mock_config)
             # Confirm correct rule returned
@@ -1091,7 +1225,7 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
-             patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
+             patch('config_rule_prompts.cli_config.get_config_filepath', return_value=test_config):
 
             rule = schedule_rule_prompt_router(mock_config)
             self.assertEqual(rule, 'Enabled')
@@ -1108,24 +1242,31 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
-             patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
+             patch('config_rule_prompts.cli_config.get_config_filepath', return_value=test_config):
 
             rule = default_rule_prompt_router(mock_config)
             self.assertEqual(rule, {"on": ["ignore"], "off": ["enable_in", "sensor5", "1800"]})
 
     def test_api_call_prompt_target_config_missing(self):
-        # Mock nodes.json to include node with fake config path
-        self.generator.existing_nodes = mock_cli_config['nodes']
-
-        # Confirm script exits with error when unable to open fake path
-        with patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
+        # Confirm script exits with error when unable to open config path
+        with patch('builtins.open', side_effect=FileNotFoundError):
             with self.assertRaises(SystemExit):
-                api_call_prompt({'ip': '192.168.1.223'})
+                api_call_prompt({'ip': '192.168.1.234'})
 
         # Confirm script exits with error when IP not in nodes.json
-        with patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
-            with self.assertRaises(SystemExit):
-                api_call_prompt({'ip': '10.0.0.1'})
+        with self.assertRaises(SystemExit):
+            api_call_prompt({'ip': '10.0.0.1'})
+
+    def test_api_call_prompt_invalid_instance_selected(self):
+        # Simulate user selecting instance that is not device or sensor
+        # Should be impossible in production, need coverage of else clause
+        self.mock_ask.unsafe_ask.return_value = 'invalid-instance'
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('config_rule_prompts.load_config_from_ip', return_value={}), \
+             self.assertRaises(ValueError):
+
+            # Call prompt, confirm ValueError raised after invalid selection
+            api_call_prompt({'ip': '10.0.0.1'})
 
     def test_edit_existing_config(self):
         # Simulate user already completed all prompts
@@ -1163,13 +1304,8 @@ class TestGenerateConfigFile(TestCase):
             }
         }
 
-        # Mock get_cli_config to return config directory path, write to disk
-        with patch('config_generator.get_cli_config', return_value={
-            'config_directory': mock_cli_config['config_directory']
-        }):
-            self.generator.write_to_disk()
-
-        # Confirm file exists
+        # Write to disk, confirm file exists
+        self.generator.write_to_disk()
         path = os.path.join(
             mock_cli_config['config_directory'],
             'unit-test-existing-config.json'
@@ -1221,7 +1357,7 @@ class TestGenerateConfigFile(TestCase):
 
     def test_edit_invalid_config_path(self):
         # Create non-json config file
-        with open('fake_config_file.txt', 'w'):
+        with open('fake_config_file.txt', 'w', encoding='utf-8'):
             pass
 
         # Attempt to instantiate with non-json config file, confirm raises error
@@ -1234,3 +1370,70 @@ class TestGenerateConfigFile(TestCase):
 
         # Delete fake config
         os.remove('fake_config_file.txt')
+
+
+class TestCliUsage(TestCase):
+    def test_call_with_no_arg(self):
+        # Mock empty sys.argv (should show new config prompt)
+        # Mock GenerateConfigFile class to confirm correct methods called
+        with patch('sys.argv', ['./config_generator.py']), \
+             patch(
+                 'config_generator.GenerateConfigFile',
+                 new=MagicMock(spec=GenerateConfigFile)
+             ) as mock_class:  # noqa: E122
+
+            # Simulate calling from command line
+            main()
+
+            # Confirm class was instantiated with no argument
+            mock_class.assert_called_once_with()
+
+            # Get instance created by main, confirm expected methods were called
+            mock_instance = mock_class.return_value
+            mock_instance.run_prompt.assert_called_once()
+            mock_instance.write_to_disk.assert_called_once()
+
+    def test_call_with_arg(self):
+        # Mock sys.argv with path to config file (should show edit prompt)
+        # Mock GenerateConfigFile class to confirm correct methods called
+        with patch('sys.argv', ['./config_generator.py', 'config.json']), \
+             patch(
+                 'config_generator.GenerateConfigFile',
+                 new=MagicMock(spec=GenerateConfigFile)
+             ) as mock_class:  # noqa: E122
+
+            # Simulate calling from command line
+            main()
+
+            # Confirm class was instantiated with config path arg
+            mock_class.assert_called_once_with('config.json')
+
+            # Get instance created by main, confirm expected methods were called
+            mock_instance = mock_class.return_value
+            mock_instance.run_prompt.assert_called_once()
+            mock_instance.write_to_disk.assert_called_once()
+
+    def test_failed_validation(self):
+        # Mock empty sys.argv (should show new config prompt)
+        # Mock GenerateConfigFile class to confirm correct methods called
+        with patch('sys.argv', ['./config_generator.py']), \
+             patch(
+                 'config_generator.GenerateConfigFile',
+                 new=MagicMock(spec=GenerateConfigFile)
+             ) as mock_class:  # noqa: E122
+
+            # Simulate user creating config that fails validation
+            mock_class.return_value.passed_validation = False
+
+            # Simulate calling from command line
+            main()
+
+            # Confirm class was instantiated with no argument
+            mock_class.assert_called_once_with()
+
+            # Get instance created by main, confirm expected methods were called
+            mock_instance = mock_class.return_value
+            mock_instance.run_prompt.assert_called_once()
+
+            # Confirm did NOT write invalid config to disk
+            mock_instance.write_to_disk.assert_not_called()
