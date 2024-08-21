@@ -718,6 +718,20 @@ class TestEndpoints(TestCase):
             response = parse_command('192.168.1.123', ['set_gps_coords', '-90', '0.1'])
             self.assertEqual(response, {"Success": "GPS coordinates set"})
 
+    def test_load_cell_tare(self):
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value={"Success": "Sensor tared"}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['load_cell_tare', 'sensor1'])
+            self.assertEqual(response, {"Success": "Sensor tared"})
+
+    def test_load_cell_read(self):
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value={"Raw": 12362.8}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['load_cell_read', 'sensor1'])
+            self.assertEqual(response, {"Raw": 12362.8})
+
 
 # Confirm that correct errors are shown when endpoint arguments are omitted/incorrect
 class TestEndpointErrors(TestCase):
