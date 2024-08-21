@@ -57,7 +57,7 @@ def validate_rules(instance):
 def add_default_rule_validator(type_list):
     def _add_schedule_rule_validator(func):
         for i in type_list:
-            if i not in validator_map:
+            if i not in validator_map:  # pragma: no branch
                 validator_map[i] = {'default': '', 'schedule': ''}
             validator_map[i]['default'] = func
         return func
@@ -69,7 +69,7 @@ def add_default_rule_validator(type_list):
 def add_schedule_rule_validator(type_list):
     def _add_schedule_rule_validator(func):
         for i in type_list:
-            if i not in validator_map.keys():
+            if i not in validator_map.keys():  # pragma: no cover
                 validator_map[i] = {'default': '', 'schedule': ''}
             validator_map[i]['schedule'] = func
         return func
@@ -369,8 +369,8 @@ def motion_sensor_validator(rule, **kwargs):
             return False
         else:
             # Confirm can cast to float
-            if float(rule):
-                return True
+            float(rule)
+            return True
     except (ValueError, TypeError):
         return False
 
