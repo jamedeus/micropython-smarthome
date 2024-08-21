@@ -354,9 +354,9 @@ def load_cell_validator(rule, **kwargs):
 
 
 # Requires int, float, or None
-@add_schedule_rule_validator(['pir'])
+@add_schedule_rule_validator(['pir', 'ld2410'])
 @add_generic_validator
-@add_default_rule_validator(['pir'])
+@add_default_rule_validator(['pir', 'ld2410'])
 def motion_sensor_validator(rule, **kwargs):
     try:
         if rule is None:

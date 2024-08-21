@@ -82,6 +82,14 @@ instance_metadata = {
             ],
             "triggerable": True
         },
+        "ld2410": {
+            "rule_prompt": "float_range",
+            "rule_limits": [
+                0,
+                60
+            ],
+            "triggerable": False
+        },
         "load-cell": {
             "rule_prompt": "float_range",
             "rule_limits": [

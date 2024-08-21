@@ -29,6 +29,7 @@ module("Wled.py", base_path="../devices")
 # Sensor driver modules
 module("DesktopTrigger.py", base_path="../sensors")
 module("Dummy.py", base_path="../sensors")
+module("Ld2410.py", base_path="../sensors")
 module("LoadCell.py", base_path="../sensors")
 module("MotionSensor.py", base_path="../sensors")
 module("Sensor.py", base_path="../sensors")

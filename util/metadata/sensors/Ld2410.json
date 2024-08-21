@@ -1,0 +1,21 @@
+{
+    "config_name": "ld2410",
+    "class_name": "Ld2410",
+    "display_name": "LD2410 Radar Sensor",
+    "dependencies": [
+        "sensors/Ld2410.py",
+        "sensors/Sensor.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "ld2410",
+        "nickname": "placeholder",
+        "default_rule": "placeholder",
+        "pin": "placeholder",
+        "schedule": {},
+        "targets": []
+    },
+    "rule_prompt": "float_range",
+    "rule_limits": [0, 60],
+    "triggerable": false
+}
