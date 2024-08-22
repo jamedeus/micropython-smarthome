@@ -76,6 +76,8 @@ const TempHistoryChart = ({ visible, setVisible, tempHistory, tempHistoryLabels 
         }
     };
 
+    /* Can't unit test due to jsdom issue, works same as other modals */
+    /* istanbul ignore next */
     const closeModal = () => {
         setVisible(false);
     };

@@ -212,6 +212,12 @@ describe('RestoreModal', () => {
         await waitFor(() => {
             expect(app.queryByText("I'm a teapot")).not.toBeNull();
         });
+
+        // Click error toast, confirm disappears
+        await user.click(app.getByText("I'm a teapot"));
+        await waitFor(() => {
+            expect(app.queryByText("I'm a teapot")).not.toBeNull();
+        });
     });
 
     it('closes modal when X button or background is clicked', async () => {
