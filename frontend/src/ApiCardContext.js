@@ -204,8 +204,8 @@ export const ApiCardContextProvider = ({ children }) => {
         }
     };
 
-    const set_rule = async (id, rule) => {
-        update_instance(id, {current_rule: rule});
+    // Called by set_rule and debounced_set_rule
+    const set_rule_api_call = async (id, rule) => {
         const payload = {
             command: 'set_rule',
             instance: id,
@@ -216,6 +216,12 @@ export const ApiCardContextProvider = ({ children }) => {
             const error = await response.json();
             console.log(`Failed to set rule for ${id},`, error.message);
         }
+    };
+
+    // Update status and make set_rule API call immediately
+    const set_rule = async (id, rule) => {
+        update_instance(id, {current_rule: rule});
+        await set_rule_api_call(id, rule);
     };
 
     // Handler for rule sliders and buttons, updates context state immediately,
@@ -227,16 +233,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
     // Resets timer if called again within 150ms
     const debounced_set_rule_callback = useCallback(debounce(async (id, rule) => {
-        const payload = {
-            command: 'set_rule',
-            instance: id,
-            rule: rule
-        };
-        const response = await send_command(payload);
-        if (!response.ok) {
-            const error = await response.json();
-            console.log(`Failed to set rule for ${id},`, error.message);
-        }
+        await set_rule_api_call(id, rule);
     }, 150), []);
 
     // Called by reset option in dropdown, replaces current_rule with scheduled_rule

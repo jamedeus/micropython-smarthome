@@ -361,6 +361,48 @@ describe('App', () => {
         });
     });
 
+    it('logs error when set_rule API call fails', async () => {
+        // Mock fetch function to simulate error response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 502,
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
+        }));
+
+        // Spy on console.log to confirm error logged
+        const consoleSpy = jest.spyOn(console, 'log');
+
+        // Get device6 card, slider minus button
+        const card = app.getByText('Overhead lights').parentElement.parentElement;
+        const minus = card.children[1].children[0].children[0].children[0];
+
+        // Click minus button, confirm correct payload sent
+        await user.click(minus);
+        jest.advanceTimersByTime(200);
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+                method: 'POST',
+                body: JSON.stringify({
+                    "command": "set_rule",
+                    "instance": "device6",
+                    "rule": 99,
+                    "target": "192.168.1.100"
+                }),
+                headers: postHeaders
+            });
+        });
+
+        // Confirm error response was logged to console
+        await waitFor(() => {
+            expect(consoleSpy).toHaveBeenCalledWith(
+                'Failed to set rule for device6,', 'Unable to connect'
+            );
+        });
+    });
+
     it('sends correct payload when rule slider is moved', async () => {
         jest.useRealTimers();
 
