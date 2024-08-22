@@ -14,11 +14,6 @@ _smarthome_cli()
         return 0
 
     elif [[ "$first_arg" == "--provision" ]]; then
-        # Remove tool arg, replace smarthome_cli with provision.py
-        local cmd="provision.py ${COMP_WORDS[@]:2}"
-        COMP_WORDS=($cmd)
-        COMP_CWORD=$((COMP_CWORD-1))
-        compopt -o nospace
         # Forward args to provision completions
         _provision
         return 0
