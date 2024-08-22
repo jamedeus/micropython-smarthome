@@ -87,6 +87,7 @@ def django_address_prompt():
     '''Prompts user to enter django address, writes to cli_config.json'''
     address = questionary.text(
         "Enter django address:",
+        default=cli_config.config.get('django_backend') or '',
         validate=valid_uri
     ).unsafe_ask()
     cli_config.set_django_address(address)
