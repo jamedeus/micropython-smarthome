@@ -2,6 +2,7 @@
 
 import os
 import json
+import requests
 from copy import deepcopy
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
@@ -1427,3 +1428,91 @@ class TestInstantiation(TestCase):
 
             # Confirm _client.verify is set to False
             self.assertFalse(manager._client.verify)
+
+
+class TestRegressions(TestCase):
+    def setUp(self):
+        # Mock path to cli_config.json (prevent overwriting real file)
+        self.cli_config_patch = patch(
+            'cli_config_manager.get_cli_config_path',
+            return_value=mock_cli_config_path
+        )
+        self.cli_config_patch.start()
+
+        # Instantiate manager
+        self.manager = CliConfigManager()
+
+    def tearDown(self):
+        self.cli_config_patch.stop()
+
+        # Reset manager config to original contents (isolate tests)
+        self.manager.config = deepcopy(mock_cli_config)
+
+        # Overwrite mock_cli_config with original contents
+        with open(mock_cli_config_path, 'w', encoding='utf-8') as file:
+            json.dump(mock_cli_config, file)
+
+    def test_crashes_after_changing_django_address(self):
+        '''Original bug: CliConfigManager._client retained cookies from the old
+        django backend when address was changed. The next time sync_from_django
+        was called (adds second csrftoken cookie with new domain) an uncaught
+        exception occurred when trying to save cookie to _csrf_token attribute
+        (CookieConflictError: There are multiple cookies with name, 'csrftoken').
+
+        The set_django_address method now clears existing cookies.
+        '''
+
+        # Replace _client with empty session (not mock, methods will be mocked)
+        self.manager._client = requests.Session()
+
+        # Create mock response object
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            'status': 'success',
+            'message': {
+                'nodes': mock_cli_config['nodes'],
+                'schedule_keywords': mock_cli_config['schedule_keywords']
+            }
+        }
+
+        # Add a mock csrftoken cookie that will be saved by self.manager
+        mock_response.cookies = requests.cookies.RequestsCookieJar()
+        mock_response.cookies.set('csrftoken', 'fBMfx', domain='old.address.com')
+
+        # Create mock requests.Session.get that returns the mock response and
+        # manually adds the mock cookie to _client.cookies
+        def mock_get(url, *args, **kwargs):
+            self.manager._client.cookies.update(mock_response.cookies)
+            return mock_response
+
+        # Mock _client.get to return mock response object and set mock cookie
+        with patch.object(self.manager._client, 'get', side_effect=mock_get), \
+             patch.object(self.manager, 'write_cli_config_to_disk'):
+
+            # Call sync method
+            self.manager.sync_from_django()
+
+            # Confirm the csrftoken cookie was saved
+            self.assertEqual(self.manager._csrf_token, 'fBMfx')
+
+        # Change django address (after fix this should clear all session cookies)
+        with patch.object(self.manager, 'write_cli_config_to_disk'):
+            self.manager.set_django_address('http://new.address.com')
+
+            # Confirm existing cookies were cleared
+            self.assertFalse(self.manager._client.cookies)
+
+        # Replace the mock csrftoken value and domain (simulate new backend)
+        mock_response.cookies.clear(domain='old.address.com', path='/', name='csrftoken')
+        mock_response.cookies.set('csrftoken', 'KTmdv', domain='new.address.com')
+
+        # Mock _client.get to return mock response object and set mock cookie
+        with patch.object(self.manager._client, 'get', side_effect=mock_get), \
+             patch.object(self.manager, 'write_cli_config_to_disk'):
+
+            # Call sync method, should not crash due to duplicate CSRF token
+            self.manager.sync_from_django()
+
+            # Confirm the new csrftoken cookie was saved
+            self.assertEqual(self.manager._csrf_token, 'KTmdv')

@@ -462,6 +462,11 @@ class CliConfigManager:
         self.config['django_backend'] = address
         self.write_cli_config_to_disk()
 
+        # Close open connections (if any), clear cookies (avoid duplicate csrf)
+        if self._client:
+            self._client.close()
+            self._client.cookies.clear()
+
     def set_config_directory(self, path):
         '''Takes path to config_directory, updates config and writes to disk'''
         self.config['config_directory'] = path
