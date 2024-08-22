@@ -88,7 +88,7 @@ instance_metadata = {
                 0,
                 60
             ],
-            "triggerable": False
+            "triggerable": True
         },
         "load-cell": {
             "rule_prompt": "float_range",

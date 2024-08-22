@@ -17,5 +17,5 @@
     },
     "rule_prompt": "float_range",
     "rule_limits": [0, 60],
-    "triggerable": false
+    "triggerable": true
 }
