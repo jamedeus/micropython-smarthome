@@ -30,7 +30,7 @@ LoadingSpinner.propTypes = {
     classes: PropTypes.array
 };
 
-export const CheckmarkAnimation = ({ size, color="white", classes=[] }) => {
+export const CheckmarkAnimation = ({ size, color, classes=[] }) => {
     const classList = ["checkmark", "m-auto"].concat(classes);
 
     switch(size) {
@@ -61,6 +61,6 @@ export const CheckmarkAnimation = ({ size, color="white", classes=[] }) => {
 
 CheckmarkAnimation.propTypes = {
     size: PropTypes.string.isRequired,
-    color: PropTypes.string,
+    color: PropTypes.oneOf(['green', 'white']).isRequired,
     classes: PropTypes.array
 };

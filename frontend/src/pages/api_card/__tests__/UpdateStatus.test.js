@@ -78,6 +78,18 @@ describe('UpdateStatus', () => {
         await waitFor(() => {
             expect(app.queryByText('Attempting to reestablish connection...')).not.toBeNull();
         });
+
+        // Fast forward another 5 seconds, confirm fetched status update again
+        jest.advanceTimersByTime(5000);
+        expect(global.fetch.mock.calls).toEqual([
+            ['/get_status/Test Node'],
+            ['/get_status/Test Node'],
+        ]);
+
+        // Confirm error modal is still visible
+        await waitFor(() => {
+            expect(app.queryByText('Attempting to reestablish connection...')).not.toBeNull();
+        });
     });
 
     it('hides error modal once able to update status', async () => {

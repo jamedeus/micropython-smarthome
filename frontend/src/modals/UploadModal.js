@@ -27,9 +27,9 @@ const UploadModal = () => {
     };
 
     // Takes config filename and target IP address, uploads file to node
-    // If optional reupload bool is true no entry is created in the database
+    // If reupload bool is true no entry is created in the database
     // Shows modal with loading animation until complete, then checkmark animation
-    uploadConfigWithModal = async (filename, targetIP, reupload=false) => {
+    uploadConfigWithModal = async (filename, targetIP, reupload) => {
         showUploadModal();
         const success = await uploadConfigFile(filename, targetIP, reupload);
         if (success) {

@@ -5,7 +5,7 @@ import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 import ThermostatRuleInput from 'inputs/ThermostatRuleInput';
 
-const RuleInput = ({ id, params, setRule, onBlur=() => {} }) => {
+const RuleInput = ({ id, params, setRule, onBlur }) => {
     // Get metadata containing rule_prompt and slider range limits
     const { get_instance_metadata } = useContext(MetadataContext);
     const [metadata] = useState(get_instance_metadata(
@@ -62,7 +62,7 @@ RuleInput.propTypes = {
     id: PropTypes.string.isRequired,
     params: PropTypes.object.isRequired,
     setRule: PropTypes.func.isRequired,
-    onBlur: PropTypes.func
+    onBlur: PropTypes.func.isRequired
 };
 
 export default RuleInput;

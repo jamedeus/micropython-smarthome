@@ -112,7 +112,7 @@ const ScheduleRuleRow = ({
     const ApiTargetRuleField = () => {
         return (
             <ApiTargetRuleButton
-                currentRule={newRule ? newRule : ''}
+                currentRule={newRule}
                 targetNodeOptions={apiTargetOptions[id]}
                 handleSubmit={setNewRule}
             />

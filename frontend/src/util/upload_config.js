@@ -3,9 +3,9 @@ import { showErrorModal } from 'modals/ErrorModal';
 import { showErrorToast } from 'util/ErrorToast';
 
 // Takes config filename and target IP address, uploads file to node
-// If optional reupload bool is true no entry is created in the database
+// If reupload bool is true no entry is created in the database
 // Returns true if upload succeeds, false if error
-const uploadConfigFile = async (filename, targetIP, reupload=false) => {
+const uploadConfigFile = async (filename, targetIP, reupload) => {
     // Upload config file to target IP address
     // Add /True to endpoint if reuploading (skips adding to database)
     const response = await send_post_request(

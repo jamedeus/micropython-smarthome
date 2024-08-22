@@ -672,7 +672,7 @@ describe('App', () => {
         expect(within(firstRow).getByRole('button').classList).toContain('btn-danger');
         expect(within(firstRow).getByRole('button').classList).not.toContain('btn-primary');
 
-        // Change timestamp, confirm button still shows edit button
+        // Change timestamp, confirm button changes to edit button
         await user.clear(firstRow.children[1].children[0]);
         await user.type(firstRow.children[1].children[0], '12:34');
         expect(within(firstRow).getByRole('button').classList).not.toContain('btn-danger');
@@ -683,6 +683,23 @@ describe('App', () => {
         await user.type(firstRow.children[1].children[0], '08:00');
         expect(within(firstRow).getByRole('button').classList).toContain('btn-danger');
         expect(within(firstRow).getByRole('button').classList).not.toContain('btn-primary');
+
+        // Clear both fields, confirm button changes to edit button
+        await user.clear(firstRow.children[0].children[0]);
+        await user.clear(firstRow.children[1].children[0]);
+        expect(within(firstRow).getByRole('button').classList).not.toContain('btn-danger');
+        expect(within(firstRow).getByRole('button').classList).toContain('btn-primary');
+
+        // Change keyword back, confirm still shows edit button
+        await user.type(firstRow.children[0].children[0], 'morning');
+        expect(within(firstRow).getByRole('button').classList).not.toContain('btn-danger');
+        expect(within(firstRow).getByRole('button').classList).toContain('btn-primary');
+
+        // Clear keyword again, change timestamp back, confirm still shows edit button
+        await user.clear(firstRow.children[0].children[0]);
+        await user.type(firstRow.children[1].children[0], '08:00');
+        expect(within(firstRow).getByRole('button').classList).not.toContain('btn-danger');
+        expect(within(firstRow).getByRole('button').classList).toContain('btn-primary');
     });
 
     it('sends correct request when existing schedule keyword is modified', async () => {
