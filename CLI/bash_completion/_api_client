@@ -7,10 +7,6 @@ _api_client()
     # Path to cli_config.json (contains existing nodes and IPs)
     config_path="$HOME/.config/smarthome_cli/cli_config.json"
 
-    # Get directory containing api_client.py
-    script_path=$(which "${COMP_WORDS[0]}")
-    script_dir="$(dirname "$script_path")"
-
     # Get all node friendly names in space-seperated list
     opts=$(cat "$config_path" | jq '.nodes | keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
 
@@ -36,7 +32,7 @@ _api_client()
     ir_macro_endpoints="ir_delete_macro ir_add_macro_action ir_run_macro"
 
     # Display node friendly names first
-    if [[ $prev == *"api_client.py" ]]; then
+    if [[ $prev == *"api_client.py" || $prev == "--api" ]]; then
         COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
         return 0
     fi
@@ -87,7 +83,8 @@ _api_client()
     for i in $target_endpoints; do
         if [[ $prev == $i ]]; then
             # Call API status command, parse devices and sensors from response object
-            targets=$(python3 "$script_dir/api_client.py" ${COMP_WORDS[COMP_CWORD-2]} status | jq '.devices, .sensors' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+            # COMP_WORDS slice replaces last word (endpoint) with status
+            targets=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" status | jq '.devices, .sensors' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
             COMPREPLY=( $(compgen -W "${targets}" -- "${cur}") )
             return 0
         fi
@@ -97,7 +94,8 @@ _api_client()
     for i in $device_endpoints; do
         if [[ $prev == $i ]]; then
             # Call API status command, parse devices from response object
-            targets=$(python3 "$script_dir/api_client.py" ${COMP_WORDS[COMP_CWORD-2]} status | jq '.devices' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+            # COMP_WORDS slice replaces last word (endpoint) with status
+            targets=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" status | jq '.devices' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
             COMPREPLY=( $(compgen -W "${targets}" -- "${cur}") )
             return 0
         fi
@@ -107,7 +105,8 @@ _api_client()
     for i in $sensor_endpoints; do
         if [[ $prev == $i ]]; then
             # Call API status command, parse sensors from response object
-            targets=$(python3 "$script_dir/api_client.py" ${COMP_WORDS[COMP_CWORD-2]} status | jq '.sensors' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+            # COMP_WORDS slice replaces last word (endpoint) with status
+            targets=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" status | jq '.sensors' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
             COMPREPLY=( $(compgen -W "${targets}" -- "${cur}") )
             return 0
         fi
@@ -117,7 +116,8 @@ _api_client()
     for i in $ir_macro_endpoints; do
         if [[ $prev == $i ]]; then
             # Call API ir_get_existing_macros command, parse names from response object
-            macros=$(python3 "$script_dir/api_client.py" ${COMP_WORDS[COMP_CWORD-2]} ir_get_existing_macros | jq 'keys | .[]' 2>/dev/null | sed 's/"//g' | sed -z 's/\n/ /g')
+            # COMP_WORDS slice replaces last word (endpoint) with status
+            macros=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" ir_get_existing_macros | jq 'keys | .[]' 2>/dev/null | sed 's/"//g' | sed -z 's/\n/ /g')
             COMPREPLY=( $(compgen -W "${macros}" -- "${cur}") )
             return 0
         fi
