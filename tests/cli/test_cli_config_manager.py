@@ -1367,3 +1367,63 @@ class TestInstantiation(TestCase):
             # Confirm did NOT create client, did NOT make GET request
             self.assertIsNone(manager._client)
             mock_get.assert_not_called()
+
+    def test_instantiate_with_django_backend_ignore_ssl_errors(self):
+        # Create mock cli_config.json with ignore_ssl_errors set to true
+        mock_cli_config_ignore_ssl = deepcopy(mock_cli_config)
+        mock_cli_config_ignore_ssl['ignore_ssl_errors'] = True
+
+        # Create mock to replace CliConfigManager._client
+        mock_client = MagicMock()
+
+        # Create mock /get_cli_config endpoint response
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            'status': 'success',
+            'message': {
+                'nodes': {
+                    'node1': '192.168.1.123',
+                    'node2': '192.168.1.234',
+                    'node3': '192.168.1.111'
+                },
+                'schedule_keywords': {
+                    'sunrise': '06:00',
+                    'sunset': '18:00',
+                    'sleep': '22:00'
+                }
+            }
+        }
+
+        # Mock requests.session to return mock_client
+        # Mock _client.get to confirm correct request made
+        # Mock _client.get return value to simulate actual response
+        # Mock attributes to trick singleton into creating new instance
+        # Mock cli_config.json to simulate ignore_ssl_errors setting
+        with patch('cli_config_manager.requests.session', return_value=mock_client), \
+             patch.object(mock_client, 'get') as mock_get, \
+             patch.object(mock_get, 'get', return_value=mock_response), \
+             patch.object(CliConfigManager, '_instance', None), \
+             patch.object(CliConfigManager, '_initialized', False), \
+             patch('cli_config_manager.json.load', return_value=mock_cli_config_ignore_ssl):
+
+            # Instantiate class (should create new instance due to mocks)
+            manager = CliConfigManager()
+
+            # Confirm singleton attributes were set to prevent creating duplicate
+            self.assertTrue(manager._initialized)
+            self.assertIsNotNone(manager._instance)
+
+            # Confirm config attribute contains config file read from disk
+            self.assertEqual(manager.config, mock_cli_config_ignore_ssl)
+
+            # Confirm _client was created, correct GET request was made
+            self.assertIsNotNone(manager._client)
+            self.assertEqual(manager._client, mock_client)
+            mock_get.assert_called_once_with(
+                f'{mock_cli_config["django_backend"]}/get_cli_config',
+                timeout=5
+            )
+
+            # Confirm _client.verify is set to False
+            self.assertFalse(manager._client.verify)

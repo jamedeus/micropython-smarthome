@@ -214,6 +214,14 @@ If a django address is configured in `cli_config.json` the script will automatic
 
 This ensures that changes made from the command line will appear on the web app and vice versa.
 
+If your django backend uses self-signed SSL certificates syncing will fail. This can be fixed by adding the `ignore_ssl_errors` setting to `cli_config.json`:
+```
+...
+    "django_backend": "https://smarthome.lan",
+    "ignore_ssl_errors": true
+}
+```
+
 ## Command line arguments
 
 The `smarthome_cli` script supports command line arguments as a shortcut instead of going through the interactive prompt. This can be useful for power users or for scripting.

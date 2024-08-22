@@ -2,6 +2,7 @@
 
 import os
 import json
+import urllib3
 import requests
 import questionary
 from provision_tools import get_modules, provision
@@ -135,6 +136,13 @@ class CliConfigManager:
         # Open session on first run
         if not self._client:
             self._client = requests.session()
+
+            # Disable SSL certificate verification if ignore_ssl_errors set
+            if self.config.get('ignore_ssl_errors'):
+                self._client.verify = False
+                urllib3.disable_warnings(
+                    urllib3.exceptions.InsecureRequestWarning
+                )
 
         # Request dict of existing nodes from backend
         try:

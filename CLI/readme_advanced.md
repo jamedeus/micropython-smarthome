@@ -54,7 +54,8 @@ Config syntax:
   },
   "webrepl_password": "password",
   "config_directory": "/home/user/.config/smarthome_cli/config_files",
-  "django_backend": "http://127.0.0.1:8999"
+  "django_backend": "http://127.0.0.1:8999",
+  "ignore_ssl_errors": false
 }
 ```
 
@@ -66,6 +67,7 @@ Keys:
 * `django_backend`: Optional, address of a django web app to syncronize with.
     * If set current django database contents will be requested each time a CLI tool is called.
     * When nodes or keywords are created or deleted using CLI tools the same changes will be made in the django database.
+* `ignore_ssl_errors`: Optional, skips SSL certificate verification if true (allows using https with self-signed certificates)
 
 The config file can be modified using the settings menu in `CLI/smarthome_cli.py`.
 
