@@ -193,12 +193,10 @@ export const EditConfigProvider = ({ children }) => {
     const handleSensorTargetSelect = (sensor, target, checked) => {
         // Copy config section
         const update = { ... config[sensor] };
-        // Add target if not already present
+        // Add target if checked
         if (checked) {
-            if (update.targets.indexOf(target) === -1) {
-                update.targets.push(target);
-            }
-        // Remove existing target if present
+            update.targets.push(target);
+        // Remove existing target if unchecked
         } else {
             update.targets = update.targets.filter(existing => existing !== target);
         }
@@ -221,12 +219,10 @@ export const EditConfigProvider = ({ children }) => {
     // Handler for IR target checkboxes
     const handleIrTargetSelect = (target, checked) => {
         const ir_blaster = { ...config.ir_blaster };
-        // Add target if not already present
+        // Add target if checked
         if (checked) {
-            if (ir_blaster.target.indexOf(target) === -1) {
-                ir_blaster.target.push(target);
-            }
-        // Remove existing target if present
+            ir_blaster.target.push(target);
+        // Remove existing target if unchecked
         } else {
             ir_blaster.target = ir_blaster.target.filter(existing => existing !== target);
         }
@@ -308,7 +304,6 @@ export const EditConfigProvider = ({ children }) => {
             api_target_options.addresses[key] === ip
         );
         // Throw error if not found (prevent crash when opening modal)
-        /* istanbul ignore else */
         if (!friendly_name) {
             /* istanbul ignore next */
             throw new Error(
