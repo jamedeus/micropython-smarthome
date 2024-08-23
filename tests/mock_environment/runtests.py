@@ -111,14 +111,17 @@ async def run_tests():
     result = runner.run(suite)
 
     # Remove mock files
-    try:
-        os.remove('config.json')
-        os.remove('ir_macros.json')
-        os.remove('wifi_credentials.json')
-        os.remove('app.log')
-        os.remove('webrepl_cfg.py')
-    except FileNotFoundError:
-        pass
+    for i in [
+        'config.json',
+        'ir_macros.json',
+        'wifi_credentials.json',
+        'app.log',
+        'webrepl_cfg.py'
+    ]:
+        try:
+            os.remove(i)
+        except FileNotFoundError:
+            pass
 
     # Exit non-zero if any tests failed
     if not result.wasSuccessful():
