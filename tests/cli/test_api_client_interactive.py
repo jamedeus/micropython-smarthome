@@ -110,7 +110,9 @@ mock_ir_status = {
             "sunset": "18:00",
             "sleep": "23:00"
         }
-    }
+    },
+    'devices': {},
+    'sensors': {}
 }
 
 
@@ -1170,7 +1172,13 @@ class RegressionTests(TestCase):
 class GetEndpointOptionsTests(TestCase):
     def test_no_devices_or_sensors(self):
         # Call function with status with no devices or sensors
-        options = get_endpoint_options({'metadata': {'ir_blaster': False}})
+        options = get_endpoint_options({
+            'metadata': {
+                'ir_blaster': False
+            },
+            'devices': {},
+            'sensors': {}
+        })
 
         # Confirm options do not include device/sensor/IrBlaster endpoints
         self.assertEqual(
@@ -1206,6 +1214,7 @@ class GetEndpointOptionsTests(TestCase):
             'metadata': {
                 'ir_blaster': False
             },
+            'devices': {},
             'sensors': {
                 'sensor1': {
                     'type': 'pir'
@@ -1254,7 +1263,8 @@ class GetEndpointOptionsTests(TestCase):
                 'device1': {
                     'type': 'pwm'
                 }
-            }
+            },
+            'sensors': {}
         })
 
         # Confirm options do not include sensor or IrBlaster endpoints, but do
@@ -1290,7 +1300,13 @@ class GetEndpointOptionsTests(TestCase):
 
     def test_ir_blaster(self):
         # Call function with status with ir_blaster configured
-        options = get_endpoint_options({'metadata': {'ir_blaster': True}})
+        options = get_endpoint_options({
+            'metadata': {
+                'ir_blaster': True
+            },
+            'devices': {},
+            'sensors': {}
+        })
 
         # Confirm options do not include device/sensor endpoints but do include
         # IR Blaster endpoints
@@ -1334,6 +1350,7 @@ class GetEndpointOptionsTests(TestCase):
             'metadata': {
                 'ir_blaster': False
             },
+            'devices': {},
             'sensors': {
                 'sensor1': {
                     'type': 'si7021'
@@ -1381,6 +1398,7 @@ class GetEndpointOptionsTests(TestCase):
             'metadata': {
                 'ir_blaster': False
             },
+            'devices': {},
             'sensors': {
                 'sensor1': {
                     'type': 'load-cell'
