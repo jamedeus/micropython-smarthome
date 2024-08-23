@@ -55,9 +55,9 @@ const AcRemote = ({ recording, addMacroAction }) => {
 
     const HandleKey = (key) => {
         if (recording) {
-            addMacroAction(`ac ${key} 100 1`);
+            addMacroAction(`whynter ${key} 100 1`);
         } else {
-            send_command({command: 'ir', ir_target: 'ac', key: key});
+            send_command({command: 'ir', ir_target: 'whynter', key: key});
         }
     };
 
@@ -100,9 +100,9 @@ const TvRemote = ({ recording, addMacroAction }) => {
 
     const HandleKey = (key) => {
         if (recording) {
-            addMacroAction(`tv ${key} 100 1`);
+            addMacroAction(`samsung ${key} 100 1`);
         } else {
-            send_command({command: 'ir', ir_target: 'tv', key: key});
+            send_command({command: 'ir', ir_target: 'samsung', key: key});
         }
     };
 
@@ -383,10 +383,10 @@ const IrRemotes = () => {
     if (status.metadata.ir_blaster) {
         return (
             <>
-                {status.metadata.ir_targets.includes('tv') ? (
+                {status.metadata.ir_targets.includes('samsung') ? (
                     <TvRemote recording={recordingMacro} addMacroAction={addMacroAction} />
                 ) : null }
-                {status.metadata.ir_targets.includes('ac') ? (
+                {status.metadata.ir_targets.includes('whynter') ? (
                     <AcRemote recording={recordingMacro} addMacroAction={addMacroAction} />
                 ) : null }
                 <IrMacros

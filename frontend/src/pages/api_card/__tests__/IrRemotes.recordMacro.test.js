@@ -65,7 +65,7 @@ describe('IrRemotes while recording macro', () => {
                 name: "relax",
                 action: {
                     "command": "ir",
-                    "ir_target": "tv",
+                    "ir_target": "samsung",
                     "key": "power",
                     "target": "192.168.1.100"
                 }
@@ -95,7 +95,7 @@ describe('IrRemotes while recording macro', () => {
                 name: "relax",
                 action: {
                     "command": "ir",
-                    "ir_target": "ac",
+                    "ir_target": "whynter",
                     "key": "stop",
                     "target": "192.168.1.100"
                 }

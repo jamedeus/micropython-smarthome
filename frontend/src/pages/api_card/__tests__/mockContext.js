@@ -95,12 +95,12 @@ export const mockContext = {
                 "current_rule": {
                     "on": [
                         "ir_key",
-                        "ac",
+                        "whynter",
                         "start"
                     ],
                     "off": [
                         "ir_key",
-                        "ac",
+                        "whynter",
                         "stop"
                     ]
                 },
@@ -111,12 +111,12 @@ export const mockContext = {
                 "scheduled_rule": {
                     "on": [
                         "ir_key",
-                        "ac",
+                        "whynter",
                         "start"
                     ],
                     "off": [
                         "ir_key",
-                        "ac",
+                        "whynter",
                         "stop"
                     ]
                 },
@@ -124,12 +124,12 @@ export const mockContext = {
                 "default_rule": {
                     "on": [
                         "ir_key",
-                        "ac",
+                        "whynter",
                         "start"
                     ],
                     "off": [
                         "ir_key",
-                        "ac",
+                        "whynter",
                         "stop"
                     ]
                 }
@@ -321,11 +321,11 @@ export const mockContext = {
             "ir_key": {
                 "display": "Ir Blaster",
                 "options": [
-                    "tv",
-                    "ac"
+                    "samsung",
+                    "whynter"
                 ],
                 "keys": {
-                    "tv": [
+                    "samsung": [
                         "power",
                         "vol_up",
                         "vol_down",
@@ -339,7 +339,7 @@ export const mockContext = {
                         "exit",
                         "source"
                     ],
-                    "ac": [
+                    "whynter": [
                         "start",
                         "stop",
                         "off"
@@ -372,8 +372,8 @@ export const mockContextIrRemotes = {
             "next_reload": "3:46",
             "ir_blaster": true,
             "ir_targets": [
-                "tv",
-                "ac"
+                "samsung",
+                "whynter"
             ],
             "location": "Bedroom",
             "floor": 2,
@@ -393,21 +393,21 @@ export const mockContextIrRemotes = {
     "recording": false,
     "ir_macros": {
         "backlight_off": [
-            "tv settings 1500 1",
-            "tv right 500 1",
-            "tv down 500 1",
-            "tv enter 150 1",
-            "tv left 150 14",
-            "tv exit 1 1"
+            "samsung settings 1500 1",
+            "samsung right 500 1",
+            "samsung down 500 1",
+            "samsung enter 150 1",
+            "samsung left 150 14",
+            "samsung exit 1 1"
         ],
         "backlight_on": [
-            "tv settings 1500 1",
-            "tv right 500 1",
-            "tv down 500 1",
-            "tv enter 150 1",
-            "tv right 150 14",
-            "tv exit 1 1",
-            "tv mute 100 1"
+            "samsung settings 1500 1",
+            "samsung right 500 1",
+            "samsung down 500 1",
+            "samsung enter 150 1",
+            "samsung right 150 14",
+            "samsung exit 1 1",
+            "samsung mute 100 1"
         ]
     }
 };
@@ -418,8 +418,8 @@ export const mockContextNoDevicesOrSensors = {
             "next_reload": "3:46",
             "ir_blaster": false,
             "ir_targets": [
-                "tv",
-                "ac"
+                "samsung",
+                "whynter"
             ],
             "location": "Bedroom",
             "floor": 2,
