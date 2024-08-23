@@ -772,6 +772,30 @@ class TestCliConfigManager(TestCase):
                 'Failed to update django database (connection error)'
             )
 
+    def test_change_node_ip_unable_to_find_config_file(self):
+        # Confirm node3 has expected IP in config object
+        self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.111')
+
+        # Mock provision, _client.post to confirm not called
+        # Mock load_node_config_file to raise FileNotFoundError (raised when
+        # unable to get config for any reason - doesn't exist and no backend,
+        # user declined to download from backend, connection to backend failed)
+        with patch('cli_config_manager.provision') as mock_provision, \
+             patch('cli_config_manager.get_modules'), \
+             patch.object(self.manager, '_client', MagicMock()) as mock_client, \
+             patch.object(mock_client, 'post') as mock_post, \
+             patch.object(self.manager, 'load_node_config_file', side_effect=FileNotFoundError):
+
+            # Call change_node_ip method with name of existing node and new IP
+            self.manager.change_node_ip('node3', '192.168.1.222')
+
+            # Confirm provision, _client.post were NOT called
+            mock_provision.assert_not_called()
+            mock_post.assert_not_called()
+
+            # Confirm node3 IP did not change in config object
+            self.assertEqual(self.manager.config['nodes']['node3'], '192.168.1.111')
+
     def test_add_schedule_keyword(self):
         # Confirm config does not contain NewName keyword
         self.assertNotIn('NewName', self.manager.config['schedule_keywords'])
@@ -1359,6 +1383,27 @@ class TestCliConfigManager(TestCase):
             # Confirm save_node_config_file was called with return value from
             # download_node_config_file_from_django
             mock_save_config.assert_called_once_with({'mock': 'config'})
+
+    def test_load_config_file_does_not_exist_django_offline(self):
+        # Mock questionary.confirm.ask() to simulate user selecting yes
+        mock_confirm = MagicMock()
+        mock_confirm.ask.return_value = True
+
+        # Mock download_node_config_file_from_django method to return False (backend offline)
+        # Mock save_node_config_file method to confirm not called
+        # Mock os.path.exists to simulate file missing from disk
+        # Mock questionary.confirm to simulate user selecting yes
+        with patch.object(self.manager, 'download_node_config_file_from_django', return_value=False), \
+             patch.object(self.manager, 'save_node_config_file') as mock_save_config, \
+             patch('os.path.exists', return_value=False), \
+             patch('questionary.confirm', return_value=mock_confirm):
+
+            # Should raise FileNotFoundError when django connection fails
+            with self.assertRaises(FileNotFoundError):
+                self.manager.load_node_config_file('Node1')
+
+            # Confirm did not write file to disk
+            mock_save_config.assert_not_called()
 
     def test_save_node_config_file(self):
         # Confirm config file with expected name does not exist

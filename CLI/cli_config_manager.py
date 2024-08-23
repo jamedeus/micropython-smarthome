@@ -254,7 +254,11 @@ class CliConfigManager:
         '''
 
         # Load node config file from disk
-        config = self.load_node_config_file(name)
+        try:
+            config = self.load_node_config_file(name)
+        except FileNotFoundError:
+            print('Error: Unable to find node config file')
+            return
 
         # Upload config to new IP
         result = provision(
@@ -422,8 +426,9 @@ class CliConfigManager:
                 # Download from django backend, write to disk, return
                 ip = self.config['nodes'][get_cli_config_name(friendly_name)]
                 config = self.download_node_config_file_from_django(ip)
-                self.save_node_config_file(config)
-                return config
+                if config:
+                    self.save_node_config_file(config)
+                    return config
 
         # Raise exception if unable to load config
         raise FileNotFoundError

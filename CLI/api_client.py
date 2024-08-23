@@ -236,12 +236,16 @@ def device_or_sensor_rule_prompt(node, target):
     returns user selection.
     '''
 
-    # Load config file from disk (used to determine correct prompt)
-    config = cli_config.load_node_config_file(node)
+    try:
+        # Load config file from disk (used to determine correct prompt)
+        config = cli_config.load_node_config_file(node)
 
-    # Show correct schedule rule prompt (shows all options, not just default
-    # rule options - all rule endpoints accept any valid rule)
-    return schedule_rule_prompt_router(config[target])
+        # Show correct schedule rule prompt (shows all options, not just default
+        # rule options - all rule endpoints accept any valid rule)
+        return schedule_rule_prompt_router(config[target])
+    except FileNotFoundError:
+        print("Error: node config file missing, can't open rule prompt")
+        return None
 
 
 def device_and_sensor_endpoints_prompt(node, status, endpoint):

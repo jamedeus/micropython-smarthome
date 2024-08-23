@@ -6,8 +6,13 @@ the command line with no arguments.
 
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
-from api_client import api_prompt, main, get_endpoint_options
 from test_api_client import mock_status_object
+from api_client import (
+    api_prompt,
+    main,
+    get_endpoint_options,
+    device_or_sensor_rule_prompt
+)
 
 mock_config = {
     "metadata": {
@@ -1144,6 +1149,22 @@ class RegressionTests(TestCase):
             # Run prompt, will complete immediately with mock input
             # Should not raise TypeError after fix
             api_prompt()
+
+    def test_device_or_sensor_rule_prompt_missing_config_file(self):
+        '''Original bug: When endpoints that call device_or_sensor_rule_prompt
+        were selected for a node with config file missing from disk an uncaught
+        FileNotFoundError occurred, causing the client to exit.
+        '''
+
+        # Mock load_node_config_file to raise FileNotFoundError (missing config)
+        with patch(
+            'api_client.cli_config.load_node_config_file',
+            side_effect=FileNotFoundError
+        ):
+            # Confirm method returns None instead of raising exception
+            self.assertIsNone(
+                device_or_sensor_rule_prompt('node-name', 'device1')
+            )
 
 
 class GetEndpointOptionsTests(TestCase):
