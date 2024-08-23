@@ -13,6 +13,7 @@ describe('App', () => {
         createMockContext('api_target_options', apiTargetOptionsContext);
         createMockContext('instance_metadata', edit_config_metadata);
         createMockContext('edit_existing', newConfigContext.edit_existing);
+        createMockContext('ir_blaster_targets', newConfigContext.ir_blaster_targets);
 
         // Render App, confirm matches snapshot
         const component = render(

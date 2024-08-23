@@ -24,6 +24,11 @@ exports[`App matches snapshot when creating new config file 1`] = `
     >
       false
     </div>
+    <div
+      id="ir_blaster_targets"
+    >
+      ["samsung","whynter"]
+    </div>
     <div>
       <div
         class="d-flex flex-column vh-100"
@@ -220,15 +225,15 @@ exports[`App matches snapshot when creating new config file 1`] = `
                     >
                       <input
                         class="form-check-input"
-                        id="tv-codes"
+                        id="samsung-codes"
                         type="checkbox"
                       />
                       <label
                         class="form-check-label"
-                        for="tv-codes"
+                        for="samsung-codes"
                         title=""
                       >
-                        TV (Samsung)
+                        Samsung
                       </label>
                     </div>
                     <div
@@ -236,15 +241,15 @@ exports[`App matches snapshot when creating new config file 1`] = `
                     >
                       <input
                         class="form-check-input"
-                        id="ac-codes"
+                        id="whynter-codes"
                         type="checkbox"
                       />
                       <label
                         class="form-check-label"
-                        for="ac-codes"
+                        for="whynter-codes"
                         title=""
                       >
-                        AC (Whynter)
+                        Whynter
                       </label>
                     </div>
                   </div>
@@ -520,15 +525,15 @@ exports[`App matches snapshot when creating new config file 1`] = `
                   >
                     <input
                       class="form-check-input"
-                      id="tv-codes"
+                      id="samsung-codes"
                       type="checkbox"
                     />
                     <label
                       class="form-check-label"
-                      for="tv-codes"
+                      for="samsung-codes"
                       title=""
                     >
-                      TV (Samsung)
+                      Samsung
                     </label>
                   </div>
                   <div
@@ -536,15 +541,15 @@ exports[`App matches snapshot when creating new config file 1`] = `
                   >
                     <input
                       class="form-check-input"
-                      id="ac-codes"
+                      id="whynter-codes"
                       type="checkbox"
                     />
                     <label
                       class="form-check-label"
-                      for="ac-codes"
+                      for="whynter-codes"
                       title=""
                     >
-                      AC (Whynter)
+                      Whynter
                     </label>
                   </div>
                 </div>

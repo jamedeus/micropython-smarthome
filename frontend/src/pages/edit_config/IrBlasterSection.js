@@ -7,6 +7,7 @@ import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import PinSelectDropdown from './PinSelectDropdown';
 import { devicePins } from 'util/metadata';
+import { parse_dom_context } from 'util/django_util';
 
 const IrBlasterSection = () => {
     // Get curent state + callbacks from context
@@ -15,6 +16,11 @@ const IrBlasterSection = () => {
         addIrBlasterSection,
         handleIrTargetSelect
     } = useContext(EditConfigContext);
+
+    // Read ir_blaster target names from django template context
+    const [ir_blaster_targets] = useState(() => {
+        return parse_dom_context("ir_blaster_targets");
+    });
 
     // Create state object to set visibility
     // Default to visible if config contains ir_blaster key
@@ -43,8 +49,16 @@ const IrBlasterSection = () => {
     };
 
     TargetCheckbox.propTypes = {
-        target: PropTypes.oneOf(["ac", "tv"]).isRequired,
+        target: PropTypes.oneOf(ir_blaster_targets).isRequired,
         label: PropTypes.string.isRequired
+    };
+
+    // Takes ir_blaster target name, returns with each word capitalized and
+    // underscores replaced with spaces (label next to checkbox)
+    const getTargetLabel = (target) => {
+        return target.split('_').map(word =>
+            word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
     };
 
     return (
@@ -73,14 +87,15 @@ const IrBlasterSection = () => {
                                     Virtual remotes:
                                 </label>
                                 <div id="ir-remotes">
-                                    <TargetCheckbox
-                                        target={"tv"}
-                                        label={"TV (Samsung)"}
-                                    />
-                                    <TargetCheckbox
-                                        target={"ac"}
-                                        label={"AC (Whynter)"}
-                                    />
+                                    {ir_blaster_targets.map(target => {
+                                        return (
+                                            <TargetCheckbox
+                                                target={target}
+                                                label={getTargetLabel(target)}
+                                                key={target}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </Card.Body>

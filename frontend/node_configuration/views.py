@@ -21,6 +21,7 @@ from api_helper_functions import (
     bulk_save_schedule_keyword
 )
 from validate_config import validate_full_config
+from validation_constants import ir_blaster_options
 from helper_functions import (
     valid_ip,
     get_schedule_keywords_dict,
@@ -295,6 +296,7 @@ def new_config(request):
         },
         "api_target_options": get_api_target_menu_options(),
         "metadata": get_device_and_sensor_metadata(),
+        "ir_blaster_targets": list(ir_blaster_options.keys()),
         "edit_existing": False
     }
 
@@ -333,6 +335,7 @@ def edit_config(request, name):
         "edit_existing": True,
         "config": config,
         "metadata": metadata,
+        "ir_blaster_targets": list(ir_blaster_options.keys()),
         "api_target_options": get_api_target_menu_options(target.friendly_name)
     }
 

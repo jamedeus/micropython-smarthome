@@ -17,6 +17,7 @@ describe('EditConfig', () => {
         createMockContext('instance_metadata', edit_config_metadata);
         createMockContext('edit_existing', existingConfigContext.edit_existing);
         createMockContext('target_node_ip', existingConfigContext.IP);
+        createMockContext('ir_blaster_targets', existingConfigContext.ir_blaster_targets);
     });
 
     beforeEach(() => {
@@ -728,8 +729,8 @@ describe('EditConfig', () => {
 
     it('removes targets from config file when boxes are unchecked', async () => {
         // Uncheck IR Blaster TV target, check AC target
-        await user.click(app.getByText('TV (Samsung)'));
-        await user.click(app.getByText('AC (Whynter)'));
+        await user.click(app.getByText('Samsung'));
+        await user.click(app.getByText('Whynter'));
 
         // Go to page2, uncheck first target
         await user.click(app.getByRole('button', { name: 'Next' }));
@@ -746,7 +747,7 @@ describe('EditConfig', () => {
                 ir_blaster: {
                     ...existingConfigContext.config.ir_blaster,
                     target: [
-                        'ac'
+                        'whynter'
                     ]
                 },
                 sensor1: {

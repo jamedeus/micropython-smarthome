@@ -14,6 +14,7 @@ describe('EditConfig', () => {
         createMockContext('instance_metadata', edit_config_metadata);
         createMockContext('edit_existing', existingConfigContext.edit_existing);
         createMockContext('target_node_ip', existingConfigContext.IP);
+        createMockContext('ir_blaster_targets', existingConfigContext.ir_blaster_targets);
 
         // Render EditConfig, confirm matches snapshot
         const app = render(

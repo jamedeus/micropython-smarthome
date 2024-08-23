@@ -16,7 +16,11 @@ export const newConfigContext = {
             }
         }
     },
-    "edit_existing": false
+    "edit_existing": false,
+    "ir_blaster_targets": [
+        "samsung",
+        "whynter"
+    ]
 };
 
 export const existingConfigContext = {
@@ -25,6 +29,10 @@ export const existingConfigContext = {
     "TITLE": "Editing All devices and sensors",
     "FILENAME": "all-devices-and-sensors.json",
     "edit_existing": true,
+    "ir_blaster_targets": [
+        "samsung",
+        "whynter"
+    ],
     "config": {
         "metadata": {
             "id": "All devices and sensors",
@@ -66,7 +74,7 @@ export const existingConfigContext = {
         "ir_blaster": {
             "pin": "13",
             "target": [
-                "tv"
+                "samsung"
             ]
         },
         "sensor2": {

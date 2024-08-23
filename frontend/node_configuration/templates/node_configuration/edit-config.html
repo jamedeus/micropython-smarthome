@@ -22,6 +22,7 @@
     {{ metadata|json_script:"instance_metadata" }}
     {{ edit_existing|json_script:"edit_existing" }}
     {{ api_target_options|json_script:"api_target_options" }}
+    {{ ir_blaster_targets|json_script:"ir_blaster_targets" }}
     {{ config|json_script:"config" }}
     {{ IP|json_script:"target_node_ip" }}
     <script src="{% static 'webapp/edit_config.js' %}"></script>
