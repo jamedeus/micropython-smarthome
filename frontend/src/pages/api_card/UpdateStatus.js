@@ -1,9 +1,13 @@
-import { useContext, useEffect } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { ApiCardContext } from 'root/ApiCardContext';
 import { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
 
 export const UpdateStatus = () => {
-    const {status, setStatus, overview} = useContext(ApiCardContext);
+    const {setStatus, overview} = useContext(ApiCardContext);
+
+    // Get node name from URL (status.metadata.id may contain a different name
+    // than django database if new config was uploaded without updating django)
+    const [nodeName] = useState(window.location.pathname.split('/')[2]);
 
     // Track if error modal is open, close modal when connection reestablished
     let targetOffline = false;
@@ -20,7 +24,7 @@ export const UpdateStatus = () => {
     // Called every 5 seconds by effect below
     const get_new_status = async () => {
         try {
-            const response = await fetch(`/get_status/${status.metadata.id}`);
+            const response = await fetch(`/get_status/${nodeName}`);
             if (response.status !== 200) {
                 const error = await response.json();
                 throw new Error(`${error.message} (status ${response.status})`);

@@ -17,6 +17,14 @@ describe('App', () => {
         createMockContext('instance_metadata', api_card_metadata);
         createMockContext('api_target_options', mockContext.api_target_options);
 
+        // Set correct path
+        Object.defineProperty(window, 'location', {
+            writable: true,
+            value: {
+                pathname: '/api/Test Node'
+            }
+        });
+
         // Render app
         render(
             <MetadataContextProvider>
