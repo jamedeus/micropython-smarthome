@@ -410,7 +410,7 @@ def get_endpoint_options(status):
     # Remove status endpoint (prints status automatically when node selected)
     endpoint_options.remove('status')
 
-    # Remove IR options if target node does not have IR Blaster
+    # No IR Blaster: remove IR endpoints
     if not status['metadata']['ir_blaster']:
         endpoint_options = [option for option in endpoint_options
                             if not option.startswith('ir')]
@@ -421,7 +421,7 @@ def get_endpoint_options(status):
     else:
         device_types = []
 
-    # Remove device endpoints if target node does not have devices
+    # No devices: Remove device-only endpoints
     if not device_types:
         endpoint_options = [option for option in endpoint_options
                             if option not in ['turn_on', 'turn_off']]
@@ -432,22 +432,23 @@ def get_endpoint_options(status):
     else:
         sensor_types = []
 
-    # Remove sensor endpoints if target node does not have sensors
+    # No sensors: remove sensor-only endpoints
     if not sensor_types:
         endpoint_options = [option for option in endpoint_options
                             if option not in ['trigger_sensor', 'condition_met']]
 
-    # Remove temp sensor endpoints if no temp sensor configured
+    # No temperature sensor: remove temp sensor endpoints
     if 'si7021' not in sensor_types and 'dht22' not in sensor_types:
         endpoint_options = [option for option in endpoint_options
                             if option not in ['get_temp', 'get_humid', 'get_climate']]
 
-    # Remove load cell endpoints if no load cell configured
+    # No load cell sensor: remove load cell endpoints
     if 'load-cell' not in sensor_types:
         endpoint_options = [option for option in endpoint_options
                             if not option.startswith('load_cell_')]
 
-    # Remove endpoints that require target if node does not have devices or sensors
+    # No devices or sensors: remove endpoints that require device/sensor arg,
+    # remove reset_all_rules and save_rules (only devices/sensors have rules)
     if not device_types and not sensor_types:
         endpoint_options = [option for option in endpoint_options
                             if option not in [
@@ -461,7 +462,9 @@ def get_endpoint_options(status):
                                 'get_schedule_rules',
                                 'add_rule',
                                 'remove_rule',
-                                'get_attributes'
+                                'get_attributes',
+                                'reset_all_rules',
+                                'save_rules'
                             ]]
 
     return endpoint_options

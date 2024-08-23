@@ -1185,8 +1185,6 @@ class GetEndpointOptionsTests(TestCase):
             options,
             [
                 'reboot',
-                'reset_all_rules',
-                'save_rules',
                 'get_schedule_keywords',
                 'add_schedule_keyword',
                 'remove_schedule_keyword',
@@ -1303,8 +1301,6 @@ class GetEndpointOptionsTests(TestCase):
             options,
             [
                 'reboot',
-                'reset_all_rules',
-                'save_rules',
                 'get_schedule_keywords',
                 'add_schedule_keyword',
                 'remove_schedule_keyword',
