@@ -90,6 +90,12 @@ def set_mocks():
         os.path.join(repo_dir, 'lib', 'build_hardware_classes.py')
     ])
 
+    # Build lib/ir_code_classes.py (normally compiled into firmware)
+    subprocess.run([
+        'python3',
+        os.path.join(repo_dir, 'lib', 'build_ir_code_classes.py')
+    ])
+
 
 async def run_tests():
     # Add API backend to loop (receives commands from tests)
