@@ -415,8 +415,14 @@ def get_endpoint_options(status):
         endpoint_options = [option for option in endpoint_options
                             if not option.startswith('ir')]
 
+    # Get list of device types
+    if status['devices']:
+        device_types = [params['type'] for params in status['devices'].values()]
+    else:
+        device_types = []
+
     # Remove device endpoints if target node does not have devices
-    if not status['devices']:
+    if not device_types:
         endpoint_options = [option for option in endpoint_options
                             if option not in ['turn_on', 'turn_off']]
 
@@ -440,6 +446,23 @@ def get_endpoint_options(status):
     if 'load-cell' not in sensor_types:
         endpoint_options = [option for option in endpoint_options
                             if not option.startswith('load_cell_')]
+
+    # Remove endpoints that require target if node does not have devices or sensors
+    if not device_types and not sensor_types:
+        endpoint_options = [option for option in endpoint_options
+                            if option not in [
+                                'disable',
+                                'disable_in',
+                                'enable',
+                                'enable_in',
+                                'set_rule',
+                                'increment_rule',
+                                'reset_rule',
+                                'get_schedule_rules',
+                                'add_rule',
+                                'remove_rule',
+                                'get_attributes'
+                            ]]
 
     return endpoint_options
 
