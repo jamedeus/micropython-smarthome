@@ -9,7 +9,7 @@ from io import StringIO
 from unittest import TestCase, IsolatedAsyncioTestCase
 from unittest.mock import patch, MagicMock, AsyncMock
 from api_client import endpoint_error, parse_ip, parse_command, main, example_usage_error
-from api_endpoints import ir_commands, request
+from api_endpoints import ir_blaster_options, request
 from mock_cli_config import mock_cli_config
 
 mock_status_object = {
@@ -373,7 +373,7 @@ class TestExampleUsage(TestCase):
         response = parse_ip(['192.168.1.123', 'ir'])
         self.assertEqual(
             response,
-            {"Example usage": "./api_client.py ir [tv|ac] [command]"}
+            {"Example usage": "./api_client.py ir [samsung|whynter] [command]"}
         )
 
         response = parse_ip(['192.168.1.123', 'set_gps_coords'])
@@ -602,10 +602,10 @@ class TestEndpoints(TestCase):
 
     def test_ir_key(self):
         # Mock request to return expected response
-        with patch('api_endpoints.request', return_value={'tv': 'power'}):
+        with patch('api_endpoints.request', return_value={'samsung': 'power'}):
             # Send request, verify response
-            response = parse_command('192.168.1.123', ['ir', 'tv', 'power'])
-            self.assertEqual(response, {'tv': 'power'})
+            response = parse_command('192.168.1.123', ['ir', 'samsung', 'power'])
+            self.assertEqual(response, {'samsung': 'power'})
 
     def test_ir_get_existing_macros(self):
         # Mock request to return expected response
@@ -639,20 +639,20 @@ class TestEndpoints(TestCase):
         # Mock request to return expected response
         with patch(
             'api_endpoints.request',
-            return_value={"Macro action added": ['test1', 'tv', 'power']}
+            return_value={"Macro action added": ['test1', 'samsung', 'power']}
         ):
             # Send request, verify response
             response = parse_command(
                 '192.168.1.123',
-                ['ir_add_macro_action', 'test1', 'tv', 'power']
+                ['ir_add_macro_action', 'test1', 'samsung', 'power']
             )
-            self.assertEqual(response, {"Macro action added": ['test1', 'tv', 'power']})
+            self.assertEqual(response, {"Macro action added": ['test1', 'samsung', 'power']})
 
     def test_ir_run_macro(self):
         # Mock request to return expected response
         with patch('api_endpoints.request', return_value={"Ran macro": "test1"}):
             # Send request, verify response
-            response = parse_command('192.168.1.123', ['ir_run_macro', 'test1', 'tv', 'power'])
+            response = parse_command('192.168.1.123', ['ir_run_macro', 'test1', 'samsung', 'power'])
             self.assertEqual(response, {"Ran macro": "test1"})
 
     def test_get_temp(self):
@@ -869,21 +869,21 @@ class TestEndpointErrors(TestCase):
 
     def test_ir_no_key(self):
         # Send request, verify response
-        response = parse_command('192.168.1.123', ['ir', 'tv'])
+        response = parse_command('192.168.1.123', ['ir', 'samsung'])
         self.assertEqual(
             response,
-            {"ERROR": f"Must specify one of the following commands: {ir_commands['tv']}"}
+            {"ERROR": f"Must specify one of the following commands: {ir_blaster_options['samsung']}"}
         )
 
-        response = parse_command('192.168.1.123', ['ir', 'ac'])
+        response = parse_command('192.168.1.123', ['ir', 'whynter'])
         self.assertEqual(
             response,
-            {"ERROR": f"Must specify one of the following commands: {ir_commands['ac']}"}
+            {"ERROR": f"Must specify one of the following commands: {ir_blaster_options['whynter']}"}
         )
 
     def test_ir_invalid_target(self):
         response = parse_command('192.168.1.123', ['ir', 'pacemaker'])
-        self.assertEqual(response, {"Example usage": "./api_client.py ir [tv|ac] [command]"})
+        self.assertEqual(response, {"Example usage": "./api_client.py ir [samsung|whynter] [command]"})
 
     def test_ir_add_macro_action_missing_args(self):
         response = parse_command('192.168.1.123', ['ir_add_macro_action', 'test1'])

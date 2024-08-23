@@ -21,7 +21,8 @@ from validate_config import validate_full_config
 from validation_constants import (
     valid_device_pins,
     valid_sensor_pins,
-    config_templates
+    config_templates,
+    ir_blaster_options
 )
 from helper_functions import (
     valid_ip,
@@ -510,7 +511,7 @@ class GenerateConfigFile:
         pin = self.__pin_prompt(valid_device_pins)
         targets = questionary.checkbox(
             "Select target devices",
-            choices=['tv', 'ac']
+            choices=list(ir_blaster_options.keys())
         ).unsafe_ask()
 
         # Add to config

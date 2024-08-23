@@ -23,6 +23,7 @@ def set_mocks():
     # Add project files to python path
     sys.path.insert(0, os.path.join(repo_dir, 'core'))
     sys.path.insert(0, os.path.join(repo_dir, 'lib'))
+    sys.path.insert(0, os.path.join(repo_dir, 'lib', 'ir_codes'))
     sys.path.insert(0, os.path.join(repo_dir, 'devices'))
     sys.path.insert(0, os.path.join(repo_dir, 'sensors'))
 

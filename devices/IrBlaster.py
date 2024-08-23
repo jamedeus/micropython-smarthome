@@ -3,16 +3,10 @@ import logging
 from machine import Pin
 from ir_tx import Player
 from util import read_ir_macros_from_disk, write_ir_macros_to_disk, print_with_timestamp
+from ir_code_classes import ir_code_classes
 
 # Set name for module's log lines
 log = logging.getLogger("IrBlaster")
-
-
-# Map target names to modules containing IR codes
-ir_code_classes = {
-    "tv": "samsung_ir_codes",
-    "ac": "whynter_ir_codes"
-}
 
 
 class IrBlaster():

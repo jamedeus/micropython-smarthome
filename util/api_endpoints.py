@@ -2,6 +2,7 @@ import json
 import asyncio
 from math import isnan
 from functools import wraps
+from validation_constants import ir_blaster_options
 from helper_functions import (
     valid_timestamp,
     is_device_or_sensor,
@@ -9,12 +10,6 @@ from helper_functions import (
     is_sensor,
     get_schedule_keywords_dict
 )
-
-# Valid IR commands for each target, used in error message
-ir_commands = {
-    "tv": "power, vol_up, vol_down, mute, up, down, left, right, enter, settings, exit, source",
-    "ac": "ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"
-}
 
 # Populated with endpoint:handler pairs by decorators below
 endpoint_map = {}
@@ -301,15 +296,15 @@ def get_attributes(ip, target, _):
 @add_endpoint("ir")
 @requires_params
 def ir(ip, params):
-    # First arg must be key in ir_commands dict
+    # First arg must be key in ir_blaster_options dict
     target = params[0]
-    if target not in ir_commands:
+    if target not in ir_blaster_options:
         raise SyntaxError
 
     try:
         return asyncio.run(request(ip, ['ir_key', target, params[1]]))
     except IndexError:
-        return {"ERROR": f"Must specify one of the following commands: {ir_commands[target]}"}
+        return {"ERROR": f"Must specify one of the following commands: {ir_blaster_options[target]}"}
 
 
 @add_endpoint("ir_get_existing_macros")

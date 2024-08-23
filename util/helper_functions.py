@@ -3,11 +3,17 @@
 import re
 import os
 import json
+import importlib.util
 
 # Get full path to repository root directory
 util = os.path.dirname(os.path.realpath(__file__))
 repo = os.path.split(util)[0]
+
+# Get path to cli_config.json
 cli_config_path = os.path.join(repo, 'CLI', 'cli_config.json')
+
+# Get path to IR Blaster codes directory
+ir_codes_dir = os.path.join(repo, 'lib', 'ir_codes')
 
 # Build URI regex, requires http or https followed by domain or IP
 # Accepts optional subdomains, ports, and subpaths
@@ -154,6 +160,34 @@ def get_device_and_sensor_metadata():
             metadata['sensors'][params['config_name']] = params
 
     return metadata
+
+
+def get_ir_blaster_keys_map():
+    '''Returns dict with IR target names as keys, list of keys as values.
+    Used to populate key options lists, validate config files, etc.
+    '''
+
+    keys_map = {}
+
+    for i in os.listdir(ir_codes_dir):
+        # Get IR target name, path to codes module
+        target_name = i.replace('_ir_codes.py', '')
+        target_path = os.path.join(ir_codes_dir, i)
+
+        # Get module spec, skip if is not python module
+        spec = importlib.util.spec_from_file_location(i, target_path)
+        if spec is None:
+            continue
+
+        # Import module
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        # Add list of key names to output
+        target_name = i.replace('_ir_codes.py', '')
+        keys_map[target_name] = list(module.codes.keys())
+
+    return keys_map
 
 
 def celsius_to_fahrenheit(celsius):

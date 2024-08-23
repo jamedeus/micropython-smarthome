@@ -20,3 +20,4 @@ frontend/coverage/
 setup_ssl_certs.py
 *.der
 lib/hardware_classes.py
+lib/ir_code_classes.py

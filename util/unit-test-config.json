@@ -103,12 +103,12 @@
         "default_rule": {
             "on": [
                 "ir_key",
-                "tv",
+                "samsung",
                 "power"
             ],
             "off": [
                 "ir_key",
-                "tv",
+                "samsung",
                 "power"
             ]
         },
@@ -116,12 +116,12 @@
             "22:00": {
                 "on": [
                     "ir_key",
-                    "tv",
+                    "samsung",
                     "power"
                 ],
                 "off": [
                     "ir_key",
-                    "tv",
+                    "samsung",
                     "power"
                 ]
             }
@@ -203,7 +203,7 @@
     "ir_blaster": {
         "pin": "23",
         "target": [
-            "tv"
+            "samsung"
         ]
     }
 }

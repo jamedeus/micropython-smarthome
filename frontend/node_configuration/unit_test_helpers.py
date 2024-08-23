@@ -129,7 +129,7 @@ request_payload = {
     "ir_blaster": {
         "pin": "23",
         "target": [
-            "tv"
+            "samsung"
         ]
     },
     "device1": {
@@ -215,13 +215,13 @@ request_payload = {
         "nickname": "Remote Control",
         "ip": "127.0.0.1",
         "default_rule": {
-            "on": ["ir_key", "tv", "power"],
-            "off": ["ir_key", "tv", "power"]
+            "on": ["ir_key", "samsung", "power"],
+            "off": ["ir_key", "samsung", "power"]
         },
         "schedule": {
             "22:00": {
-                "on": ["ir_key", "tv", "power"],
-                "off": ["ir_key", "tv", "power"]
+                "on": ["ir_key", "samsung", "power"],
+                "off": ["ir_key", "samsung", "power"]
             }
         }
     },
@@ -369,12 +369,12 @@ test_config_2 = {
         "default_rule": {
             "on": [
                 "ir_key",
-                "ac",
+                "whynter",
                 "start"
             ],
             "off": [
                 "ir_key",
-                "ac",
+                "whynter",
                 "stop"
             ]
         },
@@ -382,24 +382,24 @@ test_config_2 = {
             "10:00": {
                 "on": [
                     "ir_key",
-                    "ac",
+                    "whynter",
                     "start"
                 ],
                 "off": [
                     "ir_key",
-                    "ac",
+                    "whynter",
                     "stop"
                 ]
             },
             "00:00": {
                 "on": [
                     "ir_key",
-                    "ac",
+                    "whynter",
                     "stop"
                 ],
                 "off": [
                     "ir_key",
-                    "ac",
+                    "whynter",
                     "stop"
                 ]
             }
@@ -438,7 +438,7 @@ test_config_2 = {
         "nickname": "",
         "pin": "19",
         "target": [
-            "ac"
+            "whynter"
         ]
     }
 }
@@ -662,13 +662,20 @@ test_config_1_edit_context = {
             "ir_key": {
                 "display": "Ir Blaster",
                 "options": [
-                    "ac"
+                    "whynter"
                 ],
                 "keys": {
-                    "ac": [
-                        "start",
+                    "whynter": [
+                        "off",
+                        "on",
+                        "up",
+                        "down",
+                        "fan",
+                        "timer",
+                        "units",
+                        "mode",
                         "stop",
-                        "off"
+                        "start"
                     ]
                 }
             },
@@ -768,17 +775,17 @@ test_config_2_edit_context = {
             "_type": "api-target",
             "ip": "192.168.1.124",
             "default_rule": {
-                "on": ["ir_key", "ac", "start"],
-                "off": ["ir_key", "ac", "stop"]
+                "on": ["ir_key", "whynter", "start"],
+                "off": ["ir_key", "whynter", "stop"]
             },
             "schedule": {
                 "10:00": {
-                    "on": ["ir_key", "ac", "start"],
-                    "off": ["ir_key", "ac", "stop"]
+                    "on": ["ir_key", "whynter", "start"],
+                    "off": ["ir_key", "whynter", "stop"]
                 },
                 "00:00": {
-                    "on": ["ir_key", "ac", "stop"],
-                    "off": ["ir_key", "ac", "stop"]
+                    "on": ["ir_key", "whynter", "stop"],
+                    "off": ["ir_key", "whynter", "stop"]
                 }
             }
         },
@@ -815,7 +822,7 @@ test_config_2_edit_context = {
             "nickname": "",
             "pin": "19",
             "target": [
-                "ac"
+                "whynter"
             ]
         }
     },
@@ -862,13 +869,20 @@ test_config_2_edit_context = {
             "ir_key": {
                 "display": "Ir Blaster",
                 "options": [
-                    "ac"
+                    "whynter"
                 ],
                 "keys": {
-                    "ac": [
-                        "start",
+                    "whynter": [
+                        "off",
+                        "on",
+                        "up",
+                        "down",
+                        "fan",
+                        "timer",
+                        "units",
+                        "mode",
                         "stop",
-                        "off"
+                        "start"
                     ]
                 }
             },
@@ -1225,13 +1239,20 @@ test_config_3_edit_context = {
             "ir_key": {
                 "display": "Ir Blaster",
                 "options": [
-                    "ac"
+                    "whynter"
                 ],
                 "keys": {
-                    "ac": [
-                        "start",
+                    "whynter": [
+                        "off",
+                        "on",
+                        "up",
+                        "down",
+                        "fan",
+                        "timer",
+                        "units",
+                        "mode",
                         "stop",
-                        "off"
+                        "start"
                     ]
                 }
             },

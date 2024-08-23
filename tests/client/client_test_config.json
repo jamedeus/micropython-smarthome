@@ -15,8 +15,8 @@
     "ir_blaster": {
         "pin": 32,
         "target": [
-            "tv",
-            "ac"
+            "samsung",
+            "whynter"
         ]
     },
     "device1": {

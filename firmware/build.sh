@@ -118,6 +118,13 @@ generate_hardware_classes() {
 }
 
 
+# Generates a mapping dict from modules in lib/ir_codes directory
+# Used to dynamically import correct IR Blaster codes for configured targets
+generate_ir_code_classes() {
+    python3 ../lib/build_ir_code_classes.py
+}
+
+
 # Must be in firmware dir
 if [[ $(pwd) != "$FIRMWARE_DIR" ]]; then
     START_DIR=$(pwd)
@@ -145,6 +152,9 @@ fi
 
 # Generate device/sensor driver mapping dict from metadata
 generate_hardware_classes
+
+# Generate IR Blaster codes mapping dict from IR code modules
+generate_ir_code_classes
 
 # Update existing build unless user passed fresh arg
 if [[ $1 == "f" || $1 == "--f" || $1 == "fresh" ]]; then

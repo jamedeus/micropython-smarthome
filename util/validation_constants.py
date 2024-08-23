@@ -1,4 +1,4 @@
-from helper_functions import get_device_and_sensor_metadata
+from helper_functions import get_device_and_sensor_metadata, get_ir_blaster_keys_map
 
 # All valid ESP32 pins, excluding input-only
 valid_device_pins = (
@@ -83,28 +83,9 @@ def build_config_templates():
 config_templates = build_config_templates()
 
 
-# Options for each supported IR Blaster target device, used to populate ApiTarget menu
-ir_blaster_options = {
-    "tv": [
-        'power',
-        'vol_up',
-        'vol_down',
-        'mute',
-        'up',
-        'down',
-        'left',
-        'right',
-        'enter',
-        'settings',
-        'exit',
-        'source'
-    ],
-    "ac": [
-        'start',
-        'stop',
-        'off'
-    ]
-}
+# Mapping dict with IR Blaster target names as key, list IR key names as value
+# Used to populate ApiTarget menu, api_client menu options, etc
+ir_blaster_options = get_ir_blaster_keys_map()
 
 
 # API endpoints supported with device as target instance

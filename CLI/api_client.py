@@ -6,7 +6,7 @@ import sys
 import json
 import questionary
 from colorama import Fore, Style
-from api_endpoints import endpoint_map, ir_commands
+from api_endpoints import endpoint_map, ir_blaster_options
 from config_prompt_validators import IntRange, FloatRange, MinLength
 from config_rule_prompts import (
     schedule_rule_prompt_router,
@@ -80,7 +80,7 @@ example_usage = {
     'trigger_sensor': {"Example usage": "./api_client.py trigger_sensor [sensor]"},
     'turn_on': {"Example usage": "./api_client.py turn_on [device]"},
     'turn_off': {"Example usage": "./api_client.py turn_off [device]"},
-    'ir': {"Example usage": "./api_client.py ir [tv|ac] [command]"},
+    'ir': {"Example usage": "./api_client.py ir [samsung|whynter] [command]"},
     'ir_get_existing_macros': {"Example usage": "./api_client.py ir_get_existing_macros"},
     'ir_create_macro': {"Example usage": "./api_client.py ir_create_macro [name]"},
     'ir_delete_macro': {"Example usage": "./api_client.py ir_delete_macro [name]"},
@@ -318,7 +318,7 @@ def ir_key_prompt(target_options):
     # Prompt user to select IR key
     key = questionary.select(
         'Select key',
-        choices=ir_commands[target].split(', ')
+        choices=ir_blaster_options[target]
     ).unsafe_ask()
 
     return [target, key]

@@ -180,8 +180,8 @@ config2_status = {
         'location': 'Bedroom',
         'ir_blaster': True,
         'ir_targets': [
-            'tv',
-            'ac'
+            'samsung',
+            'whynter'
         ],
         "schedule_keywords": {
             "sunrise": "06:00",
@@ -212,24 +212,24 @@ config2_status = {
             'current_rule': {
                 'on': [
                     'ir_key',
-                    'ac',
+                    'whynter',
                     'start'
                 ],
                 'off': [
                     'ir_key',
-                    'ac',
+                    'whynter',
                     'stop'
                 ]
             },
             'default_rule': {
                 'on': [
                     'ir_key',
-                    'ac',
+                    'whynter',
                     'start'
                 ],
                 'off': [
                     'ir_key',
-                    'ac',
+                    'whynter',
                     'stop'
                 ]
             },
@@ -239,24 +239,24 @@ config2_status = {
                 '10:00': {
                     'on': [
                         'ir_key',
-                        'ac',
+                        'whynter',
                         'start'
                     ],
                     'off': [
                         'ir_key',
-                        'ac',
+                        'whynter',
                         'stop'
                     ]
                 },
                 '00:00': {
                     'on': [
                         'ir_key',
-                        'ac',
+                        'whynter',
                         'stop'
                     ],
                     'off': [
                         'ir_key',
-                        'ac',
+                        'whynter',
                         'stop'
                     ]
                 }
@@ -264,12 +264,12 @@ config2_status = {
             'scheduled_rule': {
                 'on': [
                     'ir_key',
-                    'ac',
+                    'whynter',
                     'start'
                 ],
                 'off': [
                     'ir_key',
-                    'ac',
+                    'whynter',
                     'stop'
                 ]
             },
@@ -355,13 +355,20 @@ config2_api_target_options = {
         "ir_key": {
             "display": "Ir Blaster",
             "options": [
-                "ac"
+                "whynter"
             ],
             "keys": {
-                "ac": [
-                    "start",
+                "whynter": [
+                    "off",
+                    "on",
+                    "up",
+                    "down",
+                    "fan",
+                    "timer",
+                    "units",
+                    "mode",
                     "stop",
-                    "off"
+                    "start"
                 ]
             }
         },
@@ -417,11 +424,11 @@ config2_api_target_options = {
 
 config2_ir_macros = {
     'macro1': [
-        'tv power 500 1',
-        'tv vol_up 15 10',
+        'samsung power 500 1',
+        'samsung vol_up 15 10',
     ],
     'macro2': [
-        'ac ON 0 1'
+        'whynter ON 0 1'
     ]
 }
 
@@ -429,11 +436,11 @@ config2_ir_macros = {
 # Expected ir_get_existing_macros response for test config 2
 config2_existing_macros = {
     'macro1': [
-        'tv power 500 1',
-        'tv vol_up 15 10',
+        'samsung power 500 1',
+        'samsung vol_up 15 10',
     ],
     'macro2': [
-        'ac ON 0 1'
+        'whynter ON 0 1'
     ]
 }
 

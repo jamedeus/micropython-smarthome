@@ -114,13 +114,20 @@ class ApiTargetMenuOptionsTest(TestCase):
                 "ir_key": {
                     "display": "Ir Blaster",
                     "options": [
-                        "ac"
+                        "whynter"
                     ],
                     "keys": {
-                        "ac": [
-                            "start",
-                            "stop",
-                            "off"
+                        "whynter": [
+                            'off',
+                            'on',
+                            'up',
+                            'down',
+                            'fan',
+                            'timer',
+                            'units',
+                            'mode',
+                            'stop',
+                            'start'
                         ]
                     }
                 },
@@ -299,13 +306,20 @@ class ApiTargetMenuOptionsTest(TestCase):
                 "ir_key": {
                     "display": "Ir Blaster",
                     "options": [
-                        "ac"
+                        "whynter"
                     ],
                     "keys": {
-                        "ac": [
-                            "start",
-                            "stop",
-                            "off"
+                        "whynter": [
+                            'off',
+                            'on',
+                            'up',
+                            'down',
+                            'fan',
+                            'timer',
+                            'units',
+                            'mode',
+                            'stop',
+                            'start'
                         ]
                     }
                 },
@@ -413,15 +427,15 @@ class ApiTargetMenuOptionsTest(TestCase):
         }
         ac_target_config = {
             'pin': '19',
-            'target': ['ac']
+            'target': ['whynter']
         }
         tv_target_config = {
             'pin': '19',
-            'target': ['tv']
+            'target': ['samsung']
         }
         both_target_config = {
             'pin': '19',
-            'target': ['ac', 'tv']
+            'target': ['whynter', 'samsung']
         }
 
         # No targets: All options should be removed
@@ -446,13 +460,20 @@ class ApiTargetMenuOptionsTest(TestCase):
                 "ir_key": {
                     "display": "Ir Blaster",
                     "options": [
-                        "ac"
+                        "whynter"
                     ],
                     "keys": {
-                        "ac": [
-                            "start",
-                            "stop",
-                            "off"
+                        "whynter": [
+                            'off',
+                            'on',
+                            'up',
+                            'down',
+                            'fan',
+                            'timer',
+                            'units',
+                            'mode',
+                            'stop',
+                            'start'
                         ]
                     }
                 },
@@ -480,10 +501,10 @@ class ApiTargetMenuOptionsTest(TestCase):
                 "ir_key": {
                     "display": "Ir Blaster",
                     "options": [
-                        "tv"
+                        "samsung"
                     ],
                     "keys": {
-                        "tv": [
+                        "samsung": [
                             "power",
                             "vol_up",
                             "vol_down",
@@ -523,11 +544,11 @@ class ApiTargetMenuOptionsTest(TestCase):
                 "ir_key": {
                     "display": "Ir Blaster",
                     "options": [
-                        "tv",
-                        "ac"
+                        "samsung",
+                        "whynter"
                     ],
                     "keys": {
-                        "tv": [
+                        "samsung": [
                             "power",
                             "vol_up",
                             "vol_down",
@@ -541,10 +562,17 @@ class ApiTargetMenuOptionsTest(TestCase):
                             "exit",
                             "source"
                         ],
-                        "ac": [
-                            "start",
-                            "stop",
-                            "off"
+                        "whynter": [
+                            'off',
+                            'on',
+                            'up',
+                            'down',
+                            'fan',
+                            'timer',
+                            'units',
+                            'mode',
+                            'stop',
+                            'start'
                         ]
                     }
                 },
@@ -605,13 +633,20 @@ class ApiTargetMenuOptionsTest(TestCase):
             "ir_key": {
                 "display": "Ir Blaster",
                 "options": [
-                    "ac"
+                    "whynter"
                 ],
                 "keys": {
-                    "ac": [
-                        "start",
-                        "stop",
-                        "off"
+                    "whynter": [
+                        'off',
+                        'on',
+                        'up',
+                        'down',
+                        'fan',
+                        'timer',
+                        'units',
+                        'mode',
+                        'stop',
+                        'start'
                     ]
                 }
             },
