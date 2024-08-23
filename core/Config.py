@@ -154,8 +154,7 @@ class Config():
             from IrBlaster import IrBlaster
             self.ir_blaster = IrBlaster(
                 int(self.ir_blaster_config["pin"]),
-                self.ir_blaster_config["target"],
-                self.ir_blaster_config["macros"]
+                self.ir_blaster_config["target"]
             )
             del self.ir_blaster_config
 

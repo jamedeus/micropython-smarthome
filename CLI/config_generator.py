@@ -516,8 +516,7 @@ class GenerateConfigFile:
         # Add to config
         self.config['ir_blaster'] = {
             "pin": pin,
-            "target": targets,
-            "macros": {}
+            "target": targets
         }
 
         # Remove option from menun (multiple ir blasters not supported)

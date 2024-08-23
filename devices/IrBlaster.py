@@ -2,7 +2,7 @@ import asyncio
 import logging
 from machine import Pin
 from ir_tx import Player
-from util import read_config_from_disk, write_config_to_disk, print_with_timestamp
+from util import read_ir_macros_from_disk, write_ir_macros_to_disk, print_with_timestamp
 
 # Set name for module's log lines
 log = logging.getLogger("IrBlaster")
@@ -16,7 +16,7 @@ ir_code_classes = {
 
 
 class IrBlaster():
-    def __init__(self, pin, target, macros):
+    def __init__(self, pin, target):
         led = Pin(int(pin), Pin.OUT, value=0)
         self.ir = Player(led)
         self.target = target
@@ -27,8 +27,9 @@ class IrBlaster():
         for target in self.target:
             self.populate_codes(target)
 
+        # Read ir_macros.json from disk (returns {} if file not found)
         # Dict with macro names as key, list of actions as value
-        self.macros = macros
+        self.macros = read_ir_macros_from_disk()
 
         log.info(f"Instantiated IrBlaster on pin {pin}")
 
@@ -75,11 +76,9 @@ class IrBlaster():
         else:
             raise ValueError(f"Macro named {name} does not exist")
 
-    # Write current macros to config file on disk
+    # Write current macros to ir_macros.json on disk
     def save_macros(self):
-        config = read_config_from_disk()
-        config['ir_blaster']['macros'] = self.macros
-        write_config_to_disk(config)
+        write_ir_macros_to_disk(self.macros)
 
     # Add a single action to an existing key in self.macros
     # Required args: Macro name, IR target, IR key

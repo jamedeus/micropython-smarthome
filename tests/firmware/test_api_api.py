@@ -105,6 +105,18 @@ class TestApi(unittest.TestCase):
         cls.sensor2 = config.find("sensor2")
         cls.sensor3 = config.find("sensor3")
 
+        try:
+            os.remove('ir_macros.json')
+        except FileNotFoundError:
+            pass
+
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            os.remove('ir_macros.json')
+        except FileNotFoundError:
+            pass
+
     async def request(self, msg):
         reader, writer = await asyncio.open_connection(ip, 8123)
         try:

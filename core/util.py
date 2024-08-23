@@ -62,6 +62,22 @@ def write_config_to_disk(conf):
     return True
 
 
+def read_ir_macros_from_disk():
+    try:
+        with open('ir_macros.json', 'r') as file:
+            return json.load(file)
+    except OSError:
+        return {}
+
+
+def write_ir_macros_to_disk(conf):
+    if not isinstance(conf, dict):
+        return False
+    with open('ir_macros.json', 'w') as file:
+        json.dump(conf, file)
+    return True
+
+
 # Must accept arg (hardware Timer passes self as arg)
 def reboot(arg=None):
     print_with_timestamp("Reboot function called, rebooting...")

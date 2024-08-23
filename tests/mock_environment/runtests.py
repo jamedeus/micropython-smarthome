@@ -113,6 +113,7 @@ async def run_tests():
     # Remove mock files
     try:
         os.remove('config.json')
+        os.remove('ir_macros.json')
         os.remove('wifi_credentials.json')
         os.remove('app.log')
         os.remove('webrepl_cfg.py')

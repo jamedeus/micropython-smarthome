@@ -1,15 +1,28 @@
+import os
 import unittest
 from ir_tx import Player
 from IrBlaster import IrBlaster
 from cpython_only import cpython_only
-from util import read_config_from_disk
+from util import read_ir_macros_from_disk
 
 
 class TestIrBlaster(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = IrBlaster("4", ["tv", "ac"], {})
+        cls.instance = IrBlaster("4", ["tv", "ac"])
+
+        try:
+            os.remove('ir_macros.json')
+        except FileNotFoundError:
+            pass
+
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            os.remove('ir_macros.json')
+        except FileNotFoundError:
+            pass
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, IrBlaster)
@@ -102,13 +115,13 @@ class TestIrBlaster(unittest.TestCase):
 
     def test_10_save_macros(self):
         # Confirm no macros in config
-        config = read_config_from_disk()
-        self.assertEqual(len(config['ir_blaster']['macros']), 0)
+        macros = read_ir_macros_from_disk()
+        self.assertEqual(len(macros), 0)
 
         # Save macros, confirm written to config file on disk
         self.instance.save_macros()
-        config = read_config_from_disk()
-        self.assertEqual(len(config['ir_blaster']['macros']), 1)
+        macros = read_ir_macros_from_disk()
+        self.assertEqual(len(macros), 1)
 
     def test_11_delete_macro(self):
         # Confirm macro exists
@@ -127,7 +140,7 @@ class TestIrBlaster(unittest.TestCase):
     def test_13_instantiate_with_invalid_targets(self):
         # Confirm ValueError raised when instantiated with invalid targets
         with self.assertRaises(ValueError):
-            IrBlaster("4", ["tv", "invalid"], {})
+            IrBlaster("4", ["tv", "invalid"])
 
     # Original bug: run_macro method did not cast delay and repeats
     # params to int, resulting in uncaught exception if params were
