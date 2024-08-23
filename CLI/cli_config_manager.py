@@ -150,7 +150,7 @@ class CliConfigManager:
                 f'{self.config["django_backend"]}/get_cli_config',
                 timeout=5
             )
-        except OSError:
+        except requests.exceptions.ConnectionError:
             print('Failed to sync from django (connection refused)')
             return
         if response.status_code == 200:
@@ -186,21 +186,24 @@ class CliConfigManager:
         # If django backend configured add new node to database
         if 'django_backend' in self.config:
             print('Uploading node to django database...')
-            response = self._client.post(
-                f'{self.config["django_backend"]}/add_node',
-                json={
-                    'ip': ip,
-                    'config': config
-                },
-                headers={
-                    'X-CSRFToken': self._csrf_token
-                },
-                timeout=5
-            )
-            if response.status_code == 200:
-                print('Done.')
-            else:
-                print(response.text)
+            try:
+                response = self._client.post(
+                    f'{self.config["django_backend"]}/add_node',
+                    json={
+                        'ip': ip,
+                        'config': config
+                    },
+                    headers={
+                        'X-CSRFToken': self._csrf_token
+                    },
+                    timeout=5
+                )
+                if response.status_code == 200:
+                    print('Done.')
+                else:
+                    print(response.text)
+            except requests.exceptions.ConnectionError:
+                print('Failed to add to django database (connection error)')
 
         # Write config to config_directory if file doesn't exist (can happen
         # if provision called with path to config file in other directory)
@@ -239,7 +242,7 @@ class CliConfigManager:
                         print('Done.')
                     else:
                         print(response.text)
-                except OSError:
+                except requests.exceptions.ConnectionError:
                     print('Failed to delete from django database (connection error)')
         except KeyError:
             pass
@@ -269,22 +272,25 @@ class CliConfigManager:
             # If django backend configured change IP in django database
             if 'django_backend' in self.config:
                 print('Changing IP in django database...')
-                response = self._client.post(
-                    f'{self.config["django_backend"]}/change_node_ip',
-                    json={
-                        'friendly_name': config['metadata']['id'],
-                        'new_ip': ip,
-                        'reupload': False
-                    },
-                    headers={
-                        'X-CSRFToken': self._csrf_token
-                    },
-                    timeout=5
-                )
-                if response.status_code == 200:
-                    print('Done.')
-                else:
-                    print(response.text)
+                try:
+                    response = self._client.post(
+                        f'{self.config["django_backend"]}/change_node_ip',
+                        json={
+                            'friendly_name': config['metadata']['id'],
+                            'new_ip': ip,
+                            'reupload': False
+                        },
+                        headers={
+                            'X-CSRFToken': self._csrf_token
+                        },
+                        timeout=5
+                    )
+                    if response.status_code == 200:
+                        print('Done.')
+                    else:
+                        print(response.text)
+                except requests.exceptions.ConnectionError:
+                    print('Failed to update django database (connection error)')
 
         # Print error from provision if upload failed
         else:
@@ -306,18 +312,21 @@ class CliConfigManager:
 
         # If django configured make API call to add keyword to database
         if 'django_backend' in self.config:
-            self._client.post(
-                f'{self.config["django_backend"]}/add_schedule_keyword',
-                json={
-                    'keyword': keyword,
-                    'timestamp': timestamp,
-                    'sync_nodes': False
-                },
-                headers={
-                    'X-CSRFToken': self._csrf_token
-                },
-                timeout=5
-            )
+            try:
+                self._client.post(
+                    f'{self.config["django_backend"]}/add_schedule_keyword',
+                    json={
+                        'keyword': keyword,
+                        'timestamp': timestamp,
+                        'sync_nodes': False
+                    },
+                    headers={
+                        'X-CSRFToken': self._csrf_token
+                    },
+                    timeout=5
+                )
+            except requests.exceptions.ConnectionError:
+                print('Failed to add to django database (connection error)')
 
     def edit_schedule_keyword(self, keyword_old, keyword_new, timestamp):
         '''Takes name of existing keyword, new name (can be same), and new
@@ -340,19 +349,22 @@ class CliConfigManager:
 
         # If django configured make API call to edit keyword in database
         if 'django_backend' in self.config:
-            self._client.post(
-                f'{self.config["django_backend"]}/edit_schedule_keyword',
-                json={
-                    'keyword_old': keyword_old,
-                    'keyword_new': keyword_new,
-                    'timestamp_new': timestamp,
-                    'sync_nodes': False
-                },
-                headers={
-                    'X-CSRFToken': self._csrf_token
-                },
-                timeout=5
-            )
+            try:
+                self._client.post(
+                    f'{self.config["django_backend"]}/edit_schedule_keyword',
+                    json={
+                        'keyword_old': keyword_old,
+                        'keyword_new': keyword_new,
+                        'timestamp_new': timestamp,
+                        'sync_nodes': False
+                    },
+                    headers={
+                        'X-CSRFToken': self._csrf_token
+                    },
+                    timeout=5
+                )
+            except requests.exceptions.ConnectionError:
+                print('Failed to update django database (connection error)')
 
     def remove_schedule_keyword(self, keyword):
         '''Takes name of existing keyword, removes from cli_config.json and
@@ -370,17 +382,20 @@ class CliConfigManager:
 
         # If django configured make API call to remove keyword from database
         if 'django_backend' in self.config:
-            self._client.post(
-                f'{self.config["django_backend"]}/delete_schedule_keyword',
-                json={
-                    'keyword': keyword,
-                    'sync_nodes': False
-                },
-                headers={
-                    'X-CSRFToken': self._csrf_token
-                },
-                timeout=5
-            )
+            try:
+                self._client.post(
+                    f'{self.config["django_backend"]}/delete_schedule_keyword',
+                    json={
+                        'keyword': keyword,
+                        'sync_nodes': False
+                    },
+                    headers={
+                        'X-CSRFToken': self._csrf_token
+                    },
+                    timeout=5
+                )
+            except requests.exceptions.ConnectionError:
+                print('Failed to remove from django database (connection error)')
 
     def get_config_filepath(self, friendly_name):
         '''Takes friendly_name, returns path to config file. Does not check if
@@ -432,12 +447,15 @@ class CliConfigManager:
         if 'django_backend' not in self.config:
             raise RuntimeError('No django backend configured')
 
-        response = self._client.get(
-            f'{self.config["django_backend"]}/get_node_config/{ip}',
-            timeout=5
-        )
-        if response.status_code == 200:
-            return response.json()['message']
+        try:
+            response = self._client.get(
+                f'{self.config["django_backend"]}/get_node_config/{ip}',
+                timeout=5
+            )
+            if response.status_code == 200:
+                return response.json()['message']
+        except requests.exceptions.ConnectionError:
+            print('Failed to download config from django database (connection error)')
         return False
 
     def download_all_node_config_files_from_django(self):
