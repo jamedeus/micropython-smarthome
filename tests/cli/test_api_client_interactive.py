@@ -83,13 +83,13 @@ mock_ir_config = {
     "ir_blaster": {
         "pin": "4",
         "target": [
-            "samsung",
-            "whynter"
+            "samsung_tv",
+            "whynter_ac"
         ],
         "macros": {
             "start_ac": [
-                ("whynter", "on", "100", "1"),
-                ("whynter", "start", "0", "1")
+                ("whynter_ac", "on", "100", "1"),
+                ("whynter_ac", "start", "0", "1")
             ]
         }
     }
@@ -102,8 +102,8 @@ mock_ir_status = {
         'location': 'Behind TV',
         'ir_blaster': True,
         'ir_targets': [
-            'samsung',
-            'whynter'
+            'samsung_tv',
+            'whynter_ac'
         ],
         "schedule_keywords": {
             "sunrise": "06:00",
@@ -734,11 +734,11 @@ class InteractiveIrBlasterMenuTests(TestCase):
         self.mock_load.stop()
 
     def test_ir_key_endpoint(self):
-        # Simulate user selecting node1, ir, samsung, power
+        # Simulate user selecting node1, ir, samsung_tv, power
         self.mock_ask.unsafe_ask.side_effect = [
             'node1',
             'ir',
-            'samsung',
+            'samsung_tv',
             'power',
             'Done',
             'Done'
@@ -749,7 +749,7 @@ class InteractiveIrBlasterMenuTests(TestCase):
         with patch('api_client.parse_command', side_effect=[
             mock_ir_status,
             mock_ir_config['ir_blaster']['macros'],
-            {'samsung': 'power'},
+            {'samsung_tv': 'power'},
             mock_ir_status
         ]) as mock_parse_command:
 
@@ -774,7 +774,7 @@ class InteractiveIrBlasterMenuTests(TestCase):
             # Third call: sent enable command with correct arg
             self.assertEqual(
                 mock_parse_command.call_args_list[2][0],
-                ("192.168.1.123", ["ir", "samsung", "power"])
+                ("192.168.1.123", ["ir", "samsung_tv", "power"])
             )
 
             # Fourth call: requested updated status object after API call
@@ -882,13 +882,13 @@ class InteractiveIrBlasterMenuTests(TestCase):
             )
 
     def test_ir_add_macro_action_endpoint(self):
-        # Simulate user selecting node1, ir_add_macro_action, start_ac, samsung,
+        # Simulate user selecting node1, ir_add_macro_action, start_ac, samsung_tv,
         # power, then entering 500 for delay and 2 for repeat args
         self.mock_ask.unsafe_ask.side_effect = [
             'node1',
             'ir_add_macro_action',
             'start_ac',
-            'samsung',
+            'samsung_tv',
             'power',
             '500',
             '2',
@@ -903,7 +903,7 @@ class InteractiveIrBlasterMenuTests(TestCase):
              patch('api_client.parse_command', side_effect=[
                  mock_ir_status,
                  mock_ir_config['ir_blaster']['macros'],
-                 {'Macro action added': ['start_ac', 'samsung', 'power', '500', '2']},
+                 {'Macro action added': ['start_ac', 'samsung_tv', 'power', '500', '2']},
                  mock_ir_status
              ]) as mock_parse_command:
 
@@ -931,7 +931,17 @@ class InteractiveIrBlasterMenuTests(TestCase):
             # Third call: sent enable command with correct arg
             self.assertEqual(
                 mock_parse_command.call_args_list[2][0],
-                ("192.168.1.123", ["ir_add_macro_action", "start_ac", "samsung", "power", "500", "2"])
+                (
+                    "192.168.1.123",
+                    [
+                        "ir_add_macro_action",
+                        "start_ac",
+                        "samsung_tv",
+                        "power",
+                        "500",
+                        "2"
+                    ]
+                )
             )
 
             # Fourth call: requested updated status object after API call
@@ -941,12 +951,12 @@ class InteractiveIrBlasterMenuTests(TestCase):
             )
 
     def test_ir_add_macro_action_endpoint_default_delay_and_repeat(self):
-        # Simulate user selecting node1, ir_add_macro_action, start_ac, samsung, power
+        # Simulate user selecting node1, ir_add_macro_action, start_ac, samsung_tv, power
         self.mock_ask.unsafe_ask.side_effect = [
             'node1',
             'ir_add_macro_action',
             'start_ac',
-            'samsung',
+            'samsung_tv',
             'power',
             'Done',
             'Done'
@@ -959,7 +969,7 @@ class InteractiveIrBlasterMenuTests(TestCase):
              patch('api_client.parse_command', side_effect=[
                  mock_ir_status,
                  mock_ir_config['ir_blaster']['macros'],
-                 {'Macro action added': ['start_ac', 'samsung', 'power', '0', '1']},
+                 {'Macro action added': ['start_ac', 'samsung_tv', 'power', '0', '1']},
                  mock_ir_status
              ]) as mock_parse_command:
 
@@ -987,7 +997,17 @@ class InteractiveIrBlasterMenuTests(TestCase):
             # Third call: sent enable command with correct arg
             self.assertEqual(
                 mock_parse_command.call_args_list[2][0],
-                ("192.168.1.123", ["ir_add_macro_action", "start_ac", "samsung", "power", 0, 1])
+                (
+                    "192.168.1.123",
+                    [
+                        "ir_add_macro_action",
+                        "start_ac",
+                        "samsung_tv",
+                        "power",
+                        0,
+                        1
+                    ]
+                )
             )
 
             # Fourth call: requested updated status object after API call

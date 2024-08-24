@@ -53,12 +53,15 @@ const IrBlasterSection = () => {
         label: PropTypes.string.isRequired
     };
 
-    // Takes ir_blaster target name, returns with each word capitalized and
-    // underscores replaced with spaces (label next to checkbox)
+    // Takes ir_blaster target name, returns label shown next to checkbox
+    // Replaces underscores with spaces, capitalizes each word, replaces
+    // ac with AC, replaces tv with TV
     const getTargetLabel = (target) => {
         return target.split('_').map(word =>
             word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ');
+        ).join(' ')
+        .replace('Tv', 'TV')
+        .replace('Ac', 'AC');
     };
 
     return (

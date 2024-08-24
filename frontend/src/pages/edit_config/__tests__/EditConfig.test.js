@@ -729,8 +729,8 @@ describe('EditConfig', () => {
 
     it('removes targets from config file when boxes are unchecked', async () => {
         // Uncheck IR Blaster TV target, check AC target
-        await user.click(app.getByText('Samsung'));
-        await user.click(app.getByText('Whynter'));
+        await user.click(app.getByText('Samsung TV'));
+        await user.click(app.getByText('Whynter AC'));
 
         // Go to page2, uncheck first target
         await user.click(app.getByRole('button', { name: 'Next' }));
@@ -747,7 +747,7 @@ describe('EditConfig', () => {
                 ir_blaster: {
                     ...existingConfigContext.config.ir_blaster,
                     target: [
-                        'whynter'
+                        'whynter_ac'
                     ]
                 },
                 sensor1: {

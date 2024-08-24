@@ -96,7 +96,7 @@ describe('NewConfig', () => {
         // Add IR Blaster with TV codes
         await user.click(app.getByRole('button', { name: 'Add IR Blaster' }));
         await user.selectOptions(app.getByRole('combobox'), '16');
-        await user.click(app.getByText('Samsung'));
+        await user.click(app.getByText('Samsung TV'));
 
         // Add si7021 temperature sensor
         await user.click(app.getByRole('button', { name: 'Add Sensor' }));
@@ -185,7 +185,7 @@ describe('NewConfig', () => {
                 "ir_blaster": {
                     "pin": "16",
                     "target": [
-                        "samsung"
+                        "samsung_tv"
                     ]
                 },
                 "sensor1": {

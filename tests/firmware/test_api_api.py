@@ -78,7 +78,7 @@ config_file = {
     },
     "ir_blaster": {
         "pin": 32,
-        "target": ["samsung"],
+        "target": ["samsung_tv"],
         "macros": {}
     }
 }
@@ -542,16 +542,16 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'no log file found'})
 
     def test_32_ir_key(self):
-        response = self.send_command(['ir_key', 'samsung', 'power'])
-        self.assertEqual(response, {'samsung': 'power'})
+        response = self.send_command(['ir_key', 'samsung_tv', 'power'])
+        self.assertEqual(response, {'samsung_tv': 'power'})
 
         # Confirm correct error message
-        response = self.send_command(['ir_key', 'samsung', 'on'])
-        self.assertEqual(response, {'ERROR': 'Target "samsung" has no key "on"'})
+        response = self.send_command(['ir_key', 'samsung_tv', 'on'])
+        self.assertEqual(response, {'ERROR': 'Target "samsung_tv" has no key "on"'})
 
         # Confirm correct error message
-        response = self.send_command(['ir_key', 'whynter', 'on'])
-        self.assertEqual(response, {'ERROR': 'No codes found for target "whynter"'})
+        response = self.send_command(['ir_key', 'whynter_ac', 'on'])
+        self.assertEqual(response, {'ERROR': 'No codes found for target "whynter_ac"'})
 
     def test_33_ir_create_macro(self):
         # Confirm no macros
@@ -572,17 +572,17 @@ class TestApi(unittest.TestCase):
         self.assertEqual(len(app.config.ir_blaster.macros['test1']), 0)
 
         # Add action with all required args, confirm added
-        response = self.send_command(['ir_add_macro_action', 'test1', 'samsung', 'power'])
-        self.assertEqual(response, {"Macro action added": ['test1', 'samsung', 'power']})
+        response = self.send_command(['ir_add_macro_action', 'test1', 'samsung_tv', 'power'])
+        self.assertEqual(response, {"Macro action added": ['test1', 'samsung_tv', 'power']})
         self.assertEqual(len(app.config.ir_blaster.macros['test1']), 1)
 
         # Add action with all required and optional args, confirm added
-        response = self.send_command(['ir_add_macro_action', 'test1', 'samsung', 'power', 50, 3])
-        self.assertEqual(response, {"Macro action added": ['test1', 'samsung', 'power', 50, 3]})
+        response = self.send_command(['ir_add_macro_action', 'test1', 'samsung_tv', 'power', 50, 3])
+        self.assertEqual(response, {"Macro action added": ['test1', 'samsung_tv', 'power', 50, 3]})
         self.assertEqual(len(app.config.ir_blaster.macros['test1']), 2)
 
         # Confirm error when attempting to add to non-existing macro
-        response = self.send_command(['ir_add_macro_action', 'test99', 'samsung', 'power'])
+        response = self.send_command(['ir_add_macro_action', 'test99', 'samsung_tv', 'power'])
         self.assertEqual(response, {"ERROR": "Macro test99 does not exist, use create_macro to add"})
 
         # Confirm error when attempting to add action with non-existing target
@@ -590,15 +590,15 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {"ERROR": "No codes for refrigerator"})
 
         # Confirm error when attempting to add to non-existing key
-        response = self.send_command(['ir_add_macro_action', 'test1', 'samsung', 'fake'])
-        self.assertEqual(response, {"ERROR": "Target samsung has no key fake"})
+        response = self.send_command(['ir_add_macro_action', 'test1', 'samsung_tv', 'fake'])
+        self.assertEqual(response, {"ERROR": "Target samsung_tv has no key fake"})
 
         # Confirm error when delay arg is not integer
-        response = self.send_command(['ir_add_macro_action', 'test1', 'samsung', 'power', 'short'])
+        response = self.send_command(['ir_add_macro_action', 'test1', 'samsung_tv', 'power', 'short'])
         self.assertEqual(response, {"ERROR": "Delay arg must be integer (milliseconds)"})
 
         # Confirm error when repeats arg is not integer
-        response = self.send_command(['ir_add_macro_action', 'test1', 'samsung', 'power', '50', 'yes'])
+        response = self.send_command(['ir_add_macro_action', 'test1', 'samsung_tv', 'power', '50', 'yes'])
         self.assertEqual(response, {"ERROR": "Repeat arg must be integer (number of times to press key)"})
 
     def test_35_ir_run_macro(self):
@@ -618,7 +618,7 @@ class TestApi(unittest.TestCase):
     def test_37_ir_get_existing_macros(self):
         # Save macros to disk, confirm response
         response = self.send_command(['ir_get_existing_macros'])
-        self.assertEqual(response, {"test1": ["samsung power 0 1", "samsung power 50 3"]})
+        self.assertEqual(response, {"test1": ["samsung_tv power 0 1", "samsung_tv power 50 3"]})
 
     def test_38_ir_delete_macro(self):
         # Confirm macro exists
@@ -639,13 +639,13 @@ class TestApi(unittest.TestCase):
         del app.config.ir_blaster
 
         # Confirm correct error message for each IR endpoint
-        response = self.send_command(['ir_key', 'whynter', 'on'])
+        response = self.send_command(['ir_key', 'whynter_ac', 'on'])
         self.assertEqual(response, {"ERROR": "No IR blaster configured"})
 
         response = self.send_command(['ir_create_macro', 'test1'])
         self.assertEqual(response, {"ERROR": "No IR blaster configured"})
 
-        response = self.send_command(['ir_add_macro_action', 'test1', 'samsung', 'power'])
+        response = self.send_command(['ir_add_macro_action', 'test1', 'samsung_tv', 'power'])
         self.assertEqual(response, {"ERROR": "No IR blaster configured"})
 
         response = self.send_command(['ir_run_macro', 'test1'])
@@ -773,7 +773,7 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['ir_key'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = self.send_command(['ir_key', 'samsung'])
+        response = self.send_command(['ir_key', 'samsung_tv'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
     @cpython_only

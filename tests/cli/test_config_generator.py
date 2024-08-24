@@ -988,8 +988,8 @@ class TestGenerateConfigFile(TestCase):
         expected_config = {
             'pin': '4',
             'target': [
-                'whynter',
-                'samsung'
+                'whynter_ac',
+                'samsung_tv'
             ]
         }
 
@@ -997,7 +997,7 @@ class TestGenerateConfigFile(TestCase):
         self.mock_ask.unsafe_ask.side_effect = [
             'IR Blaster',
             '4',
-            ['whynter', 'samsung'],
+            ['whynter_ac', 'samsung_tv'],
             'Done'
         ]
 
@@ -1206,7 +1206,7 @@ class TestGenerateConfigFile(TestCase):
             'API Call',
             True,
             'IR Blaster',
-            'samsung',
+            'samsung_tv',
             'power',
             False,
         ]
@@ -1217,7 +1217,7 @@ class TestGenerateConfigFile(TestCase):
 
             rule = api_target_schedule_rule_prompt(mock_config)
             # Confirm correct rule returned
-            self.assertEqual(rule, {"on": ["ir_key", "samsung", "power"], "off": ["ignore"]})
+            self.assertEqual(rule, {"on": ["ir_key", "samsung_tv", "power"], "off": ["ignore"]})
 
         # Call schedule rule router with simulated input selecting 'Enabled' option
         self.mock_ask.unsafe_ask.side_effect = ['Enabled']

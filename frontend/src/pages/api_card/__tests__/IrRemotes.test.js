@@ -50,7 +50,7 @@ describe('IrRemotes', () => {
             json: () => Promise.resovle({
                 status: 'success',
                 message: {
-                    'samsung': 'key_name'
+                    'samsung_tv': 'key_name'
                 }
             })
         }));
@@ -64,7 +64,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "samsung",
+                "ir_target": "samsung_tv",
                 "key": "power",
                 "target": "192.168.1.100"
             }),
@@ -78,7 +78,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "samsung",
+                "ir_target": "samsung_tv",
                 "key": "source",
                 "target": "192.168.1.100"
             }),
@@ -92,7 +92,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "samsung",
+                "ir_target": "samsung_tv",
                 "key": "up",
                 "target": "192.168.1.100"
             }),
@@ -106,7 +106,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "samsung",
+                "ir_target": "samsung_tv",
                 "key": "left",
                 "target": "192.168.1.100"
             }),
@@ -120,7 +120,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "samsung",
+                "ir_target": "samsung_tv",
                 "key": "enter",
                 "target": "192.168.1.100"
             }),
@@ -134,7 +134,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "samsung",
+                "ir_target": "samsung_tv",
                 "key": "right",
                 "target": "192.168.1.100"
             }),
@@ -148,7 +148,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "samsung",
+                "ir_target": "samsung_tv",
                 "key": "down",
                 "target": "192.168.1.100"
             }),
@@ -162,7 +162,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "samsung",
+                "ir_target": "samsung_tv",
                 "key": "vol_down",
                 "target": "192.168.1.100"
             }),
@@ -176,7 +176,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "samsung",
+                "ir_target": "samsung_tv",
                 "key": "mute",
                 "target": "192.168.1.100"
             }),
@@ -190,7 +190,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "samsung",
+                "ir_target": "samsung_tv",
                 "key": "vol_up",
                 "target": "192.168.1.100"
             }),
@@ -204,7 +204,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "samsung",
+                "ir_target": "samsung_tv",
                 "key": "settings",
                 "target": "192.168.1.100"
             }),
@@ -218,7 +218,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "samsung",
+                "ir_target": "samsung_tv",
                 "key": "exit",
                 "target": "192.168.1.100"
             }),
@@ -233,7 +233,7 @@ describe('IrRemotes', () => {
             json: () => Promise.resovle({
                 status: 'success',
                 message: {
-                    'whynter': 'key_name'
+                    'whynter_ac': 'key_name'
                 }
             })
         }));
@@ -247,7 +247,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "whynter",
+                "ir_target": "whynter_ac",
                 "key": "stop",
                 "target": "192.168.1.100"
             }),
@@ -261,7 +261,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "whynter",
+                "ir_target": "whynter_ac",
                 "key": "off",
                 "target": "192.168.1.100"
             }),
@@ -275,7 +275,7 @@ describe('IrRemotes', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "ir",
-                "ir_target": "whynter",
+                "ir_target": "whynter_ac",
                 "key": "start",
                 "target": "192.168.1.100"
             }),
@@ -377,11 +377,11 @@ describe('IrRemotes', () => {
                 "ip": "192.168.1.100",
                 "name": "backlight_off",
                 "actions": [
-                    "samsung right 1000 5",
-                    "samsung down 500 1",
-                    "samsung enter 150 1",
-                    "samsung left 150 14",
-                    "samsung exit 1 1"
+                    "samsung_tv right 1000 5",
+                    "samsung_tv down 500 1",
+                    "samsung_tv enter 150 1",
+                    "samsung_tv left 150 14",
+                    "samsung_tv exit 1 1"
                 ]
             }),
             headers: postHeaders
@@ -516,8 +516,8 @@ describe('IrRemotes', () => {
                 "ip": "192.168.1.100",
                 "name": "New Macro",
                 "actions": [
-                    "samsung power 100 1",
-                    "whynter start 100 1"
+                    "samsung_tv power 100 1",
+                    "whynter_ac start 100 1"
                 ]
             }),
             headers: postHeaders
@@ -548,13 +548,13 @@ describe('IrRemotes', () => {
                 "ip": "192.168.1.100",
                 "name": "backlight_off",
                 "actions": [
-                    "samsung settings 1500 1",
-                    "samsung right 500 1",
-                    "samsung down 500 1",
-                    "samsung enter 150 1",
-                    "samsung left 150 14",
-                    "samsung exit 1 1",
-                    "samsung mute 100 1"
+                    "samsung_tv settings 1500 1",
+                    "samsung_tv right 500 1",
+                    "samsung_tv down 500 1",
+                    "samsung_tv enter 150 1",
+                    "samsung_tv left 150 14",
+                    "samsung_tv exit 1 1",
+                    "samsung_tv mute 100 1"
                 ]
             }),
             headers: postHeaders

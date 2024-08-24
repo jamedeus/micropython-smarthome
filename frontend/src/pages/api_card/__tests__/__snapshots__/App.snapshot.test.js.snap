@@ -27,12 +27,12 @@ exports[`App matches snapshot 1`] = `
     <div
       id="api_target_options"
     >
-      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung","whynter"],"keys":{"samsung":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
+      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
     >
-      {"metadata":{"next_reload":"3:46","ir_blaster":false,"location":"Bedroom","floor":2,"id":"Test Node","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{"device1":{"schedule":{},"scheduled_rule":"disabled","enabled":false,"turned_on":false,"nickname":"Humidifier","default_rule":"enabled","current_rule":"disabled","type":"mosfet"},"device2":{"current_rule":"enabled","enabled":true,"type":"http-get","turned_on":false,"schedule":{},"scheduled_rule":"enabled","nickname":"Heater","default_rule":"enabled"},"device3":{"current_rule":767,"enabled":true,"type":"pwm","turned_on":true,"schedule":{"morning":1023,"relax":"fade/512/1800","sleep":"disabled"},"scheduled_rule":1023,"min_rule":0,"nickname":"Accent lights","max_rule":1023,"default_rule":767},"device4":{"current_rule":"enabled","enabled":true,"type":"desktop","turned_on":false,"schedule":{"morning":"enabled","sleep":"disabled"},"scheduled_rule":"enabled","nickname":"Computer screen","default_rule":"enabled"},"device5":{"current_rule":"enabled","enabled":true,"type":"tasmota-relay","turned_on":false,"schedule":{},"scheduled_rule":"enabled","nickname":"Stairway lights","default_rule":"enabled"},"device6":{"current_rule":100,"enabled":true,"type":"dimmer","turned_on":true,"schedule":{"morning":"fade/100/900","relax":"fade/69/1800","sleep":"fade/37/900"},"scheduled_rule":100,"min_rule":1,"nickname":"Overhead lights","max_rule":100,"default_rule":100},"device7":{"current_rule":{"on":["ir_key","whynter","start"],"off":["ir_key","whynter","stop"]},"enabled":true,"type":"api-target","turned_on":true,"schedule":{},"scheduled_rule":{"on":["ir_key","whynter","start"],"off":["ir_key","whynter","stop"]},"nickname":"Air Conditioner","default_rule":{"on":["ir_key","whynter","start"],"off":["ir_key","whynter","stop"]}},"device8":{"current_rule":"disabled","enabled":false,"type":"dumb-relay","turned_on":true,"schedule":{},"scheduled_rule":"enabled","nickname":"Fan","default_rule":"enabled"},"device9":{"current_rule":"disabled","enabled":false,"type":"bulb","turned_on":true,"schedule":{"morning":"fade/100/900","relax":"fade/72/1800","sleep":"disabled"},"scheduled_rule":72,"min_rule":1,"nickname":"Lamp","max_rule":100,"default_rule":100},"device10":{"current_rule":"disabled","enabled":false,"type":"wled","turned_on":false,"schedule":{"morning":"fade/255/900","sleep":25,"relax":"fade/128/1800"},"scheduled_rule":"disabled","min_rule":1,"nickname":"Bias lights","max_rule":255,"default_rule":255}},"sensors":{"sensor1":{"scheduled_rule":"enabled","enabled":true,"targets":["device10","device3","device4","device6","device9"],"nickname":"Door switch","condition_met":false,"default_rule":"enabled","current_rule":"enabled","schedule":{},"type":"switch"},"sensor2":{"humid":72.53317,"temp":72.07256,"units":"fahrenheit","scheduled_rule":72,"enabled":true,"targets":["device7","device8"],"nickname":"Temp sensor","condition_met":true,"default_rule":74,"current_rule":70,"schedule":{"morning":68,"relax":72},"type":"dht22"},"sensor3":{"humid":72.53317,"temp":22.26253,"units":"celsius","scheduled_rule":20,"enabled":true,"targets":["device2","device1"],"nickname":"Thermostat","condition_met":false,"default_rule":20,"current_rule":20,"schedule":{"morning":23,"sleep":20},"type":"si7021"},"sensor4":{"scheduled_rule":"enabled","enabled":true,"targets":["device4","device10","device6"],"nickname":"Computer activity","condition_met":false,"default_rule":"enabled","current_rule":"enabled","schedule":{"morning":"enabled","sleep":"disabled"},"type":"desktop"},"sensor5":{"scheduled_rule":10,"enabled":true,"targets":["device5","device3","device9"],"nickname":"Motion","condition_met":true,"default_rule":10,"current_rule":10,"schedule":{"morning":10,"sleep":1},"type":"pir"},"sensor6":{"scheduled_rule":"on","enabled":true,"targets":["device6"],"nickname":"Sunrise","condition_met":true,"default_rule":"on","current_rule":"on","schedule":{"sunrise":"on","sunset":"off"},"type":"dummy"}}}
+      {"metadata":{"next_reload":"3:46","ir_blaster":false,"location":"Bedroom","floor":2,"id":"Test Node","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{"device1":{"schedule":{},"scheduled_rule":"disabled","enabled":false,"turned_on":false,"nickname":"Humidifier","default_rule":"enabled","current_rule":"disabled","type":"mosfet"},"device2":{"current_rule":"enabled","enabled":true,"type":"http-get","turned_on":false,"schedule":{},"scheduled_rule":"enabled","nickname":"Heater","default_rule":"enabled"},"device3":{"current_rule":767,"enabled":true,"type":"pwm","turned_on":true,"schedule":{"morning":1023,"relax":"fade/512/1800","sleep":"disabled"},"scheduled_rule":1023,"min_rule":0,"nickname":"Accent lights","max_rule":1023,"default_rule":767},"device4":{"current_rule":"enabled","enabled":true,"type":"desktop","turned_on":false,"schedule":{"morning":"enabled","sleep":"disabled"},"scheduled_rule":"enabled","nickname":"Computer screen","default_rule":"enabled"},"device5":{"current_rule":"enabled","enabled":true,"type":"tasmota-relay","turned_on":false,"schedule":{},"scheduled_rule":"enabled","nickname":"Stairway lights","default_rule":"enabled"},"device6":{"current_rule":100,"enabled":true,"type":"dimmer","turned_on":true,"schedule":{"morning":"fade/100/900","relax":"fade/69/1800","sleep":"fade/37/900"},"scheduled_rule":100,"min_rule":1,"nickname":"Overhead lights","max_rule":100,"default_rule":100},"device7":{"current_rule":{"on":["ir_key","whynter_ac","start"],"off":["ir_key","whynter_ac","stop"]},"enabled":true,"type":"api-target","turned_on":true,"schedule":{},"scheduled_rule":{"on":["ir_key","whynter_ac","start"],"off":["ir_key","whynter_ac","stop"]},"nickname":"Air Conditioner","default_rule":{"on":["ir_key","whynter_ac","start"],"off":["ir_key","whynter_ac","stop"]}},"device8":{"current_rule":"disabled","enabled":false,"type":"dumb-relay","turned_on":true,"schedule":{},"scheduled_rule":"enabled","nickname":"Fan","default_rule":"enabled"},"device9":{"current_rule":"disabled","enabled":false,"type":"bulb","turned_on":true,"schedule":{"morning":"fade/100/900","relax":"fade/72/1800","sleep":"disabled"},"scheduled_rule":72,"min_rule":1,"nickname":"Lamp","max_rule":100,"default_rule":100},"device10":{"current_rule":"disabled","enabled":false,"type":"wled","turned_on":false,"schedule":{"morning":"fade/255/900","sleep":25,"relax":"fade/128/1800"},"scheduled_rule":"disabled","min_rule":1,"nickname":"Bias lights","max_rule":255,"default_rule":255}},"sensors":{"sensor1":{"scheduled_rule":"enabled","enabled":true,"targets":["device10","device3","device4","device6","device9"],"nickname":"Door switch","condition_met":false,"default_rule":"enabled","current_rule":"enabled","schedule":{},"type":"switch"},"sensor2":{"humid":72.53317,"temp":72.07256,"units":"fahrenheit","scheduled_rule":72,"enabled":true,"targets":["device7","device8"],"nickname":"Temp sensor","condition_met":true,"default_rule":74,"current_rule":70,"schedule":{"morning":68,"relax":72},"type":"dht22"},"sensor3":{"humid":72.53317,"temp":22.26253,"units":"celsius","scheduled_rule":20,"enabled":true,"targets":["device2","device1"],"nickname":"Thermostat","condition_met":false,"default_rule":20,"current_rule":20,"schedule":{"morning":23,"sleep":20},"type":"si7021"},"sensor4":{"scheduled_rule":"enabled","enabled":true,"targets":["device4","device10","device6"],"nickname":"Computer activity","condition_met":false,"default_rule":"enabled","current_rule":"enabled","schedule":{"morning":"enabled","sleep":"disabled"},"type":"desktop"},"sensor5":{"scheduled_rule":10,"enabled":true,"targets":["device5","device3","device9"],"nickname":"Motion","condition_met":true,"default_rule":10,"current_rule":10,"schedule":{"morning":10,"sleep":1},"type":"pir"},"sensor6":{"scheduled_rule":"on","enabled":true,"targets":["device6"],"nickname":"Sunrise","condition_met":true,"default_rule":"on","current_rule":"on","schedule":{"sunrise":"on","sunset":"off"},"type":"dummy"}}}
     </div>
     <div>
       <div
@@ -6630,12 +6630,12 @@ exports[`App matches snapshot when both IR remotes are configured 1`] = `
     <div
       id="api_target_options"
     >
-      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung","whynter"],"keys":{"samsung":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
+      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
     >
-      {"metadata":{"next_reload":"3:46","ir_blaster":true,"ir_targets":["samsung","whynter"],"location":"Bedroom","floor":2,"id":"Thermostat","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{},"sensors":{}}
+      {"metadata":{"next_reload":"3:46","ir_blaster":true,"ir_targets":["samsung_tv","whynter_ac"],"location":"Bedroom","floor":2,"id":"Thermostat","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{},"sensors":{}}
     </div>
     <div>
       <div
@@ -7407,12 +7407,12 @@ exports[`App matches snapshot when no devices, sensors, or ir_blaster configured
     <div
       id="api_target_options"
     >
-      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung","whynter"],"keys":{"samsung":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
+      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
     >
-      {"metadata":{"next_reload":"3:46","ir_blaster":false,"ir_targets":["samsung","whynter"],"location":"Bedroom","floor":2,"id":"Thermostat","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{},"sensors":{}}
+      {"metadata":{"next_reload":"3:46","ir_blaster":false,"ir_targets":["samsung_tv","whynter_ac"],"location":"Bedroom","floor":2,"id":"Thermostat","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{},"sensors":{}}
     </div>
     <div>
       <div
@@ -7614,7 +7614,7 @@ exports[`App matches snapshot when only AC remote is configured 1`] = `
     <div
       id="api_target_options"
     >
-      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung","whynter"],"keys":{"samsung":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
+      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
@@ -7667,50 +7667,6 @@ exports[`App matches snapshot when only AC remote is configured 1`] = `
             class="col-sm col"
             id="device-cards"
           >
-            <div
-              class="d-flex flex-column remote mx-auto mb-4"
-            >
-              <div
-                class="row text-center"
-              >
-                <h4
-                  class="my-2"
-                >
-                  AC Remote
-                </h4>
-              </div>
-              <div
-                class="d-flex flex-row my-2 mx-auto"
-              >
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Stop cooling"
-                  type="button"
-                >
-                  <i
-                    class="bi-wind"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Turn off fan"
-                  type="button"
-                >
-                  <i
-                    class="bi-x-octagon-fill"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Start cooling"
-                  type="button"
-                >
-                  <i
-                    class="bi-snow"
-                  />
-                </button>
-              </div>
-            </div>
             <div
               class="d-flex flex-column remote mx-auto mb-4"
               style="min-width: 60%;"
@@ -7813,50 +7769,6 @@ exports[`App matches snapshot when only AC remote is configured 1`] = `
           class="col-sm col"
           id="device-cards"
         >
-          <div
-            class="d-flex flex-column remote mx-auto mb-4"
-          >
-            <div
-              class="row text-center"
-            >
-              <h4
-                class="my-2"
-              >
-                AC Remote
-              </h4>
-            </div>
-            <div
-              class="d-flex flex-row my-2 mx-auto"
-            >
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Stop cooling"
-                type="button"
-              >
-                <i
-                  class="bi-wind"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Turn off fan"
-                type="button"
-              >
-                <i
-                  class="bi-x-octagon-fill"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Start cooling"
-                type="button"
-              >
-                <i
-                  class="bi-snow"
-                />
-              </button>
-            </div>
-          </div>
           <div
             class="d-flex flex-column remote mx-auto mb-4"
             style="min-width: 60%;"
@@ -7993,7 +7905,7 @@ exports[`App matches snapshot when only TV remote is configured 1`] = `
     <div
       id="api_target_options"
     >
-      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung","whynter"],"keys":{"samsung":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
+      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
@@ -8046,205 +7958,6 @@ exports[`App matches snapshot when only TV remote is configured 1`] = `
             class="col-sm col"
             id="device-cards"
           >
-            <div
-              class="d-flex flex-column remote mx-auto mb-4"
-            >
-              <div
-                class="row text-center"
-              >
-                <h4
-                  class="my-2"
-                >
-                  TV Remote
-                </h4>
-              </div>
-              <div
-                class="d-flex flex-row pb-3 mx-auto"
-              >
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Power"
-                  type="button"
-                >
-                  <i
-                    class="bi-power"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn btn btn-primary btn-lg"
-                  style="visibility: hidden;"
-                  type="button"
-                >
-                  <i
-                    class="bi-question"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Source"
-                  type="button"
-                >
-                  <i
-                    class="bi-upload"
-                  />
-                </button>
-              </div>
-              <div
-                class="d-flex flex-row mx-auto"
-              >
-                <button
-                  class="m-3 ir-btn btn btn-primary btn-lg"
-                  style="visibility: hidden;"
-                  type="button"
-                >
-                  <i
-                    class="bi-question"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Up"
-                  type="button"
-                >
-                  <i
-                    class="bi-arrow-up"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn btn btn-primary btn-lg"
-                  style="visibility: hidden;"
-                  type="button"
-                >
-                  <i
-                    class="bi-question"
-                  />
-                </button>
-              </div>
-              <div
-                class="d-flex flex-row mx-auto"
-              >
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Left"
-                  type="button"
-                >
-                  <i
-                    class="bi-arrow-left"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Enter"
-                  type="button"
-                >
-                  <i
-                    class="bi-app"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Right"
-                  type="button"
-                >
-                  <i
-                    class="bi-arrow-right"
-                  />
-                </button>
-              </div>
-              <div
-                class="d-flex flex-row pb-3 mx-auto"
-              >
-                <button
-                  class="m-3 ir-btn btn btn-primary btn-lg"
-                  style="visibility: hidden;"
-                  type="button"
-                >
-                  <i
-                    class="bi-question"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Down"
-                  type="button"
-                >
-                  <i
-                    class="bi-arrow-down"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn btn btn-primary btn-lg"
-                  style="visibility: hidden;"
-                  type="button"
-                >
-                  <i
-                    class="bi-question"
-                  />
-                </button>
-              </div>
-              <div
-                class="d-flex flex-row mx-auto"
-              >
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Volume Down"
-                  type="button"
-                >
-                  <i
-                    class="bi-volume-down-fill"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Mute"
-                  type="button"
-                >
-                  <i
-                    class="bi-volume-mute-fill"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn null btn btn-primary btn-lg"
-                  title="Volume Up"
-                  type="button"
-                >
-                  <i
-                    class="bi-volume-up-fill"
-                  />
-                </button>
-              </div>
-              <div
-                class="d-flex flex-row mx-auto"
-              >
-                <button
-                  class="m-3 ir-btn null btn btn-secondary btn-lg"
-                  title="Settings"
-                  type="button"
-                >
-                  <i
-                    class="bi-gear-fill"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn btn btn-primary btn-lg"
-                  style="visibility: hidden;"
-                  type="button"
-                >
-                  <i
-                    class="bi-question"
-                  />
-                </button>
-                <button
-                  class="m-3 ir-btn null btn btn-secondary btn-lg"
-                  title="Exit"
-                  type="button"
-                >
-                  <i
-                    class="bi-arrow-return-left"
-                  />
-                </button>
-              </div>
-            </div>
             <div
               class="d-flex flex-column remote mx-auto mb-4"
               style="min-width: 60%;"
@@ -8347,205 +8060,6 @@ exports[`App matches snapshot when only TV remote is configured 1`] = `
           class="col-sm col"
           id="device-cards"
         >
-          <div
-            class="d-flex flex-column remote mx-auto mb-4"
-          >
-            <div
-              class="row text-center"
-            >
-              <h4
-                class="my-2"
-              >
-                TV Remote
-              </h4>
-            </div>
-            <div
-              class="d-flex flex-row pb-3 mx-auto"
-            >
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Power"
-                type="button"
-              >
-                <i
-                  class="bi-power"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn btn btn-primary btn-lg"
-                style="visibility: hidden;"
-                type="button"
-              >
-                <i
-                  class="bi-question"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Source"
-                type="button"
-              >
-                <i
-                  class="bi-upload"
-                />
-              </button>
-            </div>
-            <div
-              class="d-flex flex-row mx-auto"
-            >
-              <button
-                class="m-3 ir-btn btn btn-primary btn-lg"
-                style="visibility: hidden;"
-                type="button"
-              >
-                <i
-                  class="bi-question"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Up"
-                type="button"
-              >
-                <i
-                  class="bi-arrow-up"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn btn btn-primary btn-lg"
-                style="visibility: hidden;"
-                type="button"
-              >
-                <i
-                  class="bi-question"
-                />
-              </button>
-            </div>
-            <div
-              class="d-flex flex-row mx-auto"
-            >
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Left"
-                type="button"
-              >
-                <i
-                  class="bi-arrow-left"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Enter"
-                type="button"
-              >
-                <i
-                  class="bi-app"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Right"
-                type="button"
-              >
-                <i
-                  class="bi-arrow-right"
-                />
-              </button>
-            </div>
-            <div
-              class="d-flex flex-row pb-3 mx-auto"
-            >
-              <button
-                class="m-3 ir-btn btn btn-primary btn-lg"
-                style="visibility: hidden;"
-                type="button"
-              >
-                <i
-                  class="bi-question"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Down"
-                type="button"
-              >
-                <i
-                  class="bi-arrow-down"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn btn btn-primary btn-lg"
-                style="visibility: hidden;"
-                type="button"
-              >
-                <i
-                  class="bi-question"
-                />
-              </button>
-            </div>
-            <div
-              class="d-flex flex-row mx-auto"
-            >
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Volume Down"
-                type="button"
-              >
-                <i
-                  class="bi-volume-down-fill"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Mute"
-                type="button"
-              >
-                <i
-                  class="bi-volume-mute-fill"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn null btn btn-primary btn-lg"
-                title="Volume Up"
-                type="button"
-              >
-                <i
-                  class="bi-volume-up-fill"
-                />
-              </button>
-            </div>
-            <div
-              class="d-flex flex-row mx-auto"
-            >
-              <button
-                class="m-3 ir-btn null btn btn-secondary btn-lg"
-                title="Settings"
-                type="button"
-              >
-                <i
-                  class="bi-gear-fill"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn btn btn-primary btn-lg"
-                style="visibility: hidden;"
-                type="button"
-              >
-                <i
-                  class="bi-question"
-                />
-              </button>
-              <button
-                class="m-3 ir-btn null btn btn-secondary btn-lg"
-                title="Exit"
-                type="button"
-              >
-                <i
-                  class="bi-arrow-return-left"
-                />
-              </button>
-            </div>
-          </div>
           <div
             class="d-flex flex-column remote mx-auto mb-4"
             style="min-width: 60%;"

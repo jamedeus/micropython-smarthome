@@ -95,12 +95,12 @@ export const mockContext = {
                 "current_rule": {
                     "on": [
                         "ir_key",
-                        "whynter",
+                        "whynter_ac",
                         "start"
                     ],
                     "off": [
                         "ir_key",
-                        "whynter",
+                        "whynter_ac",
                         "stop"
                     ]
                 },
@@ -111,12 +111,12 @@ export const mockContext = {
                 "scheduled_rule": {
                     "on": [
                         "ir_key",
-                        "whynter",
+                        "whynter_ac",
                         "start"
                     ],
                     "off": [
                         "ir_key",
-                        "whynter",
+                        "whynter_ac",
                         "stop"
                     ]
                 },
@@ -124,12 +124,12 @@ export const mockContext = {
                 "default_rule": {
                     "on": [
                         "ir_key",
-                        "whynter",
+                        "whynter_ac",
                         "start"
                     ],
                     "off": [
                         "ir_key",
-                        "whynter",
+                        "whynter_ac",
                         "stop"
                     ]
                 }
@@ -321,11 +321,11 @@ export const mockContext = {
             "ir_key": {
                 "display": "Ir Blaster",
                 "options": [
-                    "samsung",
-                    "whynter"
+                    "samsung_tv",
+                    "whynter_ac"
                 ],
                 "keys": {
-                    "samsung": [
+                    "samsung_tv": [
                         "power",
                         "vol_up",
                         "vol_down",
@@ -339,7 +339,7 @@ export const mockContext = {
                         "exit",
                         "source"
                     ],
-                    "whynter": [
+                    "whynter_ac": [
                         "start",
                         "stop",
                         "off"
@@ -372,8 +372,8 @@ export const mockContextIrRemotes = {
             "next_reload": "3:46",
             "ir_blaster": true,
             "ir_targets": [
-                "samsung",
-                "whynter"
+                "samsung_tv",
+                "whynter_ac"
             ],
             "location": "Bedroom",
             "floor": 2,
@@ -393,21 +393,21 @@ export const mockContextIrRemotes = {
     "recording": false,
     "ir_macros": {
         "backlight_off": [
-            "samsung settings 1500 1",
-            "samsung right 500 1",
-            "samsung down 500 1",
-            "samsung enter 150 1",
-            "samsung left 150 14",
-            "samsung exit 1 1"
+            "samsung_tv settings 1500 1",
+            "samsung_tv right 500 1",
+            "samsung_tv down 500 1",
+            "samsung_tv enter 150 1",
+            "samsung_tv left 150 14",
+            "samsung_tv exit 1 1"
         ],
         "backlight_on": [
-            "samsung settings 1500 1",
-            "samsung right 500 1",
-            "samsung down 500 1",
-            "samsung enter 150 1",
-            "samsung right 150 14",
-            "samsung exit 1 1",
-            "samsung mute 100 1"
+            "samsung_tv settings 1500 1",
+            "samsung_tv right 500 1",
+            "samsung_tv down 500 1",
+            "samsung_tv enter 150 1",
+            "samsung_tv right 150 14",
+            "samsung_tv exit 1 1",
+            "samsung_tv mute 100 1"
         ]
     }
 };
@@ -418,8 +418,8 @@ export const mockContextNoDevicesOrSensors = {
             "next_reload": "3:46",
             "ir_blaster": false,
             "ir_targets": [
-                "samsung",
-                "whynter"
+                "samsung_tv",
+                "whynter_ac"
             ],
             "location": "Bedroom",
             "floor": 2,

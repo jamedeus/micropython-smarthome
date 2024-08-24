@@ -10,7 +10,7 @@ class TestIrBlaster(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = IrBlaster("4", ["samsung", "whynter"])
+        cls.instance = IrBlaster("4", ["samsung_tv", "whynter_ac"])
 
         try:
             os.remove('ir_macros.json')
@@ -28,24 +28,24 @@ class TestIrBlaster(unittest.TestCase):
         self.assertIsInstance(self.instance, IrBlaster)
         self.assertIsInstance(self.instance.ir, Player)
         self.assertEqual(len(self.instance.codes), 2)
-        self.assertEqual(len(self.instance.codes['whynter']), 10)
-        self.assertEqual(len(self.instance.codes['samsung']), 12)
+        self.assertEqual(len(self.instance.codes['whynter_ac']), 10)
+        self.assertEqual(len(self.instance.codes['samsung_tv']), 12)
 
     def test_02_send_valid(self):
         # Test keys that exist
-        self.assertTrue(self.instance.send("samsung", "power"))
-        self.assertTrue(self.instance.send("samsung", "vol_down"))
-        self.assertTrue(self.instance.send("samsung", "vol_up"))
-        self.assertTrue(self.instance.send("whynter", "OFF"))
-        self.assertTrue(self.instance.send("whynter", "ON"))
+        self.assertTrue(self.instance.send("samsung_tv", "power"))
+        self.assertTrue(self.instance.send("samsung_tv", "vol_down"))
+        self.assertTrue(self.instance.send("samsung_tv", "vol_up"))
+        self.assertTrue(self.instance.send("whynter_ac", "OFF"))
+        self.assertTrue(self.instance.send("whynter_ac", "ON"))
 
     def test_03_send_invalid(self):
         # Test keys that don't exist
-        self.assertFalse(self.instance.send("samsung", "on"))
-        self.assertFalse(self.instance.send("samsung", "vol_mute"))
-        self.assertFalse(self.instance.send("whynter", "cool"))
-        self.assertFalse(self.instance.send("whynter", "hot"))
-        self.assertFalse(self.instance.send("whynter", 2))
+        self.assertFalse(self.instance.send("samsung_tv", "on"))
+        self.assertFalse(self.instance.send("samsung_tv", "vol_mute"))
+        self.assertFalse(self.instance.send("whynter_ac", "cool"))
+        self.assertFalse(self.instance.send("whynter_ac", "hot"))
+        self.assertFalse(self.instance.send("whynter_ac", 2))
         self.assertFalse(self.instance.send(5, "foo"))
 
     def test_04_create_macro(self):
@@ -72,18 +72,18 @@ class TestIrBlaster(unittest.TestCase):
         self.assertEqual(self.instance.macros['test1'], [])
 
         # Add action, omit optional args, confirm added with correct defaults
-        self.instance.add_macro_action('test1', 'samsung', 'power')
-        self.assertEqual(self.instance.macros['test1'][0], ('samsung', 'power', 0, 1))
+        self.instance.add_macro_action('test1', 'samsung_tv', 'power')
+        self.assertEqual(self.instance.macros['test1'][0], ('samsung_tv', 'power', 0, 1))
 
         # Add action with option args, confirm added correctly
-        self.instance.add_macro_action('test1', 'samsung', 'vol_up', 50, 3)
-        self.assertEqual(self.instance.macros['test1'][1], ('samsung', 'vol_up', 50, 3))
+        self.instance.add_macro_action('test1', 'samsung_tv', 'vol_up', 50, 3)
+        self.assertEqual(self.instance.macros['test1'][1], ('samsung_tv', 'vol_up', 50, 3))
 
     def test_07_add_macro_action_errors(self):
         self.assertEqual(len(self.instance.macros['test1']), 2)
         # Confirm exception raised when trying to add to non-existing macro
         with self.assertRaises(ValueError):
-            self.instance.add_macro_action('test99', 'samsung', 'power')
+            self.instance.add_macro_action('test99', 'samsung_tv', 'power')
 
         # Confirm exception raised when adding action with invalid target
         with self.assertRaises(ValueError):
@@ -91,15 +91,15 @@ class TestIrBlaster(unittest.TestCase):
 
         # Confirm exception raised when adding action with invalid key
         with self.assertRaises(ValueError):
-            self.instance.add_macro_action('test1', 'samsung', 'fake')
+            self.instance.add_macro_action('test1', 'samsung_tv', 'fake')
 
         # Confirm exception raised if delay arg is not integer
         with self.assertRaises(ValueError):
-            self.instance.add_macro_action('test1', 'samsung', 'power', 'short')
+            self.instance.add_macro_action('test1', 'samsung_tv', 'power', 'short')
 
         # Confirm exception raised if repeat arg is not integer
         with self.assertRaises(ValueError):
-            self.instance.add_macro_action('test1', 'samsung', 'power', '150', 'yes')
+            self.instance.add_macro_action('test1', 'samsung_tv', 'power', '150', 'yes')
 
         # Confirm no actions added
         self.assertEqual(len(self.instance.macros['test1']), 2)
@@ -140,7 +140,7 @@ class TestIrBlaster(unittest.TestCase):
     def test_13_instantiate_with_invalid_targets(self):
         # Confirm ValueError raised when instantiated with invalid targets
         with self.assertRaises(ValueError):
-            IrBlaster("4", ["samsung", "invalid"])
+            IrBlaster("4", ["samsung_tv", "invalid"])
 
     # Original bug: run_macro method did not cast delay and repeats
     # params to int, resulting in uncaught exception if params were
@@ -148,7 +148,7 @@ class TestIrBlaster(unittest.TestCase):
     def test_14_regression_string_delay_and_repeat(self):
         # Add macro with string ints for delay and repeat
         self.instance.macros['regression_test'] = [
-            ('samsung', 'power', '5', '1')
+            ('samsung_tv', 'power', '5', '1')
         ]
         # Run macro, should not raise exception
         self.instance.run_macro('regression_test')
