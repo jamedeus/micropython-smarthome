@@ -7,7 +7,7 @@ Address, start pulse, and end pulse are added automatically.
 Hex codes can be recorded from any remote using LIRC + IR receiver on a raspberry pi.
 Record each key and pass the hex code to this script as an argument.
 
-See lib/samsung-codes.json for example output.
+See lib/ir_codes/samsung_tv_ir_codes.py for example output.
 
 Usage: To convert the code 0x40BF:
 ./convert-ir-codes.py 40 BF
