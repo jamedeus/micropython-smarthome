@@ -28,7 +28,7 @@ class TestIrBlaster(unittest.TestCase):
         self.assertIsInstance(self.instance, IrBlaster)
         self.assertIsInstance(self.instance.ir, Player)
         self.assertEqual(len(self.instance.codes), 2)
-        self.assertEqual(len(self.instance.codes['whynter_ac']), 10)
+        self.assertEqual(len(self.instance.codes['whynter_ac']), 3)
         self.assertEqual(len(self.instance.codes['samsung_tv']), 12)
 
     def test_02_send_valid(self):
@@ -37,7 +37,7 @@ class TestIrBlaster(unittest.TestCase):
         self.assertTrue(self.instance.send("samsung_tv", "vol_down"))
         self.assertTrue(self.instance.send("samsung_tv", "vol_up"))
         self.assertTrue(self.instance.send("whynter_ac", "OFF"))
-        self.assertTrue(self.instance.send("whynter_ac", "ON"))
+        self.assertTrue(self.instance.send("whynter_ac", "start"))
 
     def test_03_send_invalid(self):
         # Test keys that don't exist

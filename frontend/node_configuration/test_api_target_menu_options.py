@@ -119,13 +119,6 @@ class ApiTargetMenuOptionsTest(TestCase):
                     "keys": {
                         "whynter_ac": [
                             'off',
-                            'on',
-                            'up',
-                            'down',
-                            'fan',
-                            'timer',
-                            'units',
-                            'mode',
                             'stop',
                             'start'
                         ]
@@ -311,13 +304,6 @@ class ApiTargetMenuOptionsTest(TestCase):
                     "keys": {
                         "whynter_ac": [
                             'off',
-                            'on',
-                            'up',
-                            'down',
-                            'fan',
-                            'timer',
-                            'units',
-                            'mode',
                             'stop',
                             'start'
                         ]
@@ -465,13 +451,6 @@ class ApiTargetMenuOptionsTest(TestCase):
                     "keys": {
                         "whynter_ac": [
                             'off',
-                            'on',
-                            'up',
-                            'down',
-                            'fan',
-                            'timer',
-                            'units',
-                            'mode',
                             'stop',
                             'start'
                         ]
@@ -564,13 +543,6 @@ class ApiTargetMenuOptionsTest(TestCase):
                         ],
                         "whynter_ac": [
                             'off',
-                            'on',
-                            'up',
-                            'down',
-                            'fan',
-                            'timer',
-                            'units',
-                            'mode',
                             'stop',
                             'start'
                         ]
@@ -638,13 +610,6 @@ class ApiTargetMenuOptionsTest(TestCase):
                 "keys": {
                     "whynter_ac": [
                         'off',
-                        'on',
-                        'up',
-                        'down',
-                        'fan',
-                        'timer',
-                        'units',
-                        'mode',
                         'stop',
                         'start'
                     ]

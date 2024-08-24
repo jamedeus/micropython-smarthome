@@ -667,13 +667,6 @@ test_config_1_edit_context = {
                 "keys": {
                     "whynter_ac": [
                         "off",
-                        "on",
-                        "up",
-                        "down",
-                        "fan",
-                        "timer",
-                        "units",
-                        "mode",
                         "stop",
                         "start"
                     ]
@@ -874,13 +867,6 @@ test_config_2_edit_context = {
                 "keys": {
                     "whynter_ac": [
                         "off",
-                        "on",
-                        "up",
-                        "down",
-                        "fan",
-                        "timer",
-                        "units",
-                        "mode",
                         "stop",
                         "start"
                     ]
@@ -1244,13 +1230,6 @@ test_config_3_edit_context = {
                 "keys": {
                     "whynter_ac": [
                         "off",
-                        "on",
-                        "up",
-                        "down",
-                        "fan",
-                        "timer",
-                        "units",
-                        "mode",
                         "stop",
                         "start"
                     ]

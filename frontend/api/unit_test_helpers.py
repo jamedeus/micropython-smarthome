@@ -360,13 +360,6 @@ config2_api_target_options = {
             "keys": {
                 "whynter_ac": [
                     "off",
-                    "on",
-                    "up",
-                    "down",
-                    "fan",
-                    "timer",
-                    "units",
-                    "mode",
                     "stop",
                     "start"
                 ]
