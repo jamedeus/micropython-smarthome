@@ -108,7 +108,7 @@ class TestMotionSensor(unittest.TestCase):
         SoftwareTimer.timer.cancel(self.instance.name)
         # Call method triggered by hware interrupt
         self.instance.motion_detected()
-        # Queue should NOT contain entry for motion sensor
+        # Queue should NOT contain entry for motion sensor (rule is None)
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
     def test_07_trigger(self):

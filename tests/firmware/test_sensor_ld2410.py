@@ -3,6 +3,7 @@ from machine import Pin
 import SoftwareTimer
 from Group import Group
 from Ld2410 import Ld2410
+from cpython_only import cpython_only
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
@@ -109,7 +110,7 @@ class TestLd2410Sensor(unittest.TestCase):
         SoftwareTimer.timer.cancel(self.instance.name)
         # Simulate sensor triggered by hware interrupt
         self.instance.trigger()
-        # Queue should NOT contain entry for motion sensor
+        # Queue should NOT contain entry for motion sensor (rule is None)
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
     def test_07_trigger(self):
@@ -171,3 +172,25 @@ class TestLd2410Sensor(unittest.TestCase):
 
         with self.assertRaises(AttributeError):
             Ld2410("sensor1", "sensor1", "pir", "enabled", [], 15)
+
+    @cpython_only
+    def test_12_reset_timer_motion_still_detected(self):
+        # Set rule to 5, confirm no reset timer running
+        self.instance.current_rule = 5
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+
+        # Simulate sensor detecting motion
+        self.instance.sensor.pin_state = 1
+        self.instance.motion = True
+
+        # Simulate reset timer expiring while still detecting motion (only
+        # happens if detected for whole duration, otherwise resets each time
+        # motion stops and restarts and reset_timer is never called)
+        self.instance.reset_timer()
+
+        # Confirm reset timer was restarted when old timer expired (prevent
+        # getting stuck ON if timer expires before motion stops)
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+
+        # Confirm motion is still True
+        self.assertTrue(self.instance.motion)

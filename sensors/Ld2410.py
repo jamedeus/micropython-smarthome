@@ -130,8 +130,11 @@ class Ld2410(Sensor):
             # Check conditions of all sensors in group
             self.refresh_group()
 
-        # Restart timer if still detecting motion
-        self.start_reset_timer()
+        # Restart timer if still detecting motion (prevents getting stuck ON if
+        # motion continuously detected for whole timer duration - if it stopped
+        # detecting and restarted the timer would have been reset before this).
+        else:
+            self.start_reset_timer()
 
     # Allow API commands to simulate the sensor being triggered
     def trigger(self):
