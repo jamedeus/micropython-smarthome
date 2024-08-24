@@ -20,7 +20,7 @@ Example:
 ```
 * This config will import `whynter_ac_ir_codes.py` and `samsung_tv_ir_codes.py`
 
-Each module contains a single variable `codes` containing a dict with names of IR keys/functions as keys and lists of pulse/space timings as values. Note that these are the literal pulse/space durations in microseconds, not hex codes (this reduces latency since codes do not have to be converted at runtime by the ESP32). In many cases hex codes for a device can be found online and converted to pulse/space durations using the included [convert-ir-codes.py](CLI/convert-ir-codes.py) script. Codes can also be recorded with LIRC on a device like a raspberry pi.
+Each module contains a single variable `codes` containing a dict with names of IR keys/functions as keys and lists of pulse/space timings as values. Note that these are the literal pulse/space durations in microseconds, not hex codes (this reduces latency since codes do not have to be converted at runtime by the ESP32). In many cases hex codes for a device can be found online and converted to pulse/space durations using the included [convert_ir_codes.py](CLI/convert_ir_codes.py) script (may need to change the address constant). Codes can also be recorded with LIRC on a device like a raspberry pi.
 
 The ESP32 `ir_key` API endpoint takes a target name (eg `samsung_tv`) as the first argument and the name of one of the target's keys (eg `vol_up`) as the second argument. When a file is added to this directory and the firmware is rebuilt the filename (without `_ir_codes.py`) automatically becomes a valid target argument, and all keys in the dict become valid key arguments.
 

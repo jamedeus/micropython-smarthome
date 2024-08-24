@@ -10,7 +10,7 @@ Record each key and pass the hex code to this script as an argument.
 See lib/ir_codes/samsung_tv_ir_codes.py for example output.
 
 Usage: To convert the code 0x40BF:
-./convert-ir-codes.py 40 BF
+./convert_ir_codes.py 40 BF
 
 Output:
 [4500, 4500, 547, 1687, 547, 1687, 547, 1687, 547, 567, 547, 567, 547, 567,
@@ -22,18 +22,11 @@ Output:
 
 from sys import argv
 
-# Samsung hex address
-address = 0xe0
 
-# Hex code, inverse hex code
-code = int("0x" + argv[1], 16)
-inverse_code = int("0x" + argv[2], 16)
-
-
-def convert(code):
+def convert_hex_to_pulse(code):
     '''Takes hex int as arg, returns list of pulse lengths (microseconds)'''
 
-    if not type(code) == int:
+    if not isinstance(code, int):
         print(f"ERROR: Must be int, received {type(code)}")
         return False
 
@@ -55,23 +48,40 @@ def convert(code):
     return pulses
 
 
-# Create array with starting pulse/space (4.5ms each)
-result = [4500, 4500]
+def main():
+    '''Reads pair of hex ints from CLI arguments, converts to list of
+    pulse/space durations (microseconds), prints to console and returns.
+    '''
 
-# Convert address
-adr = convert(address)
+    # Samsung hex address
+    address = 0xe0
 
-# Address is sent twice (first 2 bytes)
-result.extend(adr)
-result.extend(adr)
+    # Hex code, inverse hex code
+    code = int("0x" + argv[1], 16)
+    inverse_code = int("0x" + argv[2], 16)
 
-# Add command (3rd byte)
-result.extend(convert(code))
+    # Create array with starting pulse/space (4.5ms each)
+    result = [4500, 4500]
 
-# Add inverse command (4th byte)
-result.extend(convert(inverse_code))
+    # Convert address
+    adr = convert_hex_to_pulse(address)
 
-# Add end pulse
-result.append(545)
+    # Address is sent twice (first 2 bytes)
+    result.extend(adr)
+    result.extend(adr)
 
-print(result)
+    # Add command (3rd byte)
+    result.extend(convert_hex_to_pulse(code))
+
+    # Add inverse command (4th byte)
+    result.extend(convert_hex_to_pulse(inverse_code))
+
+    # Add end pulse
+    result.append(545)
+
+    print(result)
+    return result
+
+
+if __name__ == '__main__':
+    main()
