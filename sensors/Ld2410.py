@@ -86,21 +86,30 @@ class Ld2410(Sensor):
         return self.set_rule(new)
 
     # Interrupt routine, called when pin value changes (rising or falling)
-    def motion_detected(self, pin=""):
-        self.motion = bool(self.sensor.value())
-        print(f"{self.name}: Sensor state changed to {self.motion}")
-        log.debug(f"{self.name}: Sensor state changed to {self.motion}")
+    def pin_interrupt(self, pin=""):
+        # Turn targets on and start reset timer if motion detected
+        if self.sensor.value():
+            self.motion_detected()
 
-        # Start reset timer if motion detected
-        if self.motion:
-            self.start_reset_timer()
-
-        # Refresh group if motion was detected OR if reset timer is disabled
-        # When reset timer is enabled devices should not turn off until timer
-        # expires (ignore falling interrupt), but when timer is not being used
-        # this interrupt handles both on and off
-        if self.motion or self.current_rule == 0:
+        # Turn off targets if motion not detected and reset timer is disabled
+        # (otherwise leave targets on until reset timer expires)
+        elif self.current_rule == 0:
+            self.motion = False
             self.refresh_group()
+
+    # Called when sensor is activated (pin HIGH or trigger called)
+    def motion_detected(self, pin=""):
+        # Set motion attribute if not already set
+        if not self.motion:
+            self.motion = True
+            self.print("Motion detected")
+            log.debug(f"{self.name}: Motion detected")
+
+        # Start reset timer (or restart if sensor retriggered)
+        self.start_reset_timer()
+
+        # Check conditions of all sensors in group
+        self.refresh_group()
 
     # Called when motion is detected or rule changes, starts timer to reset
     # motion attribute and refresh group in <current_rule> minutes
@@ -138,9 +147,5 @@ class Ld2410(Sensor):
 
     # Allow API commands to simulate the sensor being triggered
     def trigger(self):
-        self.motion = True
-        print(f"{self.name}: Sensor state changed to {self.motion}")
-        log.debug(f"{self.name}: Sensor state changed to {self.motion}")
-        self.start_reset_timer()
-        self.refresh_group()
+        self.motion_detected()
         return True

@@ -174,7 +174,60 @@ class TestLd2410Sensor(unittest.TestCase):
             Ld2410("sensor1", "sensor1", "pir", "enabled", [], 15)
 
     @cpython_only
-    def test_12_reset_timer_motion_still_detected(self):
+    def test_12_pin_interrupt_with_reset_timer(self):
+        # Set rule to 5, motion False, targets off, stop reset timer
+        self.instance.current_rule = 5
+        self.instance.motion = False
+        self.group.refresh_called = False
+        SoftwareTimer.timer.cancel(self.instance.name)
+
+        # Simulate interrupt triggered by rising pin
+        self.instance.sensor.pin_state = 1
+        self.instance.pin_interrupt()
+
+        # Confirm motion detected, targets turned on, reset timer running
+        self.assertTrue(self.instance.motion)
+        self.assertTrue(self.group.refresh_called)
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+
+        # Simulate interrupt triggered by falling pin
+        self.instance.sensor.pin_state = 0
+        self.instance.pin_interrupt()
+
+        # Confirm nothing changed (targets stay on until reset timer expires)
+        self.assertTrue(self.instance.motion)
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.group.refresh_called)
+
+    @cpython_only
+    def test_13_pin_interrupt_no_reset_timer(self):
+        # Set rule to 0 (disable reset timer)
+        self.instance.current_rule = 0
+        # Set motion False, targets off, stop reset timer
+        self.instance.motion = False
+        self.group.refresh_called = False
+        SoftwareTimer.timer.cancel(self.instance.name)
+
+        # Simulate interrupt triggered by rising pin
+        self.instance.sensor.pin_state = 1
+        self.instance.pin_interrupt()
+
+        # Confirm motion detected, targets turned on, reset timer NOT running
+        self.assertTrue(self.instance.motion)
+        self.assertTrue(self.group.refresh_called)
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+
+        # Simulate interrupt triggered by falling pin
+        self.group.refresh_called = False
+        self.instance.sensor.pin_state = 0
+        self.instance.pin_interrupt()
+
+        # Confirm motion not detected, targets turned off
+        self.assertFalse(self.instance.motion)
+        self.assertTrue(self.group.refresh_called)
+
+    @cpython_only
+    def test_14_reset_timer_motion_still_detected(self):
         # Set rule to 5, confirm no reset timer running
         self.instance.current_rule = 5
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
