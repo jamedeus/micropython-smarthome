@@ -31,7 +31,7 @@ class MotionSensor(Sensor):
         super().enable()
 
         # Create hardware interrupt (both rising and falling)
-        self.sensor.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.motion_detected)
+        self.sensor.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.pin_interrupt)
 
     def disable(self):
         super().disable()
