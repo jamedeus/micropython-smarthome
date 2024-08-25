@@ -23,15 +23,15 @@ class MotionSensor(Sensor):
         # Create hardware interrupt
         self.enable()
 
-        log.info(f"Instantiated MotionSensor named {self.name} on pin {pin}")
+        log.info(f"Instantiated MotionSensor (type={self._type}) named {self.name} on pin {pin}")
 
     def enable(self):
         self.motion = False
 
         super().enable()
 
-        # Create hardware interrupt
-        self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
+        # Create hardware interrupt (both rising and falling)
+        self.sensor.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.motion_detected)
 
     def disable(self):
         super().disable()
@@ -85,14 +85,27 @@ class MotionSensor(Sensor):
 
         return self.set_rule(new)
 
-    # Interrupt routine, called when motion sensor triggered
-    def motion_detected(self, pin=""):
+    # Interrupt routine, called when pin value changes (rising or falling)
+    def pin_interrupt(self, pin=""):
+        # Turn targets on and start reset timer if motion detected
+        if self.sensor.value():
+            self.motion_detected()
+
+        # Turn off targets if motion not detected and reset timer is disabled
+        # (otherwise leave targets on until reset timer expires)
+        elif self.current_rule == 0:
+            self.motion = False
+            self.refresh_group()
+
+    # Called when sensor is activated (pin HIGH or trigger called)
+    def motion_detected(self):
+        # Set motion attribute if not already set
         if not self.motion:
+            self.motion = True
             self.print("Motion detected")
             log.debug(f"{self.name}: Motion detected")
 
-        # Set motion attribute, start reset timer
-        self.motion = True
+        # Start reset timer (or restart if sensor retriggered)
         self.start_reset_timer()
 
         # Check conditions of all sensors in group
@@ -117,11 +130,20 @@ class MotionSensor(Sensor):
     # Called when reset timer expires
     def reset_timer(self, timer=None):
         log.info(f"{self.name}: reset_timer interrupt")
-        # Reset motion, causes main loop to fade lights off
-        self.motion = False
 
-        # Check conditions of all sensors in group
-        self.refresh_group()
+        # Only reset if sensor not detecting motion
+        if not self.sensor.value():
+            # Reset motion, causes main loop to fade lights off
+            self.motion = False
+
+            # Check conditions of all sensors in group
+            self.refresh_group()
+
+        # Restart timer if still detecting motion (prevents getting stuck ON if
+        # motion continuously detected for whole timer duration - if it stopped
+        # detecting and restarted the timer would have been reset before this).
+        else:
+            self.start_reset_timer()
 
     # Allow API commands to simulate the sensor being triggered
     def trigger(self):

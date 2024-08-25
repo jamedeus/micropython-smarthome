@@ -3,6 +3,7 @@ from machine import Pin
 import SoftwareTimer
 from Group import Group
 from MotionSensor import MotionSensor
+from cpython_only import cpython_only
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
@@ -32,7 +33,7 @@ class MockGroup(Group):
         super().refresh()
 
 
-class TestMotionSensor(unittest.TestCase):
+class TestMotionSensorSensor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -69,6 +70,7 @@ class TestMotionSensor(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator([10]))
         self.assertFalse(self.instance.rule_validator({5: 5}))
         self.assertFalse(self.instance.rule_validator("None"))
+        self.assertFalse(self.instance.rule_validator("NaN"))
 
     def test_05_enable_disable(self):
         # Disable, confirm disabled
@@ -86,8 +88,8 @@ class TestMotionSensor(unittest.TestCase):
         self.instance.set_rule(1)
         self.group.refresh_called = False
 
-        # Call method triggered by hware interrupt
-        self.instance.motion_detected()
+        # Simulate sensor triggered by hware interrupt
+        self.instance.trigger()
         # SoftwareTimer queue should now contain entry containing sensor's name attribute
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
         # Motion attribute should be True
@@ -106,8 +108,8 @@ class TestMotionSensor(unittest.TestCase):
         # Set rule to None, cancel previous timer to avoid false positive
         self.instance.set_rule(None)
         SoftwareTimer.timer.cancel(self.instance.name)
-        # Call method triggered by hware interrupt
-        self.instance.motion_detected()
+        # Simulate sensor triggered by hware interrupt
+        self.instance.trigger()
         # Queue should NOT contain entry for motion sensor (rule is None)
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
@@ -159,20 +161,95 @@ class TestMotionSensor(unittest.TestCase):
         self.assertEqual(self.instance.current_rule, 'disabled')
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
-    # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
-    # in various situations. These classes now raise exception in init method to prevent this.
-    # It should no longer be possible to instantiate with invalid default_rule.
-    def test_11_regression_invalid_default_rule(self):
+    @cpython_only
+    def test_11_pin_interrupt_with_reset_timer(self):
+        # Set rule to 5, motion False, targets off, stop reset timer
+        self.instance.current_rule = 5
+        self.instance.motion = False
+        self.group.refresh_called = False
+        SoftwareTimer.timer.cancel(self.instance.name)
+
+        # Simulate interrupt triggered by rising pin
+        self.instance.sensor.pin_state = 1
+        self.instance.pin_interrupt()
+
+        # Confirm motion detected, targets turned on, reset timer running
+        self.assertTrue(self.instance.motion)
+        self.assertTrue(self.group.refresh_called)
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+
+        # Simulate interrupt triggered by falling pin
+        self.instance.sensor.pin_state = 0
+        self.instance.pin_interrupt()
+
+        # Confirm nothing changed (targets stay on until reset timer expires)
+        self.assertTrue(self.instance.motion)
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.group.refresh_called)
+
+    @cpython_only
+    def test_12_pin_interrupt_no_reset_timer(self):
+        # Set rule to 0 (disable reset timer)
+        self.instance.current_rule = 0
+        # Set motion False, targets off, stop reset timer
+        self.instance.motion = False
+        self.group.refresh_called = False
+        SoftwareTimer.timer.cancel(self.instance.name)
+
+        # Simulate interrupt triggered by rising pin
+        self.instance.sensor.pin_state = 1
+        self.instance.pin_interrupt()
+
+        # Confirm motion detected, targets turned on, reset timer NOT running
+        self.assertTrue(self.instance.motion)
+        self.assertTrue(self.group.refresh_called)
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+
+        # Simulate interrupt triggered by falling pin
+        self.group.refresh_called = False
+        self.instance.sensor.pin_state = 0
+        self.instance.pin_interrupt()
+
+        # Confirm motion not detected, targets turned off
+        self.assertFalse(self.instance.motion)
+        self.assertTrue(self.group.refresh_called)
+
+    @cpython_only
+    def test_13_reset_timer_motion_still_detected(self):
+        # Set rule to 5, confirm no reset timer running
+        self.instance.current_rule = 5
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+
+        # Simulate sensor detecting motion
+        self.instance.sensor.pin_state = 1
+        self.instance.motion = True
+
+        # Simulate reset timer expiring while still detecting motion (only
+        # happens if detected for whole duration, otherwise resets each time
+        # motion stops and restarts and reset_timer is never called)
+        self.instance.reset_timer()
+
+        # Confirm reset timer was restarted when old timer expired (prevent
+        # getting stuck ON if timer expires before motion stops)
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+
+        # Confirm motion is still True
+        self.assertTrue(self.instance.motion)
+
+    # Original bug: Some sensors crashed or behaved unexpectedly if default_rule
+    # was "enabled" or "disabled". Init method now raises exception to prevent
+    # this, should not be possible to instantiate with invalid default_rule.
+    def test_14_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
             MotionSensor("sensor1", "sensor1", "pir", "disabled", [], 15)
 
         with self.assertRaises(AttributeError):
-            MotionSensor("sensor1", "sensor1", "pir", "enabled", [], 15)
+            MotionSensor("sensor1", "sensor1", "ld2410", "enabled", [], 15)
 
-    # Original bug: increment_rule cast argument to float inside try/except, relying
-    # on exception to detect invalid argument. Since NaN is a valid float no exception
-    # was raised and rule changed to NaN, leading to exception when motion detected.
-    def test_12_regression_increment_by_nan(self):
+    # Original bug: increment_rule cast argument to float and relied on try/except
+    # to detect invalid argument. Since NaN is a valid float no exception was
+    # raised and rule changed to NaN, leading to exception when motion detected.
+    def test_15_regression_increment_by_nan(self):
         # Starting condition
         self.instance.set_rule(5)
 
@@ -181,17 +258,17 @@ class TestMotionSensor(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'Invalid argument nan'})
         self.assertEqual(self.instance.current_rule, 5.0)
 
-    # Original bug: validator accepted any argument that could be cast to float. Since
-    # NaN is a valid float it was accepted, leading to a broken reset timer. Now rejects.
-    def test_13_regression_validator_accepts_nan(self):
+    # Original bug: validator accepted any argument that could be cast to float.
+    # Since NaN is a valid float it was accepted, leading to a broken reset timer.
+    def test_16_regression_validator_accepts_nan(self):
         # Attempt to set rule to NaN, should reject
         self.assertFalse(self.instance.set_rule("NaN"))
 
-    # Original bug: Reset timer started when motion detected or schedule rule changed,
-    # but not when set_rule was called. If the existing timer was expiring in 30 seconds
-    # when rule was changed to 10 minutes timer would incorrectly expire early. Timer
-    # now restarts after applying new rule.
-    def test_14_regression_rule_change_does_not_start_timer(self):
+    # Original bug: Reset timer started when motion detected or schedule rule
+    # changed, but not when set_rule endpoint was called. If the existing timer
+    # was going to expire in 30 seconds when rule was changed to 10 minutes it
+    # would incorrectly expire early. Now restarts timer after applying new rule.
+    def test_17_regression_rule_change_does_not_start_timer(self):
         # Simulate motion detected, confirm timer started
         self.instance.motion_detected()
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
