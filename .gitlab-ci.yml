@@ -119,6 +119,10 @@ build_frontend:
       when: never
     - changes:
         - 'frontend/**/*'
+        - 'core/**/*'
+        - 'devices/**/*'
+        - 'sensors/**/*'
+        - 'lib/**/*'
         - 'util/**/*'
         - 'Pipfile'
 
@@ -140,5 +144,9 @@ deploy:
       when: never
     - changes:
         - 'frontend/**/*'
+        - 'core/**/*'
+        - 'devices/**/*'
+        - 'sensors/**/*'
+        - 'lib/**/*'
         - 'util/**/*'
         - 'Pipfile'
