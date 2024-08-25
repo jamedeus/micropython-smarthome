@@ -67,7 +67,7 @@ describe('App', () => {
         // Create mock status object with only TV remote
         createMockContext('status', {
             ...mockContextIrRemotes.status, metadata: {
-                ...mockContextIrRemotes.status.metadata, ir_targets: [ 'samsung' ]
+                ...mockContextIrRemotes.status.metadata, ir_targets: [ 'samsung_tv' ]
             }
         });
 
@@ -86,7 +86,7 @@ describe('App', () => {
         // Create mock status object with only AC remote
         createMockContext('status', {
             ...mockContextIrRemotes.status, metadata: {
-                ...mockContextIrRemotes.status.metadata, ir_targets: [ 'whynter' ]
+                ...mockContextIrRemotes.status.metadata, ir_targets: [ 'whynter_ac' ]
             }
         });
 

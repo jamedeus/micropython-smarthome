@@ -7619,7 +7619,7 @@ exports[`App matches snapshot when only AC remote is configured 1`] = `
     <div
       id="status"
     >
-      {"metadata":{"next_reload":"3:46","ir_blaster":true,"ir_targets":["whynter"],"location":"Bedroom","floor":2,"id":"Thermostat","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{},"sensors":{}}
+      {"metadata":{"next_reload":"3:46","ir_blaster":true,"ir_targets":["whynter_ac"],"location":"Bedroom","floor":2,"id":"Thermostat","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{},"sensors":{}}
     </div>
     <div>
       <div
@@ -7667,6 +7667,50 @@ exports[`App matches snapshot when only AC remote is configured 1`] = `
             class="col-sm col"
             id="device-cards"
           >
+            <div
+              class="d-flex flex-column remote mx-auto mb-4"
+            >
+              <div
+                class="row text-center"
+              >
+                <h4
+                  class="my-2"
+                >
+                  AC Remote
+                </h4>
+              </div>
+              <div
+                class="d-flex flex-row my-2 mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Stop cooling"
+                  type="button"
+                >
+                  <i
+                    class="bi-wind"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Turn off fan"
+                  type="button"
+                >
+                  <i
+                    class="bi-x-octagon-fill"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Start cooling"
+                  type="button"
+                >
+                  <i
+                    class="bi-snow"
+                  />
+                </button>
+              </div>
+            </div>
             <div
               class="d-flex flex-column remote mx-auto mb-4"
               style="min-width: 60%;"
@@ -7769,6 +7813,50 @@ exports[`App matches snapshot when only AC remote is configured 1`] = `
           class="col-sm col"
           id="device-cards"
         >
+          <div
+            class="d-flex flex-column remote mx-auto mb-4"
+          >
+            <div
+              class="row text-center"
+            >
+              <h4
+                class="my-2"
+              >
+                AC Remote
+              </h4>
+            </div>
+            <div
+              class="d-flex flex-row my-2 mx-auto"
+            >
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Stop cooling"
+                type="button"
+              >
+                <i
+                  class="bi-wind"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Turn off fan"
+                type="button"
+              >
+                <i
+                  class="bi-x-octagon-fill"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Start cooling"
+                type="button"
+              >
+                <i
+                  class="bi-snow"
+                />
+              </button>
+            </div>
+          </div>
           <div
             class="d-flex flex-column remote mx-auto mb-4"
             style="min-width: 60%;"
@@ -7910,7 +7998,7 @@ exports[`App matches snapshot when only TV remote is configured 1`] = `
     <div
       id="status"
     >
-      {"metadata":{"next_reload":"3:46","ir_blaster":true,"ir_targets":["samsung"],"location":"Bedroom","floor":2,"id":"Thermostat","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{},"sensors":{}}
+      {"metadata":{"next_reload":"3:46","ir_blaster":true,"ir_targets":["samsung_tv"],"location":"Bedroom","floor":2,"id":"Thermostat","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{},"sensors":{}}
     </div>
     <div>
       <div
@@ -7958,6 +8046,205 @@ exports[`App matches snapshot when only TV remote is configured 1`] = `
             class="col-sm col"
             id="device-cards"
           >
+            <div
+              class="d-flex flex-column remote mx-auto mb-4"
+            >
+              <div
+                class="row text-center"
+              >
+                <h4
+                  class="my-2"
+                >
+                  TV Remote
+                </h4>
+              </div>
+              <div
+                class="d-flex flex-row pb-3 mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Power"
+                  type="button"
+                >
+                  <i
+                    class="bi-power"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn btn btn-primary btn-lg"
+                  style="visibility: hidden;"
+                  type="button"
+                >
+                  <i
+                    class="bi-question"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Source"
+                  type="button"
+                >
+                  <i
+                    class="bi-upload"
+                  />
+                </button>
+              </div>
+              <div
+                class="d-flex flex-row mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn btn btn-primary btn-lg"
+                  style="visibility: hidden;"
+                  type="button"
+                >
+                  <i
+                    class="bi-question"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Up"
+                  type="button"
+                >
+                  <i
+                    class="bi-arrow-up"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn btn btn-primary btn-lg"
+                  style="visibility: hidden;"
+                  type="button"
+                >
+                  <i
+                    class="bi-question"
+                  />
+                </button>
+              </div>
+              <div
+                class="d-flex flex-row mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Left"
+                  type="button"
+                >
+                  <i
+                    class="bi-arrow-left"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Enter"
+                  type="button"
+                >
+                  <i
+                    class="bi-app"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Right"
+                  type="button"
+                >
+                  <i
+                    class="bi-arrow-right"
+                  />
+                </button>
+              </div>
+              <div
+                class="d-flex flex-row pb-3 mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn btn btn-primary btn-lg"
+                  style="visibility: hidden;"
+                  type="button"
+                >
+                  <i
+                    class="bi-question"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Down"
+                  type="button"
+                >
+                  <i
+                    class="bi-arrow-down"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn btn btn-primary btn-lg"
+                  style="visibility: hidden;"
+                  type="button"
+                >
+                  <i
+                    class="bi-question"
+                  />
+                </button>
+              </div>
+              <div
+                class="d-flex flex-row mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Volume Down"
+                  type="button"
+                >
+                  <i
+                    class="bi-volume-down-fill"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Mute"
+                  type="button"
+                >
+                  <i
+                    class="bi-volume-mute-fill"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Volume Up"
+                  type="button"
+                >
+                  <i
+                    class="bi-volume-up-fill"
+                  />
+                </button>
+              </div>
+              <div
+                class="d-flex flex-row mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn null btn btn-secondary btn-lg"
+                  title="Settings"
+                  type="button"
+                >
+                  <i
+                    class="bi-gear-fill"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn btn btn-primary btn-lg"
+                  style="visibility: hidden;"
+                  type="button"
+                >
+                  <i
+                    class="bi-question"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-secondary btn-lg"
+                  title="Exit"
+                  type="button"
+                >
+                  <i
+                    class="bi-arrow-return-left"
+                  />
+                </button>
+              </div>
+            </div>
             <div
               class="d-flex flex-column remote mx-auto mb-4"
               style="min-width: 60%;"
@@ -8060,6 +8347,205 @@ exports[`App matches snapshot when only TV remote is configured 1`] = `
           class="col-sm col"
           id="device-cards"
         >
+          <div
+            class="d-flex flex-column remote mx-auto mb-4"
+          >
+            <div
+              class="row text-center"
+            >
+              <h4
+                class="my-2"
+              >
+                TV Remote
+              </h4>
+            </div>
+            <div
+              class="d-flex flex-row pb-3 mx-auto"
+            >
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Power"
+                type="button"
+              >
+                <i
+                  class="bi-power"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn btn btn-primary btn-lg"
+                style="visibility: hidden;"
+                type="button"
+              >
+                <i
+                  class="bi-question"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Source"
+                type="button"
+              >
+                <i
+                  class="bi-upload"
+                />
+              </button>
+            </div>
+            <div
+              class="d-flex flex-row mx-auto"
+            >
+              <button
+                class="m-3 ir-btn btn btn-primary btn-lg"
+                style="visibility: hidden;"
+                type="button"
+              >
+                <i
+                  class="bi-question"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Up"
+                type="button"
+              >
+                <i
+                  class="bi-arrow-up"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn btn btn-primary btn-lg"
+                style="visibility: hidden;"
+                type="button"
+              >
+                <i
+                  class="bi-question"
+                />
+              </button>
+            </div>
+            <div
+              class="d-flex flex-row mx-auto"
+            >
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Left"
+                type="button"
+              >
+                <i
+                  class="bi-arrow-left"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Enter"
+                type="button"
+              >
+                <i
+                  class="bi-app"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Right"
+                type="button"
+              >
+                <i
+                  class="bi-arrow-right"
+                />
+              </button>
+            </div>
+            <div
+              class="d-flex flex-row pb-3 mx-auto"
+            >
+              <button
+                class="m-3 ir-btn btn btn-primary btn-lg"
+                style="visibility: hidden;"
+                type="button"
+              >
+                <i
+                  class="bi-question"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Down"
+                type="button"
+              >
+                <i
+                  class="bi-arrow-down"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn btn btn-primary btn-lg"
+                style="visibility: hidden;"
+                type="button"
+              >
+                <i
+                  class="bi-question"
+                />
+              </button>
+            </div>
+            <div
+              class="d-flex flex-row mx-auto"
+            >
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Volume Down"
+                type="button"
+              >
+                <i
+                  class="bi-volume-down-fill"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Mute"
+                type="button"
+              >
+                <i
+                  class="bi-volume-mute-fill"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Volume Up"
+                type="button"
+              >
+                <i
+                  class="bi-volume-up-fill"
+                />
+              </button>
+            </div>
+            <div
+              class="d-flex flex-row mx-auto"
+            >
+              <button
+                class="m-3 ir-btn null btn btn-secondary btn-lg"
+                title="Settings"
+                type="button"
+              >
+                <i
+                  class="bi-gear-fill"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn btn btn-primary btn-lg"
+                style="visibility: hidden;"
+                type="button"
+              >
+                <i
+                  class="bi-question"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-secondary btn-lg"
+                title="Exit"
+                type="button"
+              >
+                <i
+                  class="bi-arrow-return-left"
+                />
+              </button>
+            </div>
+          </div>
           <div
             class="d-flex flex-column remote mx-auto mb-4"
             style="min-width: 60%;"
