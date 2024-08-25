@@ -105,6 +105,14 @@ describe('App', () => {
         // Create mock status object with no devices, sensors, or ir_blaster
         createMockContext('status', mockContextNoDevicesOrSensors.status);
 
+        // Set correct path (reads node name from URL, adds to edit link)
+        Object.defineProperty(window, 'location', {
+            writable: true,
+            value: {
+                pathname: '/api/Test Node'
+            }
+        });
+
         // Render App, confirm matches snapshot
         const component = render(
             <MetadataContextProvider>

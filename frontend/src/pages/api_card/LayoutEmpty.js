@@ -1,10 +1,11 @@
-import React, { useContext } from 'react';
-import { ApiCardContext } from 'root/ApiCardContext';
+import React, { useState } from 'react';
 
 const LayoutEmpty = () => {
-    const {status} = useContext(ApiCardContext);
+    // Get node name from URL (status.metadata.id may contain a different name
+    // than django database if new config was uploaded without updating django)
+    const [nodeName] = useState(window.location.pathname.split('/')[2]);
 
-    const editLink = `/edit_config/${status.metadata.id}`;
+    const editLink = `/edit_config/${nodeName}`;
 
     return (
         <div className={`h-75 d-flex flex-column

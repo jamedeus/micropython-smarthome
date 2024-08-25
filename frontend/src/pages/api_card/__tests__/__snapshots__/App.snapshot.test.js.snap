@@ -7464,7 +7464,7 @@ exports[`App matches snapshot when no devices, sensors, or ir_blaster configured
           <p>
             Click 
             <a
-              href="/edit_config/Thermostat"
+              href="/edit_config/Test Node"
             >
               here
             </a>
@@ -7524,7 +7524,7 @@ exports[`App matches snapshot when no devices, sensors, or ir_blaster configured
         <p>
           Click 
           <a
-            href="/edit_config/Thermostat"
+            href="/edit_config/Test Node"
           >
             here
           </a>
