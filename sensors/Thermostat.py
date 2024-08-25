@@ -92,7 +92,7 @@ class Thermostat(Sensor):
             self.on_threshold = float(self.current_rule) - float(self.tolerance)
             self.off_threshold = float(self.current_rule) + float(self.tolerance)
 
-    def set_rule(self, rule):
+    def set_rule(self, rule, scheduled=False):
         valid = super().set_rule(rule)
 
         if valid:

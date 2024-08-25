@@ -57,11 +57,16 @@ class Instance():
     def disable(self):
         self.enabled = False
 
-    def set_rule(self, rule):
-        # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
+    # Takes rule, validates, sets current_rule if valid
+    # Also sets scheduled_rule if scheduled arg is True
+    def set_rule(self, rule, scheduled=False):
+        # Check if rule is valid (may return modified rule, eg cast str to int)
         valid_rule = self.rule_validator(rule)
         if not str(valid_rule) == "False":
             self.current_rule = valid_rule
+            # If called by next_rule: set scheduled_rule
+            if scheduled:
+                self.scheduled_rule = valid_rule
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
             self.print(f"Rule changed to {self.current_rule}")
 
@@ -95,9 +100,7 @@ class Instance():
     def next_rule(self):
         log.debug(f"{self.name}: Scheduled rule change")
         self.print("Scheduled rule change")
-        if self.set_rule(self.rule_queue.pop(0)):
-            # If new rule is valid, also change scheduled_rule
-            self.scheduled_rule = self.current_rule
+        self.set_rule(self.rule_queue.pop(0), True)
 
     # Return JSON-serializable dict containing all current attributes
     # Called by API get_attributes endpoint, more verbose than status

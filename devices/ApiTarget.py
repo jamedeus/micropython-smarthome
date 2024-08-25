@@ -115,7 +115,7 @@ class ApiTarget(Device):
             # Did not match any valid patterns
             return False
 
-    def set_rule(self, rule):
+    def set_rule(self, rule, scheduled=False):
         # Check if rule is valid - may return a modified rule (ie cast str to int)
         valid_rule = self.rule_validator(rule)
 
@@ -125,6 +125,8 @@ class ApiTarget(Device):
 
         if not str(valid_rule) == "False":
             self.current_rule = valid_rule
+            if scheduled:
+                self.scheduled_rule = valid_rule
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
             self.print(f"Rule changed to {self.current_rule}")
 

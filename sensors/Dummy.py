@@ -27,7 +27,7 @@ class Dummy(Sensor):
         except AttributeError:
             return False
 
-    def set_rule(self, rule):
+    def set_rule(self, rule, scheduled=False):
         result = super().set_rule(rule)
         # Refresh group if rule changed successfully
         if result and hasattr(self, "group"):

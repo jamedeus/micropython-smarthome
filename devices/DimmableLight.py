@@ -23,8 +23,8 @@ class DimmableLight(Device):
         elif int(self.default_rule) > self.max_rule or int(self.default_rule) < self.min_rule:
             raise AttributeError
 
-    def set_rule(self, rule):
-        # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
+    def set_rule(self, rule, scheduled=False):
+        # Check if rule is valid (may return modified rule, eg cast str to int)
         valid_rule = self.rule_validator(rule)
         if str(valid_rule) == "False":
             log.error(f"{self.name}: Failed to change rule to {rule}")
@@ -32,8 +32,8 @@ class DimmableLight(Device):
             return False
 
         elif str(valid_rule).startswith("fade"):
-            # Parse fade parameters, start fade (see DimmableLight class)
-            return self.start_fade(valid_rule)
+            # Parse fade parameters, start fade
+            return self.start_fade(valid_rule, scheduled)
 
         else:
             # Abort fade if user changed brightness in opposite direction
@@ -42,6 +42,10 @@ class DimmableLight(Device):
                     self.fading = False
                 elif not self.fading["down"] and valid_rule < self.current_rule:
                     self.fading = False
+
+            # If called by next_rule: set scheduled_rule
+            if scheduled:
+                self.scheduled_rule = valid_rule
 
             self.current_rule = valid_rule
             self.print(f"Rule changed to {self.current_rule}")
@@ -114,7 +118,7 @@ class DimmableLight(Device):
         except (ValueError, TypeError):
             return False
 
-    def start_fade(self, valid_rule):
+    def start_fade(self, valid_rule, scheduled=False):
         # Parse parameters from rule
         cmd, target, period = valid_rule.split("/")
 
@@ -161,16 +165,15 @@ class DimmableLight(Device):
             "starting_brightness": self.current_rule,
             "target": int(target),
             "period": fade_period,
-            "down": fade_down
+            "down": fade_down,
+            "scheduled": scheduled
         }
 
-        # Return starting point (will be set as current rule by device.set_rule)
         return True
 
     # Cleanup and return True if fade is complete, return False if not
     # Fade is complete when current_rule matches or exceeds fade target
-    # A user-changed rule will stop the fade, but will not overwrite scheduled_rule (target used)
-    # TODO user-initiated fade will break scheduled_rule
+    # If a scheduled fade is aborted by user set scheduled_rule to target
     def fade_complete(self):
         # Fade complete if device disabled mid-fade, or called when not fading
         if not self.enabled or not self.fading:
@@ -184,7 +187,9 @@ class DimmableLight(Device):
 
         # When fading down: complete if current_rule equal or less than target
         if self.fading["down"] and self.current_rule <= self.fading["target"]:
-            self.scheduled_rule = self.fading["target"]
+            # If scheduled fade: set scheduled_rule to target
+            if self.fading["scheduled"]:
+                self.scheduled_rule = self.fading["target"]
             self.fading = False
 
             if self.current_rule == 0:
@@ -193,7 +198,9 @@ class DimmableLight(Device):
 
         # When fading up: complete if current_rule equal or greater than target
         elif not self.fading["down"] and self.current_rule >= self.fading["target"]:
-            self.scheduled_rule = self.fading["target"]
+            # If scheduled fade: set scheduled_rule to target
+            if self.fading["scheduled"]:
+                self.scheduled_rule = self.fading["target"]
             self.fading = False
             return True
 
@@ -220,7 +227,9 @@ class DimmableLight(Device):
                 if new_rule < self.fading["target"]:
                     new_rule = self.fading["target"]
 
-            self.scheduled_rule = int(new_rule)
+            # If fade started by schedule rule: update scheduled_rule
+            if self.fading["scheduled"]:
+                self.scheduled_rule = int(new_rule)
 
             # Don't override user-set brightness
             if (self.fading["down"] and int(new_rule) < self.current_rule) or (not self.fading["down"] and int(new_rule) > self.current_rule):
