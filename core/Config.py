@@ -479,10 +479,7 @@ class Config():
                     instance.current_rule = "disabled"
                     instance.scheduled_rule = "disabled"
                     instance.default_rule = "disabled"
-
-            # TODO rely on set_rule method to disable?
-            if str(instance.current_rule).lower() == "disabled":
-                instance.disable()
+                    instance.disable()
 
             # Clear target's queue
             instance.rule_queue = []

@@ -188,6 +188,7 @@ class TestDevice(unittest.TestCase):
     def test_12_disable_by_rule_change(self):
         # Starting conditions
         self.assertTrue(self.instance.enabled)
+        self.instance.state = True
         self.instance.send_method_called = False
 
         # Set rule to disabled, confirm disabled, confirm send method called

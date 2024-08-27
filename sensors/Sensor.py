@@ -32,26 +32,6 @@ class Sensor(Instance):
         # Check conditions of all sensors in group
         self.refresh_group()
 
-    # Called by set_rule after current_rule changed
-    # Updates instance attributes to reflect new rule
-    # Enable/disable, prevent unusable rules, etc
-    def apply_new_rule(self):
-        # Rule just changed to disabled
-        if self.current_rule == "disabled":
-            # TODO there are probably scenarios where lights can get stuck on here
-            self.disable()
-        # Rule just changed to enabled, replace with usable rule and enable
-        elif self.current_rule == "enabled":
-            # Use scheduled_rule unless also unusable, otherwise default_rule
-            if not str(self.scheduled_rule).lower() in ["enabled", "disabled"]:
-                self.current_rule = self.scheduled_rule
-            else:
-                self.current_rule = self.default_rule
-            self.enable()
-        # Sensor was previously disabled, enable now that rule has changed
-        elif self.enabled is False:
-            self.enable()
-
     # Allow API commands to simulate the sensor being triggered
     # Disabled by default, must be overridden in supported subclasses
     def trigger(self):

@@ -71,7 +71,6 @@ class Instance():
             self.print(f"Rule changed to {self.current_rule}")
 
             # Update instance attributes to reflect new rule
-            # This method must be implemented by subclasses
             self.apply_new_rule()
 
             return True
@@ -81,9 +80,23 @@ class Instance():
             self.print(f"Failed to change rule to {rule}")
             return False
 
-    # Placeholder function, intended to be overwritten by subclass apply_new_rule method
+    # Called by set_rule, updates instance attributes to reflect new rule
+    # Can be extended in subclass (example: devices call send method)
     def apply_new_rule(self):
-        pass
+        # Rule just changed to disabled
+        if self.current_rule == "disabled":
+            self.disable()
+        # Rule just changed to enabled, replace with usable rule and enable
+        elif self.current_rule == "enabled":
+            # Use scheduled_rule unless also unusable, otherwise default_rule
+            if not str(self.scheduled_rule).lower() in ["enabled", "disabled"]:
+                self.current_rule = self.scheduled_rule
+            else:
+                self.current_rule = self.default_rule
+            self.enable()
+        # Sensor was previously disabled, enable now that rule has changed
+        elif self.enabled is False:
+            self.enable()
 
     # Base validator for universal rules, can be extended in subclass validator method
     def rule_validator(self, rule):

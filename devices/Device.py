@@ -42,26 +42,11 @@ class Device(Instance):
         super().disable()
 
     # Called by set_rule after current_rule changed
-    # Updates instance attributes to reflect new rule
-    # Enable/disable, prevent unusable rules, call send method so new rule takes effect
     def apply_new_rule(self):
-        # Rule just changed to disabled, turn off and disable
-        if self.current_rule == "disabled":
-            self.send(0)
-            self.disable()
-        # Rule just changed to enabled, replace with usable rule and enable
-        elif self.current_rule == "enabled":
-            # Use scheduled_rule unless also unusable, otherwise default_rule
-            if not str(self.scheduled_rule).lower() in ["enabled", "disabled"]:
-                self.current_rule = self.scheduled_rule
-            else:
-                self.current_rule = self.default_rule
-            self.enable()
-        # Device was previously disabled, enable now that rule has changed
-        elif self.enabled is False:
-            self.enable()
+        super().apply_new_rule()
+
         # Device is currently on, run send so new rule can take effect
-        elif self.state is True:
+        if self.state is True:
             self.send(1)
 
     # Return JSON-serializable dict containing all current attributes
