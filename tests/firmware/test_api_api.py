@@ -107,14 +107,14 @@ class TestApi(unittest.TestCase):
 
         try:
             os.remove('ir_macros.json')
-        except FileNotFoundError:
+        except OSError:
             pass
 
     @classmethod
     def tearDownClass(cls):
         try:
             os.remove('ir_macros.json')
-        except FileNotFoundError:
+        except OSError:
             pass
 
     async def request(self, msg):
@@ -536,7 +536,7 @@ class TestApi(unittest.TestCase):
         # Confirm correct error if log doesn't exist
         try:
             os.remove('app.log')
-        except FileNotFoundError:
+        except OSError:
             pass
         response = self.send_command(['clear_log'])
         self.assertEqual(response, {'ERROR': 'no log file found'})

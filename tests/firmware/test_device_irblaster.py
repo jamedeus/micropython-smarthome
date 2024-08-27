@@ -14,14 +14,14 @@ class TestIrBlaster(unittest.TestCase):
 
         try:
             os.remove('ir_macros.json')
-        except FileNotFoundError:
+        except OSError:
             pass
 
     @classmethod
     def tearDownClass(cls):
         try:
             os.remove('ir_macros.json')
-        except FileNotFoundError:
+        except OSError:
             pass
 
     def test_01_initial_state(self):
