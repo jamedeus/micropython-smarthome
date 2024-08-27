@@ -123,7 +123,7 @@ class ApiTarget(Device):
         if valid_rule == "disabled":
             self.send(0)
 
-        if not str(valid_rule) == "False":
+        if valid_rule is not False:
             self.current_rule = valid_rule
             if scheduled:
                 self.scheduled_rule = valid_rule

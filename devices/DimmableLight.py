@@ -26,7 +26,7 @@ class DimmableLight(Device):
     def set_rule(self, rule, scheduled=False):
         # Check if rule is valid (may return modified rule, eg cast str to int)
         valid_rule = self.rule_validator(rule)
-        if str(valid_rule) == "False":
+        if valid_rule is False:
             log.error(f"{self.name}: Failed to change rule to {rule}")
             self.print(f"Failed to change rule to {rule}")
             return False

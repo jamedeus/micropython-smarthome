@@ -315,7 +315,7 @@ def add_schedule_rule(target, args):
 
     valid = target.rule_validator(args[1])
 
-    if str(valid) == "False":
+    if valid is False:
         return {"ERROR": "Invalid rule"}
 
     if timestamp in rules and (not len(args) >= 3 or not args[2] == "overwrite"):

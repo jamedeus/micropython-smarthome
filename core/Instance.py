@@ -48,7 +48,7 @@ class Instance():
         # Replace "disabled" with usable rule
         if self.current_rule == "disabled":
             # Revert to scheduled rule unless it is also "disabled"
-            if not str(self.scheduled_rule).lower() == "disabled":
+            if str(self.scheduled_rule).lower() != "disabled":
                 self.set_rule(self.scheduled_rule)
             # Last resort: revert to default_rule
             else:
@@ -62,7 +62,7 @@ class Instance():
     def set_rule(self, rule, scheduled=False):
         # Check if rule is valid (may return modified rule, eg cast str to int)
         valid_rule = self.rule_validator(rule)
-        if not str(valid_rule) == "False":
+        if valid_rule is not False:
             self.current_rule = valid_rule
             # If called by next_rule: set scheduled_rule
             if scheduled:
@@ -89,7 +89,7 @@ class Instance():
         # Rule just changed to enabled, replace with usable rule and enable
         elif self.current_rule == "enabled":
             # Use scheduled_rule unless also unusable, otherwise default_rule
-            if not str(self.scheduled_rule).lower() in ["enabled", "disabled"]:
+            if str(self.scheduled_rule).lower() not in ["enabled", "disabled"]:
                 self.current_rule = self.scheduled_rule
             else:
                 self.current_rule = self.default_rule
