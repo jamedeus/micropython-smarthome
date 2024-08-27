@@ -84,7 +84,8 @@ _api_client()
         if [[ $prev == $i ]]; then
             # Call API status command, parse devices and sensors from response object
             # COMP_WORDS slice replaces last word (endpoint) with status
-            targets=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" status | jq '.devices, .sensors' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+            # sed removes everything before first { (remove failed sync warning when django offline)
+            targets=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" status | sed -n '/{/,${p;}' | jq '.devices, .sensors' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
             COMPREPLY=( $(compgen -W "${targets}" -- "${cur}") )
             return 0
         fi
@@ -95,7 +96,8 @@ _api_client()
         if [[ $prev == $i ]]; then
             # Call API status command, parse devices from response object
             # COMP_WORDS slice replaces last word (endpoint) with status
-            targets=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" status | jq '.devices' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+            # sed removes everything before first { (remove failed sync warning when django offline)
+            targets=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" status | sed -n '/{/,${p;}' | jq '.devices' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
             COMPREPLY=( $(compgen -W "${targets}" -- "${cur}") )
             return 0
         fi
@@ -106,7 +108,8 @@ _api_client()
         if [[ $prev == $i ]]; then
             # Call API status command, parse sensors from response object
             # COMP_WORDS slice replaces last word (endpoint) with status
-            targets=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" status | jq '.sensors' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+            # sed removes everything before first { (remove failed sync warning when django offline)
+            targets=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" status | sed -n '/{/,${p;}' | jq '.sensors' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
             COMPREPLY=( $(compgen -W "${targets}" -- "${cur}") )
             return 0
         fi
@@ -117,7 +120,8 @@ _api_client()
         if [[ $prev == $i ]]; then
             # Call API ir_get_existing_macros command, parse names from response object
             # COMP_WORDS slice replaces last word (endpoint) with status
-            macros=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" ir_get_existing_macros | jq 'keys | .[]' 2>/dev/null | sed 's/"//g' | sed -z 's/\n/ /g')
+            # sed removes everything before first { (remove failed sync warning when django offline)
+            macros=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" ir_get_existing_macros | sed -n '/{/,${p;}' | jq 'keys | .[]' 2>/dev/null | sed 's/"//g' | sed -z 's/\n/ /g')
             COMPREPLY=( $(compgen -W "${macros}" -- "${cur}") )
             return 0
         fi
