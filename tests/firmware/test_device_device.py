@@ -198,11 +198,12 @@ class TestDevice(unittest.TestCase):
     def test_13_enable_by_rule_change(self):
         # Starting conditions
         self.assertFalse(self.instance.enabled)
+        self.instance.scheduled_rule = 50
 
-        # Set rule to enabled, confirm rule falls back to default_rule
+        # Set rule to enabled, confirm rule falls back to scheduled_rule
         self.instance.set_rule("Enabled")
         self.assertTrue(self.instance.enabled)
-        self.assertEqual(self.instance.current_rule, self.instance.default_rule)
+        self.assertEqual(self.instance.current_rule, 50)
 
     def test_14_set_rule_while_disabled(self):
         # Confirm disabled
@@ -229,3 +230,18 @@ class TestDevice(unittest.TestCase):
         # Move to next rule, confirm correct rule
         self.instance.next_rule()
         self.assertEqual(self.instance.current_rule, 10)
+
+    # Original bug: If set_rule was called with "enabled" the apply_new_rule
+    # method would set current_rule to default_rule instead of scheduled_rule.
+    def test_17_regression_enable_with_rule_change_ignores_scheduled_rule(self):
+        # Starting conditions
+        self.instance.disable()
+        self.instance.scheduled_rule = 25
+        self.instance.default_rule = 50
+        self.assertFalse(self.instance.enabled)
+
+        # Enable device by calling set_rule method
+        self.assertTrue(self.instance.set_rule("enabled"))
+
+        # Confirm switched to scheduled_rule, not default_rule
+        self.assertEqual(self.instance.current_rule, 25)

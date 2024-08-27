@@ -40,9 +40,13 @@ class Sensor(Instance):
         if self.current_rule == "disabled":
             # TODO there are probably scenarios where lights can get stuck on here
             self.disable()
-        # Rule just changed to enabled, replace with usable rule (default) and enable
+        # Rule just changed to enabled, replace with usable rule and enable
         elif self.current_rule == "enabled":
-            self.current_rule = self.default_rule
+            # Use scheduled_rule unless also unusable, otherwise default_rule
+            if not str(self.scheduled_rule).lower() in ["enabled", "disabled"]:
+                self.current_rule = self.scheduled_rule
+            else:
+                self.current_rule = self.default_rule
             self.enable()
         # Sensor was previously disabled, enable now that rule has changed
         elif self.enabled is False:
