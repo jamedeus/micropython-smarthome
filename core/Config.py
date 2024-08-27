@@ -441,21 +441,20 @@ class Config():
         SoftwareTimer.timer.cancel("scheduler")
 
         for i in self.schedule:
-            # Convert copy (preserve sunrise/sunset keywords in original)
+            # Convert HH:MM timestamps to unix epoch timestamp of next run
+            # Use copy to avoid overwriting schedule keywords with HH:MM in original
             rules = self.convert_rules(self.schedule[i].copy())
 
-            # Get target instance
+            # Get target instance (skip if unable to find)
             instance = self.find(i)
-            # Skip if unable to find instance
-            if not instance: continue
+            if not instance:
+                continue
 
-            # If no schedule rules, use default_rule and skip to next instance
+            # No rules: set default_rule as scheduled_rule, skip to next instance
             if len(rules) == 0:
-                # If default is valid, also set as scheduled_rule
-                if instance.set_rule(instance.default_rule):
-                    instance.scheduled_rule = instance.current_rule
-                # If default rule is invalid, disable instance to prevent unpredictable behavior
-                else:
+                # Set current_rule and scheduled_rule (returns False if invalid)
+                if not instance.set_rule(instance.default_rule, True):
+                    # If default_rule invalid, disable instance to prevent unpredictable behavior
                     log.critical(f"{instance.name} invalid default rule ({instance.default_rule}), disabling instance")
                     instance.current_rule = "disabled"
                     instance.scheduled_rule = "disabled"
@@ -464,22 +463,18 @@ class Config():
                 continue
 
             # Get list of timestamps, sort chronologically
+            # First item in queue is current scheduled rule
             queue = []
             for j in rules:
                 queue.append(j)
             queue.sort()
 
-            # Set target's current_rule (set_rule method passes to validator, returns True if valid, False if not)
-            if instance.set_rule(rules[queue.pop(0)]):
-                # If rule valid, set as scheduled_rule
-                instance.scheduled_rule = instance.current_rule
-            else:
-                # If rule is invalid, fall back to default rule
+            # Set first item as current_rule and scheduled_rule (returns False if invalid)
+            if not instance.set_rule(rules[queue.pop(0)], True):
+                # Fall back to default_rule if scheduled rule is invalid
                 log.error(f"{instance.name} scheduled rule failed validation, falling back to default rule")
-                if instance.set_rule(instance.default_rule):
-                    instance.scheduled_rule = instance.current_rule
-                else:
-                    # If both scheduled and default rules invalid, disable instance to prevent unpredictable behavior
+                if not instance.set_rule(instance.default_rule, True):
+                    # If both  rules invalid, disable instance to prevent unpredictable behavior
                     log.critical(f"{instance.name} invalid default rule ({instance.default_rule}), disabling instance")
                     instance.current_rule = "disabled"
                     instance.scheduled_rule = "disabled"
