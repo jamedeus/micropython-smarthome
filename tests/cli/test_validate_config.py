@@ -83,6 +83,14 @@ class ValidateConfigTests(TestCase):
             f'Invalid IP {self.valid_config["device1"]["ip"]}'
         )
 
+    def test_invalid_uri(self):
+        self.valid_config['device10']['uri'] = 'localhost'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(
+            result,
+            'Invalid URI localhost'
+        )
+
     def test_thermostat_tolerance_out_of_range(self):
         self.valid_config['sensor5']['tolerance'] = 12.5
         result = validate_full_config(self.valid_config)

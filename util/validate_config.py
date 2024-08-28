@@ -4,7 +4,8 @@ from helper_functions import (
     is_device,
     is_sensor,
     get_config_param_list,
-    valid_ip
+    valid_ip,
+    valid_uri
 )
 from validation_constants import (
     valid_device_pins,
@@ -117,6 +118,12 @@ def validate_full_config(config):
     for ip in ips:
         if not valid_ip(ip):
             return f'Invalid IP {ip}'
+
+    # Check if all URI addresses are valid
+    uris = [value['uri'] for key, value in config.items() if 'uri' in value]
+    for uri in uris:
+        if not valid_uri(uri):
+            return f'Invalid URI {uri}'
 
     # Validate rules for all devices and sensors
     for instance in [key for key in config.keys() if is_device_or_sensor(key)]:

@@ -112,6 +112,7 @@ class TestHelperFunctions(TestCase):
                 'mosfet',
                 'wled',
                 'api-target',
+                'http-get',
                 'pir',
                 'switch',
                 'dummy',

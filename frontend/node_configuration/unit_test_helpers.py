@@ -225,6 +225,15 @@ request_payload = {
             }
         }
     },
+    "device10": {
+        "_type": "http-get",
+        "nickname": "Log sensor state",
+        "default_rule": "enabled",
+        "uri": "http://192.168.1.123:8080",
+        "on_path": "/ON",
+        "off_path": "/OFF",
+        "schedule": {}
+    },
     "sensor1": {
         "_type": "pir",
         "nickname": "Motion",
