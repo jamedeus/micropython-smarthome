@@ -30,8 +30,12 @@ class LoadCell(Sensor):
     # Accept any int or float (except NaN)
     def validator(self, rule):
         try:
+            # Prevent incorrectly accepting True and False (last condition
+            # casts to 1.0, 0.0 respectively)
+            if isinstance(rule, bool):
+                return False
             # Prevent accepting NaN (is valid float but breaks comparison)
-            if isnan(float(rule)):
+            elif isnan(float(rule)):
                 return False
             else:
                 return float(rule)

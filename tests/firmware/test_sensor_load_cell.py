@@ -77,3 +77,10 @@ class TestLoadCellSensor(unittest.TestCase):
     def test_06_trigger(self):
         # Should not be able to trigger this sensor type
         self.assertFalse(self.instance.trigger())
+
+    # Original bug: validaotr cast rule to float and only rejected if an
+    # exception was raised. If the validator received True or False it would
+    # cast to 1.0 or 0.0 respectively and accept incorrectly.
+    def test_07_validator_excepts_bool(self):
+        self.assertFalse(self.instance.rule_validator(True))
+        self.assertFalse(self.instance.rule_validator(False))
