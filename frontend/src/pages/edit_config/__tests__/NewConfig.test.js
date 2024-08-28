@@ -377,6 +377,69 @@ describe('NewConfig', () => {
         expect(window.location.href).toBe('/config_overview');
     });
 
+    it('sends the correct payload when a config load-cell sensor is created', async () => {
+        // Mock fetch function to return expected response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Config created'
+            })
+        }));
+
+        // Fill out metadata section
+        await user.type(app.getAllByRole('textbox')[0], 'Bedroom');
+        await user.type(app.getByLabelText('Location:'), 'Under bed');
+        await user.type(app.getByLabelText('Floor:'), '2');
+        jest.clearAllMocks();
+
+        // Add Load Cell sensor
+        await user.click(app.getByRole('button', { name: 'Add Sensor' }));
+        const sensor1Card = app.getByText('sensor1').parentElement.parentElement;
+        await user.selectOptions(within(sensor1Card).getByRole('combobox'), 'load-cell');
+        await user.type(within(sensor1Card).getByLabelText('Nickname:'), 'Bed sensor');
+        await user.selectOptions(within(sensor1Card).getByLabelText('Data pin:'), '27');
+        await user.selectOptions(within(sensor1Card).getByLabelText('Clock pin:'), '34');
+
+        // Go to page 2, go to page3
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Next' }));
+
+        // Click submit, confirm correct request sent
+        await user.click(app.getByRole('button', { name: 'Submit' }));
+        expect(global.fetch).toHaveBeenCalledWith('/generate_config_file', {
+            method: 'POST',
+            body: JSON.stringify({
+                "metadata": {
+                    "id": "Bedroom",
+                    "floor": "2",
+                    "location": "Under bed",
+                    "schedule_keywords": {
+                        "morning": "08:00",
+                        "sleep": "23:00",
+                        "sunrise": "06:00",
+                        "sunset": "18:00",
+                        "relax": "20:00"
+                    }
+                },
+                "sensor1": {
+                    "_type": "load-cell",
+                    "nickname": "Bed sensor",
+                    "default_rule": 5000000.0,
+                    "pin_data": "27",
+                    "pin_clock": "34",
+                    "schedule": {},
+                    "targets": []
+                }
+            }),
+            headers: postHeaders
+        });
+
+        // Confirm redirected to overview page
+        expect(window.location.href).toBe('/config_overview');
+    });
+
     it('warns user before overwriting an existing config with the same name', async () => {
         // Mock fetch function to return name available respnse (prevent next
         // page button being disabled due to duplicate name)

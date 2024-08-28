@@ -56,6 +56,24 @@ const ConfigParamInput = ({ id, configKey, metadata }) => {
             } else {
                 return <PinSelectDropdown id={id} options={sensorPins} />;
             }
+        case('pin_data'):
+            return (
+                <PinSelectDropdown
+                    id={id}
+                    options={sensorPins}
+                    label={"Data pin"}
+                    param={"pin_data"}
+                />
+            );
+        case('pin_clock'):
+            return (
+                <PinSelectDropdown
+                    id={id}
+                    options={sensorPins}
+                    label={"Clock pin"}
+                    param={"pin_clock"}
+                />
+            );
         case('ip'):
             if (metadata.rule_prompt !== "api_target") {
                 return <IPInput id={id} />;
