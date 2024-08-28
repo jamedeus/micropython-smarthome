@@ -71,7 +71,7 @@ const ScheduleRuleRow = ({
             setShowNewRule(false);
             setLoadingButtonState('delete');
             setNewTime('');
-            setNewRule('');
+            setNewRule(instance.default_rule);
         } else {
             showErrorToast('Failed to add schedule rule');
             setLoadingButtonState('edit');
@@ -83,7 +83,7 @@ const ScheduleRuleRow = ({
         // Hide new rule field, reset inputs
         setShowNewRule(false);
         setNewTime('');
-        setNewRule('');
+        setNewRule(instance.default_rule);
     };
 
     // Existing rule field add button handler
