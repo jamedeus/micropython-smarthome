@@ -339,35 +339,14 @@ def dummy_validator(rule, **kwargs):
 
 
 # Requires int or float
-@add_schedule_rule_validator(['load-cell'])
+@add_schedule_rule_validator(['pir', 'ld2410', 'load-cell'])
 @add_generic_validator
-@add_default_rule_validator(['load-cell'])
-def load_cell_validator(rule, **kwargs):
+@add_default_rule_validator(['pir', 'ld2410', 'load-cell'])
+def int_or_float_validator(rule, **kwargs):
     try:
         # Prevent incorrectly accepting True and False (last condition casts
         # to 1.0 and 0.0 respectively)
         if isinstance(rule, bool):
-            return False
-        # Prevent accepting NaN (is valid float but breaks comparison)
-        elif isnan(float(rule)):
-            return False
-        else:
-            return True
-    except (ValueError, TypeError):
-        return False
-
-
-# Requires int, float, or None
-@add_schedule_rule_validator(['pir', 'ld2410'])
-@add_generic_validator
-@add_default_rule_validator(['pir', 'ld2410'])
-def motion_sensor_validator(rule, **kwargs):
-    try:
-        if rule is None:
-            return True
-        # Prevent incorrectly accepting True and False (last condition casts
-        # to 1.0 and 0.0 respectively)
-        elif isinstance(rule, bool):
             return False
         # Prevent accepting NaN (is valid float but breaks arithmetic)
         elif isnan(float(rule)):

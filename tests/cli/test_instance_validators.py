@@ -9,9 +9,8 @@ from instance_validators import (
     tplink_validator,
     wled_validator,
     dummy_validator,
-    motion_sensor_validator,
-    thermostat_validator,
-    load_cell_validator
+    int_or_float_validator,
+    thermostat_validator
 )
 
 
@@ -128,9 +127,12 @@ class ValidatorTests(TestCase):
         # Should accept int between min_rule and max_rule
         self.assertTrue(wled_validator(50, min_rule=1, max_rule=255))
 
-    def test_motion_sensor_rules(self):
-        # Should accept None (converts to 0)
-        self.assertTrue(motion_sensor_validator(None))
+    def test_int_or_float_rules(self):
+        # Should accept int or float
+        self.assertTrue(int_or_float_validator(5))
+        self.assertTrue(int_or_float_validator(5.0))
+        self.assertTrue(int_or_float_validator(150000))
+        self.assertTrue(int_or_float_validator(150000.0))
 
     def test_thermostat_rules(self):
         # Should accept Celsiues temperatures between 18 and 27 degrees
@@ -139,11 +141,6 @@ class ValidatorTests(TestCase):
         self.assertTrue(thermostat_validator('295', units='kelvin', mode='cool', tolerance='1'))
         # Should accept Fahrenheit temperatures between 65 and 80 degrees
         self.assertTrue(thermostat_validator('69', units='fahrenheit', mode='cool', tolerance='1'))
-
-    def test_load_cell_rules(self):
-        # Should accept int or float
-        self.assertTrue(load_cell_validator(150000))
-        self.assertTrue(load_cell_validator(150000.0))
 
 
 # Confirm functions in validators.py correctly reject invalid rules
@@ -193,7 +190,8 @@ class ValidatorErrorTests(TestCase):
         self.assertFalse(led_strip_validator(True, min_rule='0', max_rule='1023'))
         self.assertFalse(tplink_validator(True, min_rule='1', max_rule='100'))
         self.assertFalse(wled_validator(True, min_rule='1', max_rule='255'))
-        self.assertFalse(motion_sensor_validator(True))
+        self.assertFalse(int_or_float_validator(True))
+        self.assertFalse(int_or_float_validator(None))
 
     def test_invalid_out_of_range_rules(self):
         # Confirm range is enforced for correct types
@@ -268,9 +266,8 @@ class ValidatorErrorTests(TestCase):
 
     def test_invalid_noninteger_rules(self):
         # Confirm string is rejected for correct types
-        self.assertFalse(load_cell_validator('max'))
         self.assertFalse(wled_validator('max', min_rule='1', max_rule='255'))
-        self.assertFalse(motion_sensor_validator('max', min_rule='1', max_rule='100'))
+        self.assertFalse(int_or_float_validator('max', min_rule='1', max_rule='100'))
         self.assertFalse(thermostat_validator('max', tolerance=1, units='fahrenheit', mode='cool'))
 
     def test_invalid_keyword_rules(self):
@@ -374,22 +371,22 @@ class ValidatorErrorTests(TestCase):
         self.assertEqual(validate_rules(self.config['device1']), 'min_rule cannot be greater than max_rule')
         self.assertEqual(validate_rules(self.config['device8']), 'min_rule cannot be greater than max_rule')
 
-    # Original bug: motion_sensor_validator only required float, allowing
+    # Original bug: int_or_float_validator only required float, allowing
     # NaN (which is a valid float, but breaks arithmetic) to be accepted.
     def test_regression_motion_sensor_accepts_nan(self):
-        self.assertFalse(motion_sensor_validator(float('NaN'), min_rule='1', max_rule='100'))
-        self.assertFalse(load_cell_validator(float('NaN')))
+        self.assertFalse(int_or_float_validator(float('NaN'), min_rule='1', max_rule='100'))
+        self.assertFalse(int_or_float_validator(float('NaN')))
 
-    # Original bug: motion_sensor_validator cast rule to float in a conditional
+    # Original bug: int_or_float_validator cast rule to float in a conditional
     # and only returned True if the conditional passed. If rule was 0.0 (valid)
     # the conditional was not matched (0.0 == False) and nothing was returned.
     def test_regression_motion_sensor_returns_none_when_rule_is_0(self):
-        self.assertTrue(motion_sensor_validator(0))
-        self.assertTrue(motion_sensor_validator(0.0))
+        self.assertTrue(int_or_float_validator(0))
+        self.assertTrue(int_or_float_validator(0.0))
 
-    # Original bug: load_cell_validator cast rule to float and returned True
+    # Original bug: int_or_float_validator cast rule to float and returned True
     # unless an exception was raised. If a boolean was passed it would be cast
     # to 1.0 or 0.0 and accepted incorrectly.
-    def test_regression_load_cell_excepts_bool(self):
-        self.assertFalse(load_cell_validator(True))
-        self.assertFalse(load_cell_validator(False))
+    def test_regression_int_or_float_validator_excepts_bool(self):
+        self.assertFalse(int_or_float_validator(True))
+        self.assertFalse(int_or_float_validator(False))

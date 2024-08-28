@@ -54,11 +54,9 @@ class MotionSensor(Sensor):
 
     def validator(self, rule):
         try:
-            if rule is None:
-                return 0
             # Prevent incorrectly accepting True and False (last condition
             # casts to 1.0, 0.0 respectively)
-            elif isinstance(rule, bool):
+            if isinstance(rule, bool):
                 return False
             # Prevent accepting NaN (is valid float but breaks arithmetic)
             elif isnan(float(rule)):
@@ -115,7 +113,7 @@ class MotionSensor(Sensor):
     # Called when motion is detected or rule changes, starts timer to reset
     # motion attribute and refresh group in <current_rule> minutes
     def start_reset_timer(self):
-        # Set reset timer unless current rule is 0 (no reset timer) or sensor is disabled
+        # Set reset timer unless disabled or current rule is 0 (no reset timer)
         if not (self.current_rule == 0 or self.current_rule == "disabled"):
             try:
                 # Convert delay (minutes) to milliseconds, start timer
@@ -125,7 +123,7 @@ class MotionSensor(Sensor):
                 self.print(f"Failed to start reset timer, current_rule = {self.current_rule}")
                 log.debug(f"{self.name}: Failed to start reset timer, current_rule = {self.current_rule}")
         else:
-            # Stop reset timer (may be running from before delay set to None)
+            # Stop reset timer (may be running from before delay set to 0)
             SoftwareTimer.timer.cancel(self.name)
 
     # Called when reset timer expires

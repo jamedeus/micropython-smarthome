@@ -60,8 +60,6 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.assertEqual(self.instance.rule_validator(0.5), 0.5)
         self.assertEqual(self.instance.rule_validator("0.5"), 0.5)
         self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
-        # Should accept None but cast to 0.0
-        self.assertEqual(self.instance.rule_validator(None), 0.0)
 
     def test_04_rule_validation_invalid(self):
         # Should reject all other rules
@@ -69,6 +67,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator("string"))
         self.assertFalse(self.instance.rule_validator([10]))
         self.assertFalse(self.instance.rule_validator({5: 5}))
+        self.assertFalse(self.instance.rule_validator(None))
         self.assertFalse(self.instance.rule_validator("None"))
         self.assertFalse(self.instance.rule_validator("NaN"))
 
@@ -84,7 +83,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.assertFalse(self.instance.motion)
 
     def test_06_reset_timer(self):
-        # Make sure rule isn't None (no timer set), Group.refresh not called
+        # Make sure rule isn't 0 (no timer set), Group.refresh not called
         self.instance.set_rule(1)
         self.group.refresh_called = False
 
@@ -105,12 +104,12 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.assertTrue(self.group.refresh_called)
         self.group.refresh_called = False
 
-        # Set rule to None, cancel previous timer to avoid false positive
-        self.instance.set_rule(None)
+        # Set rule to 0, cancel previous timer to avoid false positive
+        self.instance.set_rule(0)
         SoftwareTimer.timer.cancel(self.instance.name)
         # Simulate sensor triggered by hware interrupt
         self.instance.trigger()
-        # Queue should NOT contain entry for motion sensor (rule is None)
+        # Queue should NOT contain entry for motion sensor (rule is 0)
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
     def test_07_trigger(self):
