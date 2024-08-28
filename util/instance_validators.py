@@ -344,8 +344,12 @@ def dummy_validator(rule, **kwargs):
 @add_default_rule_validator(['load-cell'])
 def load_cell_validator(rule, **kwargs):
     try:
+        # Prevent incorrectly accepting True and False (last condition casts
+        # to 1.0 and 0.0 respectively)
+        if isinstance(rule, bool):
+            return False
         # Prevent accepting NaN (is valid float but breaks comparison)
-        if isnan(float(rule)):
+        elif isnan(float(rule)):
             return False
         else:
             return True
@@ -361,7 +365,8 @@ def motion_sensor_validator(rule, **kwargs):
     try:
         if rule is None:
             return True
-        # Prevent incorrectly accepting True and False (last condition casts to 1.0, 0.0 respectively)
+        # Prevent incorrectly accepting True and False (last condition casts
+        # to 1.0 and 0.0 respectively)
         elif isinstance(rule, bool):
             return False
         # Prevent accepting NaN (is valid float but breaks arithmetic)

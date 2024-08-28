@@ -386,3 +386,10 @@ class ValidatorErrorTests(TestCase):
     def test_regression_motion_sensor_returns_none_when_rule_is_0(self):
         self.assertTrue(motion_sensor_validator(0))
         self.assertTrue(motion_sensor_validator(0.0))
+
+    # Original bug: load_cell_validator cast rule to float and returned True
+    # unless an exception was raised. If a boolean was passed it would be cast
+    # to 1.0 or 0.0 and accepted incorrectly.
+    def test_regression_load_cell_excepts_bool(self):
+        self.assertFalse(load_cell_validator(True))
+        self.assertFalse(load_cell_validator(False))
