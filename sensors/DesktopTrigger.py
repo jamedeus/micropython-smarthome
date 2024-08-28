@@ -2,6 +2,7 @@ import logging
 import asyncio
 import requests
 from Sensor import Sensor
+from util import print_with_timestamp
 
 # Set name for module's log lines
 log = logging.getLogger("DesktopTrigger")
@@ -43,21 +44,27 @@ class DesktopTrigger(Sensor):
         super().disable()
 
     def get_idle_time(self):
-        response = requests.get(f'http://{self.ip}:{self.port}/idle_time')
-        if response.status_code == 200:
-            return response.json()
-        else:
-            # Response doesn't contain JSON (different service running on port 5000), disable
-            self.print("Fatal error (unexpected response from desktop), disabling")
-            log.info(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+        try:
+            response = requests.get(f'http://{self.ip}:{self.port}/idle_time', timeout=2)
+            if response.status_code == 200:
+                return response.json()
+            raise OSError
+        except OSError:
+            # Desktop offline or different service running on port 5000, disable
+            self.print("Fatal error (unable to connect to desktop), disabling")
+            log.info(f"{self.name}: Fatal error (unable to connect to desktop), disabling")
             self.disable()
             return False
 
     def get_monitor_state(self):
         try:
-            return requests.get(f'http://{self.ip}:{self.port}/state').json()["state"]
+            return requests.get(
+                f'http://{self.ip}:{self.port}/state',
+                timeout=2
+            ).json()["state"]
         except (OSError, IndexError):
             # Wifi interruption, return False - caller will try again in 1 second
+            print_with_timestamp(f"{self.name}: failed to get state (wifi error)")
             return False
         except ValueError:
             # Response doesn't contain JSON (different service running on port 5000), disable

@@ -19,6 +19,9 @@ class TasmotaRelay(HttpGet):
 
     def check_state(self):
         try:
-            return requests.get('http://' + str(self.uri) + '/cm?cmnd=Power').json()["POWER"]
+            return requests.get(
+                f'http://{self.uri}/cm?cmnd=Power',
+                timeout=2
+            ).json()["POWER"]
         except OSError:
             return "Network Error"

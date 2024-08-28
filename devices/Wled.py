@@ -1,5 +1,6 @@
 import logging
 import requests
+from util import print_with_timestamp
 from DimmableLight import DimmableLight
 
 # Set name for module's log lines
@@ -33,10 +34,16 @@ class Wled(DimmableLight):
             return True
 
         try:
-            response = requests.post(f'http://{self.ip}/json/state', json=self.get_payload(state))
+            response = requests.post(
+                f'http://{self.ip}/json/state',
+                json=self.get_payload(state),
+                timeout=2
+            )
             self.print(f"brightness = {self.current_rule}, state = {state}")
         except OSError:
-            # Wifi interruption, send failed
+            # Wifi error, send failed
+            print_with_timestamp(f"{self.name}: send failed (wifi error)")
+            log.info(f"{self.name}: send failed (wifi error)")
             return False
 
         if response.status_code == 200:

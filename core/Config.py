@@ -328,7 +328,7 @@ class Config():
                 if self.gps:
                     url += f"&lat={self.gps['lat']}&long={self.gps['lon']}"
 
-                response = requests.get(url)
+                response = requests.get(url, timeout=5)
 
                 # Parse time parameters
                 hour, minute, second = response.json()["current_time"].split(":")

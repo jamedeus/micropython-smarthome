@@ -596,7 +596,7 @@ class TestConfig(unittest.TestCase):
             Config.api_calls(self.config)
 
         # Create requests.get mock that raises OSError (failed connection)
-        def mock_get(*args):
+        def mock_get(*args, **kwargs):
             raise OSError
 
         # Remove from cache, re-import, apply mocks
