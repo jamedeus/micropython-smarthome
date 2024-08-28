@@ -26,6 +26,7 @@ from validation_constants import (
 )
 from helper_functions import (
     valid_ip,
+    valid_uri,
     is_device,
     is_sensor,
     is_device_or_sensor,
@@ -420,6 +421,18 @@ class GenerateConfigFile:
                     "Enter maximum rule:",
                     default=str(rule_limits_map[_type][1]),
                     validate=IntRange(config['min_rule'], rule_limits_map[_type][1])
+                ).unsafe_ask()
+
+            elif i == "uri":
+                config[i] = questionary.text(
+                    "Enter base URI (no endpoint path):",
+                    validate=valid_uri
+                ).unsafe_ask()
+
+            elif i.endswith("_path"):
+                action = i.split("_")[0]
+                config[i] = questionary.text(
+                    f"Enter endpoint for {action.upper()} action"
                 ).unsafe_ask()
 
             # ApiTarget has own IP prompt (select friendly name from nodes in cli_config.json)

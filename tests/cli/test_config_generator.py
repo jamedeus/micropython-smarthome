@@ -571,6 +571,34 @@ class TestGenerateConfigFile(TestCase):
             config = self.generator._GenerateConfigFile__configure_device()
             self.assertEqual(config, expected_output)
 
+        # Repeat test with http-get
+        expected_output = {
+            "_type": "http-get",
+            "nickname": "Log Sensor State",
+            "default_rule": "Enabled",
+            "uri": "http://192.168.1.123",
+            "on_path": "/ON",
+            "off_path": "/OFF",
+            "schedule": {}
+        }
+
+        # Mock ask to return parameters in expected order
+        self.mock_ask.unsafe_ask.side_effect = [
+            'HTTP Get Request',
+            'Log Sensor State',
+            'Enabled',
+            'http://192.168.1.123',
+            '/ON',
+            '/OFF',
+            'No'
+        ]
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+
+            # Run prompt, confirm output matches expected
+            config = self.generator._GenerateConfigFile__configure_device()
+            self.assertEqual(config, expected_output)
+
     def test_configure_device_failed_validation(self):
         # Invalid config object with default_rule greater than max_rule
         invalid_config = {
