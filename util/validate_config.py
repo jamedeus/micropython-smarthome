@@ -1,3 +1,5 @@
+'''Contains functions used to validate ESP32 config files'''
+
 from instance_validators import validate_rules
 from helper_functions import (
     is_device_or_sensor,
@@ -14,16 +16,18 @@ from validation_constants import (
     valid_config_keys
 )
 
-# Parse tuple of device and sensor types from templates, used in validation
-valid_device_types = tuple([config_templates['device'][i]['_type']
-                            for i in config_templates['device']])
-valid_sensor_types = tuple([config_templates['sensor'][i]['_type']
-                            for i in config_templates['sensor']])
+# Create generators by parsing device and sensor types from templates
+valid_device_types = ([config_templates['device'][i]['_type']
+                      for i in config_templates['device']])
+valid_sensor_types = ([config_templates['sensor'][i]['_type']
+                      for i in config_templates['sensor']])
 
 
-# Accepts completed config
-# Returns True if all device and sensor types are valid, error string if invalid
 def validate_instance_types(config):
+    '''Accepts completed config dict, returns True if all device and sensor
+    types are valid, returns error string if one or more are invalid.
+    '''
+
     # Get device and sensor IDs
     devices = [key for key in config if is_device(key)]
     sensors = [key for key in config if is_sensor(key)]
@@ -44,9 +48,11 @@ def validate_instance_types(config):
     return True
 
 
-# Accepts completed config
-# Returns True if all device and sensor pins are valid, error string if invalid
 def validate_instance_pins(config):
+    '''Accepts completed config dict, returns True if all device and sensor
+    pins are valid, returns error string if one or more are invalid.
+    '''
+
     # Get device and sensor pins
     try:
         device_pins = [int(val['pin']) for key, val in config.items()
@@ -68,9 +74,11 @@ def validate_instance_pins(config):
     return True
 
 
-# Accepts complete config + template with correct keys
-# Recursively checks that each template key also exists in config
 def validate_config_keys(config, valid_keys):
+    '''Accepts completed config dict and template with all required config keys
+    (see validation_constants.valid_config_keys). Returns True if all required
+    keys exist, returns error string if one or more keys are missing.
+    '''
     for key in valid_keys:
         if key not in config:
             return f"Missing required top-level {key} key"
@@ -80,8 +88,12 @@ def validate_config_keys(config, valid_keys):
     return True
 
 
-# Accepts completed config, return True if valid, error string if invalid
 def validate_full_config(config):
+    '''Accepts completed config dict, validates syntax, returns True if valid,
+    returns error string with failure reason if invalid. If multiple syntax
+    errors exist the error string will only describe the first error.
+    '''
+
     # Confirm config has all required keys (see valid_config_keys)
     valid = validate_config_keys(config, valid_config_keys)
     if valid is not True:

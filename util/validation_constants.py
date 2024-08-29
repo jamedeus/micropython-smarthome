@@ -1,3 +1,7 @@
+'''Contains constants with config section templates for each supported device
+and sensor type, constants with acceptable values for config parameters, etc.
+'''
+
 from helper_functions import get_device_and_sensor_metadata, get_ir_blaster_keys_map
 
 # All valid ESP32 pins, excluding input-only
@@ -56,11 +60,13 @@ valid_config_keys = {
 }
 
 
-# Returns dict containing config templates for all device and sensor types
-# Devices are in "device" subsection, keyed by classname
-# Sensors are in "sensor" subsection, keyed by classname
 def build_config_templates():
-    config_templates = {
+    '''Returns dict containing config templates for all device and sensor types
+    Devices are in "device" subsection, keyed by classname
+    Sensors are in "sensor" subsection, keyed by classname
+    '''
+
+    output = {
         "device": {},
         "sensor": {}
     }
@@ -70,13 +76,13 @@ def build_config_templates():
 
     # Iterate device metadata, add each config template to dict
     for i in metadata['devices'].values():
-        config_templates['device'][i['display_name']] = i['config_template']
+        output['device'][i['display_name']] = i['config_template']
 
     # Iterate sensor metadata, add each config template to dict
     for i in metadata['sensors'].values():
-        config_templates['sensor'][i['display_name']] = i['config_template']
+        output['sensor'][i['display_name']] = i['config_template']
 
-    return config_templates
+    return output
 
 
 # Combine config templates from all device and sensor metadata files
