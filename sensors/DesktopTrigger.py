@@ -34,13 +34,17 @@ class DesktopTrigger(Sensor):
     def enable(self):
         # Restart loop if stopped
         if self.monitor_task is None:
+            print_with_timestamp(f"{self.name}: Start monitor loop")
             self.monitor_task = asyncio.create_task(self.monitor())
         super().enable()
 
     def disable(self):
         # Stop loop if running
         if self.monitor_task is not None:
+            print_with_timestamp(f"{self.name}: Stop monitor loop")
             self.monitor_task.cancel()
+            # Allow enable method to restart loop
+            self.monitor_task = None
         super().disable()
 
     def get_idle_time(self):
@@ -89,6 +93,7 @@ class DesktopTrigger(Sensor):
     # etc), so condition_met cannot rely on a single get_monitor_state call. Instead, loop
     # continuously monitors and stores most-recent reliable response in self.current attribute.
     async def monitor(self):
+        log.debug(f"{self.name}: Starting DesktopTrigger.monitor coro")
         try:
             while True:
                 # Get new reading
@@ -136,5 +141,5 @@ class DesktopTrigger(Sensor):
 
         # Sensor disabled, exit loop
         except asyncio.CancelledError:
-            self.monitor_task = None
+            log.debug(f"{self.name}: Exiting DesktopTrigger.monitor coro")
             return False

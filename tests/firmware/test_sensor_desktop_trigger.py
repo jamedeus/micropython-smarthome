@@ -6,6 +6,7 @@ from Group import Group
 from MotionSensor import MotionSensor
 from DesktopTarget import DesktopTarget
 from DesktopTrigger import DesktopTrigger
+from cpython_only import cpython_only
 
 # Read mock API receiver address
 with open('config.json', 'r') as file:
@@ -222,3 +223,28 @@ class TestDesktopTrigger(unittest.TestCase):
         self.assertTrue(self.group.refresh_called)
         self.assertTrue(self.group.state)
         self.assertTrue(self.target.state)
+
+    # Original bug: If scheduled_rule was "disabled" at boot time calling the
+    # enable method later would fail to start monitor loop. The __init__ method
+    # creates an asyncio task for monitor and saves Task object in monitor_task
+    # attribute (the enable method only creates task if monitor_task is None).
+    # However, the loop does not start until sync code yields to asyncio. When
+    # rule was "disabled" at boot time the set_rule call in Config.build_queue
+    # would call DesktopTrigger.disable, which cancels monitor_task, before the
+    # loop had started, so the except block in DesktopTrigger.monitor was never
+    # reached. This except block originally set monitor_task to None (allowing
+    # enable to create a new loop), so if it was not reached monitor_task would
+    # still contain the canceled Task, preventing the loop from being started.
+    # This is now handled in the disable method to ensure monitor_task is None.
+    @cpython_only
+    def test_11_regression_disabled_at_boot_breaks_monitor_loop(self):
+        # Get mock command receiver address
+        ip = config["mock_receiver"]["ip"]
+        port = config["mock_receiver"]["port"]
+
+        # Simulate instantiating with current_rule = disabled
+        instance = DesktopTrigger("sensor1", "sensor1", "desktop", "disabled", [], ip, port)
+        instance.set_rule("disabled")
+
+        # Confirm monitor_task is None
+        self.assertIsNone(instance.monitor_task)
