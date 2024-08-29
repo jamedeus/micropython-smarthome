@@ -1,3 +1,7 @@
+'''Contains functions used to validate instance (device and sensor) sections in
+ESP32 config files.
+'''
+
 import json
 from math import isnan
 from functools import wraps
@@ -16,10 +20,11 @@ from helper_functions import (
 validator_map = {}
 
 
-# Receives full config entry, tests default_rule and all schedule
-# rules with validator functions looked up in validator_map.
-# Returns True or error message
 def validate_rules(instance):
+    '''Receives full config entry, validates default_rule and all schedule
+    rules by passing them to validator functions in validator_map dict.
+    Returns True if all rules are valid, error string if any are invalid.
+    '''
     print(f"Validating {instance['nickname']} rules...")
 
     try:
@@ -33,7 +38,7 @@ def validate_rules(instance):
     if valid is False:
         return f"{instance['nickname']}: Invalid default rule {instance['default_rule']}"
     # If validator returns own error, return as-is
-    elif valid is not True:
+    if valid is not True:
         return valid
 
     # Validate shedule rules
@@ -46,15 +51,16 @@ def validate_rules(instance):
         if valid is False:
             return f"{instance['nickname']}: Invalid schedule rule {instance['schedule'][time]}"
         # If validator returns own error, return as-is
-        elif valid is not True:
+        if valid is not True:
             return valid
 
     return True
 
 
-# Adds decorated function to validator_map default key
-# for all types specified in type_list
 def add_default_rule_validator(type_list):
+    '''Adds decorated function to validator_map default key for all types
+    specified in type_list arg (list of config_name values from metadata).
+    '''
     def _add_schedule_rule_validator(func):
         for i in type_list:
             if i not in validator_map:  # pragma: no branch
@@ -64,46 +70,63 @@ def add_default_rule_validator(type_list):
     return _add_schedule_rule_validator
 
 
-# Adds decorated function to validator_map schedule key
-# for all types specified in type_list
 def add_schedule_rule_validator(type_list):
+    '''Adds decorated function to validator_map schedule key for all types
+    specified in type_list arg (list of config_name values from metadata).
+    '''
     def _add_schedule_rule_validator(func):
         for i in type_list:
-            if i not in validator_map.keys():  # pragma: no cover
+            if i not in validator_map:  # pragma: no cover
                 validator_map[i] = {'default': '', 'schedule': ''}
             validator_map[i]['schedule'] = func
         return func
     return _add_schedule_rule_validator
 
 
-# Returns wrapped function that accepts enabled and
-# disabled in addition to own rules
 def add_generic_validator(func):
+    '''Returns wrapped function that accepts "enabled" and "disabled" in
+    addition to rules accepted by the decorated function.
+    '''
     @wraps(func)
     def wrapper(rule, **kwargs):
         if generic_validator(rule):
             return True
-        else:
-            return func(rule, **kwargs)
+        return func(rule, **kwargs)
     return wrapper
 
 
-@add_schedule_rule_validator(["tasmota-relay", "dumb-relay", "desktop", "mosfet", "switch", "http-get"])
-@add_default_rule_validator(["tasmota-relay", "dumb-relay", "desktop", "mosfet", "switch", "http-get"])
+@add_schedule_rule_validator([
+    "tasmota-relay",
+    "dumb-relay",
+    "desktop",
+    "mosfet",
+    "switch",
+    "http-get"
+])
+@add_default_rule_validator([
+    "tasmota-relay",
+    "dumb-relay",
+    "desktop",
+    "mosfet",
+    "switch",
+    "http-get"
+])
 def generic_validator(rule, **kwargs):
+    '''Accepts "enabled" and "disabled" rules'''
+
     if str(rule).lower() == "enabled" or str(rule).lower() == "disabled":
         return True
-    else:
-        return False
+    return False
 
 
-# Takes dict containing 2 entries named "on" and "off"
-# Both entries are lists containing a full API request
-# "on" sent when self.send(1) called, "off" when self.send(0) called
 @add_schedule_rule_validator(['api-target'])
 @add_generic_validator
 @add_default_rule_validator(['api-target'])
 def api_target_validator(rule, **kwargs):
+    '''Takes complete api-target rule dict with "on" and "off" keys, each
+    containing a list with parameters for a single API call. Returns True if
+    syntax correct and both API calls are valid.
+    '''
     if isinstance(rule, str):
         try:
             # Convert string rule to dict (if received from API)
@@ -128,13 +151,14 @@ def api_target_validator(rule, **kwargs):
         if not is_valid_api_sub_rule(rule[i]):
             return False
 
-    else:
-        # Iteration finished without a return False, rule is valid
-        return True
+    # Iteration finished without a return False, rule is valid
+    return True
 
 
-# Takes ApiTarget sub-rule, return True if valid False if invalid
 def is_valid_api_sub_rule(rule):
+    '''Takes api-target sub-rule (list of parameters for a single API call).
+    Returns True if API call is valid, False if syntax is incorrect.
+    '''
     if not isinstance(rule, list):
         return False
 
@@ -144,19 +168,19 @@ def is_valid_api_sub_rule(rule):
         return True
 
     # Endpoints that require a device or sensor arg
-    elif rule[0] in ['enable', 'disable', 'reset_rule'] and len(rule) == 2 and is_device_or_sensor(rule[1]):
+    if rule[0] in ['enable', 'disable', 'reset_rule'] and len(rule) == 2 and is_device_or_sensor(rule[1]):
         return True
 
     # Endpoints that require a sensor arg
-    elif rule[0] in ['condition_met', 'trigger_sensor'] and len(rule) == 2 and is_sensor(rule[1]):
+    if rule[0] in ['condition_met', 'trigger_sensor'] and len(rule) == 2 and is_sensor(rule[1]):
         return True
 
     # Endpoints that require a device arg
-    elif rule[0] in ['turn_on', 'turn_off'] and len(rule) == 2 and is_device(rule[1]):
+    if rule[0] in ['turn_on', 'turn_off'] and len(rule) == 2 and is_device(rule[1]):
         return True
 
     # Endpoints that require a device/sensor arg and int/float arg
-    elif rule[0] in ['enable_in', 'disable_in'] and len(rule) == 3 and is_device_or_sensor(rule[1]):
+    if rule[0] in ['enable_in', 'disable_in'] and len(rule) == 3 and is_device_or_sensor(rule[1]):
         try:
             float(rule[2])
             return True
@@ -165,43 +189,46 @@ def is_valid_api_sub_rule(rule):
 
     # Endpoint requires a device/sensor arg and rule arg
     # Rule arg not validated (device/sensor type not known), client returns error if invalid
-    elif rule[0] == 'set_rule' and len(rule) == 3 and is_device_or_sensor(rule[1]):
+    if rule[0] == 'set_rule' and len(rule) == 3 and is_device_or_sensor(rule[1]):
         return True
 
     # Endpoint requires IR target and IR key args
     # Target and keys not validated (configured codes not known), client returns error if invalid
-    elif rule[0] == 'ir_key':
-        if len(rule) == 3 and type(rule[1]) == str and type(rule[2]) == str:
-            return True
-        else:
-            return False
+    if rule[0] == 'ir_key':
+        return len(rule) == 3 and isinstance(rule[1], str) and isinstance(rule[2], str)
 
-    else:
-        # Did not match any valid patterns
-        return False
+    # Did not match any valid patterns
+    return False
 
 
-# Takes configured min_rule and max_rule, absolute limits for device
-# Returns True if valid, error if invalid
 def min_max_rule_validator(min_rule, max_rule, device_min, device_max):
+    '''Takes min_rule and max_rule from config file, absolute limits for
+    device type (from metadata). Retuns True if min_rule and max_rule are
+    valid, returns error string if invalid.
+    '''
     try:
         if int(min_rule) > int(max_rule):
             return 'min_rule cannot be greater than max_rule'
-        elif int(min_rule) < device_min or int(max_rule) < device_min:
+        if int(min_rule) < device_min or int(max_rule) < device_min:
             return f'Rule limits cannot be less than {device_min}'
-        elif int(min_rule) > device_max or int(max_rule) > device_max:
+        if int(min_rule) > device_max or int(max_rule) > device_max:
             return f'Rule limits cannot be greater than {device_max}'
-        else:
-            return True
+        return True
     except ValueError:
         return f'Invalid rule limits, both must be int between {device_min} and {device_max}'
 
 
-# Requires int between min/max, or fade/<int>/<int>
 @add_schedule_rule_validator(['pwm'])
 @add_generic_validator
 @add_default_rule_validator(['pwm'])
 def led_strip_validator(rule, **kwargs):
+    '''Takes rule value, min_rule kwarg, max_rule kwarg.
+
+    Returns True if rule is int between min_rule and max_rule, or if rule has
+    "fade/<int>/<int>" syntax where first int is between min_rule and max_rule.
+
+    Returns False if rule is invalid or min_rule/max_rule are invalid.
+    '''
     try:
         min_rule = kwargs['min_rule']
         max_rule = kwargs['max_rule']
@@ -215,34 +242,45 @@ def led_strip_validator(rule, **kwargs):
     try:
         if str(rule).startswith("fade"):
             # Parse parameters from rule
-            cmd, target, period = rule.split("/")
+            _, target, period = rule.split("/")
 
-            if int(period) < 0 or int(target) < 0:
+            # Reject fade rule if duration is negative
+            if int(period) < 0:
                 return False
 
+            # Accept fade rule if target within min_rule - max_rule range
             if int(min_rule) <= int(target) <= int(max_rule):
                 return True
-            else:
-                return False
 
-        elif isinstance(rule, bool):
+            # Reject fade rule if target outside min_rule - max_rule range
             return False
 
-        elif int(min_rule) <= int(rule) <= int(max_rule):
+        # Reject "False" before reaching conditional below
+        # (would cast False to 0 and accept as valid rule)
+        if isinstance(rule, bool):
+            return False
+
+        # Accept rule if within min_rule - max_rule range (inclusive)
+        if int(min_rule) <= int(rule) <= int(max_rule):
             return True
 
-        else:
-            return False
-
+        # Reject rule if outside min_rule - max_rule range
+        return False
     except (ValueError, TypeError):
         return False
 
 
-# Requires int between 1 and 100 (inclusive), or fade/<int>/<int>
 @add_schedule_rule_validator(['dimmer', 'bulb'])
 @add_generic_validator
 @add_default_rule_validator(['dimmer', 'bulb'])
 def tplink_validator(rule, **kwargs):
+    '''Takes rule value, min_rule kwarg, max_rule kwarg.
+
+    Returns True if rule is int between min_rule and max_rule, or if rule has
+    "fade/<int>/<int>" syntax where first int is between min_rule and max_rule.
+
+    Returns False if rule is invalid or min_rule/max_rule are invalid.
+    '''
     try:
         # Validate rule limits
         min_rule = kwargs['min_rule']
@@ -256,35 +294,45 @@ def tplink_validator(rule, **kwargs):
     try:
         if str(rule).startswith("fade"):
             # Parse parameters from rule
-            cmd, target, period = rule.split("/")
+            _, target, period = rule.split("/")
 
+            # Reject fade rule if duration is negative
             if int(period) < 0:
                 return False
 
-            elif int(min_rule) <= int(target) <= int(max_rule):
+            # Accept fade rule if target within min_rule - max_rule range
+            if int(min_rule) <= int(target) <= int(max_rule):
                 return True
-            else:
-                return False
 
-        # Reject "False" before reaching conditional below (would cast False to 0 and accept as valid rule)
-        elif isinstance(rule, bool):
+            # Reject fade rule if target outside min_rule - max_rule range
             return False
 
-        elif int(min_rule) <= int(rule) <= int(max_rule):
+        # Reject "False" before reaching conditional below
+        # (would cast False to 0 and accept as valid rule)
+        if isinstance(rule, bool):
+            return False
+
+        # Accept rule if within min_rule - max_rule range (inclusive)
+        if int(min_rule) <= int(rule) <= int(max_rule):
             return True
 
-        else:
-            return False
-
+        # Reject rule if outside min_rule - max_rule range
+        return False
     except (ValueError, TypeError):
         return False
 
 
-# Requires int between 1 and 255 (inclusive), or fade/<int>/<int>
 @add_schedule_rule_validator(['wled'])
 @add_generic_validator
 @add_default_rule_validator(['wled'])
 def wled_validator(rule, **kwargs):
+    '''Takes rule value, min_rule kwarg, max_rule kwarg.
+
+    Returns True if rule is int between min_rule and max_rule, or if rule has
+    "fade/<int>/<int>" syntax where first int is between min_rule and max_rule.
+
+    Returns False if rule is invalid or min_rule/max_rule are invalid.
+    '''
     try:
         # Validate rule limits
         min_rule = kwargs['min_rule']
@@ -298,26 +346,30 @@ def wled_validator(rule, **kwargs):
     try:
         if str(rule).startswith("fade"):
             # Parse parameters from rule
-            cmd, target, period = rule.split("/")
+            _, target, period = rule.split("/")
 
+            # Reject fade rule if duration is negative
             if int(period) < 0:
                 return False
 
-            elif int(min_rule) <= int(target) <= int(max_rule):
+            # Accept fade rule if target within min_rule - max_rule range
+            if int(min_rule) <= int(target) <= int(max_rule):
                 return True
-            else:
-                return False
 
-        # Reject "False" before reaching conditional below (would cast False to 0 and accept as valid rule)
+            # Reject fade rule if target outside min_rule - max_rule range
+            return False
+
+        # Reject "False" before reaching conditional below
+        # (would cast False to 0 and accept as valid rule)
         if isinstance(rule, bool):
             return False
 
-        elif int(min_rule) <= int(rule) <= int(max_rule):
+        # Accept rule if within min_rule - max_rule range (inclusive)
+        if int(min_rule) <= int(rule) <= int(max_rule):
             return True
 
-        else:
-            return False
-
+        # Reject rule if outside min_rule - max_rule range
+        return False
     except (ValueError, TypeError):
         return False
 
@@ -329,43 +381,53 @@ def wled_validator(rule, **kwargs):
 @add_generic_validator
 @add_default_rule_validator(['dummy'])
 def dummy_validator(rule, **kwargs):
+    '''Accepts "on" or "off" rules
+    '''
     try:
         if rule.lower() == "on" or rule.lower() == "off":
             return True
-        else:
-            return False
+        return False
     except AttributeError:
         return False
 
 
-# Requires int or float
 @add_schedule_rule_validator(['pir', 'ld2410', 'load-cell'])
 @add_generic_validator
 @add_default_rule_validator(['pir', 'ld2410', 'load-cell'])
 def int_or_float_validator(rule, **kwargs):
+    '''Accepts int or float, rejects all other types.'''
     try:
         # Prevent incorrectly accepting True and False (last condition casts
         # to 1.0 and 0.0 respectively)
         if isinstance(rule, bool):
             return False
+
         # Prevent accepting NaN (is valid float but breaks arithmetic)
-        elif isnan(float(rule)):
+        if isnan(float(rule)):
             return False
-        else:
-            # Confirm can cast to float
-            float(rule)
-            return True
+
+        # Confirm can cast to float
+        float(rule)
+        return True
     except (ValueError, TypeError):
         return False
 
 
-# Requires int or float rule between 18 and 27 celsius (inclusive)
-# If units param is not celsius rule will be converted to correct units
-# Also validates tolerance, (int/float between 0.1 and 10), mode, and units
 @add_schedule_rule_validator(['si7021', 'dht22'])
 @add_generic_validator
 @add_default_rule_validator(['si7021', 'dht22'])
 def thermostat_validator(rule, **kwargs):
+    '''Takes rule and thermostat config params (units, mode, tolerance).
+
+    Accepts int or float rule between 18 and 27 celsius (inclusive). If units
+    param is not "celsius" rule is converted from configured units to celsius.
+
+    Returns error string if units is not "fahrenheit", "celsius", or "kelvin".
+    Returns error string if mode is not "heat" or "cool".
+    Returns error string if tolerance is less than 0.1 or greater than 10.0.
+    Returns error string if thermostat params missing or have incorrect type.
+    '''
+
     # Validate tolerance
     try:
         if not 0.1 <= float(kwargs['tolerance']) <= 10.0:
@@ -392,10 +454,7 @@ def thermostat_validator(rule, **kwargs):
         elif units == 'kelvin':
             rule = kelvin_to_celsius(float(rule))
 
-        # Constrain to range 18-27 (celsius)
-        if 18 <= float(rule) <= 27:
-            return True
-        else:
-            return False
+        # Return True if rule is between 18 and 27, otherwise False
+        return 18 <= float(rule) <= 27
     except (ValueError, TypeError):
         return False
