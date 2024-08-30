@@ -155,7 +155,7 @@ export const EditConfigProvider = ({ children }) => {
         const metadata = get_instance_metadata(category, event.target.value);
 
         // Add initial default_rule for float range (avoid NaN on slider)
-        if (metadata.rule_prompt === 'float_range') {
+        if (['float_range', 'thermostat'].includes(metadata.rule_prompt)) {
             const min_rule = parseInt(metadata.rule_limits[0], 10);
             const max_rule = parseInt(metadata.rule_limits[1], 10);
             metadata.config_template.default_rule = average(min_rule, max_rule);

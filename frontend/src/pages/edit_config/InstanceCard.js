@@ -98,17 +98,6 @@ ConfigParamInput.propTypes = {
 // Takes instance ID, instance config section, and metadata object
 // Renders correct default_rule input based on metadata and config section
 const DefaultRuleInput = ({ id, instance, metadata }) => {
-    // If instance has units key return thermostat input
-    if (instance.units !== undefined) {
-        return (
-            <DefaultRuleThermostat
-                id={id}
-                instance={instance}
-                metadata={metadata}
-            />
-        );
-    }
-
     switch (metadata.rule_prompt) {
         case 'standard':
             return (
@@ -127,6 +116,14 @@ const DefaultRuleInput = ({ id, instance, metadata }) => {
         case 'float_range':
             return (
                 <DefaultRuleFloatRange
+                    id={id}
+                    instance={instance}
+                    metadata={metadata}
+                />
+            );
+        case 'thermostat':
+            return (
+                <DefaultRuleThermostat
                     id={id}
                     instance={instance}
                     metadata={metadata}

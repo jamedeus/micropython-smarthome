@@ -55,7 +55,7 @@ instance_metadata = {
             "triggerable": False
         },
         "dht22": {
-            "rule_prompt": "float_range",
+            "rule_prompt": "thermostat",
             "rule_limits": [
                 18,
                 27
@@ -63,7 +63,7 @@ instance_metadata = {
             "triggerable": False
         },
         "si7021": {
-            "rule_prompt": "float_range",
+            "rule_prompt": "thermostat",
             "rule_limits": [
                 18,
                 27

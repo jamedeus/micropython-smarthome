@@ -30,7 +30,7 @@ const RuleSlider = ({
         rule = min;
     }
 
-    // Create array containing current rule, required my slider component
+    // Create array containing current rule, required by slider component
     const values = [rule];
 
     // Handler for slider + and - buttons

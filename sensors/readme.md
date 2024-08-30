@@ -76,6 +76,7 @@ Parameters:
 - `rule_prompt`: Determines which rule prompt is shown by the config generator script (in the future this will also determine configuration options in the web frontend). Available options:
     - `standard`: User may select "Enabled" or "Disabled"
     - `float_range`: User may select a float, "Enabled", or "Disabled"
+    - `thermostat`: Same as `float_range`, rule_limits are converted to configured temperature units
     - `int_range`: User may select an integer, "Enabled", or "Disabled"
     - `int_or_fade`: User may select an integer, fade rule, "Enabled", or "Disabled"
     - `on_off`: User may select "On", "Off", "Enabled", or "Disabled"

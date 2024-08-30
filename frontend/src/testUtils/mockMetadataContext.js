@@ -255,7 +255,7 @@ export const edit_config_metadata = {
                 "schedule": {},
                 "targets": []
             },
-            "rule_prompt": "float_range",
+            "rule_prompt": "thermostat",
             "rule_limits": [
                 18,
                 27
@@ -282,7 +282,7 @@ export const edit_config_metadata = {
                 "schedule": {},
                 "targets": []
             },
-            "rule_prompt": "float_range",
+            "rule_prompt": "thermostat",
             "rule_limits": [
                 18,
                 27
@@ -435,7 +435,7 @@ export const api_card_metadata = {
             "triggerable": false
         },
         "dht22": {
-            "rule_prompt": "float_range",
+            "rule_prompt": "thermostat",
             "rule_limits": [
                 18,
                 27
@@ -443,7 +443,7 @@ export const api_card_metadata = {
             "triggerable": false
         },
         "si7021": {
-            "rule_prompt": "float_range",
+            "rule_prompt": "thermostat",
             "rule_limits": [
                 18,
                 27

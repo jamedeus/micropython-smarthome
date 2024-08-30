@@ -18,7 +18,7 @@
         "schedule": {},
         "targets": []
     },
-    "rule_prompt": "float_range",
+    "rule_prompt": "thermostat",
     "rule_limits": [18, 27],
     "triggerable": false
 }
