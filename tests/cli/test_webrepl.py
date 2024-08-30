@@ -6,7 +6,7 @@ import struct
 import socket
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
-from Webrepl import Webrepl, websocket, handshake_message
+from Webrepl import Webrepl, Websocket, HANDSHAKE_MESSAGE
 
 # Get full paths to repository root directory, CLI tools directory
 cli = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
@@ -53,20 +53,20 @@ class WebsocketTests(TestCase):
     def test_write_method(self):
         # Mock socket and client_handshake to do nothing
         with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
-             patch.object(websocket, 'client_handshake', return_value=True):
+             patch.object(Websocket, 'client_handshake', return_value=True):
 
             # Instantiate, write long string to trigger else (rest covered by Webrepl tests)
-            ws = websocket(mock_socket)
+            ws = Websocket(mock_socket)
             ws.write('test string longer than the 126 characters, which is the required number of characters to trigger the else clause in websocket.write')
 
     def test_recvexactly_method(self):
         # Mock socket.recv to return arbitrary data, mock client_handshake to do nothing
         with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
              patch.object(mock_socket, 'recv', return_value=b"A bunch of binary data"), \
-             patch.object(websocket, 'client_handshake', return_value=True):
+             patch.object(Websocket, 'client_handshake', return_value=True):
 
             # Instantiate, request data, verify response
-            ws = websocket(mock_socket)
+            ws = Websocket(mock_socket)
             data = ws.recvexactly(22)
             self.assertEqual(data, b"A bunch of binary data")
 
@@ -79,21 +79,21 @@ class WebsocketTests(TestCase):
     def test_read_method(self):
         # Mock socket and client_handshake to do nothing
         with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
-             patch.object(websocket, 'client_handshake', return_value=True):
+             patch.object(Websocket, 'client_handshake', return_value=True):
 
-            # Instantiate websocket
-            ws = websocket(mock_socket)
+            # Instantiate Websocket
+            ws = Websocket(mock_socket)
 
             # First call: return sz=5, fl=0x82 (trigger break in second if statement)
             # Second call: Return Hello
-            with patch.object(websocket, 'recvexactly', side_effect=[b'\x82\x05', b'Hello']):
+            with patch.object(Websocket, 'recvexactly', side_effect=[b'\x82\x05', b'Hello']):
                 # Read 5 bytes, confirm expected response
                 data = ws.read(5)
                 self.assertEqual(data, b'Hello')
 
             # First call: return sz=5, fl=0x81 (trigger last if statement in loop)
             # Second call: return World
-            with patch.object(websocket, 'recvexactly', side_effect=[b'\x81\x05', b'World']):
+            with patch.object(Websocket, 'recvexactly', side_effect=[b'\x81\x05', b'World']):
                 # Read 5 bytes, confirm expected response
                 data = ws.read(5, text_ok=True)
                 self.assertEqual(data, b'World')
@@ -103,7 +103,7 @@ class WebsocketTests(TestCase):
             # Third call: return sz=16, fl=0x82 (trigger break in second if statement)
             # Fourth call: return 16 characters to final recvexactly statement in function
             recvexactly_side_effect = [b'\x81\x7E', b'\x00\x0F', b'\x82\x10', b'abcdefghijklmnop']
-            with patch.object(websocket, 'recvexactly', side_effect=recvexactly_side_effect), \
+            with patch.object(Websocket, 'recvexactly', side_effect=recvexactly_side_effect), \
                  patch.object(mock_socket, 'recv', return_value=b'abcde'):
 
                 # Read 16 bytes, confirm expected response
@@ -113,7 +113,7 @@ class WebsocketTests(TestCase):
             # Simulate buffer already contains data (read should return
             # existing buffer contents without reading from websocket)
             ws.buf = b'abcde'
-            with patch.object(websocket, 'recvexactly') as mock_recvexactly:
+            with patch.object(Websocket, 'recvexactly') as mock_recvexactly:
                 # Read 5 bytes, confirm expected response
                 data = ws.read(5)
                 self.assertEqual(data, b'abcde')
@@ -138,8 +138,8 @@ class WebsocketTests(TestCase):
              patch.object(mock_socket, 'makefile', return_value=mock_cl):
 
             # Instantiate, verify correct methods called
-            websocket(mock_socket)
-            mock_cl.write.assert_called_once_with(handshake_message)
+            Websocket(mock_socket)
+            mock_cl.write.assert_called_once_with(HANDSHAKE_MESSAGE)
             self.assertEqual(mock_cl.readline.call_count, 4)
 
 
@@ -151,8 +151,8 @@ class WebreplTests(TestCase):
 
         # Mock all methods called by open_connection + close_connection to return True
         with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
-             patch.object(websocket, 'client_handshake', return_value=True) as mock_client_handshake, \
-             patch.object(Webrepl, 'login', return_value=True) as mock_login:
+             patch.object(Websocket, 'client_handshake', return_value=True) as mock_client_handshake, \
+             patch.object(Webrepl, '_login', return_value=True) as mock_login:
 
             # Should connect successfully due to mocks
             self.assertTrue(node.open_connection())
@@ -164,7 +164,7 @@ class WebreplTests(TestCase):
             mock_login.assert_called()
 
             # Confirm has websocket attribute
-            self.assertIsInstance(node.ws, websocket)
+            self.assertIsInstance(node.ws, Websocket)
 
             # Close connection, confirm method called, confirm lost websocket attribute
             self.assertTrue(node.close_connection())
@@ -184,8 +184,8 @@ class WebreplTests(TestCase):
     # Confirm error raised if login/read_resp called before open_connection
     def test_premature_method_calls(self):
         node = Webrepl('123.45.67.89', 'password')
-        self.assertRaises(OSError, node.login)
-        self.assertRaises(OSError, node.read_resp)
+        self.assertRaises(OSError, node._login)
+        self.assertRaises(OSError, node._read_resp)
 
     # Confirm error raised if get/put_file methods called before open_connection and open_connection fails
     def test_premature_file_io(self):
@@ -212,7 +212,7 @@ class WebreplTests(TestCase):
         node = Webrepl('123.45.67.89', 'password')
         local_file = "test_get_file_output.json"
 
-        # Mock websocket read method to return contents of unit-test-config.json
+        # Mock Websocket.read method to return contents of unit-test-config.json
         ws_mock = MagicMock()
         ws_mock.read.side_effect = simulate_read_file_over_webrepl
 
@@ -220,13 +220,13 @@ class WebreplTests(TestCase):
         simulated_read_position[0] = 0
 
         # Mock all methods called by open_connection
-        # Mock websocket to return the object created above
-        # Mock read_resp to return bytes indicating valid signature
+        # Mock Websocket to return the object created above
+        # Mock _read_resp to return bytes indicating valid signature
         with patch.object(socket, 'socket', return_value=MagicMock()), \
-             patch.object(websocket, 'client_handshake', return_value=True), \
-             patch.object(Webrepl, 'login', return_value=True), \
-             patch('Webrepl.websocket', return_value=ws_mock), \
-             patch.object(node, 'read_resp', side_effect=[0, 0]):
+             patch.object(Websocket, 'client_handshake', return_value=True), \
+             patch.object(Webrepl, '_login', return_value=True), \
+             patch('Webrepl.Websocket', return_value=ws_mock), \
+             patch.object(node, '_read_resp', side_effect=[0, 0]):
 
             # Call method, should receive simulated data stream and write to disk
             node.get_file(local_file, "/path/to/remote")
@@ -242,7 +242,7 @@ class WebreplTests(TestCase):
     def test_get_file_mem(self):
         node = Webrepl('123.45.67.89', 'password')
 
-        # Mock websocket read method to return contents of unit-test-config.json
+        # Mock Websocket.read method to return contents of unit-test-config.json
         ws_mock = MagicMock()
         ws_mock.read.side_effect = simulate_read_file_over_webrepl
 
@@ -250,13 +250,13 @@ class WebreplTests(TestCase):
         simulated_read_position[0] = 0
 
         # Mock all methods called by open_connection
-        # Mock websocket to return the object created above
-        # Mock read_resp to return bytes indicating valid signature
+        # Mock Websocket to return the object created above
+        # Mock _read_resp to return bytes indicating valid signature
         with patch.object(socket, 'socket', return_value=MagicMock()), \
-             patch.object(websocket, 'client_handshake', return_value=True), \
-             patch.object(Webrepl, 'login', return_value=True), \
-             patch('Webrepl.websocket', return_value=ws_mock), \
-             patch.object(node, 'read_resp', side_effect=[0, 0]):
+             patch.object(Websocket, 'client_handshake', return_value=True), \
+             patch.object(Webrepl, '_login', return_value=True), \
+             patch('Webrepl.Websocket', return_value=ws_mock), \
+             patch.object(node, '_read_resp', side_effect=[0, 0]):
 
             # Call method, confirm returns expected data stream
             result = node.get_file_mem("/path/to/remote")
@@ -274,12 +274,12 @@ class WebreplTests(TestCase):
             return b''
 
         # Mock open_connection to return True without doing anything
-        # Mock websocket.read to simulate failed read
-        # Mock read_resp to return bytes indicating valid signature
+        # Mock Websocket.read to simulate failed read
+        # Mock _read_resp to return bytes indicating valid signature
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(node, 'ws', MagicMock()), \
              patch.object(node.ws, 'read', side_effect=simulate_failed_read) as mock_read, \
-             patch.object(node, 'read_resp', side_effect=[0, 0]):
+             patch.object(node, '_read_resp', side_effect=[0, 0]):
 
             # Both methods should raise OSError when empty buffer returned on second call
             with self.assertRaises(OSError):
@@ -294,17 +294,17 @@ class WebreplTests(TestCase):
     def test_put_file(self):
         node = Webrepl('123.45.67.89', 'password')
 
-        # Create mock websocket object
+        # Create mock Websocket object
         mock_websocket = MagicMock()
 
         # Mock all methods called by open_connection
-        # Mock websocket to return the object created above
-        # Mock read_resp to allow send to complete
+        # Mock Websocket to return the object created above
+        # Mock _read_resp to allow send to complete
         with patch.object(socket, 'socket', return_value=MagicMock()), \
-             patch.object(websocket, 'client_handshake', return_value=True), \
-             patch.object(Webrepl, 'login', return_value=True) as mock_login, \
-             patch('Webrepl.websocket', return_value=mock_websocket), \
-             patch.object(node, 'read_resp', side_effect=[0, 0]) as mock_read_resp:
+             patch.object(Websocket, 'client_handshake', return_value=True), \
+             patch.object(Webrepl, '_login', return_value=True) as mock_login, \
+             patch('Webrepl.Websocket', return_value=mock_websocket), \
+             patch.object(node, '_read_resp', side_effect=[0, 0]) as mock_read_resp:
 
             # Call method, confirm correct methods called
             node.put_file(test_config_path, 'config.json')
@@ -316,8 +316,8 @@ class WebreplTests(TestCase):
 
         # Simulate connection already open when method called
         with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
-             patch.object(Webrepl, 'login', return_value=True) as mock_login, \
-             patch.object(node, 'read_resp', side_effect=[0, 0]) as mock_read_resp:
+             patch.object(Webrepl, '_login', return_value=True) as mock_login, \
+             patch.object(node, '_read_resp', side_effect=[0, 0]) as mock_read_resp:
 
             # Call method, confirm correct methods called
             node.put_file(test_config_path, 'config.json')
@@ -334,17 +334,17 @@ class WebreplTests(TestCase):
         with open(test_config_path, 'r', encoding='utf-8') as file:
             config = json.load(file)
 
-        # Create mock websocket object
+        # Create mock Websocket object
         mock_websocket = MagicMock()
 
         # Mock all methods called by open_connection
-        # Mock websocket to return the object created above
-        # Mock read_resp to allow send to complete
+        # Mock Websocket to return the object created above
+        # Mock _read_resp to allow send to complete
         with patch.object(socket, 'socket', return_value=MagicMock()), \
-             patch.object(websocket, 'client_handshake', return_value=True), \
-             patch.object(Webrepl, 'login', return_value=True), \
-             patch('Webrepl.websocket', return_value=mock_websocket), \
-             patch.object(node, 'read_resp', side_effect=[0, 0]) as mock_read_resp:
+             patch.object(Websocket, 'client_handshake', return_value=True), \
+             patch.object(Webrepl, '_login', return_value=True), \
+             patch('Webrepl.Websocket', return_value=mock_websocket), \
+             patch.object(node, '_read_resp', side_effect=[0, 0]) as mock_read_resp:
 
             # Send as dict, confirm correct methods called
             node.put_file_mem(config, 'config.json')
@@ -353,7 +353,7 @@ class WebreplTests(TestCase):
 
         # Should also accept string
         with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
-             patch.object(node, 'read_resp', side_effect=[0, 0]) as mock_read_resp:
+             patch.object(node, '_read_resp', side_effect=[0, 0]) as mock_read_resp:
 
             # Send as string
             node.put_file_mem(str(json.dumps(config)), 'config.json')
@@ -362,7 +362,7 @@ class WebreplTests(TestCase):
 
         # Should also accept bytes
         with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
-             patch.object(node, 'read_resp', side_effect=[0, 0]) as mock_read_resp:
+             patch.object(node, '_read_resp', side_effect=[0, 0]) as mock_read_resp:
 
             # Send as bytes
             node.put_file_mem(json.dumps(config).encode(), 'config.json')
@@ -380,10 +380,10 @@ class WebreplTests(TestCase):
 
         # Mock methods to simulate successful login without making network connection
         with patch.object(socket, 'socket', return_value=MagicMock()), \
-             patch.object(websocket, 'client_handshake', return_value=True) as mock_client_handshake, \
-             patch.object(websocket, 'read', side_effect=[b"entry 0x400805cc", b":", b" "]):
+             patch.object(Websocket, 'client_handshake', return_value=True) as mock_client_handshake, \
+             patch.object(Websocket, 'read', side_effect=[b"entry 0x400805cc", b":", b" "]):
 
-            # Should login successfully due to websocket.read simulating password prompt
+            # Should login successfully due to Websocket.read simulating password prompt
             self.assertTrue(node.open_connection())
             self.assertTrue(mock_client_handshake.called)
 
@@ -391,12 +391,12 @@ class WebreplTests(TestCase):
         node = Webrepl('123.45.67.89', 'password')
 
         # Mock open_connection to return True without doing anything
-        # Mock websocket.read to simulate reading file (will only read signature bytes)
+        # Mock Websocket.read to simulate reading file (will only read signature bytes)
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(node, 'ws', MagicMock()), \
              patch.object(node.ws, 'read', side_effect=simulate_read_file_over_webrepl) as mock_read:
 
             # Call read_resp directly, confirm mock method called
             # Returning successfully indicates signature verified
-            node.read_resp()
+            node._read_resp()
             self.assertEqual(mock_read.call_count, 1)
