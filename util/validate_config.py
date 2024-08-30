@@ -13,7 +13,8 @@ from validation_constants import (
     valid_device_pins,
     valid_sensor_pins,
     config_templates,
-    valid_config_keys
+    valid_config_keys,
+    ir_blaster_options
 )
 
 # Create generators by parsing device and sensor types from templates
@@ -88,6 +89,22 @@ def validate_config_keys(config, valid_keys):
     return True
 
 
+def validate_ir_blaster_section(section):
+    '''Takes ir_blaster section (dict) from config files, returns True if all
+    requried keys are present, pin is valid, and targets are valid.
+    '''
+    if "target" not in section:
+        return "Missing required target key"
+    if "pin" not in section:
+        return "Missing required pin key"
+    if str(section["pin"]) not in valid_device_pins:
+        return f'Invalid ir_blaster pin {section["pin"]} used'
+    for i in section['target']:
+        if i not in ir_blaster_options:
+            return f'Invalid IR target {i}'
+    return True
+
+
 def validate_full_config(config):
     '''Accepts completed config dict, validates syntax, returns True if valid,
     returns error string with failure reason if invalid. If multiple syntax
@@ -142,6 +159,12 @@ def validate_full_config(config):
         valid = validate_rules(config[instance])
         if valid is not True:
             print(f"\nERROR: {valid}\n")
+            return valid
+
+    # Validate ir_blaster section if present
+    if 'ir_blaster' in config:
+        valid = validate_ir_blaster_section(config['ir_blaster'])
+        if valid is not True:
             return valid
 
     return True

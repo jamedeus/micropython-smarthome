@@ -11,8 +11,21 @@ class ValidateConfigTests(TestCase):
         self.valid_config = load_unit_test_config()
 
     def test_valid_config(self):
+        # Confirm config with all devices and sensors is valid
         result = validate_full_config(self.valid_config)
         self.assertTrue(result)
+
+        # Confirm bare minimum config template is valid
+        minimal_config = {
+            "metadata": {
+                "id": "Test",
+                "location": "Unit tests",
+                "floor": "2",
+                "schedule_keywords": {}
+            }
+        }
+        result = validate_full_config(minimal_config)
+        self.assertIs(result, True)
 
     def test_missing_keys(self):
         del self.valid_config['metadata']['id']
@@ -140,4 +153,39 @@ class ValidateConfigTests(TestCase):
         self.assertEqual(
             result,
             'Invalid rule limits, both must be int between 0 and 1023'
+        )
+
+    def test_ir_blaster_missing_keys(self):
+        # Delete pin key, confirm correct error
+        del self.valid_config['ir_blaster']['pin']
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(
+            result,
+            'Missing required pin key'
+        )
+
+        # Delete target key, confirm correct error
+        del self.valid_config['ir_blaster']['target']
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(
+            result,
+            'Missing required target key'
+        )
+
+    def test_ir_blaster_invalid_pin(self):
+        # Replace with input-only pin, confirm correct error
+        self.valid_config['ir_blaster']['pin'] = '39'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(
+            result,
+            'Invalid ir_blaster pin 39 used'
+        )
+
+    def test_ir_blaster_unsupported_target(self):
+        # Add unsuported target, confirm correct error
+        self.valid_config['ir_blaster']['target'].append('invalid_target')
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(
+            result,
+            'Invalid IR target invalid_target'
         )
