@@ -10,8 +10,13 @@ from helper_functions import (
     is_sensor,
     is_device,
     fahrenheit_to_celsius,
-    kelvin_to_celsius
+    kelvin_to_celsius,
+    get_device_and_sensor_metadata
 )
+
+
+# Get device and sensor metadata (contains absolute rule limits)
+instance_metadata = get_device_and_sensor_metadata()
 
 
 # Map device and sensor types to validators for both default
@@ -218,131 +223,37 @@ def min_max_rule_validator(min_rule, max_rule, device_min, device_max):
         return f'Invalid rule limits, both must be int between {device_min} and {device_max}'
 
 
-@add_schedule_rule_validator(['pwm'])
+@add_schedule_rule_validator(['pwm', 'dimmer', 'bulb', 'wled'])
 @add_generic_validator
-@add_default_rule_validator(['pwm'])
-def led_strip_validator(rule, **kwargs):
-    '''Takes rule value, min_rule kwarg, max_rule kwarg.
+@add_default_rule_validator(['pwm', 'dimmer', 'bulb', 'wled'])
+def int_or_fade_validator(rule, **kwargs):
+    '''Takes rule value, _type kwarg, min_rule kwarg, max_rule kwarg.
 
     Returns True if rule is int between min_rule and max_rule, or if rule has
     "fade/<int>/<int>" syntax where first int is between min_rule and max_rule.
 
-    Returns False if rule is invalid or min_rule/max_rule are invalid.
+    Returns False if rule is invalid or min_rule/max_rule are invalid (exceed
+    absolute values for device _type, min greater than max, etc).
     '''
+
     try:
+        # Look up absolute rule limits for device type in metadata
+        metadata = instance_metadata['devices'][kwargs['_type']]
+        abs_min, abs_max = metadata['rule_limits']
+    except KeyError:
+        return 'Instance missing required _type property'
+
+    try:
+        # Confirm configured min_rule are max_rule valid for device type
         min_rule = kwargs['min_rule']
         max_rule = kwargs['max_rule']
-        valid = min_max_rule_validator(min_rule, max_rule, 0, 1023)
+        valid = min_max_rule_validator(min_rule, max_rule, abs_min, abs_max)
         if valid is not True:
             return valid
     except KeyError:
-        return 'LedStrip missing required min_rule and/or max_rule property'
+        return 'Instance missing required min_rule and/or max_rule property'
 
     # Validate rule
-    try:
-        if str(rule).startswith("fade"):
-            # Parse parameters from rule
-            _, target, period = rule.split("/")
-
-            # Reject fade rule if duration is negative
-            if int(period) < 0:
-                return False
-
-            # Accept fade rule if target within min_rule - max_rule range
-            if int(min_rule) <= int(target) <= int(max_rule):
-                return True
-
-            # Reject fade rule if target outside min_rule - max_rule range
-            return False
-
-        # Reject "False" before reaching conditional below
-        # (would cast False to 0 and accept as valid rule)
-        if isinstance(rule, bool):
-            return False
-
-        # Accept rule if within min_rule - max_rule range (inclusive)
-        if int(min_rule) <= int(rule) <= int(max_rule):
-            return True
-
-        # Reject rule if outside min_rule - max_rule range
-        return False
-    except (ValueError, TypeError):
-        return False
-
-
-@add_schedule_rule_validator(['dimmer', 'bulb'])
-@add_generic_validator
-@add_default_rule_validator(['dimmer', 'bulb'])
-def tplink_validator(rule, **kwargs):
-    '''Takes rule value, min_rule kwarg, max_rule kwarg.
-
-    Returns True if rule is int between min_rule and max_rule, or if rule has
-    "fade/<int>/<int>" syntax where first int is between min_rule and max_rule.
-
-    Returns False if rule is invalid or min_rule/max_rule are invalid.
-    '''
-    try:
-        # Validate rule limits
-        min_rule = kwargs['min_rule']
-        max_rule = kwargs['max_rule']
-        valid = min_max_rule_validator(min_rule, max_rule, 1, 100)
-        if valid is not True:
-            return valid
-    except KeyError:
-        return 'Tplink missing required min_rule and/or max_rule property'
-
-    try:
-        if str(rule).startswith("fade"):
-            # Parse parameters from rule
-            _, target, period = rule.split("/")
-
-            # Reject fade rule if duration is negative
-            if int(period) < 0:
-                return False
-
-            # Accept fade rule if target within min_rule - max_rule range
-            if int(min_rule) <= int(target) <= int(max_rule):
-                return True
-
-            # Reject fade rule if target outside min_rule - max_rule range
-            return False
-
-        # Reject "False" before reaching conditional below
-        # (would cast False to 0 and accept as valid rule)
-        if isinstance(rule, bool):
-            return False
-
-        # Accept rule if within min_rule - max_rule range (inclusive)
-        if int(min_rule) <= int(rule) <= int(max_rule):
-            return True
-
-        # Reject rule if outside min_rule - max_rule range
-        return False
-    except (ValueError, TypeError):
-        return False
-
-
-@add_schedule_rule_validator(['wled'])
-@add_generic_validator
-@add_default_rule_validator(['wled'])
-def wled_validator(rule, **kwargs):
-    '''Takes rule value, min_rule kwarg, max_rule kwarg.
-
-    Returns True if rule is int between min_rule and max_rule, or if rule has
-    "fade/<int>/<int>" syntax where first int is between min_rule and max_rule.
-
-    Returns False if rule is invalid or min_rule/max_rule are invalid.
-    '''
-    try:
-        # Validate rule limits
-        min_rule = kwargs['min_rule']
-        max_rule = kwargs['max_rule']
-        valid = min_max_rule_validator(min_rule, max_rule, 1, 255)
-        if valid is not True:
-            return valid
-    except KeyError:
-        return 'Wled missing required min_rule and/or max_rule property'
-
     try:
         if str(rule).startswith("fade"):
             # Parse parameters from rule

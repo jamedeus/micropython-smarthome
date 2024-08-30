@@ -5,9 +5,7 @@ from helper_functions import load_unit_test_config
 from instance_validators import (
     validate_rules,
     api_target_validator,
-    led_strip_validator,
-    tplink_validator,
-    wled_validator,
+    int_or_fade_validator,
     dummy_validator,
     int_or_float_validator,
     thermostat_validator
@@ -92,40 +90,74 @@ class ValidatorTests(TestCase):
 
     def test_fade_rules(self):
         # LedStrip, Tplink, and Wled should accept fade rules
-        self.assertTrue(led_strip_validator('fade/50/3600', min_rule='0', max_rule='1023'))
-        self.assertTrue(tplink_validator('fade/50/3600', min_rule='1', max_rule='100'))
-        self.assertTrue(wled_validator('fade/50/3600', min_rule='1', max_rule='255'))
+        self.assertTrue(
+            int_or_fade_validator('fade/50/3600', min_rule='0', max_rule='1023', _type='pwm')
+        )
+        self.assertTrue(
+            int_or_fade_validator('fade/50/3600', min_rule='1', max_rule='100', _type='bulb')
+        )
+        self.assertTrue(int_or_fade_validator(
+            'fade/50/3600', min_rule='1', max_rule='255', _type='wled')
+        )
 
         # Should reject if target out of range
-        self.assertFalse(led_strip_validator('fade/50/3600', min_rule='500', max_rule='1023'))
-        self.assertFalse(tplink_validator('fade/50/3600', min_rule='75', max_rule='100'))
-        self.assertFalse(wled_validator('fade/50/3600', min_rule='128', max_rule='255'))
+        self.assertFalse(
+            int_or_fade_validator('fade/50/3600', min_rule='500', max_rule='1023', _type='pwm')
+        )
+        self.assertFalse(
+            int_or_fade_validator('fade/50/3600', min_rule='75', max_rule='100', _type='bulb')
+        )
+        self.assertFalse(
+            int_or_fade_validator('fade/50/3600', min_rule='128', max_rule='255', _type='wled')
+        )
 
         # Should reject if target negative
-        self.assertFalse(tplink_validator('fade/-5/3600', min_rule='1', max_rule='100'))
+        self.assertFalse(
+            int_or_fade_validator('fade/-5/3600', min_rule='1', max_rule='100', _type='bulb')
+        )
         self.assertEqual(
-            led_strip_validator('fade/-5/3600', min_rule='-500', max_rule='1023'),
+            int_or_fade_validator('fade/-5/3600', min_rule='-500', max_rule='1023', _type='pwm'),
             'Rule limits cannot be less than 0'
         )
-        self.assertFalse(wled_validator('fade/-5/3600', min_rule='128', max_rule='255'))
+        self.assertFalse(
+            int_or_fade_validator('fade/-5/3600', min_rule='128', max_rule='255', _type='wled')
+        )
 
         # Should reject if period negative
-        self.assertFalse(led_strip_validator('fade/50/-500', min_rule='0', max_rule='1023'))
-        self.assertFalse(tplink_validator('fade/50/-500', min_rule='1', max_rule='100'))
-        self.assertFalse(wled_validator('fade/50/-500', min_rule='1', max_rule='255'))
+        self.assertFalse(
+            int_or_fade_validator('fade/50/-500', min_rule='0', max_rule='1023', _type='pwm')
+        )
+        self.assertFalse(
+            int_or_fade_validator('fade/50/-500', min_rule='1', max_rule='100', _type='bulb')
+        )
+        self.assertFalse(
+            int_or_fade_validator('fade/50/-500', min_rule='1', max_rule='255', _type='wled')
+        )
 
         # Should reject if target is non-integer
-        self.assertFalse(led_strip_validator('fade/max/3600', min_rule='0', max_rule='1023'))
-        self.assertFalse(tplink_validator('fade/max/3600', min_rule='1', max_rule='100'))
-        self.assertFalse(wled_validator('fade/max/3600', min_rule='1', max_rule='255'))
+        self.assertFalse(
+            int_or_fade_validator('fade/max/3600', min_rule='0', max_rule='1023', _type='pwm')
+        )
+        self.assertFalse(
+            int_or_fade_validator('fade/max/3600', min_rule='1', max_rule='100', _type='bulb')
+        )
+        self.assertFalse(
+            int_or_fade_validator('fade/max/3600', min_rule='1', max_rule='255', _type='wled')
+        )
+
+        # Should reject if missing _type kwarg (can't look up absolute lomits)
+        self.assertEqual(
+            int_or_fade_validator('fade/50/3600', min_rule='0', max_rule='1023'),
+            'Instance missing required _type property'
+        )
 
     def test_led_strip_rules(self):
         # Should accept int between min_rule and max_rule
-        self.assertTrue(led_strip_validator(500, min_rule=0, max_rule=1023))
+        self.assertTrue(int_or_fade_validator(500, min_rule=0, max_rule=1023, _type='pwm'))
 
     def test_wled_rules(self):
         # Should accept int between min_rule and max_rule
-        self.assertTrue(wled_validator(50, min_rule=1, max_rule=255))
+        self.assertTrue(int_or_fade_validator(50, min_rule=1, max_rule=255, _type='wled'))
 
     def test_int_or_float_rules(self):
         # Should accept int or float
@@ -187,17 +219,17 @@ class ValidatorErrorTests(TestCase):
 
     def test_invalid_bool_rule(self):
         # Confirm bool is rejected for correct types
-        self.assertFalse(led_strip_validator(True, min_rule='0', max_rule='1023'))
-        self.assertFalse(tplink_validator(True, min_rule='1', max_rule='100'))
-        self.assertFalse(wled_validator(True, min_rule='1', max_rule='255'))
+        self.assertFalse(int_or_fade_validator(True, min_rule='0', max_rule='1023', _type='pwm'))
+        self.assertFalse(int_or_fade_validator(True, min_rule='1', max_rule='100', _type='bulb'))
+        self.assertFalse(int_or_fade_validator(True, min_rule='1', max_rule='255', _type='wled'))
         self.assertFalse(int_or_float_validator(True))
         self.assertFalse(int_or_float_validator(None))
 
     def test_invalid_out_of_range_rules(self):
         # Confirm range is enforced for correct types
-        self.assertFalse(led_strip_validator('-50', min_rule='0', max_rule='1023'))
-        self.assertFalse(tplink_validator('-50', min_rule='1', max_rule='100'))
-        self.assertFalse(wled_validator('-50', min_rule='1', max_rule='255'))
+        self.assertFalse(int_or_fade_validator('-50', min_rule='0', max_rule='1023', _type='pwm'))
+        self.assertFalse(int_or_fade_validator('-50', min_rule='1', max_rule='100', _type='bulb'))
+        self.assertFalse(int_or_fade_validator('-50', min_rule='1', max_rule='255', _type='wled'))
         self.assertFalse(thermostat_validator('30', tolerance=1, units='celsius', mode='cool'))
         self.assertFalse(thermostat_validator('320', tolerance=1, units='kelvin', mode='cool'))
         self.assertFalse(thermostat_validator('50', tolerance=1, units='fahrenheit', mode='cool'))
@@ -205,29 +237,29 @@ class ValidatorErrorTests(TestCase):
     def test_invalid_rule_limits(self):
         # Confirm correct error when max_rule greater than device limit
         self.assertEqual(
-            led_strip_validator('50', min_rule='0', max_rule='4096'),
+            int_or_fade_validator('50', min_rule='0', max_rule='4096', _type='pwm'),
             'Rule limits cannot be greater than 1023'
         )
         self.assertEqual(
-            tplink_validator('50', min_rule='1', max_rule='1000'),
+            int_or_fade_validator('50', min_rule='1', max_rule='1000', _type='bulb'),
             'Rule limits cannot be greater than 100'
         )
         self.assertEqual(
-            wled_validator('50', min_rule='1', max_rule='2000'),
+            int_or_fade_validator('50', min_rule='1', max_rule='2000', _type='wled'),
             'Rule limits cannot be greater than 255'
         )
 
         # Confirm correct error when limits are string
         self.assertEqual(
-            led_strip_validator('50', min_rule='0', max_rule='high'),
+            int_or_fade_validator('50', min_rule='0', max_rule='high', _type='pwm'),
             'Invalid rule limits, both must be int between 0 and 1023'
         )
         self.assertEqual(
-            tplink_validator('50', min_rule='1', max_rule='max'),
+            int_or_fade_validator('50', min_rule='1', max_rule='max', _type='bulb'),
             'Invalid rule limits, both must be int between 1 and 100'
         )
         self.assertEqual(
-            wled_validator('50', min_rule='1', max_rule='bright'),
+            int_or_fade_validator('50', min_rule='1', max_rule='bright', _type='wled'),
             'Invalid rule limits, both must be int between 1 and 255'
         )
 
@@ -266,7 +298,7 @@ class ValidatorErrorTests(TestCase):
 
     def test_invalid_noninteger_rules(self):
         # Confirm string is rejected for correct types
-        self.assertFalse(wled_validator('max', min_rule='1', max_rule='255'))
+        self.assertFalse(int_or_fade_validator('max', min_rule='1', max_rule='255', _type='wled'))
         self.assertFalse(int_or_float_validator('max', min_rule='1', max_rule='100'))
         self.assertFalse(thermostat_validator('max', tolerance=1, units='fahrenheit', mode='cool'))
 
@@ -310,21 +342,45 @@ class ValidatorErrorTests(TestCase):
         self.config['sensor5']['default_rule'] = 'disabled'
 
         # Validators should reject all with errors
-        self.assertEqual(validate_rules(self.config['device1']), 'Overhead: Invalid default rule enabled')
-        self.assertEqual(validate_rules(self.config['device2']), 'Lamp: Invalid default rule disabled')
-        self.assertEqual(validate_rules(self.config['device6']), 'Cabinet Lights: Invalid default rule enabled')
-        self.assertEqual(validate_rules(self.config['device8']), 'TV Bias Lights: Invalid default rule disabled')
-        self.assertEqual(validate_rules(self.config['device9']), 'Remote Control: Invalid default rule enabled')
-        self.assertEqual(validate_rules(self.config['sensor1']), 'Motion: Invalid default rule disabled')
-        self.assertEqual(validate_rules(self.config['sensor3']), 'Override: Invalid default rule enabled')
-        self.assertEqual(validate_rules(self.config['sensor5']), 'Temperature: Invalid default rule disabled')
+        self.assertEqual(
+            validate_rules(self.config['device1']),
+            'Overhead: Invalid default rule enabled'
+        )
+        self.assertEqual(
+            validate_rules(self.config['device2']),
+            'Lamp: Invalid default rule disabled'
+        )
+        self.assertEqual(
+            validate_rules(self.config['device6']),
+            'Cabinet Lights: Invalid default rule enabled'
+        )
+        self.assertEqual(
+            validate_rules(self.config['device8']),
+            'TV Bias Lights: Invalid default rule disabled'
+        )
+        self.assertEqual(
+            validate_rules(self.config['device9']),
+            'Remote Control: Invalid default rule enabled'
+        )
+        self.assertEqual(
+            validate_rules(self.config['sensor1']),
+            'Motion: Invalid default rule disabled'
+        )
+        self.assertEqual(
+            validate_rules(self.config['sensor3']),
+            'Override: Invalid default rule enabled'
+        )
+        self.assertEqual(
+            validate_rules(self.config['sensor5']),
+            'Temperature: Invalid default rule disabled'
+        )
 
     # Original bug: Validators for tplink and wled used hardcoded min/max
     # rules, ignoring min_rule and max_rule attributes.
     def test_regression_min_max_rule_ignored(self):
-        self.assertFalse(led_strip_validator('1023', min_rule='500', max_rule='600'))
-        self.assertFalse(tplink_validator('5', min_rule='25', max_rule='100'))
-        self.assertFalse(wled_validator('255', min_rule='1', max_rule='200'))
+        self.assertFalse(int_or_fade_validator('1023', min_rule='500', max_rule='600', _type='pwm'))
+        self.assertFalse(int_or_fade_validator('5', min_rule='25', max_rule='100', _type='bulb'))
+        self.assertFalse(int_or_fade_validator('255', min_rule='1', max_rule='200', _type='wled'))
 
     # Original bug: Validators assumed min_rule + max_rule existed
     # in kwargs and did not trap error, resulting in exception if missing.
@@ -338,19 +394,19 @@ class ValidatorErrorTests(TestCase):
 
         self.assertEqual(
             validate_rules(self.config['device1']),
-            'Tplink missing required min_rule and/or max_rule property'
+            'Instance missing required min_rule and/or max_rule property'
         )
         self.assertEqual(
             validate_rules(self.config['device2']),
-            'Tplink missing required min_rule and/or max_rule property'
+            'Instance missing required min_rule and/or max_rule property'
         )
         self.assertEqual(
             validate_rules(self.config['device6']),
-            'LedStrip missing required min_rule and/or max_rule property'
+            'Instance missing required min_rule and/or max_rule property'
         )
         self.assertEqual(
             validate_rules(self.config['device8']),
-            'Wled missing required min_rule and/or max_rule property'
+            'Instance missing required min_rule and/or max_rule property'
         )
         self.assertEqual(
             validate_rules(self.config['sensor5']),
@@ -368,8 +424,14 @@ class ValidatorErrorTests(TestCase):
         self.config['device8']['max_rule'] = 1
 
         # Confirm rejected with correct error
-        self.assertEqual(validate_rules(self.config['device1']), 'min_rule cannot be greater than max_rule')
-        self.assertEqual(validate_rules(self.config['device8']), 'min_rule cannot be greater than max_rule')
+        self.assertEqual(
+            validate_rules(self.config['device1']),
+            'min_rule cannot be greater than max_rule'
+        )
+        self.assertEqual(
+            validate_rules(self.config['device8']),
+            'min_rule cannot be greater than max_rule'
+        )
 
     # Original bug: int_or_float_validator only required float, allowing
     # NaN (which is a valid float, but breaks arithmetic) to be accepted.
