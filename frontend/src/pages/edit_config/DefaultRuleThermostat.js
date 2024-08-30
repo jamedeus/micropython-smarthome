@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { EditConfigContext } from 'root/EditConfigContext';
+import ThermostatParamInputs from './ThermostatParamInputs';
 import ThermostatRuleInput from 'inputs/ThermostatRuleInput';
 
 const DefaultRuleThermostat = ({ id, instance, metadata }) => {
@@ -17,19 +18,22 @@ const DefaultRuleThermostat = ({ id, instance, metadata }) => {
 
     // Instantiate slider, convert metadata min/max (celsius) to configured units
     return (
-        <div className="mb-2">
-            <label className="w-100 fw-bold">
-                Default Rule
-            </label>
-            <ThermostatRuleInput
-                rule={String(instance.default_rule)}
-                setRule={onSliderMove}
-                min={min_rule}
-                max={max_rule}
-                units={instance.units ? instance.units : "celsius"}
-                sliderStep={0.1}
-            />
-        </div>
+        <>
+            <div className="mb-2">
+                <label className="w-100 fw-bold">
+                    Default Rule
+                </label>
+                <ThermostatRuleInput
+                    rule={String(instance.default_rule)}
+                    setRule={onSliderMove}
+                    min={min_rule}
+                    max={max_rule}
+                    units={instance.units ? instance.units : "celsius"}
+                    sliderStep={0.1}
+                />
+            </div>
+            <ThermostatParamInputs id={id} />
+        </>
     );
 };
 

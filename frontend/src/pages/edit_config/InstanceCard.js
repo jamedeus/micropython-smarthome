@@ -9,7 +9,6 @@ import NicknameInput from './NicknameInput';
 import IPInput from './IPInput';
 import URIInput from './URIInput';
 import HttpGetPathInputs from './HttpGetPathInputs';
-import ThermostatParamInputs from './ThermostatParamInputs';
 import TargetNodeDropdown from './TargetNodeDropdown';
 import PinSelectDropdown from './PinSelectDropdown';
 import DefaultRuleStandard from './DefaultRuleStandard';
@@ -251,11 +250,6 @@ const InstanceCard = ({ id }) => {
                             instance={instance}
                             metadata={instanceMetadata}
                         />
-
-                        {/* Thermostat: add units, tolerance inputs */}
-                        {instance.units !== undefined ? (
-                            <ThermostatParamInputs id={id} />
-                        ) : null}
                     </Card.Body>
                 </Card.Body>
             </Card>

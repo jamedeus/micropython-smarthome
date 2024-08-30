@@ -124,30 +124,7 @@ const RuleInput = ({ ruleDetails, setRuleDetails, instance, metadata }) => {
         setRuleDetails({ ...ruleDetails, rule: rule });
     };
 
-    // Thermostat: Skip switch and return Float slider with temperatures converted
-    if (instance.units !== undefined) {
-        const defaultRangeRule = average(
-            convert_temperature(metadata.rule_limits[0], 'celsius', instance.units),
-            convert_temperature(metadata.rule_limits[1], 'celsius', instance.units)
-        );
-        return (
-            <SliderRuleWrapper
-                ruleDetails={ruleDetails}
-                setRuleDetails={setRuleDetails}
-                defaultRangeRule={defaultRangeRule}
-            >
-                <ThermostatRuleInput
-                    rule={ruleDetails.rule}
-                    setRule={setRule}
-                    min={metadata.rule_limits[0]}
-                    max={metadata.rule_limits[1]}
-                    units={instance.units}
-                />
-            </SliderRuleWrapper>
-        );
-    }
-
-    // All other types: Add correct input for rule_prompt
+    // Add correct input for rule_prompt
     switch(metadata.rule_prompt) {
         case "standard":
             return (
@@ -180,6 +157,25 @@ const RuleInput = ({ ruleDetails, setRuleDetails, instance, metadata }) => {
                         setRule={setRule}
                         min={metadata.rule_limits[0]}
                         max={metadata.rule_limits[1]}
+                    />
+                </SliderRuleWrapper>
+            );
+        case "thermostat":
+            return (
+                <SliderRuleWrapper
+                    ruleDetails={ruleDetails}
+                    setRuleDetails={setRuleDetails}
+                    defaultRangeRule={average(
+                        convert_temperature(metadata.rule_limits[0], 'celsius', instance.units),
+                        convert_temperature(metadata.rule_limits[1], 'celsius', instance.units)
+                    )}
+                >
+                    <ThermostatRuleInput
+                        rule={ruleDetails.rule}
+                        setRule={setRule}
+                        min={metadata.rule_limits[0]}
+                        max={metadata.rule_limits[1]}
+                        units={instance.units}
                     />
                 </SliderRuleWrapper>
             );
