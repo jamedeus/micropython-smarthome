@@ -20,7 +20,7 @@ class ValidateConfigTests(TestCase):
             "metadata": {
                 "id": "Test",
                 "location": "Unit tests",
-                "floor": "2",
+                "floor": 2,
                 "schedule_keywords": {}
             }
         }
@@ -39,7 +39,7 @@ class ValidateConfigTests(TestCase):
     def test_invalid_floor(self):
         self.valid_config['metadata']['floor'] = 'top'
         result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Invalid floor, must be integer')
+        self.assertEqual(result, 'Required metadata key floor has incorrect type')
 
     def test_duplicate_nicknames(self):
         self.valid_config['device4']['nickname'] = self.valid_config['device1']['nickname']
@@ -188,4 +188,27 @@ class ValidateConfigTests(TestCase):
         self.assertEqual(
             result,
             'Invalid IR target invalid_target'
+        )
+
+    def test_regression_accepts_config_with_missing_metadata_values(self):
+        '''Original bug: validate_config_keys confirmed that all required keys
+        in metadata section existed, but their values were never checked. This
+        made it possible to create a config with empty id or floor parameters,
+        which would break the web frontend.
+        '''
+
+        # Create config with empty strings for required metadata keys
+        config = {
+            "metadata": {
+                "id": "",
+                "location": "",
+                "floor": "",
+                "schedule_keywords": {}
+            }
+        }
+        # Confirm correct error string
+        result = validate_full_config(config)
+        self.assertEqual(
+            result,
+            'Required metadata key id has no value'
         )

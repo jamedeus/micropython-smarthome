@@ -89,6 +89,20 @@ def validate_config_keys(config, valid_keys):
     return True
 
 
+def validate_metadata_values(metadata):
+    '''Accepts metadata section, returns True if all keys contain correct data
+    type and no empty strings, returns False if any keys contain wrong type or
+    empty string.
+    '''
+    for key in valid_config_keys["metadata"]:
+        correct_type = type(valid_config_keys["metadata"][key])
+        if not isinstance(metadata[key], correct_type):
+            return f"Required metadata key {key} has incorrect type"
+        if isinstance(metadata[key], str) and metadata[key] == '':
+            return f"Required metadata key {key} has no value"
+    return True
+
+
 def validate_ir_blaster_section(section):
     '''Takes ir_blaster section (dict) from config files, returns True if all
     requried keys are present, pin is valid, and targets are valid.
@@ -116,11 +130,10 @@ def validate_full_config(config):
     if valid is not True:
         return valid
 
-    # Floor must be integer
-    try:
-        int(config['metadata']['floor'])
-    except ValueError:
-        return 'Invalid floor, must be integer'
+    # Confirm required metadata keys do not contain invalid values
+    valid = validate_metadata_values(config['metadata'])
+    if valid is not True:
+        return valid
 
     # Get list of all nicknames, check for duplicates
     nicknames = get_config_param_list(config, 'nickname')
