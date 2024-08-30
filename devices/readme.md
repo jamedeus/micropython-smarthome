@@ -34,7 +34,7 @@ By default all devices support the rules `Enabled` and `Disabled`. If more rules
 
 ### Device Metadata
 
-Metadata files must have the same name as the corresponding class (eg `Wled.py` and `Wled.json`) and should be placed in [util/metadata/devices](util/metadata/devices).
+Metadata files must have the same name as the corresponding class (eg `Wled.py` and `Wled.json`) and should be placed in [util/metadata/devices](util/metadata/devices). Adding a metadata file to this directory will automatically integrate the device type with all client-side tools - no changes are needed in the webapp or CLI tool code.
 
 The JSON metadata must follow this syntax:
 ```
@@ -68,7 +68,7 @@ Parameters:
     - The `placeholder` keyword indicates that the [config generator script](CLI/config_generator.py) should prompt the user for input.
     - The `_type` parameter must be pre-filled with the same value as `config_name`.
     - The `schedule` parameter must be empty
-- `rule_prompt`: Determines which rule prompt is shown by the config generator script (in the future this will also determine configuration options in the web frontend). Available options:
+- `rule_prompt`: Determines which rule prompt is shown by the CLI and web config generators, which input appears on the web frontend, and which [rule validator](util/instance_validators.py) function the config validator will use for this device. Available options:
     - `standard`: User may select "Enabled" or "Disabled"
     - `float_range`: User may select a float, "Enabled", or "Disabled"
     - `int_range`: User may select an integer, "Enabled", or "Disabled"
@@ -76,10 +76,13 @@ Parameters:
     - `on_off`: User may select "On", "Off", "Enabled", or "Disabled"
 - `rule_limits`: Required for devices which accept int/float rules, ignored for all others. Should contain 2 integers representing the minimum and maximum supported rules.
 
-### Integrating with client-side tools
+### Integrating into firmware
 
-The following changes must be made when a new device class is added:
-- [ ] [`firmware/manifest.py`](firmware/manifest.py): Add a module statement pointing to the new device class, and for each library it depends on (if any)
-- [ ] [`util/instance_validators.py`](util/instance_validators.py): Add a validator function for the new class, typically you can copy the validator method and return True instead of the rule user-selectable parameters
+Add a module statement to [`firmware/manifest.py`](firmware/manifest.py) pointing to the new device class. If the metadata `dependencies` key contains additional libraries add a module statement for each of them too. These modules will be compiled into the firmware the next time it is build.
 
-Once the above changes have been made, run the unit tests and fix anything that fails. At a minimum the module will need to be added to [`test_provision.py](tests/cli/test_provision.py) in the `test_provision_unit_tests` test case.
+Before building the firmware run all unit tests (including the CLI and frontend tests) and fix anything that fails. At a minimum the module will need to be added to:
+- [`test_provision.py](tests/cli/test_provision.py) in the `test_provision_unit_tests` test case.
+- [django unit test constants](frontend/api/unit_test_helpers.py) in the `instance_metadata` object.
+- [react unit test mock metadata](frontend/src/testUtils/mockMetadataContext.js) in the `edit_config_metadata` and `api_card_metadata` objects.
+
+See [here](firmware/readme.md) for firmware build instructions.

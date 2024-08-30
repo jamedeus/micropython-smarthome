@@ -16,13 +16,16 @@ from helper_functions import (
 )
 
 
-# Get device and sensor metadata (contains absolute rule limits)
+# Get device and sensor metadata (contains rule prompt types used to determine
+# correct validator, absolute rule limits used in range validators)
 instance_metadata = get_device_and_sensor_metadata()
 
+# Combine device and sensor sections into single dict
+combined_metadata = instance_metadata['devices'] | instance_metadata['sensors']
 
-# Map device and sensor types to validators for both default
-# and schedule rules. Each key contains a dict with 'default'
-# and 'schedule' keys to access each function.
+# Map rule_prompt values from metadata to rule validator functions.
+# Each key contains a dict with "default" and "schedule" keys used to access
+# correct validator for default_rule and schedule rules respectively.
 validator_map = {}
 
 
@@ -34,8 +37,10 @@ def validate_rules(instance):
     print(f"Validating {instance['nickname']} rules...")
 
     try:
-        default_validator = validator_map[instance['_type']]['default']
-        schedule_validator = validator_map[instance['_type']]['schedule']
+        # Look up correct validator functions based on rule_prompt
+        rule_prompt = combined_metadata[instance['_type']]['rule_prompt']
+        default_validator = validator_map[rule_prompt]['default']
+        schedule_validator = validator_map[rule_prompt]['schedule']
     except KeyError:
         return f'Invalid type {instance["_type"]}'
 
@@ -63,28 +68,26 @@ def validate_rules(instance):
     return True
 
 
-def add_default_rule_validator(type_list):
-    '''Adds decorated function to validator_map default key for all types
-    specified in type_list arg (list of config_name values from metadata).
+def add_default_rule_validator(rule_prompt):
+    '''Adds decorated function to validator_map default key under rule_prompt
+    specified in arg (must match rule_prompt from device or sensor metadata).
     '''
-    def _add_schedule_rule_validator(func):
-        for i in type_list:
-            if i not in validator_map:  # pragma: no branch
-                validator_map[i] = {'default': '', 'schedule': ''}
-            validator_map[i]['default'] = func
+    def _add_default_rule_validator(func):
+        if rule_prompt not in validator_map:  # pragma: no branch
+            validator_map[rule_prompt] = {'default': '', 'schedule': ''}
+        validator_map[rule_prompt]['default'] = func
         return func
-    return _add_schedule_rule_validator
+    return _add_default_rule_validator
 
 
-def add_schedule_rule_validator(type_list):
-    '''Adds decorated function to validator_map schedule key for all types
-    specified in type_list arg (list of config_name values from metadata).
+def add_schedule_rule_validator(rule_prompt):
+    '''Adds decorated function to validator_map schedule key under rule_prompt
+    specified in arg (must match rule_prompt from device or sensor metadata).
     '''
     def _add_schedule_rule_validator(func):
-        for i in type_list:
-            if i not in validator_map:  # pragma: no cover
-                validator_map[i] = {'default': '', 'schedule': ''}
-            validator_map[i]['schedule'] = func
+        if rule_prompt not in validator_map:  # pragma: no cover
+            validator_map[rule_prompt] = {'default': '', 'schedule': ''}
+        validator_map[rule_prompt]['schedule'] = func
         return func
     return _add_schedule_rule_validator
 
@@ -101,22 +104,8 @@ def add_generic_validator(func):
     return wrapper
 
 
-@add_schedule_rule_validator([
-    "tasmota-relay",
-    "dumb-relay",
-    "desktop",
-    "mosfet",
-    "switch",
-    "http-get"
-])
-@add_default_rule_validator([
-    "tasmota-relay",
-    "dumb-relay",
-    "desktop",
-    "mosfet",
-    "switch",
-    "http-get"
-])
+@add_schedule_rule_validator("standard")
+@add_default_rule_validator("standard")
 def generic_validator(rule, **kwargs):
     '''Accepts "enabled" and "disabled" rules'''
 
@@ -125,9 +114,9 @@ def generic_validator(rule, **kwargs):
     return False
 
 
-@add_schedule_rule_validator(['api-target'])
+@add_schedule_rule_validator("api_target")
 @add_generic_validator
-@add_default_rule_validator(['api-target'])
+@add_default_rule_validator("api_target")
 def api_target_validator(rule, **kwargs):
     '''Takes complete api-target rule dict with "on" and "off" keys, each
     containing a list with parameters for a single API call. Returns True if
@@ -243,9 +232,9 @@ def min_max_rule_validator(min_rule, max_rule, device_min, device_max):
         return f'Invalid rule limits, both must be int between {device_min} and {device_max}'
 
 
-@add_schedule_rule_validator(['pwm', 'dimmer', 'bulb', 'wled'])
+@add_schedule_rule_validator("int_or_fade")
 @add_generic_validator
-@add_default_rule_validator(['pwm', 'dimmer', 'bulb', 'wled'])
+@add_default_rule_validator("int_or_fade")
 def int_or_fade_validator(rule, **kwargs):
     '''Takes rule value, _type kwarg, min_rule kwarg, max_rule kwarg.
 
@@ -308,9 +297,9 @@ def int_or_fade_validator(rule, **kwargs):
 # Requires on or off (in addition to enabled/disabled checked previously)
 # Needs on and off because rule is only factor determining if condition is met,
 # without it would never turn targets off (condition not checked while disabled)
-@add_schedule_rule_validator(['dummy'])
+@add_schedule_rule_validator("on_off")
 @add_generic_validator
-@add_default_rule_validator(['dummy'])
+@add_default_rule_validator("on_off")
 def dummy_validator(rule, **kwargs):
     '''Accepts "on" or "off" rules
     '''
@@ -322,9 +311,9 @@ def dummy_validator(rule, **kwargs):
         return False
 
 
-@add_schedule_rule_validator(['pir', 'ld2410', 'load-cell'])
+@add_schedule_rule_validator("float_range")
 @add_generic_validator
-@add_default_rule_validator(['pir', 'ld2410', 'load-cell'])
+@add_default_rule_validator("float_range")
 def int_or_float_validator(rule, **kwargs):
     '''Accepts int or float, rejects all other types.'''
     try:
@@ -344,9 +333,9 @@ def int_or_float_validator(rule, **kwargs):
         return False
 
 
-@add_schedule_rule_validator(['si7021', 'dht22'])
+@add_schedule_rule_validator("thermostat")
 @add_generic_validator
-@add_default_rule_validator(['si7021', 'dht22'])
+@add_default_rule_validator("thermostat")
 def thermostat_validator(rule, **kwargs):
     '''Takes rule and thermostat config params (units, mode, tolerance).
 
