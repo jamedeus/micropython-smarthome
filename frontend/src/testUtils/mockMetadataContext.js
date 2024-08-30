@@ -262,6 +262,30 @@ export const edit_config_metadata = {
             ],
             "triggerable": false
         },
+        "ld2410": {
+            "config_name": "ld2410",
+            "class_name": "MotionSensor",
+            "display_name": "LD2410 Radar Sensor",
+            "dependencies": [
+                "sensors/MotionSensor.py",
+                "sensors/Sensor.py",
+                "core/Instance.py"
+            ],
+            "config_template": {
+                "_type": "ld2410",
+                "nickname": "placeholder",
+                "default_rule": "placeholder",
+                "pin": "placeholder",
+                "schedule": {},
+                "targets": []
+            },
+            "rule_prompt": "float_range",
+            "rule_limits": [
+                0,
+                60
+            ],
+            "triggerable": true
+        },
         "si7021": {
             "config_name": "si7021",
             "class_name": "Si7021",
@@ -441,6 +465,14 @@ export const api_card_metadata = {
                 27
             ],
             "triggerable": false
+        },
+        "ld2410": {
+            "rule_prompt": "float_range",
+            "rule_limits": [
+                0,
+                60
+            ],
+            "triggerable": true
         },
         "si7021": {
             "rule_prompt": "thermostat",
