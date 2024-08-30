@@ -332,7 +332,7 @@ class ValidateConfigTests(TestCase):
     def test_invalid_floor(self):
         self.valid_config['metadata']['floor'] = 'top'
         result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Invalid floor, must be integer')
+        self.assertEqual(result, 'Required metadata key floor has incorrect type')
 
     def test_duplicate_nicknames(self):
         self.valid_config['device4']['nickname'] = self.valid_config['device1']['nickname']

@@ -314,7 +314,7 @@ test_config_1 = {
     "metadata": {
         "id": "Test1",
         "location": "Inside cabinet above microwave",
-        "floor": "1",
+        "floor": 1,
         "schedule_keywords": {
             "sunrise": "06:00",
             "sunset": "18:00"
@@ -365,7 +365,7 @@ test_config_2 = {
     "metadata": {
         "id": "Test2",
         "location": "Bedroom",
-        "floor": "2",
+        "floor": 2,
         "schedule_keywords": {
             "sunrise": "06:00",
             "sunset": "18:00"
@@ -457,7 +457,7 @@ test_config_3 = {
     "metadata": {
         "id": "Test3",
         "location": "Inside cabinet under sink",
-        "floor": "1",
+        "floor": 1,
         "schedule_keywords": {
             "sunrise": "06:00",
             "sunset": "18:00"
@@ -536,7 +536,7 @@ test_config_1_edit_context = {
         "metadata": {
             "id": "Test1",
             "location": "Inside cabinet above microwave",
-            "floor": "1",
+            "floor": 1,
             "schedule_keywords": {
                 "sunrise": "06:00",
                 "sunset": "18:00"
@@ -766,7 +766,7 @@ test_config_2_edit_context = {
         "metadata": {
             "id": "Test2",
             "location": "Bedroom",
-            "floor": "2",
+            "floor": 2,
             "schedule_keywords": {
                 "sunrise": "06:00",
                 "sunset": "18:00"
@@ -1009,7 +1009,7 @@ test_config_3_edit_context = {
         "metadata": {
             "id": "Test3",
             "location": "Inside cabinet under sink",
-            "floor": "1",
+            "floor": 1,
             "schedule_keywords": {
                 "sunrise": "06:00",
                 "sunset": "18:00"
