@@ -85,7 +85,8 @@ def upload(data, reupload=False):
 
     # Get dependencies, upload
     modules = get_modules(config.config, REPO_DIR)
-    response = provision(data["ip"], NODE_PASSWD, config.config, modules)
+    print(f'Uploading {data["config"]} to {data["ip"]}...')
+    response = provision(data["ip"], NODE_PASSWD, config.config, modules, quiet=True)
 
     # If uploaded for the first time, update models
     if response['status'] == 200 and not reupload:
@@ -118,7 +119,7 @@ def reupload_all(request):
         modules = get_modules(node.config.config, REPO_DIR)
 
         print(f"\nReuploading {node.friendly_name}...")
-        response = provision(node.ip, NODE_PASSWD, node.config.config, modules)
+        response = provision(node.ip, NODE_PASSWD, node.config.config, modules, quiet=True)
 
         # Add result to report
         if response['status'] == 200:
@@ -210,7 +211,8 @@ def change_node_ip(data):
     if data["reupload"]:
         # Get dependencies, upload to new IP
         modules = get_modules(node.config.config, REPO_DIR)
-        response = provision(data["new_ip"], NODE_PASSWD, node.config.config, modules)
+        print(f'Uploading {data["friendly_name"]} config to {data["new_ip"]}...')
+        response = provision(data["new_ip"], NODE_PASSWD, node.config.config, modules, quiet=True)
 
         if response['status'] == 200:
             # Update model if successful

@@ -146,6 +146,16 @@ class WebsocketTests(TestCase):
 # Test the Webrepl class used to upload config + dependencies to nodes
 class WebreplTests(TestCase):
 
+    # Path to file created by get_file method
+    local_file = "test_get_file_output.json"
+
+    # Delete files written to disk by tests
+    def tearDown(self):
+        try:
+            os.remove(self.local_file)
+        except FileNotFoundError:
+            pass
+
     def test_open_and_close_connection(self):
         node = Webrepl('123.45.67.89', 'password')
 
@@ -210,7 +220,6 @@ class WebreplTests(TestCase):
 
     def test_get_file(self):
         node = Webrepl('123.45.67.89', 'password')
-        local_file = "test_get_file_output.json"
 
         # Mock Websocket.read method to return contents of unit-test-config.json
         ws_mock = MagicMock()
@@ -229,15 +238,12 @@ class WebreplTests(TestCase):
              patch.object(node, '_read_resp', side_effect=[0, 0]):
 
             # Call method, should receive simulated data stream and write to disk
-            node.get_file(local_file, "/path/to/remote")
+            node.get_file(self.local_file, "/path/to/remote")
 
         # Confirm expected data written
-        with open(local_file, 'rb') as f:
+        with open(self.local_file, 'rb') as f:
             get_file_output = f.read()
             self.assertEqual(binary_unit_test_config, get_file_output)
-
-        # Delete test file
-        os.remove(local_file)
 
     def test_get_file_mem(self):
         node = Webrepl('123.45.67.89', 'password')
@@ -400,3 +406,111 @@ class WebreplTests(TestCase):
             # Returning successfully indicates signature verified
             node._read_resp()
             self.assertEqual(mock_read.call_count, 1)
+
+    def test_quiet_arg_false(self):
+        # Instantiate with quiet arg set to False
+        node = Webrepl('123.45.67.89', 'password', False)
+
+        # Mock Websocket.read method to return contents of unit-test-config.json
+        ws_mock = MagicMock()
+        ws_mock.read.side_effect = simulate_read_file_over_webrepl
+        simulated_read_position[0] = 0
+
+        # Replace node.ws with the mock websocket created above
+        # Mock methods used by get_* and put_* to do nothing
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(node, 'ws', ws_mock), \
+             patch.object(node, '_read_resp', return_value=0):
+
+            # Mock print and sys.stdout.write to confirm called
+            with patch('builtins.print') as mock_print, \
+                 patch('Webrepl.sys.stdout.write') as mock_write_stdout:
+
+                # Call get_file, confirm print and sys.stdout.write were called
+                node.get_file(self.local_file, "/path/to/remote")
+                mock_print.assert_called()
+                mock_write_stdout.assert_called()
+
+            # Repeat with get_file_mem
+            with patch('builtins.print') as mock_print, \
+                 patch('Webrepl.sys.stdout.write') as mock_write_stdout:
+
+                # Reset simulated read position, call method
+                simulated_read_position[0] = 0
+                node.get_file_mem("/path/to/remote")
+
+                # Confirm print and sys.stdout.write were called
+                mock_print.assert_called()
+                mock_write_stdout.assert_called()
+
+            # Repeat with put_file method
+            with patch('builtins.print') as mock_print, \
+                 patch('Webrepl.sys.stdout.write') as mock_write_stdout:
+
+                # Call method, confirm print and sys.stdout.write were called
+                node.put_file(test_config_path, 'config.json')
+                mock_print.assert_called()
+                mock_write_stdout.assert_called()
+
+            # Repeat with put_file_mem method
+            with patch('builtins.print') as mock_print, \
+                 patch('Webrepl.sys.stdout.write') as mock_write_stdout:
+
+                # Call method, confirm print and sys.stdout.write were called
+                node.put_file_mem('mock_file', 'config.json')
+                mock_print.assert_called()
+                mock_write_stdout.assert_called()
+
+    def test_quiet_arg_true(self):
+        # Instantiate with quiet arg set to True
+        node = Webrepl('123.45.67.89', 'password', True)
+
+        # Mock Websocket.read method to return contents of unit-test-config.json
+        ws_mock = MagicMock()
+        ws_mock.read.side_effect = simulate_read_file_over_webrepl
+        simulated_read_position[0] = 0
+
+        # Replace node.ws with the mock websocket created above
+        # Mock methods used by get_* and put_* to do nothing
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(node, 'ws', ws_mock), \
+             patch.object(node, '_read_resp', return_value=0):
+
+            # Mock print and sys.stdout.write to confirm NOT called
+            with patch('builtins.print') as mock_print, \
+                 patch('Webrepl.sys.stdout.write') as mock_write_stdout:
+
+                # Call get_file, confirm print and sys.stdout.write were NOT called
+                node.get_file(self.local_file, "/path/to/remote")
+                mock_print.assert_not_called()
+                mock_write_stdout.assert_not_called()
+
+            # Repeat with get_file_mem
+            with patch('builtins.print') as mock_print, \
+                 patch('Webrepl.sys.stdout.write') as mock_write_stdout:
+
+                # Reset simulated read position, call method
+                simulated_read_position[0] = 0
+                node.get_file_mem("/path/to/remote")
+
+                # Confirm print and sys.stdout.write were NOT called
+                mock_print.assert_not_called()
+                mock_write_stdout.assert_not_called()
+
+            # Repeat with put_file method
+            with patch('builtins.print') as mock_print, \
+                 patch('Webrepl.sys.stdout.write') as mock_write_stdout:
+
+                # Call method, confirm print and sys.stdout.write were NOT called
+                node.put_file(test_config_path, 'config.json')
+                mock_print.assert_not_called()
+                mock_write_stdout.assert_not_called()
+
+            # Repeat with put_file_mem method
+            with patch('builtins.print') as mock_print, \
+                 patch('Webrepl.sys.stdout.write') as mock_write_stdout:
+
+                # Call method, confirm print and sys.stdout.write were NOT called
+                node.put_file_mem('mock_file', 'config.json')
+                mock_print.assert_not_called()
+                mock_write_stdout.assert_not_called()

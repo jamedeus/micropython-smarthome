@@ -65,7 +65,7 @@ def create_test_nodes():
 
 
 # Replaces provision view to simulate partially successful reupload_all
-def simulate_reupload_all_partial_success(ip, password, config, modules):
+def simulate_reupload_all_partial_success(ip, password, config, modules, quiet=False):
     if config == test_config_1:
         return {
             'message': 'Error: Unknown error',
@@ -84,7 +84,7 @@ def simulate_reupload_all_partial_success(ip, password, config, modules):
 
 
 # Replaces provision view to simulate one node failing for each possible reason in reupload_all
-def simulate_reupload_all_fail_for_different_reasons(ip, password, config, modules):
+def simulate_reupload_all_fail_for_different_reasons(ip, password, config, modules, quiet=False):
     if config == test_config_1:
         return {
             'message': 'Connection timed out - please press target node reset button, wait 30 seconds, and try again.',
@@ -103,13 +103,13 @@ def simulate_reupload_all_fail_for_different_reasons(ip, password, config, modul
 
 
 # Replaces Webrepl.put_file to simulate uploading to a node with no /lib directory
-def simulate_first_time_upload(self, src_file, dst_file):
+def simulate_first_time_upload(self, src_file, dst_file, quiet=False):
     if dst_file.startswith('lib'):
         raise AssertionError
 
 
 # Replaces Webrepl.put_file to simulate uploading to a node with corrupt filesystem
-def simulate_corrupt_filesystem_upload(self, src_file, dst_file):
+def simulate_corrupt_filesystem_upload(self, src_file, dst_file, quiet=False):
     if not dst_file.startswith('lib'):
         raise AssertionError
 

@@ -81,13 +81,14 @@ def get_modules(config, repo_root):
     return modules
 
 
-def provision(ip, password, config, modules):
+def provision(ip, password, config, modules, quiet=False):
     '''Takes target IP, webrepl password, config file dict, and modules dict.
     Uploads config file and all modules to target IP.
+    Prints name of each file uploaded unless optional quiet arg is True.
     '''
 
     # Open conection, detect if node connected to network
-    node = Webrepl(ip, password)
+    node = Webrepl(ip, password, quiet)
     if not node.open_connection():
         return {
             'message': 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.',

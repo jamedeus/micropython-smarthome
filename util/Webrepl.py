@@ -129,14 +129,18 @@ class Websocket:
 
 class Webrepl():
     '''Webrepl helper class used to simplify connections to ESP32 nodes.
-    Takes ESP32 IP and webrepl password (default=password).
+
+    Takes ESP32 IP, webrepl password (default=password), and optional quiet arg
+    (silences all console output except errors if True, defaults to False).
+
     Contains methods to open and close connections, read and write files, etc.
     '''
 
-    def __init__(self, ip, password="password"):
+    def __init__(self, ip, password="password", quiet=False):
         self.ip = ip
         self.password = password
         self.ws = None
+        self.quiet = quiet
 
     def open_connection(self):
         '''Open socket, upgrade to websocket, login with self.password'''
@@ -226,9 +230,12 @@ class Webrepl():
                     sz -= len(buf)
 
                     # Overwrite previous progress report
-                    sys.stdout.write(f"Received {count} bytes\r")
-                    sys.stdout.flush()
-        print()
+                    if not self.quiet:
+                        sys.stdout.write(f"Received {count} bytes\r")
+                        sys.stdout.flush()
+
+        if not self.quiet:
+            print()
         assert self._read_resp() == 0
 
     def get_file_mem(self, remote_file):
@@ -269,10 +276,12 @@ class Webrepl():
                 sz -= len(buf)
 
                 # Overwrite previous progress report
-                sys.stdout.write(f"Received {count} bytes\r")
-                sys.stdout.flush()
+                if not self.quiet:
+                    sys.stdout.write(f"Received {count} bytes\r")
+                    sys.stdout.flush()
 
-        print()
+        if not self.quiet:
+            print()
         assert self._read_resp() == 0
 
         return output.getvalue()
@@ -291,7 +300,8 @@ class Webrepl():
         request = struct.pack("<2sBBQLH64s", b"WA", 1, 0, 0, sz, len(remote_file), remote_file)
 
         # Print status message before sending request
-        print(f"{local_file} -> {self.ip}:/{remote_file}")
+        if not self.quiet:
+            print(f"{local_file} -> {self.ip}:/{remote_file}")
 
         # Send first 10 bytes of request, then all remaining bytes (no response = success)
         self.ws.write(request[:10])
@@ -302,8 +312,9 @@ class Webrepl():
         with open(local_file, "rb") as source_file:
             while True:
                 # Overwrite previous progress report
-                sys.stdout.write(f"Sent {count} of {sz} bytes\r")
-                sys.stdout.flush()
+                if not self.quiet:
+                    sys.stdout.write(f"Sent {count} of {sz} bytes\r")
+                    sys.stdout.flush()
 
                 # Read next chunk
                 buf = source_file.read(1024)
@@ -315,7 +326,9 @@ class Webrepl():
                 # Send chunk
                 self.ws.write(buf)
                 count += len(buf)
-        print('\n')
+
+        if not self.quiet:
+            print('\n')
         assert self._read_resp() == 0
 
     # Takes string instead of
@@ -343,7 +356,8 @@ class Webrepl():
         request = struct.pack("<2sBBQLH64s", b"WA", 1, 0, 0, sz, len(remote_file), remote_file)
 
         # Print status message before sending request
-        print(f"{sz} bytes -> {self.ip}:/{remote_file}")
+        if not self.quiet:
+            print(f"{sz} bytes -> {self.ip}:/{remote_file}")
 
         # Send first 10 bytes of request, then all remaining bytes (no response = success)
         self.ws.write(request[:10])
@@ -354,8 +368,9 @@ class Webrepl():
         with io.BytesIO(file_contents) as source_file:
             while True:
                 # Overwrite previous progress report
-                sys.stdout.write(f"Sent {count} of {sz} bytes\r")
-                sys.stdout.flush()
+                if not self.quiet:
+                    sys.stdout.write(f"Sent {count} of {sz} bytes\r")
+                    sys.stdout.flush()
 
                 # Read next chunk
                 buf = source_file.read(1024)
@@ -367,5 +382,7 @@ class Webrepl():
                 # Send chunk
                 self.ws.write(buf)
                 count += len(buf)
-        print('\n')
+
+        if not self.quiet:
+            print('\n')
         assert self._read_resp() == 0
