@@ -17,16 +17,16 @@ ir_codes_dir = os.path.join(repo, 'lib', 'ir_codes')
 
 # Build URI regex, requires http or https followed by domain or IP
 # Accepts optional subdomains, ports, and subpaths
-ip_regex = (
+IP_REGEX = (
     r'((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
     r'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
 )
-domain_regex = (r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}')
-port_regex = (r'(:[0-9]{1,5})?')
-path_regex = (r'(/[^\s]*)?')
-uri_regex = re.compile(
+DOMAIN_REGEX = r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}'
+PORT_REGEX = r'(:[0-9]{1,5})?'
+PATH_REGEX = r'(/[^\s]*)?'
+URI_REGEX = re.compile(
     r'^(http|https)://'
-    r'(' + ip_regex + '|' + domain_regex + ')' + port_regex + path_regex + '$'
+    r'(' + IP_REGEX + '|' + DOMAIN_REGEX + ')' + PORT_REGEX + PATH_REGEX + '$'
 )
 
 
@@ -90,15 +90,12 @@ def get_config_param_list(config, param):
 
 def valid_ip(ip):
     '''Returns True if arg matches IPv4 regex, otherwise False'''
-    return bool(re.match(
-        r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$',
-        ip
-    ))
+    return bool(re.match(f'{IP_REGEX}$', ip))
 
 
 def valid_uri(uri):
     '''Returns True if arg is a valid URI, otherwise False.'''
-    return bool(uri_regex.match(uri))
+    return bool(URI_REGEX.match(uri))
 
 
 def valid_timestamp(timestamp):

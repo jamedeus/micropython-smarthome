@@ -149,6 +149,9 @@ class TestHelperFunctions(TestCase):
         self.assertFalse(valid_ip("256.256.256.256"))
         self.assertFalse(valid_ip("192.168.0"))
         self.assertFalse(valid_ip("abc.def.ghi.jkl"))
+        # Should reject valid IP with leading/trailing characters
+        self.assertFalse(valid_ip("f255.255.255.255"))
+        self.assertFalse(valid_ip("255.255.255.255g"))
 
     def test_valid_uri(self):
         # Should accept URI with http or https followed by domain or IP
