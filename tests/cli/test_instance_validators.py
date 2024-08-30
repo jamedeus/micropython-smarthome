@@ -1,10 +1,12 @@
 # pylint: disable=line-too-long, missing-function-docstring, missing-module-docstring, missing-class-docstring
 
+from copy import deepcopy
 from unittest import TestCase
 from helper_functions import load_unit_test_config
 from instance_validators import (
     validate_rules,
     api_target_validator,
+    is_valid_ir_api_call,
     int_or_fade_validator,
     dummy_validator,
     int_or_float_validator,
@@ -216,6 +218,24 @@ class ValidatorErrorTests(TestCase):
         invalid = self.config['device9']['default_rule']
         invalid['on'] = 42
         self.assertFalse(api_target_validator(invalid))
+
+    def test_api_target_invalid_ir_key_rule(self):
+        # Create rule with ir_key command with invalid key
+        invalid_rule = deepcopy(self.config['device9']['default_rule'])
+        invalid_rule['on'][2] = 'fake_key'
+        # Confirm rule is rejected
+        self.assertFalse(api_target_validator(invalid_rule))
+
+        # Create rule with ir_key command with invalid target
+        invalid_rule = deepcopy(self.config['device9']['default_rule'])
+        invalid_rule['on'][1] = 'fake_target'
+        # Confirm rule is rejected
+        self.assertFalse(api_target_validator(invalid_rule))
+
+        # Sub-rule validator should return False if rule is not list
+        self.assertFalse(is_valid_ir_api_call('ir_key/samsung_tv/power'))
+        # Sub-rule validator should return False if first arg is not "ir_key"
+        self.assertFalse(is_valid_ir_api_call(['ir', 'samsung_tv', 'power']))
 
     def test_invalid_bool_rule(self):
         # Confirm bool is rejected for correct types

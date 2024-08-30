@@ -5,6 +5,7 @@ ESP32 config files.
 import json
 from math import isnan
 from functools import wraps
+from validation_constants import ir_blaster_options
 from helper_functions import (
     is_device_or_sensor,
     is_sensor,
@@ -197,13 +198,32 @@ def is_valid_api_sub_rule(rule):
     if rule[0] == 'set_rule' and len(rule) == 3 and is_device_or_sensor(rule[1]):
         return True
 
-    # Endpoint requires IR target and IR key args
-    # Target and keys not validated (configured codes not known), client returns error if invalid
+    # Endpoint requires IR target and IR key args matching options in
+    # ir_blaster_options dict
     if rule[0] == 'ir_key':
-        return len(rule) == 3 and isinstance(rule[1], str) and isinstance(rule[2], str)
+        return is_valid_ir_api_call(rule)
 
     # Did not match any valid patterns
     return False
+
+
+def is_valid_ir_api_call(rule):
+    '''Takes api-target sub-rule (list of parameters for a single API call).
+    Returns True if API call contains ir_key endpoint with a valid IR target
+    and key, False if syntax is incorrect or target/key are not supported.
+    '''
+    if not isinstance(rule, list):
+        return False
+    # Invalid endpoint
+    if rule[0] != 'ir_key':
+        return False
+    # Unsupported IR target
+    if rule[1] not in ir_blaster_options:
+        return False
+    # Invalid IR key (must match list of IR target keys)
+    if rule[2] not in ir_blaster_options[rule[1]]:
+        return False
+    return True
 
 
 def min_max_rule_validator(min_rule, max_rule, device_min, device_max):
