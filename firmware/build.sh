@@ -104,7 +104,7 @@ build() {
 
 
 # Remove existing build (if present), recompile
-# Slower but necessary after deleteing modules (still in existing build)
+# Slower but necessary after deleting modules (still in existing build)
 fresh_build() {
     rm -rf "$ESP32_PORT_DIR/build-ESP32_GENERIC"
     build

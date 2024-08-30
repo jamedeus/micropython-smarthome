@@ -119,7 +119,7 @@ class Config():
         # Timezone set to none (final arg), required for compatibility with cpython test environment
         next_reload = time.mktime((now[0], now[1], now[2] + 1, 3, 0, 0, now[6], now[7], -1))
 
-        # Calculate miliseconds until reload, add random 0-60 minute delay to stagger API calls
+        # Calculate milliseconds until reload, add random 0-60 minute delay to stagger API calls
         adjust = randrange(3600)
         ms_until_reload = (next_reload - epoch + adjust) * 1000
 
@@ -317,7 +317,7 @@ class Config():
 
         failed_attempts = 0
 
-        # Ensure enough free ram for API resopnse
+        # Ensure enough free ram for API response
         gc.collect()
 
         # Set time from internet in correct timezone, retry until successful (ntptime easier but no timezone support)
@@ -332,13 +332,13 @@ class Config():
 
                 # Parse time parameters
                 hour, minute, second = response.json()["current_time"].split(":")
-                second, milisecond = second.split(".")
+                second, millisecond = second.split(".")
 
                 # Parse date parameters
                 year, month, day = map(int, response.json()["date"].split("-"))
 
                 # Set RTC (uses different parameter order than time.localtime)
-                RTC().datetime((year, month, day, 0, int(hour), int(minute), int(second), int(milisecond)))
+                RTC().datetime((year, month, day, 0, int(hour), int(minute), int(second), int(millisecond)))
 
                 # Set sunrise/sunset times
                 self.schedule_keywords["sunrise"] = response.json()["sunrise"]
@@ -493,8 +493,8 @@ class Config():
 
             # Create timers for all rules
             for k in queue:
-                miliseconds = (k - epoch) * 1000
-                SoftwareTimer.timer.create(miliseconds, instance.next_rule, "scheduler")
+                milliseconds = (k - epoch) * 1000
+                SoftwareTimer.timer.create(milliseconds, instance.next_rule, "scheduler")
                 gc.collect()
 
         print_with_timestamp(f"Finished building queue, total timers = {len(SoftwareTimer.timer.queue)}")

@@ -87,7 +87,7 @@ def provision(ip, password, config, modules, quiet=False):
     Prints name of each file uploaded unless optional quiet arg is True.
     '''
 
-    # Open conection, detect if node connected to network
+    # Open connection, detect if node connected to network
     node = Webrepl(ip, password, quiet)
     if not node.open_connection():
         return {

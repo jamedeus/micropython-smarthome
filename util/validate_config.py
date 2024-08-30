@@ -105,7 +105,7 @@ def validate_metadata_values(metadata):
 
 def validate_ir_blaster_section(section):
     '''Takes ir_blaster section (dict) from config files, returns True if all
-    requried keys are present, pin is valid, and targets are valid.
+    required keys are present, pin is valid, and targets are valid.
     '''
     if "target" not in section:
         return "Missing required target key"

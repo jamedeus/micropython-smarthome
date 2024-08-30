@@ -83,7 +83,7 @@ def get_config_filename(friendly_name):
 
 def get_config_param_list(config, param):
     '''Takes config file and name of param that exists in subsections.
-    Returns list of values for each occurence of the param name.
+    Returns list of values for each occurrence of the param name.
     '''
     return [value[param] for key, value in config.items() if param in value]
 

@@ -64,7 +64,7 @@ Keys:
 * `schedule_keywords`: Contains keyword names as values and timestamps (HH:MM) as values. These are automatically added to new config files.
 * `webrepl_password`: The password used to upload config files to ESP32 nodes. This must match the password set during ESP32 wifi setup and should be the same for all ESP32 nodes.
 * `config_directory`: The location where ESP32 config files are stored.
-* `django_backend`: Optional, address of a django web app to syncronize with.
+* `django_backend`: Optional, address of a django web app to synchronize with.
     * If set current django database contents will be requested each time a CLI tool is called.
     * When nodes or keywords are created or deleted using CLI tools the same changes will be made in the django database.
 * `ignore_ssl_errors`: Optional, skips SSL certificate verification if true (allows using https with self-signed certificates)

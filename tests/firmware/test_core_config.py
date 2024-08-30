@@ -134,7 +134,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.config.groups[0].targets[0], self.config.devices[0])
         self.assertEqual(self.config.groups[0].triggers[0], self.config.sensors[0])
 
-        # Confirm current and sheduled rules are not set (determined by build_queue, hasn't run)
+        # Confirm current and scheduled rules are not set (determined by build_queue, hasn't run)
         self.assertEqual(self.config.devices[0].current_rule, None)
         self.assertEqual(self.config.devices[0].current_rule, None)
         self.assertEqual(self.config.sensors[0].scheduled_rule, None)

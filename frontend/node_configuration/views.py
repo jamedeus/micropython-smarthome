@@ -495,7 +495,7 @@ def restore_config(data):
     if not valid_ip(data["ip"]):
         return error_response(message=f'Invalid IP {data["ip"]}', status=400)
 
-    # Open conection, detect if node connected to network
+    # Open connection, detect if node connected to network
     node = Webrepl(data["ip"], NODE_PASSWD)
     if not node.open_connection():
         return error_response(

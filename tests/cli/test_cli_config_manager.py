@@ -311,7 +311,7 @@ class TestCliConfigManager(TestCase):
                 timeout=5
             )
 
-        # Confim mock config was written to config_directory
+        # Confirm mock config was written to config_directory
         self.assertTrue(os.path.exists(os.path.join(mock_config_dir, 'new.json')))
 
     def test_add_node_no_backend_configured(self):
@@ -343,7 +343,7 @@ class TestCliConfigManager(TestCase):
             # Confirm no POST request was made
             mock_post.assert_not_called()
 
-        # Confim mock config was written to config_directory
+        # Confirm mock config was written to config_directory
         self.assertTrue(os.path.exists(os.path.join(mock_config_dir, 'new.json')))
 
     def test_add_node_backend_offline(self):
@@ -394,7 +394,7 @@ class TestCliConfigManager(TestCase):
                 'Failed to add to django database (connection error)'
             )
 
-        # Confim mock config was written to config_directory
+        # Confirm mock config was written to config_directory
         self.assertTrue(os.path.exists(os.path.join(mock_config_dir, 'new.json')))
 
     def test_remove_node(self):
@@ -1229,7 +1229,7 @@ class TestCliConfigManager(TestCase):
             self.assertEqual(save_keyword_calls[1][0], ('192.168.1.234', ''))
             self.assertEqual(save_keyword_calls[2][0], ('192.168.1.111', ''))
 
-            # Confirm keyword was removeed from django backend
+            # Confirm keyword was removed from django backend
             mock_post.assert_called_once_with(
                 f'{self.manager.config["django_backend"]}/delete_schedule_keyword',
                 json={
@@ -1304,7 +1304,7 @@ class TestCliConfigManager(TestCase):
             self.assertEqual(mock_rm_keyword.call_count, 3)
             self.assertEqual(mock_save_keywords.call_count, 3)
 
-            # Confirm keyword was removeed from django backend
+            # Confirm keyword was removed from django backend
             mock_post.assert_called_once_with(
                 f'{self.manager.config["django_backend"]}/delete_schedule_keyword',
                 json={

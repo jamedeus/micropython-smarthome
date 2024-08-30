@@ -71,7 +71,7 @@ class OverviewPageTests(TestCase):
         # Create test config that hasn't been uploaded
         Config.objects.create(config=test_config_1, filename='test1.json')
 
-        # Rquest page, confirm correct template used
+        # Request page, confirm correct template used
         response = self.client.get('/config_overview')
         self.assertTemplateUsed(response, 'node_configuration/overview.html')
 
@@ -97,7 +97,7 @@ class OverviewPageTests(TestCase):
         ScheduleKeyword.objects.create(keyword='morning', timestamp='08:00')
         ScheduleKeyword.objects.create(keyword='sleep', timestamp='23:00')
 
-        # Rquest page, confirm correct template used
+        # Request page, confirm correct template used
         response = self.client.get('/config_overview')
         self.assertTemplateUsed(response, 'node_configuration/overview.html')
 

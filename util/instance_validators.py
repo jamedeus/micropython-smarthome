@@ -52,7 +52,7 @@ def validate_rules(instance):
     if valid is not True:
         return valid
 
-    # Validate shedule rules
+    # Validate schedule rules
     for time in instance['schedule']:
         if not time:
             return f"{instance['nickname']}: Missing schedule rule timestamp"
@@ -217,7 +217,7 @@ def is_valid_ir_api_call(rule):
 
 def min_max_rule_validator(min_rule, max_rule, device_min, device_max):
     '''Takes min_rule and max_rule from config file, absolute limits for
-    device type (from metadata). Retuns True if min_rule and max_rule are
+    device type (from metadata). Returns True if min_rule and max_rule are
     valid, returns error string if invalid.
     '''
     try:

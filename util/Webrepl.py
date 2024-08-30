@@ -115,7 +115,7 @@ class Websocket:
         Minimal implementation for MicroPython, may not comply with standards.
         '''
 
-        # Make unbuffered file-like obect
+        # Make unbuffered file-like object
         cl = self.s.makefile("rwb", 0)
         # Send websocket upgrade request to node
         cl.write(HANDSHAKE_MESSAGE)

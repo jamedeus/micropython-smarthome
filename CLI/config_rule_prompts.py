@@ -43,7 +43,7 @@ def build_rule_prompt_maps():
       - rule_prompt_map: Contains keys for every class, values are rule prompt
         functions. All rule prompt functions accept config arg and rule_type
         arg ("default" or "schedule"). The rule_type arg determines which
-        options are shown (typically "default" ommits "Enabled" and "Disabled")
+        options are shown (typically "default" omits "Enabled" and "Disabled")
 
       - rule_limits_map: Only contains keys for classes which accept numeric (int
         or float) rules, values are 2 tuples with minimum, maximum valid rules

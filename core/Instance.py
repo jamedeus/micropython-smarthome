@@ -12,7 +12,7 @@ class Instance():
         # Unique, sequential name (sensor1, sensor2, ...) used in backend
         self.name = name
 
-        # User-configurable name used in frontend, not necesarily unique
+        # User-configurable name used in frontend, not necessarily unique
         self.nickname = nickname
 
         # Instance type, arg determines which class is instantiated by Config.instantiate_hardware
@@ -94,7 +94,7 @@ class Instance():
             else:
                 self.current_rule = self.default_rule
             self.enable()
-        # Sensor was previously disabled, enable now that rule has changed
+        # Instance was previously disabled, enable now that rule has changed
         elif self.enabled is False:
             self.enable()
 

@@ -182,7 +182,7 @@ class ValidateConfigTests(TestCase):
         )
 
     def test_ir_blaster_unsupported_target(self):
-        # Add unsuported target, confirm correct error
+        # Add unsupported target, confirm correct error
         self.valid_config['ir_blaster']['target'].append('invalid_target')
         result = validate_full_config(self.valid_config)
         self.assertEqual(

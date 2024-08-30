@@ -227,7 +227,7 @@ class TestApiTarget(unittest.TestCase):
         # Confirm failure detected
         self.assertFalse(self.instance.send(1))
 
-    # When targetted by MotionSensor, ApiTarget should reset motion attribute after
+    # When targeted by MotionSensor, ApiTarget should reset motion attribute after
     # successful on command. This allows retriggering sensor to send command again
     def test_12_send_retrigger_motion_sensor(self):
         # Set mock sensor motion attribute to True, set valid rule
@@ -291,7 +291,7 @@ class TestApiTarget(unittest.TestCase):
         self.assertTrue(self.instance.set_rule({'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']}))
         self.assertEqual(self.instance.current_rule, {'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']})
 
-        # Should accept reset_rule targetting device or sensor
+        # Should accept reset_rule targeting device or sensor
         self.assertTrue(self.instance.set_rule({'on': ['reset_rule', 'device2'], 'off': ['reset_rule', 'sensor2']}))
         self.assertEqual(
             self.instance.current_rule,

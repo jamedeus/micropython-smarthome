@@ -113,7 +113,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
     def test_07_trigger(self):
-        # Ensure not already tiggered to avoid false positive
+        # Ensure not already triggered to avoid false positive
         self.instance.motion = False
         # Trigger, condition should now be met
         self.assertTrue(self.instance.trigger())

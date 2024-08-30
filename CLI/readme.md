@@ -3,7 +3,7 @@
 
 # Command Line Tools
 
-These tools expose all functionality of the [web app](frontend/README.md) from the command line. They can be configured to syncronize data with the web app, or used standalone with no webapp.
+These tools expose all functionality of the [web app](frontend/README.md) from the command line. They can be configured to synchronize data with the web app, or used standalone with no webapp.
 
 The main [`smarthome_cli.py`](CLI/smarthome_cli.py) script displays an interactive menu which can be used to:
 * Send API commands to ESP32 nodes and view responses
@@ -19,7 +19,7 @@ The other modules in this directory are imported by `smarthome_cli` and generall
 
 ## Setup
 
-Dependencies can be installed using pipenv (less conventient), or the whole package can be installed as a global CLI tool.
+Dependencies can be installed using pipenv (less convenient), or the whole package can be installed as a global CLI tool.
 
 ### Global installation
 
@@ -204,9 +204,9 @@ The `Sync nodes and keywords from django` option updates `cli_config.json` with 
 
 The `Download all config files from django` option writes config files for all existing nodes to the config directory set in `cli_config.json`. This is more expensive and does not happen automatically. You may want to do this after initial setup, but it is not required - when a config file is missing (eg when trying to upload it) a prompt will appear asking if you want to download it from django.
 
-#### Django syncronization
+#### Django synchronization
 
-If a django address is configured in `cli_config.json` the script will automatically syncronize with the webapp:
+If a django address is configured in `cli_config.json` the script will automatically synchronize with the webapp:
 * When the script is started current nodes and schedule keywords are downloaded from the backend and written to `cli_config.json`
 * When nodes are created or deleted an API call is sent to the django backend
 * When schedule keywords are created, edited, or deleted an API call is sent to the django backend

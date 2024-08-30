@@ -144,7 +144,7 @@ class TestDesktopTrigger(unittest.TestCase):
             # Yield to loop to allow monitor_task to exit
             await asyncio.sleep(0.1)
 
-        # Disable and yeild to loop, confirm task replaced with None
+        # Disable and yield to loop, confirm task replaced with None
         asyncio.run(test())
         self.assertEqual(self.instance.monitor_task, None)
 

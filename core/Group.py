@@ -51,7 +51,7 @@ class Group():
     def determine_correct_action(self, conditions):
         # Determine action to apply to target devices: True = turn on, False = turn off, None = do nothing
         # Turn on: Requires only 1 sensor to return True
-        # Turn off: Requries ALL sensors to return False
+        # Turn off: Requires ALL sensors to return False
         # Nothing: Requires 1 sensor to return None and 0 sensors returning True
         if True in conditions:
             action = True

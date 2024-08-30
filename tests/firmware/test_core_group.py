@@ -162,7 +162,7 @@ class TestGroup(unittest.TestCase):
     # This resulted in device staying on even after sensors turned other devices in group off. If
     # device was enabled while sensor conditions not met, it still would not be turned off because
     # state (False) matched correct action (turn off). This meant it was impossible to turn the light
-    # off without triggering + reseting sensors (or using API).
+    # off without triggering + resetting sensors (or using API).
     def test_07_regression_correct_state_when_re_enabled(self):
         # Ensure Device enabled, simulate turning on
         self.device.enable()

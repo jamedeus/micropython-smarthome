@@ -53,7 +53,7 @@ endpoint_descriptions = {
     "ir_add_macro_action [name] [target] [key]":"""Append action to macro 'name' simulating pressing 'key' on remote control for 'target'
                                             Optional: 'delay' arg (ms delay after key), 'repeats' arg (number of times to press key)""",
     "ir_run_macro [name]":                      "Run all actions in an existing macro 'name'",
-    "get_temp":                                 "Get current reading from temp sensor in Farenheit",
+    "get_temp":                                 "Get current reading from temp sensor in Fahrenheit",
     "get_humid":                                "Get current relative humidity from temp sensor",
     "get_climate":                              "Get current temp and humidity from sensor",
     "set_gps_coords":                           "Set the latitude and longitude used to look up sunrise/sunset times",
@@ -123,7 +123,7 @@ def example_usage_error(endpoint):
 
 
 def missing_target_error():
-    '''Prints available nodes from cli_config.json then exits scrip.
+    '''Prints available nodes from cli_config.json then exits script.
     Called when no target IP/node is given, or invalid node is given.
     '''
     print(

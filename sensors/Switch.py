@@ -23,7 +23,7 @@ class Switch(Sensor):
 
         log.info(f"Instantiated switch sensor named {self.name}")
 
-    # Called by hardware intterupt, must accept arg (unused)
+    # Called by hardware interrupt, must accept arg (unused)
     # Update switch_closed and refresh group when switch changes state
     def interrupt_handler(self, arg=None):
         self.switch_closed = bool(self.switch.value())

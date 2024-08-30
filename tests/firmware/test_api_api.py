@@ -894,7 +894,7 @@ class TestApi(unittest.TestCase):
 
     # Original bug: increment_rule endpoint response was determined by checking the return
     # value of increment_rule method in bare conditional, assuming the method only returned
-    # True and False. Method can also return error JSON, which was interpretted as success
+    # True and False. Method can also return error JSON, which was interpreted as success
     # resulting in success message instead of error.
     def test_51_regression_increment_rule_wrong_error(self):
         # Call with invalid argument, confirm correct error

@@ -27,18 +27,18 @@ class SoftwareTimer():
         # determined period, causing new rule to run late.
         self.new_rule_added = False
 
-    # Return epoch time in miliseconds
+    # Return epoch time in milliseconds
     def epoch_now(self):
         return (time.mktime(time.localtime()) * 1000)
 
-    # Period in miliseconds
+    # Period in milliseconds
     def create(self, period, callback, name):
         # Stop loop while adding timer (queue briefly empty)
         self.pause = True
 
         now = self.epoch_now()
 
-        # In miliseconds
+        # In milliseconds
         expiration = now + int(period)
 
         # Prevent overwriting existing item with same expiration time

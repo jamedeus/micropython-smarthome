@@ -210,7 +210,7 @@ class ApiTarget(Device):
             if not self.request(command):
                 return False
 
-        # Self targetting, pass request directly to API backend
+        # Self targeting, pass request directly to API backend
         else:
             if not self.send_to_self(command):
                 return False

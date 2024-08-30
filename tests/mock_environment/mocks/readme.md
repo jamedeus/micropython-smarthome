@@ -8,7 +8,7 @@ This module mocks the [micropython DHT module](https://docs.micropython.org/en/l
 
 ## Json module
 
-The `runtests.py` script replaces `json.loads` and `json.JSONDecoder` with mocks that handle invalid syntax by raising OSError (rather than JSONDecodeError). This matches the behavior of micropython's json module, which does not implement JSONDecodeError. The JSONDecoder mock also raises a ValueError if the encoded JSON contains NaN (not suppoorted on micropython).
+The `runtests.py` script replaces `json.loads` and `json.JSONDecoder` with mocks that handle invalid syntax by raising OSError (rather than JSONDecodeError). This matches the behavior of micropython's json module, which does not implement JSONDecodeError. The JSONDecoder mock also raises a ValueError if the encoded JSON contains NaN (not supported on micropython).
 
 ## Logging module
 
@@ -54,7 +54,7 @@ When the `init` method is called a new thread is created to handle the callback 
 
 The `deinit` method sets a `threading.Event()` attribute checked by the thread handler function. This causes the thread to exit without running the callback after the timer expires.
 
-The `value` method returns the remaining time in milliseconds, calculcated from the `start_time` and `period` attribute created by `init`.
+The `value` method returns the remaining time in milliseconds, calculated from the `start_time` and `period` attribute created by `init`.
 
 ### machine.RTC
 

@@ -59,9 +59,9 @@ class Tplink(DimmableLight):
             sock_tcp.settimeout(10)
             sock_tcp.connect((self.ip, 9999))
 
-            # Dimmer has seperate brightness and on/off commands, bulb combines into 1 command
+            # Dimmer has separate brightness and on/off commands, bulb combines into 1 command
             if self._type == "dimmer":
-                # Set on/off state, read response (dimmer wont listen for next command until reply read)
+                # Set on/off state, read response (dimmer won't listen for next command until reply read)
                 sock_tcp.send(self.encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}'))
                 data = sock_tcp.recv(2048)
 
