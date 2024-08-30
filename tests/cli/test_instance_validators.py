@@ -24,27 +24,27 @@ class ValidatorTests(TestCase):
         # Should accept all 3 single-parameter commands
         valid = self.config['device9']['default_rule']
         valid['on'] = ['ignore']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['reboot']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['clear_log']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
 
     def test_api_target_enable_disable(self):
         # Should accept accept enable and disable if arg is sensor or device
         valid = self.config['device9']['default_rule']
         valid['on'] = ['enable', 'sensor1']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['disable', 'device1']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
 
     def test_api_target_sensor_commands(self):
         # Should accept sensor-only commands if arg is sensor
         valid = self.config['device9']['default_rule']
         valid['on'] = ['trigger_sensor', 'sensor1']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['condition_met', 'sensor1']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
         # Should reject device
         valid['on'] = ['condition_met', 'device1']
         self.assertFalse(api_target_validator(valid))
@@ -53,9 +53,9 @@ class ValidatorTests(TestCase):
         # Should accept accept enable and disable if args ar sensor/device and int/float
         valid = self.config['device9']['default_rule']
         valid['on'] = ['enable_in', 'sensor1', '5']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['disable_in', 'device1', '2.5']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
         # Should fail with non-numeric delay
         valid['on'] = ['disable_in', 'device1', 'five minutes']
         self.assertFalse(api_target_validator(valid))
@@ -64,42 +64,45 @@ class ValidatorTests(TestCase):
         # Should accept turn_on/off if arg is device
         valid = self.config['device9']['default_rule']
         valid['on'] = ['turn_on', 'device1']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['turn_off', 'device1']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
 
     def test_api_target_set_rule(self):
         # Should accept set_rule if args are sensor/device and rule
         valid = self.config['device9']['default_rule']
         valid['on'] = ['set_rule', 'sensor1', '50']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['set_rule', 'device1', '50']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
 
         # Should accept reset_rule if arg is sensor or device
         valid['on'] = ['reset_rule', 'sensor1']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['reset_rule', 'device1']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
 
     def test_api_target_ir_key(self):
         # Should accept valid command
         valid = self.config['device9']['default_rule']
-        self.assertTrue(api_target_validator(valid))
+        self.assertIs(api_target_validator(valid), True)
         # Should reject unknown args
         valid['on'] = ['ir_key', 'invalid', 'invalid', 'invalid']
         self.assertFalse(api_target_validator(valid))
 
     def test_fade_rules(self):
         # LedStrip, Tplink, and Wled should accept fade rules
-        self.assertTrue(
-            int_or_fade_validator('fade/50/3600', min_rule='0', max_rule='1023', _type='pwm')
+        self.assertIs(
+            int_or_fade_validator('fade/50/3600', min_rule='0', max_rule='1023', _type='pwm'),
+            True
         )
-        self.assertTrue(
-            int_or_fade_validator('fade/50/3600', min_rule='1', max_rule='100', _type='bulb')
+        self.assertIs(
+            int_or_fade_validator('fade/50/3600', min_rule='1', max_rule='100', _type='bulb'),
+            True
         )
-        self.assertTrue(int_or_fade_validator(
-            'fade/50/3600', min_rule='1', max_rule='255', _type='wled')
+        self.assertIs(int_or_fade_validator(
+            'fade/50/3600', min_rule='1', max_rule='255', _type='wled'),
+            True
         )
 
         # Should reject if target out of range
@@ -155,26 +158,41 @@ class ValidatorTests(TestCase):
 
     def test_led_strip_rules(self):
         # Should accept int between min_rule and max_rule
-        self.assertTrue(int_or_fade_validator(500, min_rule=0, max_rule=1023, _type='pwm'))
+        self.assertIs(
+            int_or_fade_validator(500, min_rule=0, max_rule=1023, _type='pwm'),
+            True
+        )
 
     def test_wled_rules(self):
         # Should accept int between min_rule and max_rule
-        self.assertTrue(int_or_fade_validator(50, min_rule=1, max_rule=255, _type='wled'))
+        self.assertIs(
+            int_or_fade_validator(50, min_rule=1, max_rule=255, _type='wled'),
+            True
+        )
 
     def test_int_or_float_rules(self):
         # Should accept int or float
-        self.assertTrue(int_or_float_validator(5))
-        self.assertTrue(int_or_float_validator(5.0))
-        self.assertTrue(int_or_float_validator(150000))
-        self.assertTrue(int_or_float_validator(150000.0))
+        self.assertIs(int_or_float_validator(5), True)
+        self.assertIs(int_or_float_validator(5.0), True)
+        self.assertIs(int_or_float_validator(150000), True)
+        self.assertIs(int_or_float_validator(150000.0), True)
 
     def test_thermostat_rules(self):
         # Should accept Celsiues temperatures between 18 and 27 degrees
-        self.assertTrue(thermostat_validator('20', units='celsius', mode='cool', tolerance='1'))
+        self.assertIs(
+            thermostat_validator('20', units='celsius', mode='cool', tolerance='1'),
+            True
+        )
         # Should accept Kelvin temperatures between 291.15 and 300.15 degrees
-        self.assertTrue(thermostat_validator('295', units='kelvin', mode='cool', tolerance='1'))
+        self.assertIs(
+            thermostat_validator('295', units='kelvin', mode='cool', tolerance='1'),
+            True
+        )
         # Should accept Fahrenheit temperatures between 65 and 80 degrees
-        self.assertTrue(thermostat_validator('69', units='fahrenheit', mode='cool', tolerance='1'))
+        self.assertIs(
+            thermostat_validator('69', units='fahrenheit', mode='cool', tolerance='1'),
+            True
+        )
 
 
 # Confirm functions in validators.py correctly reject invalid rules
@@ -463,8 +481,8 @@ class ValidatorErrorTests(TestCase):
     # and only returned True if the conditional passed. If rule was 0.0 (valid)
     # the conditional was not matched (0.0 == False) and nothing was returned.
     def test_regression_motion_sensor_returns_none_when_rule_is_0(self):
-        self.assertTrue(int_or_float_validator(0))
-        self.assertTrue(int_or_float_validator(0.0))
+        self.assertIs(int_or_float_validator(0), True)
+        self.assertIs(int_or_float_validator(0.0), True)
 
     # Original bug: int_or_float_validator cast rule to float and returned True
     # unless an exception was raised. If a boolean was passed it would be cast

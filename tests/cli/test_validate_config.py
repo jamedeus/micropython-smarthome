@@ -13,7 +13,7 @@ class ValidateConfigTests(TestCase):
     def test_valid_config(self):
         # Confirm config with all devices and sensors is valid
         result = validate_full_config(self.valid_config)
-        self.assertTrue(result)
+        self.assertIs(result, True)
 
         # Confirm bare minimum config template is valid
         minimal_config = {
