@@ -220,7 +220,7 @@ class ApiTarget(Device):
         # TODO does group.refresh break this?
         if state:
             for sensor in self.triggered_by:
-                if sensor._type == "pir":
+                if sensor._type in ["pir", "ld2410"]:
                     sensor.motion = False
 
         # Tells group send succeeded

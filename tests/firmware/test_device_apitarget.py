@@ -28,7 +28,10 @@ default_rule = {'on': ['enable', 'device1'], 'off': ['enable', 'device1']}
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
-    'triggered_by': ['sensor1'],
+    'triggered_by': [
+        'sensor1',
+        'sensor2'
+    ],
     'nickname': 'device1',
     'ip': config['mock_receiver']['ip'],
     'port': config['mock_receiver']['api_port'],
@@ -97,8 +100,11 @@ class TestApiTarget(unittest.TestCase):
         port = config['mock_receiver']['api_port']
         cls.instance = ApiTarget("device1", "device1", "api-target", default_rule, ip, port)
 
-        # Add mock MotionSensor triggering test instance
-        cls.instance.triggered_by = [MotionSensor('sensor1', 'sensor1', 'pir', '5', [], 4)]
+        # Add mock MotionSensor (pir and ld2410) triggering test instance
+        cls.instance.triggered_by = [
+            MotionSensor('sensor1', 'sensor1', 'pir', '5', [], 4),
+            MotionSensor('sensor2', 'sensor2', 'ld2410', '5', [], 25)
+        ]
 
         # Create mock device and config for self-target tests
         cls.target = MockDevice()
@@ -259,12 +265,17 @@ class TestApiTarget(unittest.TestCase):
     # When targeted by MotionSensor, ApiTarget should reset motion attribute after
     # successful on command. This allows retriggering sensor to send command again
     def test_12_send_retrigger_motion_sensor(self):
-        # Set mock sensor motion attribute to True, set valid rule
+        # Set both mock sensor motion attributes to True, set valid rule
         self.instance.triggered_by[0].motion = True
-        self.instance.current_rule = {'on': ['trigger_sensor', 'sensor1'], 'off': ['ignore']}
+        self.instance.triggered_by[1].motion = True
+        self.instance.current_rule = {
+            'on': ['trigger_sensor', 'sensor1'],
+            'off': ['ignore']
+        }
         # Send, confirm motion flips to False
         self.assertTrue(self.instance.send(1))
         self.assertFalse(self.instance.triggered_by[0].motion)
+        self.assertFalse(self.instance.triggered_by[1].motion)
 
     # Different send method used when targeting own IP
     def test_13_send_to_self(self):
