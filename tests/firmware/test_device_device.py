@@ -1,7 +1,13 @@
+import sys
 import unittest
 from Group import Group
 from Device import Device
 from Sensor import Sensor
+from cpython_only import cpython_only
+
+# Import dependencies for tests that only run in mocked environment
+if sys.implementation.name == 'cpython':
+    from unittest.mock import patch
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
@@ -246,3 +252,37 @@ class TestDevice(unittest.TestCase):
 
         # Confirm switched to scheduled_rule, not default_rule
         self.assertEqual(self.instance.current_rule, 25)
+
+    # Original bug: If current_rule == "disabled" when enable method is called
+    # it calls set_rule to replace "disabled" with a usable rule. If the new
+    # rule is "enabled" the apply_new_rule method called enable again without
+    # checking if the device was already enabled. If the device's group state
+    # was True this resulted in the send method being called 3 times: first by
+    # Device.enable, then by Device.apply_new_rule (device state is True after
+    # first send), and then by Device.enable again (duplicate call caused by
+    # bug). The apply_new_rule method now only calls enable if the device is
+    # disabled (ensures enable and send are only called once).
+    @cpython_only
+    def test_18_regression_enable_method_called_twice(self):
+        # Set current_rule to "disabled", confirm disabled
+        self.instance.set_rule("disabled")
+        self.assertFalse(self.instance.enabled)
+
+        # Set default and scheduled rule to "enabled" (when enable method is
+        # called current_rule will be replaced with "enabled")
+        self.instance.default_rule = "enabled"
+        self.instance.scheduled_rule = "enabled"
+
+        # Set group state to True (device will call send when enabled)
+        self.instance.group.state = True
+
+        with patch.object(self.instance, 'send') as mock_send:
+            # Call enable method
+            self.instance.enable()
+
+            # Confirm instance is enabled, rule is "enabled"
+            self.assertTrue(self.instance.enabled)
+            self.assertEqual(self.instance.current_rule, "enabled")
+
+            # Confirm send was only called once
+            mock_send.assert_called_once()

@@ -1,6 +1,12 @@
+import sys
 import unittest
 from Group import Group
 from Sensor import Sensor
+from cpython_only import cpython_only
+
+# Import dependencies for tests that only run in mocked environment
+if sys.implementation.name == 'cpython':
+    from unittest.mock import patch
 
 
 # Subclass Group to detect when refresh method called
@@ -145,3 +151,32 @@ class TestSensor(unittest.TestCase):
 
         # Confirm switched to scheduled_rule, not default_rule
         self.assertEqual(self.instance.current_rule, 25)
+
+    # Original bug: If current_rule == "disabled" when enable method is called
+    # it calls set_rule to replace "disabled" with a usable rule. If the new
+    # rule is "enabled" the apply_new_rule method called enable again without
+    # checking if the sensor was already enabled. This caused the refresh_group
+    # method to be called twice in a row (each enable call) instead of once.
+    # The apply_new_rule method now only calls enable if the sensor is disabled
+    # (ensures enable and refresh_group are only called once).
+    @cpython_only
+    def test_12_regression_enable_method_called_twice(self):
+        # Set current_rule to "disabled", confirm disabled
+        self.instance.set_rule("disabled")
+        self.assertFalse(self.instance.enabled)
+
+        # Set default and scheduled rule to "enabled" (when enable method is
+        # called current_rule will be replaced with "enabled")
+        self.instance.default_rule = "enabled"
+        self.instance.scheduled_rule = "enabled"
+
+        with patch.object(self.instance, 'refresh_group') as mock_refresh:
+            # Call enable method
+            self.instance.enable()
+
+            # Confirm instance is enabled, rule is "enabled"
+            self.assertTrue(self.instance.enabled)
+            self.assertEqual(self.instance.current_rule, "enabled")
+
+            # Confirm refresh_group was only called once
+            mock_refresh.assert_called_once()

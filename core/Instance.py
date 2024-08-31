@@ -93,7 +93,9 @@ class Instance():
                 self.current_rule = self.scheduled_rule
             else:
                 self.current_rule = self.default_rule
-            self.enable()
+            # Enable instance unless already enabled (prevent loop)
+            if not self.enabled:
+                self.enable()
         # Instance was previously disabled, enable now that rule has changed
         elif self.enabled is False:
             self.enable()
