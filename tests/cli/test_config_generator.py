@@ -315,7 +315,7 @@ class TestGenerateConfigFile(TestCase):
         # Confirm responses added to correct keys in dict
         metadata = self.generator.config['metadata']
         self.assertEqual(metadata['id'], 'Test ID')
-        self.assertEqual(metadata['floor'], '2')
+        self.assertEqual(metadata['floor'], 2)
         self.assertEqual(metadata['location'], 'Test Environment')
 
     def test_sensor_type(self):

@@ -228,7 +228,7 @@ class GenerateConfigFile:
 
         self.config['metadata'].update({
             'id': name,
-            'floor': floor,
+            'floor': int(floor),
             'location': location
         })
 
