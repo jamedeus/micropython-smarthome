@@ -143,3 +143,19 @@ class DesktopTrigger(Sensor):
         except asyncio.CancelledError:
             log.debug(f"{self.name}: Exiting DesktopTrigger.monitor coro")
             return False
+
+    # Return JSON-serializable dict containing all current attributes
+    # Called by API get_attributes endpoint, more verbose than status
+    def get_attributes(self):
+        attributes = super().get_attributes()
+
+        # Replace desktop_target instance with instance.name
+        attributes["desktop_target"] = attributes["desktop_target"].name
+
+        # Replace monitor_task with True or False
+        if attributes["monitor_task"] is not None:
+            attributes["monitor_task"] = True
+        else:
+            attributes["monitor_task"] = False
+
+        return attributes

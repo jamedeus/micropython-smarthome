@@ -54,11 +54,6 @@ class Device(Instance):
     def get_attributes(self):
         attributes = super().get_attributes()
 
-        for i in self.__dict__:
-            # Remove object references
-            if i in ("pwm", "mosfet", "relay"):
-                del attributes[i]
-
         # Replace sensor instances with instance.name attributes
         attributes["triggered_by"] = []
         for i in self.triggered_by:

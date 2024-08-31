@@ -26,3 +26,11 @@ class Dht22(Thermostat):
     def get_humidity(self):
         self.temp_sensor.measure()
         return self.temp_sensor.humidity()
+
+    # Return JSON-serializable dict containing all current attributes
+    # Called by API get_attributes endpoint, more verbose than status
+    def get_attributes(self):
+        attributes = super().get_attributes()
+        # Remove non-serializable object
+        del attributes["temp_sensor"]
+        return attributes

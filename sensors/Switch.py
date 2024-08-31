@@ -34,3 +34,11 @@ class Switch(Sensor):
             return True
         else:
             return False
+
+    # Return JSON-serializable dict containing all current attributes
+    # Called by API get_attributes endpoint, more verbose than status
+    def get_attributes(self):
+        attributes = super().get_attributes()
+        # Remove Pin object (not serializable)
+        del attributes["switch"]
+        return attributes

@@ -68,3 +68,11 @@ class LedStrip(DimmableLight):
             self.print(f"Faded up to {target}")
 
         return True  # Tell calling function that request succeeded
+
+    # Return JSON-serializable dict containing all current attributes
+    # Called by API get_attributes endpoint, more verbose than status
+    def get_attributes(self):
+        attributes = super().get_attributes()
+        # Remove Pin object (not serializable)
+        del attributes["pwm"]
+        return attributes

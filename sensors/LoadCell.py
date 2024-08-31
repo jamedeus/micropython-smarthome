@@ -68,3 +68,11 @@ class LoadCell(Sensor):
                 self.refresh_group()
 
             await asyncio.sleep(1)
+
+    # Return JSON-serializable dict containing all current attributes
+    # Called by API get_attributes endpoint, more verbose than status
+    def get_attributes(self):
+        attributes = super().get_attributes()
+        # Remove non-serializable object
+        del attributes["sensor"]
+        return attributes

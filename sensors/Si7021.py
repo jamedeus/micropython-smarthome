@@ -25,3 +25,12 @@ class Si7021(Thermostat):
     # Returns relative humidity percentage
     def get_humidity(self):
         return self.temp_sensor.relative_humidity
+
+    # Return JSON-serializable dict containing all current attributes
+    # Called by API get_attributes endpoint, more verbose than status
+    def get_attributes(self):
+        attributes = super().get_attributes()
+        # Remove non-serializable objects
+        del attributes["i2c"]
+        del attributes["temp_sensor"]
+        return attributes

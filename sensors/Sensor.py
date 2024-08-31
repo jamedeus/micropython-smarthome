@@ -47,24 +47,6 @@ class Sensor(Instance):
     def get_attributes(self):
         attributes = super().get_attributes()
 
-        # Make dict json-compatible
-        for i in self.__dict__:
-            # Remove object references
-            if i in ("i2c", "temp_sensor", "sensor", "switch"):
-                del attributes[i]
-
-            # Replace desktop_target instance with instance.name
-            elif i == "desktop_target":
-                if attributes["desktop_target"] is not None:
-                    attributes["desktop_target"] = attributes["desktop_target"].name
-
-            # Replace monitor_task with True or False
-            elif i == "monitor_task":
-                if attributes["monitor_task"] is not None:
-                    attributes["monitor_task"] = True
-                else:
-                    attributes["monitor_task"] = False
-
         # Replace device instances with instance.name attribute
         attributes["targets"] = []
         for i in self.targets:
