@@ -180,3 +180,25 @@ class TestSensor(unittest.TestCase):
 
             # Confirm refresh_group was only called once
             mock_refresh.assert_called_once()
+
+    # Original bug: If current_rule == "disabled" when enable method is called
+    # it calls set_rule to replace "disabled" with a usable rule. By default it
+    # uses scheduled_rule, but if this is also "disabled" it uses default_rule.
+    # If default_rule was also "disabled" the apply_new_rule method would call
+    # disable, making it impossible to enable the device until scheduled_rule
+    # changed to something else. The enable method now checks default_rule and
+    # only calls set_rule if it is not "disabled".
+    def test_13_regression_enable_method_breaks_if_default_rule_is_disabled(self):
+        # Set current_rule to "disabled", confirm disabled
+        self.instance.set_rule("disabled")
+        self.assertFalse(self.instance.enabled)
+
+        # Set default and scheduled rule to "disabled" (before fix the enable
+        # method would blindly call self.set_rule(self.default_rule)) without
+        # checking if default_rule was also "disabled")
+        self.instance.default_rule = "disabled"
+        self.instance.scheduled_rule = "disabled"
+
+        # Call enable method, confirm sensor is enabled (did not call disable)
+        self.instance.enable()
+        self.assertTrue(self.instance.enabled)

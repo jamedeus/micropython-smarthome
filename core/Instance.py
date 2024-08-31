@@ -50,9 +50,14 @@ class Instance():
             # Revert to scheduled rule unless it is also "disabled"
             if str(self.scheduled_rule).lower() != "disabled":
                 self.set_rule(self.scheduled_rule)
-            # Last resort: revert to default_rule
-            else:
+            # Revert to default rule unless it is also "disabled"
+            elif str(self.default_rule).lower() != "disabled":
                 self.set_rule(self.default_rule)
+            # Last resort: set rule to "enabled" (device/sensor types that do
+            # not support enabled won't reach this because their default_rule
+            # cannot be "disabled")
+            else:
+                self.current_rule = "enabled"
 
     def disable(self):
         self.enabled = False
