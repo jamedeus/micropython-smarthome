@@ -164,23 +164,52 @@ class TestApiTarget(unittest.TestCase):
 
     def test_05_rule_change(self):
         # Should accept valid rule, confirm rule changed
-        self.assertTrue(self.instance.set_rule({'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']}))
-        self.assertEqual(self.instance.current_rule, {'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']})
+        self.assertTrue(self.instance.set_rule(
+            {'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']}
+        ))
+        self.assertEqual(
+            self.instance.current_rule,
+            {'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']}
+        )
 
         # Should accept string representation of dict, cast to dict automatically
-        self.assertTrue(self.instance.set_rule('{"on":["ir_key","tv","power"],"off":["ir_key","tv","power"]}'))
+        self.assertTrue(self.instance.set_rule(
+            '{"on":["ir_key","tv","power"],"off":["ir_key","tv","power"]}'
+        ))
         self.assertEqual(
             self.instance.current_rule,
             {"on": ["ir_key", "tv", "power"], "off": ["ir_key", "tv", "power"]}
         )
 
         # Should accept rule with both API call and ignore
-        self.assertTrue(self.instance.set_rule({'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']}))
-        self.assertEqual(self.instance.current_rule, {'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']})
+        self.assertTrue(self.instance.set_rule(
+            {'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']}
+        ))
+        self.assertEqual(
+            self.instance.current_rule,
+            {'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']}
+        )
+
+        # Should set current_rule and scheduled_rule when scheduled arg is True
+        self.assertNotEqual(
+            self.instance.current_rule,
+            self.instance.scheduled_rule
+        )
+        self.assertTrue(self.instance.set_rule(
+            {'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']},
+            scheduled=True
+        ))
+        self.assertEqual(
+            self.instance.current_rule,
+            self.instance.scheduled_rule
+        )
 
         # Should reject invalid rule
         self.assertFalse(self.instance.set_rule('100'))
-        self.assertEqual(self.instance.current_rule, {'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']})
+        self.assertEqual(
+            self.instance.current_rule,
+            {'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']}
+        )
 
     def test_06_enable_by_rule_change(self):
         # Set rule while disabled, confirm rule takes effect, confirm enabled automatically
@@ -244,7 +273,10 @@ class TestApiTarget(unittest.TestCase):
 
         # Pass mock Config to API, set rule to enable and disable mock device
         app.config = self.config
-        self.assertTrue(self.instance.set_rule({'on': ['enable', 'device1'], 'off': ['disable', 'device1']}))
+        self.assertTrue(self.instance.set_rule({
+            'on': ['enable', 'device1'],
+            'off': ['disable', 'device1']
+        }))
 
         # Turn off, confirm mock device disabled
         self.assertTrue(self.instance.send(0))
@@ -255,7 +287,18 @@ class TestApiTarget(unittest.TestCase):
         self.assertTrue(self.target.enabled)
 
         # Switch to invalid target, confirm both fail
-        self.instance.set_rule({'on': ['enable', 'device2'], 'off': ['disable', 'device2']})
+        self.instance.set_rule({
+            'on': ['enable', 'device2'],
+            'off': ['disable', 'device2']
+        })
+        self.assertFalse(self.instance.send(0))
+        self.assertFalse(self.instance.send(1))
+
+        # Switch to invalid endpoint, confirm both fail
+        self.instance.current_rule = {
+            'on': ['self_destruct', 'device1'],
+            'off': ['self_destruct', 'device1']
+        }
         self.assertFalse(self.instance.send(0))
         self.assertFalse(self.instance.send(1))
 
