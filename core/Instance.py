@@ -47,20 +47,28 @@ class Instance():
 
         # Replace "disabled" with usable rule
         if self.current_rule == "disabled":
-            # Revert to scheduled rule unless it is also "disabled"
-            if str(self.scheduled_rule).lower() != "disabled":
-                self.set_rule(self.scheduled_rule)
-            # Revert to default rule unless it is also "disabled"
-            elif str(self.default_rule).lower() != "disabled":
-                self.set_rule(self.default_rule)
-            # Last resort: set rule to "enabled" (device/sensor types that do
-            # not support enabled won't reach this because their default_rule
-            # cannot be "disabled")
-            else:
-                self.current_rule = "enabled"
+            self.set_rule(self.get_usable_rule())
 
     def disable(self):
         self.enabled = False
+
+    # Called when current_rule changes to "enabled" or "disabled" (valid as
+    # schedule rules but must be immediately replaced for most instances).
+    #
+    # Returns scheduled_rule if valid, otherwise default_rule.
+    #
+    # If neither are valid falls back to "enabled" (only possible for devices
+    # and sensors that support "enabled", others raise exception in __init__
+    # if default_rule is "enabled" or "disabled").
+    def get_usable_rule(self):
+        if str(self.scheduled_rule).lower() not in ["enabled", "disabled"]:
+            return self.scheduled_rule
+        if str(self.default_rule).lower() not in ["enabled", "disabled"]:
+            return self.default_rule
+        # Last resort: return "enabled" (device/sensor types taht do not
+        # support enabled won't reach this because their default_rule cannot
+        # be "enabled" or "disabled")
+        return "enabled"
 
     # Takes rule, validates, sets current_rule if valid
     # Also sets scheduled_rule if scheduled arg is True
@@ -93,11 +101,7 @@ class Instance():
             self.disable()
         # Rule just changed to enabled, replace with usable rule and enable
         elif self.current_rule == "enabled":
-            # Use scheduled_rule unless also unusable, otherwise default_rule
-            if str(self.scheduled_rule).lower() not in ["enabled", "disabled"]:
-                self.current_rule = self.scheduled_rule
-            else:
-                self.current_rule = self.default_rule
+            self.current_rule = self.get_usable_rule()
             # Enable instance unless already enabled (prevent loop)
             if not self.enabled:
                 self.enable()
