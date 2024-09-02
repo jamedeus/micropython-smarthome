@@ -7,6 +7,35 @@ log = logging.getLogger("DimmableLight")
 
 
 class DimmableLight(Device):
+    '''Base class for all devices which support a range of brightness levels.
+    Inherits from Device and adds attributes and methods specific to dimmable
+    lights (increment_rule method, methods to gradually fade to new brightness,
+    validator accepts integer rules within supported range and fade rules).
+
+    Args:
+      name:         Unique, sequential config name (device1, device2, etc)
+      nickname:     User-configured friendly name shown on frontend
+      _type:        Instance type, determines driver class and frontend UI
+      enabled:      Initial enable state (True or False)
+      current_rule: Initial rule, has different effects depending on subclass
+      default_rule: Fallback rule used when no other valid rules are available
+      min_rule:     The minimum supported integer rule, used by rule validator
+      max_rule:     The maximum supported integer rule, used by rule validator
+
+    Subclassed by all dimmable light device drivers, cannot be used standalone.
+    Subclasses must implement send method (takes bool argument, turns device ON
+    if True, turns device OFF if False).
+
+    The min_rule and max_rule attributes determine the range of supported int
+    rules. The web frontend scales this range to 1-100 for visual consistency,
+    effectively showing the max brightness percentage instead of literal rule.
+
+    Supports universal rules ("enabled" and "disabled"), brightness rules (int
+    between min_rule and max_rule arguments), and fade rules
+    (syntax: fade/target_rule/duration_seconds).
+    The default_rule must be an integer or fade (not universal rule).
+    '''
+
     def __init__(self, name, nickname, _type, enabled, current_rule, default_rule, min_rule, max_rule):
         super().__init__(name, nickname, _type, enabled, current_rule, default_rule)
 
@@ -24,6 +53,21 @@ class DimmableLight(Device):
             raise AttributeError
 
     def set_rule(self, rule, scheduled=False):
+        '''Takes new rule, validates, if valid sets as current_rule (and
+        scheduled_rule if scheduled arg is True) and calls apply_new_rule.
+
+        Args:
+          rule:      The new rule, will be set as current_rule if valid
+          scheduled: Optional, if True also sets scheduled_rule if rule valid
+
+        If fade rule received (syntax: fade/target_rule/duration_seconds) calls
+        start_fade method (creates interrupts that run when each step is due).
+
+        Aborts in-progress fade if it receives an integer rule that causes rule
+        to move in opposite direction of fade (eg if new rule is greater than
+        current_rule while fading down).
+        '''
+
         # Check if rule is valid (may return modified rule, eg cast str to int)
         valid_rule = self.rule_validator(rule)
         if valid_rule is False:
@@ -59,8 +103,11 @@ class DimmableLight(Device):
 
             return True
 
-    # Takes positive or negative int, adds to self.current_rule
     def increment_rule(self, amount):
+        '''Takes positive or negative integer, adds to current_rule and calls
+        set_rule method. Throws error if current_rule is not an integer.
+        '''
+
         # Throw error if arg is not int
         try:
             amount = int(amount)
@@ -81,8 +128,20 @@ class DimmableLight(Device):
 
         return self.set_rule(new)
 
-    # Base validator for universal, fade, and int rules (replaces parent class)
     def rule_validator(self, rule):
+        '''Accepts universal rules ("enabled" and "disabled"), integer rules
+        between self.min_rule and self.max_rule, and rules that start gradual
+        fade (syntax: fade/target_rule/duration_seconds).
+
+        Takes rule, returns rule if valid (may return modified rule, eg cast to
+        lowercase), return False if rule is invalid.
+
+        Can be extended to support other rules by replacing the validator
+        method (called if rule is neither "enabled" nor "disabled").
+        '''
+
+        '''Base validator for universal, fade, and int rules (replaces parent class)'''
+
         try:
             # Accept universal rules
             if str(rule).lower() == "enabled" or str(rule).lower() == "disabled":
@@ -119,6 +178,13 @@ class DimmableLight(Device):
             return False
 
     def start_fade(self, valid_rule, scheduled=False):
+        '''Called by set_rule when it receives a fade rule. Calculates number
+        of steps to reach target brightness and delay between each step, saves
+        in self.fading attribute (dict), and creates interrupt to update rule
+        when each step is due. If scheduled arg is True each step also updates
+        scheduled_rule.
+        '''
+
         # Parse parameters from rule
         cmd, target, period = valid_rule.split("/")
 
@@ -171,10 +237,13 @@ class DimmableLight(Device):
 
         return True
 
-    # Cleanup and return True if fade is complete, return False if not
-    # Fade is complete when current_rule matches or exceeds fade target
-    # If a scheduled fade is aborted by user set scheduled_rule to target
     def fade_complete(self):
+        '''Cleanup and return True if fade is complete, return False if not.
+        Fade is complete when current_rule matches or exceeds fade target.
+        If called when a scheduled fade is aborted sets scheduled_rule to fade
+        target even if target was not reached.
+        '''
+
         # Fade complete if device disabled mid-fade, or called when not fading
         if not self.enabled or not self.fading:
             self.fading = False
@@ -208,8 +277,13 @@ class DimmableLight(Device):
         else:
             return False
 
-    # Called by SoftwareTimer during fade animation, initialized in rule_validator above
     def fade(self):
+        '''Called by SoftwareTimer when each step of ongoing fade is due.
+        Updates current_rule (and scheduled_rule if start_fade was called with
+        scheduled arg), calls send method so new brightness takes effect, and
+        checks if fade is complete (creates next interrupt if not complete).
+        '''
+
         # Fade to next step (unless fade already complete)
         if not self.fade_complete():
             # Use starting time, current time, period (time per step) to determine how many steps should have been taken
@@ -244,9 +318,11 @@ class DimmableLight(Device):
             next_step = int(self.fading["period"] - ((SoftwareTimer.timer.epoch_now() - self.fading["started"]) % self.fading["period"]))
             SoftwareTimer.timer.create(next_step, self.fade, self.name + "_fade")
 
-    # Return JSON-serializable dict containing state information
-    # Called by Config.get_status to build API status response
     def get_status(self):
+        '''Return JSON-serializable dict containing status information.
+        Called by Config.get_status to build API status endpoint response.
+        Contains all attributes displayed on the web frontend.
+        '''
         status = super().get_status()
         status['min_rule'] = self.min_rule
         status['max_rule'] = self.max_rule

@@ -5,14 +5,32 @@ from util import print_with_timestamp
 log = logging.getLogger("Instance")
 
 
-# Base class inherited by Device and Sensor subclasses
 class Instance():
+    '''Base class for all device and sensor drivers, implements universal API
+    methods and attributes used to configure instance status, rules, etc.
+
+    Args:
+      name:         Unique, sequential config name (device1, sensor3, etc)
+      nickname:     User-configured friendly name shown on frontend
+      _type:        Instance type, determines driver class and frontend UI
+      enabled:      Initial enable state (True or False)
+      current_rule: Initial rule, has different effects depending on subclass
+      default_rule: Fallback rule used when no other valid rules are available
+
+    Subclassed by the Device and Sensor base classes which implement functions
+    specific to devices (lights, relays, etc) and sensors (sensors which turn
+    devices on and off in response to certain conditions).
+
+    Supports universal rules ("enabled" and "disabled"). Additional rules can
+    be supported by replacing the validator method in subclass.
+    '''
+
     def __init__(self, name, nickname, _type, enabled, current_rule, default_rule):
 
         # Unique, sequential name (sensor1, sensor2, ...) used in backend
         self.name = name
 
-        # User-configurable name used in frontend, not necessarily unique
+        # User-configurable name used in frontend
         self.nickname = nickname
 
         # Instance type, arg determines which class is instantiated by Config.instantiate_hardware
@@ -43,6 +61,9 @@ class Instance():
         self.rule_queue = []
 
     def enable(self):
+        '''Sets enabled bool to True (allows sensors to be checked, devices to
+        be turned on/off), and ensures current_rule contains a usable value.
+        '''
         self.enabled = True
 
         # Replace "disabled" with usable rule
@@ -50,17 +71,21 @@ class Instance():
             self.set_rule(self.get_usable_rule())
 
     def disable(self):
+        '''Sets enabled bool to False (prevents sensor from being checked,
+        prevents devices from being turned on).
+        '''
         self.enabled = False
 
-    # Called when current_rule changes to "enabled" or "disabled" (valid as
-    # schedule rules but must be immediately replaced for most instances).
-    #
-    # Returns scheduled_rule if valid, otherwise default_rule.
-    #
-    # If neither are valid falls back to "enabled" (only possible for devices
-    # and sensors that support "enabled", others raise exception in __init__
-    # if default_rule is "enabled" or "disabled").
     def get_usable_rule(self):
+        '''Called when current_rule changes to "enabled" or "disabled" (valid
+        as schedule rules but must be immediately replaced for most instances).
+
+        Returns scheduled_rule if valid, otherwise default_rule.
+
+        If neither are valid falls back to "enabled" (only possible for devices
+        and sensors that support "enabled", others raise exception in __init__
+        if default_rule is "enabled" or "disabled").
+        '''
         if str(self.scheduled_rule).lower() not in ["enabled", "disabled"]:
             return self.scheduled_rule
         if str(self.default_rule).lower() not in ["enabled", "disabled"]:
@@ -70,9 +95,15 @@ class Instance():
         # be "enabled" or "disabled")
         return "enabled"
 
-    # Takes rule, validates, sets current_rule if valid
-    # Also sets scheduled_rule if scheduled arg is True
     def set_rule(self, rule, scheduled=False):
+        '''Takes new rule, validates, if valid sets as current_rule (and
+        scheduled_rule if scheduled arg is True) and calls apply_new_rule.
+
+        Args:
+          rule:      The new rule, will be set as current_rule if valid
+          scheduled: Optional, if True also sets scheduled_rule if rule valid
+        '''
+
         # Check if rule is valid (may return modified rule, eg cast str to int)
         valid_rule = self.rule_validator(rule)
         if valid_rule is not False:
@@ -93,9 +124,12 @@ class Instance():
             self.print(f"Failed to change rule to {rule}")
             return False
 
-    # Called by set_rule, updates instance attributes to reflect new rule
-    # Can be extended in subclass (example: devices call send method)
     def apply_new_rule(self):
+        '''Called by set_rule after successful rule change, updates instance
+        attributes to reflect new rule.
+        Can be extended in subclasses (example: devices call send method).
+        '''
+
         # Rule just changed to disabled
         if self.current_rule == "disabled":
             self.disable()
@@ -109,26 +143,38 @@ class Instance():
         elif self.enabled is False:
             self.enable()
 
-    # Base validator for universal rules, can be extended in subclass validator method
     def rule_validator(self, rule):
+        '''Base validator for universal rules ("enabled" and "disabled").
+
+        Takes rule, returns rule if valid (may return modified rule, eg cast to
+        lowercase), return False if rule is invalid.
+
+        Can be extended to support other rules by replacing the validator
+        method (called if rule is neither "enabled" nor "disabled").
+        '''
         if str(rule).lower() == "enabled" or str(rule).lower() == "disabled":
             return str(rule).lower()
         else:
             return self.validator(rule)
 
-    # Placeholder function, intended to be overwritten by subclass validator method
     def validator(self, rule):
+        '''Placeholder method called by rule_validator, intended to be replaced
+        by subclasses that support additional rule types.
+        '''
         return False
 
-    # Called by SoftwareTimer tasks at each scheduled rule change
     def next_rule(self):
+        '''Called by SoftwareTimer interrupt at each scheduled rule change.
+        Calls set_rule with first item in rule_queue (see Config.build_queue).
+        '''
         log.debug(f"{self.name}: Scheduled rule change")
         self.print("Scheduled rule change")
         self.set_rule(self.rule_queue.pop(0), True)
 
-    # Return JSON-serializable dict containing all current attributes
-    # Called by API get_attributes endpoint, more verbose than status
     def get_attributes(self):
+        '''Return JSON-serializable dict containing all current attributes.
+        Called by API get_attributes endpoint, more verbose than status.
+        '''
         attributes = self.__dict__.copy()
 
         # Replace group object with group name (JSON-compatibility)
@@ -137,9 +183,11 @@ class Instance():
 
         return attributes
 
-    # Return JSON-serializable dict containing state information
-    # Called by Config.get_status to build API status response
     def get_status(self):
+        '''Return JSON-serializable dict containing status information.
+        Called by Config.get_status to build API status endpoint response.
+        Contains all attributes displayed on the web frontend.
+        '''
         return {
             'nickname': self.nickname,
             'type': self._type,
@@ -149,6 +197,7 @@ class Instance():
             'default_rule': self.default_rule
         }
 
-    # Takes string, prints with prepended timestamp and instance name
     def print(self, msg):
+        '''Takes string, prints with prepended timestamp and instance name.'''
+
         print_with_timestamp(f"{self.name}: {msg}")

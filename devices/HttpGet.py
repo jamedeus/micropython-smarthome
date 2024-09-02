@@ -17,12 +17,28 @@ uri_pattern = re.compile(
 )
 
 
-# Extensible base class for devices that make HTTP requests
-# Takes URI (can be IP or domain) and 2 paths which are appended
-# to the URI for on and off commands respectively. Subclasses
-# should hardcode the on and off paths where possible to avoid
-# error-prone user configuration.
 class HttpGet(Device):
+    '''Base class for all devices which make an HTTP GET request when turned on
+    or off. Inherits from Device and adds URI and path attributes (used to
+    determine target URL) and send method (makes GET request).
+
+    Args:
+      name:         Unique, sequential config name (device1, device2, etc)
+      nickname:     User-configured friendly name shown on frontend
+      _type:        Instance type, determines driver class and frontend UI
+      enabled:      Initial enable state (True or False)
+      current_rule: Initial rule, has different effects depending on subclass
+      default_rule: Fallback rule used when no other valid rules are available
+      uri:          The base URL with no path
+      on_path:      The path added to uri for ON action
+      off_path:      The path added to uri for OFF action
+
+    Can be used as a standalone device or subclassed by drivers which make
+    HTTP GET requests and require additional methods.
+
+    Supports universal rules ("enabled" and "disabled").
+    '''
+
     def __init__(self, name, nickname, _type, default_rule, uri, on_path, off_path):
         super().__init__(name, nickname, _type, True, None, default_rule)
 
@@ -46,20 +62,24 @@ class HttpGet(Device):
 
         log.info(f"Instantiated HttpGet named {self.name}: URI = {self.uri}")
 
-    # Takes bool, returns on and off URLs for True and False respectively
     def get_url(self, state):
+        '''Returns URL for ON action if argument is True.
+        Returns URL for OFF action if argument is False.
+        '''
         if state:
             return f'http://{self.uri}/{self.on_path}'
         else:
             return f'http://{self.uri}/{self.off_path}'
 
-    # Takes URL, makes request, returns response object
     def request(self, url):
+        '''Takes URL, makes request, returns response object'''
+
         return requests.get(url, timeout=2)
 
-    # Takes bool, turns on if True, turns off if False
-    # Returns True if HTTP response is 200, otherwise returns False
     def send(self, state=1):
+        '''Makes request to ON action URL if argument is True.
+        Makes request to OFF action URL if argument is False.
+        '''
         log.info(f"{self.name}: send method called, state = {state}")
 
         # Refuse to turn disabled device on, but allow turning off

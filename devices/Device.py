@@ -6,6 +6,24 @@ log = logging.getLogger("Device")
 
 
 class Device(Instance):
+    '''Base class for all device drivers, inherits universal API methods and
+    attributes from core.Instance and adds device-specific functionality
+
+    Args:
+      name:         Unique, sequential config name (device1, device2, etc)
+      nickname:     User-configured friendly name shown on frontend
+      _type:        Instance type, determines driver class and frontend UI
+      enabled:      Initial enable state (True or False)
+      current_rule: Initial rule, has different effects depending on subclass
+      default_rule: Fallback rule used when no other valid rules are available
+
+    Subclassed by all device drivers. Drivers must implement send method (takes
+    bool argument, turns device ON if True, turns device OFF if False).
+
+    Supports universal rules ("enabled" and "disabled"). Additional rules can
+    be supported by replacing the validator method in subclass.
+    '''
+
     def __init__(self, name, nickname, _type, enabled, current_rule, default_rule):
         super().__init__(name, nickname, _type, enabled, current_rule, default_rule)
 
@@ -18,6 +36,11 @@ class Device(Instance):
         self.triggered_by = []
 
     def enable(self):
+        '''Sets enabled bool to True (allows device to be turned on), ensures
+        current_rule contains a usable value, and turns the device on if group
+        state is True (one or more sensor targeting device has condition met).
+        '''
+
         super().enable()
 
         # If other devices in group are on, turn on to match state
@@ -27,31 +50,43 @@ class Device(Instance):
                 if success:
                     self.state = True
                 else:
-                    # Force group to turn on again, retrying until successful (recover from failed send command above)
-                    # Used as last resort due to side effects - if user previously turned OFF another device in group,
-                    # then re-enables this device, group will turn BOTH on (but user only wanted to turn this one on)
+                    # Force group to turn on again, retrying until successful
+                    # (recover from failed send command above)
+                    #
+                    # Only used after failed send due to side effects - if user
+                    # turned another device in group OFF while this device was
+                    # disabled, then re-enabled this device, group will turn
+                    # BOTH on (but user only wanted to turn this one on).
                     self.group.state = False
         except AttributeError:
             pass
 
     def disable(self):
+        '''Sets enabled bool to False (prevents device from being turned on)
+        and turns device off if currently turned on.
+        '''
+
         # Turn off before disabling
         if self.state:
             self.send(0)
             self.state = False
         super().disable()
 
-    # Called by set_rule after current_rule changed
     def apply_new_rule(self):
+        '''Called by set_rule after successful rule change, updates instance
+        attributes to reflect new rule. If device currently turned on calls
+        send method so new rule can take effect.
+        '''
         super().apply_new_rule()
 
         # Device is currently on, run send so new rule can take effect
         if self.state is True:
             self.send(1)
 
-    # Return JSON-serializable dict containing all current attributes
-    # Called by API get_attributes endpoint, more verbose than status
     def get_attributes(self):
+        '''Return JSON-serializable dict containing all current attributes
+        Called by API get_attributes endpoint, more verbose than status
+        '''
         attributes = super().get_attributes()
 
         # Replace sensor instances with instance.name attributes
@@ -61,9 +96,11 @@ class Device(Instance):
 
         return attributes
 
-    # Return JSON-serializable dict containing state information
-    # Called by Config.get_status to build API status response
     def get_status(self):
+        '''Return JSON-serializable dict containing status information.
+        Called by Config.get_status to build API status endpoint response.
+        Contains all attributes displayed on the web frontend.
+        '''
         status = super().get_status()
         status['turned_on'] = self.state
         return status

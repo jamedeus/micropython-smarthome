@@ -8,6 +8,30 @@ log = logging.getLogger("LedStrip")
 
 
 class LedStrip(DimmableLight):
+    '''Driver for PWM-driven MOSFET used to dim an LED strip or other device.
+    Sets PWM duty cycle when send method is called.
+
+    Args:
+      name:         Unique, sequential config name (device1, device2, etc)
+      nickname:     User-configured friendly name shown on frontend
+      _type:        Instance type, determines driver class and frontend UI
+      enabled:      Initial enable state (True or False)
+      current_rule: Initial rule, has different effects depending on subclass
+      default_rule: Fallback rule used when no other valid rules are available
+      min_rule:     The minimum supported integer rule, used by rule validator
+      max_rule:     The maximum supported integer rule, used by rule validator
+      pin:          The ESP32 pin connected to the MOSFET gate pin
+
+    The min_rule and max_rule attributes determine the range of supported int
+    rules. This can be used to remove very low duty cycles from the supported
+    range if they are too dim or cause flickering. The web frontend scales this
+    range to 1-100 for visual consistency.
+
+    Supports universal rules ("enabled" and "disabled"), brightness rules (int
+    between 0-1023), and fade rules (syntax: fade/target_rule/duration_seconds).
+    The default_rule must be an integer or fade (not universal rule).
+    '''
+
     def __init__(self, name, nickname, _type, default_rule, min_rule, max_rule, pin):
         super().__init__(name, nickname, _type, True, None, default_rule, min_rule, max_rule)
 
@@ -27,6 +51,11 @@ class LedStrip(DimmableLight):
         log.info(f"Instantiated LedStrip named {self.name} on pin {pin}")
 
     def send(self, state=1):
+        '''Sets PWM duty cycle to current_rule if argument is True.
+        Sets PWM duty cycle to 0 if argument is False.
+        Gradually fades to new brightness with 1 second transition.
+        '''
+
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
             # Return True causes group to flip state to True, even though device is off
@@ -69,9 +98,10 @@ class LedStrip(DimmableLight):
 
         return True  # Tell calling function that request succeeded
 
-    # Return JSON-serializable dict containing all current attributes
-    # Called by API get_attributes endpoint, more verbose than status
     def get_attributes(self):
+        '''Return JSON-serializable dict containing all current attributes
+        Called by API get_attributes endpoint, more verbose than status
+        '''
         attributes = super().get_attributes()
         # Remove Pin object (not serializable)
         del attributes["pwm"]

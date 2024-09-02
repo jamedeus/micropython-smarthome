@@ -11,6 +11,28 @@ log = logging.getLogger("ApiTarget")
 
 
 class ApiTarget(Device):
+    '''Software-only device driver that sends API calls to another node (or to
+    self) when turned on and off. A separate API call can be configured for the
+    on and off actions. Can be used to allow a sensor on one node to control a
+    device on a second node in scenarios where connecting both to the same node
+    is not practical (eg 2 motion sensors on opposite ends of a large room).
+
+    Args:
+      name:         Unique, sequential config name (device1, device2, etc)
+      nickname:     User-configured friendly name shown on frontend
+      _type:        Instance type, determines driver class and frontend UI
+      enabled:      Initial enable state (True or False)
+      current_rule: Initial rule, has different effects depending on subclass
+      default_rule: Fallback rule used when no other valid rules are available
+      ip:           The IPv4 address of the target node (can be own IP address)
+      port:         Only used in unit testing (allows overridding the API port)
+
+    Supports universal rules ("enabled" and "disabled") and dicts containing a
+    pair of API calls (dict must contain "on" and "off" keys, each containing a
+    list of params using the same syntax as api_client.py command line args).
+    The default_rule must be a dict (not universal rule).
+    '''
+
     def __init__(self, name, nickname, _type, default_rule, ip, port=8123):
         super().__init__(name, nickname, _type, True, None, default_rule)
 
@@ -29,18 +51,21 @@ class ApiTarget(Device):
             log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
             raise AttributeError
 
-    # Returns node_ip attribute (sets attribute on first call)
     def get_node_ip(self):
+        '''Returns own IPv4 address (stored in node_ip attribute). Sets node_ip
+        attribute on first call.
+        '''
         if self.node_ip is None:
             wlan = network.WLAN(network.WLAN.IF_STA)
             if wlan.isconnected():
                 self.node_ip = wlan.ifconfig()[0]
         return self.node_ip
 
-    # Takes dict containing 2 entries named "on" and "off"
-    # Both entries are lists containing a full API request
-    # "on" sent when self.send(1) called, "off" when self.send(0) called
     def validator(self, rule):
+        '''Accepts dict containing "on" and "off" keys. Each key must contain
+        a list of parameters for a full API call, using the same syntax as
+        api_client.py command line arguments.
+        '''
         if isinstance(rule, str):
             try:
                 # Convert string rule to dict (if received from API)
@@ -68,8 +93,10 @@ class ApiTarget(Device):
             # Iteration finished without a return False, rule is valid
             return rule
 
-    # Takes sub-rule (on or off), returns True if valid, False if invalid
     def sub_rule_validator(self, rule):
+        '''Takes sub-rule (contents of "on" or "off" key in full rule). Returns
+        True if sub-rule contains a valid API call, returns False if invalid.
+        '''
         if not isinstance(rule, list):
             return False
 
@@ -116,6 +143,18 @@ class ApiTarget(Device):
             return False
 
     def set_rule(self, rule, scheduled=False):
+        '''Takes new rule, validates, if valid sets as current_rule (and
+        scheduled_rule if scheduled arg is True) and updates attributes.
+
+        Args:
+          rule:      The new rule, will be set as current_rule if valid
+          scheduled: Optional, if True also sets scheduled_rule if rule valid
+
+        If new rule is "disabled" turns device off.
+        If new rule is "enabled" replaces with default_rule and calls enable.
+        If device is already on calls send method so new rule takes effect.
+        '''
+
         # Check if rule is valid - may return a modified rule (ie cast str to int)
         valid_rule = self.rule_validator(rule)
 
@@ -151,8 +190,10 @@ class ApiTarget(Device):
             self.print(f"Failed to change rule to {rule}")
             return False
 
-    # Takes payload and response, writes multiline log with indent for readability
     def log_failed_request(self, msg, err):
+        '''Called when an API call receives an error response. Takes full
+        payload and response, writes multiline log with indent for readability.
+        '''
         log.error(f"""{self.name}: Send method failed
         Payload: {msg}
         Response: {err}""")
@@ -160,6 +201,9 @@ class ApiTarget(Device):
         self.print(f"Response: {err}")
 
     def request(self, msg):
+        '''Called by send method. Takes API command and sends to target IP.
+        Returns True if request successful, False if request failed.
+        '''
         s = socket.socket()
         s.settimeout(1)
         try:
@@ -184,6 +228,10 @@ class ApiTarget(Device):
         return True
 
     def send(self, state=1):
+        '''Sends API call in current_rule "on" key if argument is True.
+        Sends API call in current_rule "off" key if argument is False.
+        '''
+
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
             # Return True causes group to flip state to True, even though device is off
@@ -226,9 +274,11 @@ class ApiTarget(Device):
         # Tells group send succeeded
         return True
 
-    # Passes current_rule directly to API backend without opening connection
-    # Synchronous request method blocks API.run_client when self-targetting
     def send_to_self(self, command):
+        '''Called by send method (instead of request) when target IP is self.
+        Passes current_rule directly to API backend without opening connection
+        (request method is synchronous, blocks Api.run_client method).
+        '''
         path = command[0]
         args = command[1:]
 

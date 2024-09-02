@@ -7,8 +7,34 @@ from DimmableLight import DimmableLight
 log = logging.getLogger("Tplink")
 
 
-# Used to control TP-Link Kasa dimmers + smart bulbs
 class Tplink(DimmableLight):
+    '''Driver for TP-Link Kasa dimmers and smart bulbs. Makes API calls to set
+    power state and brightness when send method is called.
+
+    Args:
+      name:         Unique, sequential config name (device1, device2, etc)
+      nickname:     User-configured friendly name shown on frontend
+      _type:        Instance type, determines driver class and frontend UI
+      enabled:      Initial enable state (True or False)
+      current_rule: Initial rule, has different effects depending on subclass
+      default_rule: Fallback rule used when no other valid rules are available
+      min_rule:     The minimum supported integer rule, used by rule validator
+      max_rule:     The maximum supported integer rule, used by rule validator
+      ip:           The IPv4 address of the TP-Link device
+
+    The _type argument must be set to "dimmer" or "bulb" (determines API call
+    syntax, bulbs and dimmers use different syntax).
+
+    The min_rule and max_rule attributes determine the range of supported int
+    rules. This can be used to remove a dimmer dead zone (often no brightness
+    below around 25%, depending on the type of bulb controlled by the dimmer).
+    The web frontend scales this range to 1-100 for visual consistency.
+
+    Supports universal rules ("enabled" and "disabled"), brightness rules (int
+    between 1-100), and fade rules (syntax: fade/target_rule/duration_seconds).
+    The default_rule must be an integer or fade (not universal rule).
+    '''
+
     def __init__(self, name, nickname, _type, default_rule, min_rule, max_rule, ip):
         super().__init__(name, nickname, _type, True, None, default_rule, min_rule, max_rule)
 
@@ -19,8 +45,9 @@ class Tplink(DimmableLight):
 
         log.info(f"Instantiated Tplink device named {self.name}: ip = {self.ip}, type = {self._type}")
 
-    # Encrypt messages to tp-link smarthome devices
     def encrypt(self, string):
+        '''Encrypts an API call using TP-Link's very weak algorithm.'''
+
         key = 171
         result = pack(">I", len(string))
         for i in string:
@@ -29,8 +56,9 @@ class Tplink(DimmableLight):
             result += bytes([a])
         return result
 
-    # Decrypt messages from tp-link smarthome devices
     def decrypt(self, string):
+        '''Decrypts an API call using TP-Link's very weak algorithm.'''
+
         key = 171
         result = ""
         for i in string:
@@ -40,6 +68,10 @@ class Tplink(DimmableLight):
         return result
 
     def send(self, state=1):
+        '''Makes API call to turn Tplink device ON if argument is True.
+        Makes API call to turn Tplink device OFF if argument is False.
+        Sets Tplink device brightness to current_rule.
+        '''
         log.info(f"{self.name}: send method called, brightness={self.current_rule}, state={state}")
 
         # Refuse to turn disabled device on, but allow turning off
