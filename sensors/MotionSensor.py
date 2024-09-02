@@ -9,6 +9,28 @@ log = logging.getLogger("MotionSensor")
 
 
 class MotionSensor(Sensor):
+    '''Driver for motion sensors (passive infrared, millimeter wave radar, etc).
+    Turns target devices on when sensor detects motion, turns devices off when
+    reset timer expires. Reset timer duration is determined by current_rule.
+    The reset timer starts over each time motion is detected.
+
+    Args:
+      name:         Unique, sequential config name (sensor1, sensor2, etc)
+      nickname:     User-configured friendly name shown on frontend
+      _type:        Instance type, determines driver class and frontend UI
+      enabled:      Initial enable state (True or False)
+      current_rule: Initial rule, has different effects depending on subclass
+      default_rule: Fallback rule used when no other valid rules are available
+      targets:      List of device names (device1 etc) controlled by sensor
+      pin:          The ESP32 pin connected to the sensor output pin
+
+    Supports universal rules ("enabled" and "disabled") and reset timer
+    duration (float, number of minutes before sensor resets). Setting the rule
+    to 0 disables the reset timer (devices will turn off immediately when the
+    sensor no longer detects motion).
+    The default_rule must be an integer or float (not universal rule).
+    '''
+
     def __init__(self, name, nickname, _type, default_rule, targets, pin):
         super().__init__(name, nickname, _type, True, None, default_rule, targets)
 
@@ -26,6 +48,10 @@ class MotionSensor(Sensor):
         log.info(f"Instantiated MotionSensor (type={self._type}) named {self.name} on pin {pin}")
 
     def enable(self):
+        '''Sets enabled bool to True (allows sensor to be checked), ensures
+        current_rule contains a usable value, refreshes group (check sensor),
+        creates hardware interrupt on motion sensor output pin.
+        '''
         self.motion = False
 
         super().enable()
@@ -34,6 +60,10 @@ class MotionSensor(Sensor):
         self.sensor.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.pin_interrupt)
 
     def disable(self):
+        '''Sets enabled bool to False (prevents sensor from being checked),
+        removes sensor pin interrupt, stops reset timer if running, and
+        refreshes group (turn devices OFF if other sensor conditions not met).
+        '''
         super().disable()
 
         # Disable hardware interrupt
@@ -43,9 +73,15 @@ class MotionSensor(Sensor):
         SoftwareTimer.timer.cancel(self.name)
 
     def condition_met(self):
+        '''Returns True if sensor detected motion and reset timer has not yet
+        expired, returns False if sensor does not detect motion.'''
         return self.motion
 
     def apply_new_rule(self):
+        '''Called by set_rule after successful rule change, updates instance
+        attributes to reflect new rule. If reset timer is running restarts so
+        new rule can take effect.
+        '''
         super().apply_new_rule()
 
         # If reset timer currently running, replace so new rule takes effect
@@ -53,6 +89,8 @@ class MotionSensor(Sensor):
             self.start_reset_timer()
 
     def validator(self, rule):
+        '''Accepts any valid integer or float except NaN.'''
+
         try:
             # Prevent incorrectly accepting True and False (last condition
             # casts to 1.0, 0.0 respectively)
@@ -66,8 +104,11 @@ class MotionSensor(Sensor):
         except (ValueError, TypeError):
             return False
 
-    # Takes positive or negative float, adds to self.current_rule
     def increment_rule(self, amount):
+        '''Takes positive or negative float, adds to current_rule and calls
+        set_rule method. Throws error if current_rule is not an int or float.
+        '''
+
         # Throw error if arg is not int or float
         try:
             amount = float(amount)
@@ -84,8 +125,14 @@ class MotionSensor(Sensor):
 
         return self.set_rule(new)
 
-    # Interrupt routine, called when pin value changes (rising or falling)
     def pin_interrupt(self, pin=""):
+        '''Interrupt handler called when sensor pin value changes (rising or
+        falling) while sensor is enabled. Turns target devices on when rising
+        interrupt occurs (motion detected). Turns devices off when falling
+        interrupt occurs and reset timer is disabled, otherwise ignores falling
+        interrupt (wait for reset timer to turn devices off).
+        '''
+
         # Turn targets on and start reset timer if motion detected
         if self.sensor.value():
             self.motion_detected()
@@ -96,8 +143,12 @@ class MotionSensor(Sensor):
             self.motion = False
             self.refresh_group()
 
-    # Called when sensor is activated (pin HIGH or trigger called)
     def motion_detected(self):
+        '''Called when sensor is activated (pin HIGH interrupt or trigger
+        method called). Sets self.motion attribute, turns on target devices,
+        and starts reset timer.
+        '''
+
         # Set motion attribute if not already set
         if not self.motion:
             self.motion = True
@@ -110,9 +161,12 @@ class MotionSensor(Sensor):
         # Check conditions of all sensors in group
         self.refresh_group()
 
-    # Called when motion is detected or rule changes, starts timer to reset
-    # motion attribute and refresh group in <current_rule> minutes
     def start_reset_timer(self):
+        '''Starts timer to reset motion attribute and refresh group (turn off
+        target devices) in <current_rule> minutes. Called when motion detected
+        or current_rule changes.
+        '''
+
         # Set reset timer unless disabled or current rule is 0 (no reset timer)
         if not (self.current_rule == 0 or self.current_rule == "disabled"):
             try:
@@ -126,8 +180,11 @@ class MotionSensor(Sensor):
             # Stop reset timer (may be running from before delay set to 0)
             SoftwareTimer.timer.cancel(self.name)
 
-    # Called when reset timer expires
     def reset_timer(self, timer=None):
+        '''Called when reset timer expires, resets motion attribute and turns
+        off target devices.
+        '''
+
         log.info(f"{self.name}: reset_timer interrupt")
 
         # Only reset if sensor not detecting motion
@@ -144,14 +201,17 @@ class MotionSensor(Sensor):
         else:
             self.start_reset_timer()
 
-    # Allow API commands to simulate the sensor being triggered
     def trigger(self):
+        '''Called by trigger_sensor API endpoint, simulates sensor detecting
+        motion (sets motion attribute to True, starts reset timer).
+        '''
         self.motion_detected()
         return True
 
-    # Return JSON-serializable dict containing all current attributes
-    # Called by API get_attributes endpoint, more verbose than status
     def get_attributes(self):
+        '''Return JSON-serializable dict containing all current attributes
+        Called by API get_attributes endpoint, more verbose than status
+        '''
         attributes = super().get_attributes()
         # Remove Pin object (not serializable)
         del attributes["sensor"]

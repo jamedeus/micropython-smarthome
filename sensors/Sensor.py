@@ -53,7 +53,7 @@ class Sensor(Instance):
 
     def disable(self):
         '''Sets enabled bool to False (prevents sensor from being checked) and
-        refreshes group (turn devices OFF only this sensor has condition met).
+        refreshes group (turn devices OFF if other sensor conditions not met).
         '''
         super().disable()
 

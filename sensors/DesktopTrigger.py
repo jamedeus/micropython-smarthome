@@ -9,6 +9,27 @@ log = logging.getLogger("DesktopTrigger")
 
 
 class DesktopTrigger(Sensor):
+    '''Driver for Linux computers running desktop-integration daemon. Makes API
+    call every second to check if computer screen is turned on or off. Turns
+    target devices on when screen is on, turns devices off when screen is off.
+
+    Args:
+      name:         Unique, sequential config name (sensor1, sensor2, etc)
+      nickname:     User-configured friendly name shown on frontend
+      _type:        Instance type, determines driver class and frontend UI
+      enabled:      Initial enable state (True or False)
+      current_rule: Initial rule, has different effects depending on subclass
+      default_rule: Fallback rule used when no other valid rules are available
+      targets:      List of device names (device1 etc) controlled by sensor
+      ip:           The IPv4 address of the Linux computer
+      port:         The port that the daemon is listening on (default=5000)
+
+    Supports universal rules ("enabled" and "disabled").
+
+    Can be used to keep lights on while user is at computer even if motion
+    sensor does not detect motion (sitting still etc).
+    '''
+
     def __init__(self, name, nickname, _type, default_rule, targets, ip, port=5000):
         super().__init__(name, nickname, _type, True, None, default_rule, targets)
 
@@ -18,7 +39,8 @@ class DesktopTrigger(Sensor):
         # Current monitor state
         self.current = None
 
-        # Find desktop target so monitor loop (below) can update target's state attribute when screen turn on/off
+        # Find desktop target so monitor loop (below) can update target's state
+        # attribute when screen turns on/off
         for i in self.targets:
             if i._type == "desktop" and i.uri == f"{self.ip}:{self.port}":
                 self.desktop_target = i
@@ -32,6 +54,11 @@ class DesktopTrigger(Sensor):
         log.info(f"Instantiated Desktop named {self.name}: ip = {self.ip}, port = {self.port}")
 
     def enable(self):
+        '''Sets enabled bool to True (allows sensor to be checked), ensures
+        current_rule contains a usable value, refreshes group (check sensor),
+        restarts monitor loop if stopped (checks user activity every second).
+        '''
+
         # Restart loop if stopped
         if self.monitor_task is None:
             print_with_timestamp(f"{self.name}: Start monitor loop")
@@ -39,6 +66,11 @@ class DesktopTrigger(Sensor):
         super().enable()
 
     def disable(self):
+        '''Sets enabled bool to False (prevents sensor from being checked),
+        stops monitor loop, and refreshes group (turn devices OFF if other
+        sensor conditions not met).
+        '''
+
         # Stop loop if running
         if self.monitor_task is not None:
             print_with_timestamp(f"{self.name}: Stop monitor loop")
@@ -48,6 +80,9 @@ class DesktopTrigger(Sensor):
         super().disable()
 
     def get_idle_time(self):
+        '''Makes API call to get time (milliseconds) since last user activity,
+        returns response object (JSON).
+        '''
         try:
             response = requests.get(f'http://{self.ip}:{self.port}/idle_time', timeout=2)
             if response.status_code == 200:
@@ -61,6 +96,9 @@ class DesktopTrigger(Sensor):
             return False
 
     def get_monitor_state(self):
+        '''Makes API call to get current computer screen state, returns
+        response ("On" or "Off"). Returns False if request fails.
+        '''
         try:
             return requests.get(
                 f'http://{self.ip}:{self.port}/state',
@@ -78,21 +116,32 @@ class DesktopTrigger(Sensor):
             return False
 
     def condition_met(self):
+        '''Returns True if computer screen is turned on, False if computer
+        screen is turned off.
+        '''
         if self.current == "On":
             return True
         else:
             return False
 
-    # Allow API commands to simulate the sensor being triggered
     def trigger(self):
+        '''Called by trigger_sensor API endpoint, simulates sensor condition
+        met (computer screen turned on).
+        '''
         self.current = "On"
         self.refresh_group()
         return True
 
-    # Desktop returns values other than "On" and "Off" in some situations (standby, lock screen,
-    # etc), so condition_met cannot rely on a single get_monitor_state call. Instead, loop
-    # continuously monitors and stores most-recent reliable response in self.current attribute.
     async def monitor(self):
+        '''Async coroutine that runs while sensor is enabled. Makes API call
+        every second to check monitor state, saves in self.current attribute.
+
+        Desktop returns values other than "On" and "Off" in some situations
+        (standby, lock screen, etc), so condition_met cannot rely on a single
+        get_monitor_state call. Instead state is continuously monitored and the
+        condition_met method returns response from most-recent check.
+        '''
+
         log.debug(f"{self.name}: Starting DesktopTrigger.monitor coro")
         try:
             while True:
@@ -144,9 +193,10 @@ class DesktopTrigger(Sensor):
             log.debug(f"{self.name}: Exiting DesktopTrigger.monitor coro")
             return False
 
-    # Return JSON-serializable dict containing all current attributes
-    # Called by API get_attributes endpoint, more verbose than status
     def get_attributes(self):
+        '''Return JSON-serializable dict containing all current attributes
+        Called by API get_attributes endpoint, more verbose than status
+        '''
         attributes = super().get_attributes()
 
         # Replace desktop_target instance with instance.name
