@@ -2,7 +2,6 @@ import re
 import logging
 import requests
 from Device import Device
-from util import print_with_timestamp
 
 # Set name for module's log lines
 log = logging.getLogger("Http")
@@ -96,7 +95,7 @@ class HttpGet(Device):
                 self.print("Turned off")
         except OSError:
             # Wifi interruption, send failed
-            print_with_timestamp(f"{self.name}: send failed (wifi error)")
+            self.print(f"{self.name}: send failed (wifi error)")
             return False
 
         if response.status_code == 200:

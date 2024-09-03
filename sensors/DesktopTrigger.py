@@ -2,7 +2,6 @@ import logging
 import asyncio
 import requests
 from Sensor import Sensor
-from util import print_with_timestamp
 
 # Set name for module's log lines
 log = logging.getLogger("DesktopTrigger")
@@ -61,7 +60,7 @@ class DesktopTrigger(Sensor):
 
         # Restart loop if stopped
         if self.monitor_task is None:
-            print_with_timestamp(f"{self.name}: Start monitor loop")
+            self.print(f"{self.name}: Start monitor loop")
             self.monitor_task = asyncio.create_task(self.monitor())
         super().enable()
 
@@ -73,7 +72,7 @@ class DesktopTrigger(Sensor):
 
         # Stop loop if running
         if self.monitor_task is not None:
-            print_with_timestamp(f"{self.name}: Stop monitor loop")
+            self.print(f"{self.name}: Stop monitor loop")
             self.monitor_task.cancel()
             # Allow enable method to restart loop
             self.monitor_task = None
@@ -106,7 +105,7 @@ class DesktopTrigger(Sensor):
             ).json()["state"]
         except (OSError, IndexError):
             # Wifi interruption, return False - caller will try again in 1 second
-            print_with_timestamp(f"{self.name}: failed to get state (wifi error)")
+            self.print(f"{self.name}: failed to get state (wifi error)")
             return False
         except ValueError:
             # Response doesn't contain JSON (different service running on port 5000), disable
