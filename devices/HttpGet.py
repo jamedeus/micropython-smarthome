@@ -46,7 +46,7 @@ class HttpGet(Device):
 
         # Prevent instantiating with invalid URI
         if not re.match(uri_pattern, self.uri):
-            log.critical(f"{self.name}: Received invalid URI: {self.uri}")
+            log.critical("%s: Received invalid URI: %s", self.name, self.uri)
             raise AttributeError
 
         # Paths added to URI for on, off respectively
@@ -59,7 +59,7 @@ class HttpGet(Device):
         if self.off_path.startswith('/'):
             self.off_path = self.off_path[1:]
 
-        log.info(f"Instantiated HttpGet named {self.name}: URI = {self.uri}")
+        log.info("Instantiated HttpGet named %s: URI = %s", self.name, self.uri)
 
     def get_url(self, state):
         '''Returns URL for ON action if argument is True.
@@ -79,7 +79,7 @@ class HttpGet(Device):
         '''Makes request to ON action URL if argument is True.
         Makes request to OFF action URL if argument is False.
         '''
-        log.info(f"{self.name}: send method called, state = {state}")
+        log.info("%s: send method called, state = %s", self.name, state)
 
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:

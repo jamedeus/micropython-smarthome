@@ -59,7 +59,7 @@ class Config():
     def __init__(self, conf, delay_setup=False):
         print_with_timestamp("Instantiating config object...")
         log.info("Instantiating config object...")
-        log.debug(f"Config file: {conf}")
+        log.debug("Config file: %s", conf)
 
         # Load metadata parameters (included in status object used by frontend)
         self.identifier = conf["metadata"]["id"]
@@ -125,7 +125,7 @@ class Config():
 
         # Get HH:MM timestamp of next reload, write to log
         self.reload_time = f"{time.localtime(next_reload + adjust)[3]}:{time.localtime(next_reload + adjust)[4]}"
-        log.debug(f"Reload_schedule_rules callback scheduled for {self.reload_time} am")
+        log.debug("Reload_schedule_rules callback scheduled for %s am", self.reload_time)
         print_with_timestamp(f"Reload_schedule_rules callback scheduled for {self.reload_time} am")
 
         # Add timer to queue
@@ -179,11 +179,17 @@ class Config():
                 # Add instance to config.devices
                 self.devices.append(instance)
             except AttributeError:
-                log.critical(f"Failed to instantiate {device} ({conf[device]['_type']}), params: {conf[device]}")
+                log.critical(
+                    "Failed to instantiate %s (%s), params: %s",
+                    device, conf[device]['_type'], conf[device]
+                )
                 print_with_timestamp(f"ERROR: Failed to instantiate {device} ({conf[device]['_type']}")
                 pass
             except ValueError:
-                log.critical(f"Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
+                log.critical(
+                    "Failed to instantiate %s, unsupported device type %s",
+                    device, conf[device]['_type']
+                )
                 print_with_timestamp(f"ERROR: Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
 
         log.debug("Finished creating device instances")
@@ -211,11 +217,17 @@ class Config():
                 # Add instance to config.sensors
                 self.sensors.append(instance)
             except AttributeError:
-                log.critical(f"Failed to instantiate {sensor} ({conf[sensor]['_type']}, params: {conf[sensor]}")
+                log.critical(
+                    "Failed to instantiate %s (%s), params: %s",
+                    sensor, conf[sensor]['_type'], conf[sensor]
+                )
                 print_with_timestamp(f"ERROR: Failed to instantiate {sensor} ({conf[sensor]['_type']}")
                 pass
             except ValueError:
-                log.critical(f"Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
+                log.critical(
+                    "Failed to instantiate %s, unsupported sensor type %s",
+                    sensor, conf[sensor]['_type']
+                )
                 print_with_timestamp(f"ERROR: Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
 
         log.debug("Finished creating sensor instances")
@@ -305,7 +317,7 @@ class Config():
         wlan.active(True)
         if not wlan.isconnected():
             credentials = read_wifi_credentials_from_disk()
-            log.debug(f"Attempting to connect to {credentials['ssid']}")
+            log.debug("Attempting to connect to %s", credentials['ssid'])
             wlan.connect(credentials["ssid"], credentials["password"])
 
             # Wait until finished connecting before proceeding
@@ -313,7 +325,7 @@ class Config():
                 continue
             else:
                 print_with_timestamp(f"Successfully connected to {credentials['ssid']}")
-                log.info(f"Successfully connected to {credentials['ssid']}")
+                log.info("Successfully connected to %s", credentials['ssid'])
 
         failed_attempts = 0
 
@@ -349,7 +361,7 @@ class Config():
             # Issue with response object
             except KeyError:
                 print_with_timestamp(f'ERROR (ipgeolocation.io): {response.json()["message"]}')
-                log.error(f'ERROR (ipgeolocation.io): {response.json()["message"]}')
+                log.error('ERROR (ipgeolocation.io): %s', response.json()["message"])
                 reboot()
 
             # Network issue
@@ -455,7 +467,10 @@ class Config():
                 # Set current_rule and scheduled_rule (returns False if invalid)
                 if not instance.set_rule(instance.default_rule, True):
                     # If default_rule invalid, disable instance to prevent unpredictable behavior
-                    log.critical(f"{instance.name} invalid default rule ({instance.default_rule}), disabling instance")
+                    log.critical(
+                        "%s invalid default rule (%s), disabling instance",
+                        instance.name, instance.default_rule
+                    )
                     instance.current_rule = "disabled"
                     instance.scheduled_rule = "disabled"
                     instance.default_rule = "disabled"
@@ -472,10 +487,16 @@ class Config():
             # Set first item as current_rule and scheduled_rule (returns False if invalid)
             if not instance.set_rule(rules[queue.pop(0)], True):
                 # Fall back to default_rule if scheduled rule is invalid
-                log.error(f"{instance.name} scheduled rule failed validation, falling back to default rule")
+                log.error(
+                    "%s scheduled rule failed validation, falling back to default rule",
+                    instance.name
+                )
                 if not instance.set_rule(instance.default_rule, True):
                     # If both  rules invalid, disable instance to prevent unpredictable behavior
-                    log.critical(f"{instance.name} invalid default rule ({instance.default_rule}), disabling instance")
+                    log.critical(
+                        "%s invalid default rule (%s), disabling instance",
+                        instance.name, instance.default_rule
+                    )
                     instance.current_rule = "disabled"
                     instance.scheduled_rule = "disabled"
                     instance.default_rule = "disabled"
@@ -498,7 +519,7 @@ class Config():
                 gc.collect()
 
         print_with_timestamp(f"Finished building queue, total timers = {len(SoftwareTimer.timer.queue)}")
-        log.debug(f"Finished building queue, total timers = {len(SoftwareTimer.timer.queue)}")
+        log.debug("Finished building queue, total timers = %s", len(SoftwareTimer.timer.queue))
 
     # Takes ID (device1, sensor2, etc), returns instance or False
     def find(self, target):
@@ -507,7 +528,7 @@ class Config():
                 if i.name == target:
                     return i
             else:
-                log.debug(f"Config.find: Unable to find {target}")
+                log.debug("Config.find: Unable to find %s", target)
                 return False
 
         elif is_sensor(target):
@@ -515,11 +536,11 @@ class Config():
                 if i.name == target:
                     return i
             else:
-                log.debug(f"Config.find: Unable to find {target}")
+                log.debug("Config.find: Unable to find %s", target)
                 return False
 
         else:
-            log.debug(f"Config.find: Unable to find {target}")
+            log.debug("Config.find: Unable to find %s", target)
             return False
 
     # Called by timer every day at 3 am, regenerate timestamps for next day (epoch time)

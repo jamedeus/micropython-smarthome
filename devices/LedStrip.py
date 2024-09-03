@@ -48,7 +48,7 @@ class LedStrip(DimmableLight):
         # Store current brightness, allows smooth transition when rule changes
         self.bright = 0
 
-        log.info(f"Instantiated LedStrip named {self.name} on pin {pin}")
+        log.info("Instantiated LedStrip named %s on pin %s", self.name, pin)
 
     def send(self, state=1):
         '''Sets PWM duty cycle to current_rule if argument is True.

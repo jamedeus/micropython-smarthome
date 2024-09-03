@@ -48,7 +48,10 @@ class ApiTarget(Device):
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            log.critical(
+                "%s: Received invalid default_rule: %s",
+                self.name, self.default_rule
+            )
             raise AttributeError
 
     def get_node_ip(self):
@@ -166,7 +169,7 @@ class ApiTarget(Device):
             self.current_rule = valid_rule
             if scheduled:
                 self.scheduled_rule = valid_rule
-            log.info(f"{self.name}: Rule changed to {self.current_rule}")
+            log.info("%s: Rule changed to %s", self.name, self.current_rule)
             self.print(f"Rule changed to {self.current_rule}")
 
             # Update instance attributes to reflect new rule
@@ -175,7 +178,7 @@ class ApiTarget(Device):
             return True
 
         else:
-            log.error(f"{self.name}: Failed to change rule to {rule}")
+            log.error("%s: Failed to change rule to %s", self.name, rule)
             self.print(f"Failed to change rule to {rule}")
             return False
 
@@ -183,9 +186,9 @@ class ApiTarget(Device):
         '''Called when an API call receives an error response. Takes full
         payload and response, writes multiline log with indent for readability.
         '''
-        log.error(f"""{self.name}: Send method failed
-        Payload: {msg}
-        Response: {err}""")
+        log.error("""%s: Send method failed
+        Payload: %s
+        Response: %s""", self.name, msg, err)
         self.print(f"Send method failed with payload {msg}")
         self.print(f"Response: {err}")
 

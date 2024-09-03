@@ -47,7 +47,10 @@ class DimmableLight(Device):
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            log.critical(
+                "%s: Received invalid default_rule: %s",
+                self.name, self.default_rule
+            )
             raise AttributeError
         elif int(self.default_rule) > self.max_rule or int(self.default_rule) < self.min_rule:
             raise AttributeError
@@ -71,7 +74,7 @@ class DimmableLight(Device):
         # Check if rule is valid (may return modified rule, eg cast str to int)
         valid_rule = self.rule_validator(rule)
         if valid_rule is False:
-            log.error(f"{self.name}: Failed to change rule to {rule}")
+            log.error("%s: Failed to change rule to %s", self.name, rule)
             self.print(f"Failed to change rule to {rule}")
             return False
 
@@ -93,7 +96,7 @@ class DimmableLight(Device):
 
             self.current_rule = valid_rule
             self.print(f"Rule changed to {self.current_rule}")
-            log.info(f"{self.name}: Rule changed to {self.current_rule}")
+            log.info("%s: Rule changed to %s", self.name, self.current_rule)
 
             # Abort fade if new rule exceeded target
             self.fade_complete()
@@ -192,12 +195,12 @@ class DimmableLight(Device):
         if self.current_rule is None:
             self.current_rule = int(target)
             self.print(f"Rule changed to {self.current_rule}")
-            log.info(f"{self.name}: Rule changed to {self.current_rule}")
+            log.info("%s: Rule changed to %s", self.name, self.current_rule)
             return True
 
         # If rule changes to fade after boot, start fade and return first step as current_rule
         self.print(f"fading to {target} in {period} seconds")
-        log.info(f"{self.name}: fading to {target} in {period} seconds")
+        log.info("%s: fading to %s in %s seconds", self.name, target, period)
 
         # Default to min_rule if device disabled when fade starts
         if self.current_rule == "disabled":
@@ -205,7 +208,7 @@ class DimmableLight(Device):
 
         if int(target) == self.current_rule:
             self.print("Already at target brightness, skipping fade")
-            log.info(f"{self.name}: Already at target brightness, skipping fade")
+            log.info("%s: Already at target brightness, skipping fade", self.name)
             return True
 
         # Find fade direction, get number of steps, period between steps

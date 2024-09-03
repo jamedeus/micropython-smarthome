@@ -62,7 +62,10 @@ class Thermostat(Sensor):
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            log.critical(
+                "%s: Received invalid default_rule: %s",
+                self.name, self.default_rule
+            )
             raise AttributeError
 
         # Set cooling or heating mode, determines when targets turn on/off
@@ -249,24 +252,36 @@ class Thermostat(Sensor):
                 # Temperature increasing, should be cooling
                 if self.mode == "cool" and self.condition_met() is True:
                     self.print("Failed to start cooling - turning AC on again")
-                    log.info(f"Failed to start cooling (recent_temps: {self.recent_temps}). Turning AC on again")
+                    log.info(
+                        "Failed to start cooling (recent_temps: %s). Turning AC on again",
+                        self.recent_temps
+                    )
                     action = False
 
                 # Temperature increasing, should NOT be heating
                 elif self.mode == "heat" and self.condition_met() is False:
-                    log.info(f"Failed to stop heating (recent_temps: {self.recent_temps}). Turning heater off again")
+                    log.info(
+                        "Failed to stop heating (recent_temps: %s). Turning heater off again",
+                        self.recent_temps
+                    )
                     action = True
 
             # Neither covered
             elif self.recent_temps[0] > self.recent_temps[1] > self.recent_temps[2]:
                 # Temperature decreasing, should NOT be cooling
                 if self.mode == "cool" and self.condition_met() is False:
-                    log.info(f"Failed to stop cooling (recent_temps: {self.recent_temps}). Turning AC off again")
+                    log.info(
+                        "Failed to stop cooling (recent_temps: %s). Turning AC off again",
+                        self.recent_temps
+                    )
                     action = True
 
                 # Temperature decreasing, should be heating
                 elif self.mode == "heat" and self.condition_met() is True:
-                    log.info(f"Failed to start heating (recent_temps: {self.recent_temps}). Turning heater on again")
+                    log.info(
+                        "Failed to start heating (recent_temps: %s). Turning heater on again",
+                        self.recent_temps
+                    )
                     action = False
 
             # Override all targets' state attr, allows group to turn on/off again

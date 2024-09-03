@@ -29,7 +29,7 @@ class TasmotaRelay(HttpGet):
     def __init__(self, name, nickname, _type, default_rule, ip):
         super().__init__(name, nickname, _type, default_rule, ip, on_path, off_path)
 
-        log.info(f"Instantiated TasmotaRelay named {self.name}: ip = {self.uri}")
+        log.info("Instantiated TasmotaRelay named %s: ip = %s", self.name, self.uri)
 
     def check_state(self):
         '''Makes API call to get Tasmota relay power state, return response'''

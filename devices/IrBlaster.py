@@ -48,7 +48,7 @@ class IrBlaster():
         # Dict with macro names as key, list of actions as value
         self.macros = read_ir_macros_from_disk()
 
-        log.info(f"Instantiated IrBlaster on pin {pin}")
+        log.info("Instantiated IrBlaster on pin %s", pin)
 
     def populate_codes(self, target):
         '''Takes target name, imports codes and adds to self.codes dict.'''

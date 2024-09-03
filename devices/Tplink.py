@@ -43,7 +43,10 @@ class Tplink(DimmableLight):
         # Stores parameters in dict when fade in progress
         self.fading = False
 
-        log.info(f"Instantiated Tplink device named {self.name}: ip = {self.ip}, type = {self._type}")
+        log.info(
+            "Instantiated Tplink device named %s: ip = %s, type = %s",
+            self.name, self.ip, self._type
+        )
 
     def encrypt(self, string):
         '''Encrypts an API call using TP-Link's very weak algorithm.'''
@@ -72,7 +75,10 @@ class Tplink(DimmableLight):
         Makes API call to turn Tplink device OFF if argument is False.
         Sets Tplink device brightness to current_rule.
         '''
-        log.info(f"{self.name}: send method called, brightness={self.current_rule}, state={state}")
+        log.info(
+            "%s: send method called, brightness=%s, state=%s",
+            self.name, self.current_rule, state
+        )
 
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
@@ -105,14 +111,14 @@ class Tplink(DimmableLight):
             decrypted = self.decrypt(data[4:])  # Remove in final version (or put in debug conditional)
 
             self.print(f"brightness = {self.current_rule}, state = {state}")
-            log.debug(f"{self.name}: Success")
+            log.debug("%s: Success", self.name)
 
             # Tell calling function that request succeeded
             return True
 
         except Exception as ex:
             self.print(f"Could not connect to host {self.ip}, exception: {ex}")
-            log.info(f"{self.name}: Could not connect to host {self.ip}")
+            log.info("%s: Could not connect to host %s", self.name, self.ip)
 
             # Tell calling function that request failed
             return False

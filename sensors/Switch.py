@@ -38,7 +38,7 @@ class Switch(Sensor):
         # Track whether switch open or closed (allows checking state via API)
         self.switch_closed = bool(self.switch.value())
 
-        log.info(f"Instantiated switch sensor named {self.name}")
+        log.info("Instantiated switch sensor named %s", self.name)
 
     def interrupt_handler(self, arg=None):
         '''Interrupt handler called when switch is opened or closed, turns

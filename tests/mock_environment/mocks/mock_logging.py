@@ -14,7 +14,7 @@ class Logger:
         self.handlers = []
         self.addHandler()
 
-    def info(self, msg):
+    def info(self, msg, *args):
         with open('app.log', 'w') as file:
             file.write(msg)
 
@@ -22,15 +22,15 @@ class Logger:
         with open('app.log', 'w') as file:
             file.write(msg)
 
-    def warning(self, msg):
+    def warning(self, msg, *args):
         with open('app.log', 'w') as file:
             file.write(msg)
 
-    def error(self, msg):
+    def error(self, msg, *args):
         with open('app.log', 'w') as file:
             file.write(msg)
 
-    def critical(self, msg):
+    def critical(self, msg, *args):
         with open('app.log', 'w') as file:
             file.write(msg)
 

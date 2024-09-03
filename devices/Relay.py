@@ -28,13 +28,13 @@ class Relay(Device):
 
         self.output = Pin(int(pin), Pin.OUT, Pin.PULL_DOWN)
 
-        log.info(f"Instantiated Relay named {self.name} on pin {pin}")
+        log.info("Instantiated Relay named %s on pin %s", self.name, pin)
 
     def send(self, state=1):
         '''Sets pin level HIGH if arg is True.
         Sets pin level LOW if arg is False.
         '''
-        log.info(f"{self.name}: send method called, state = {state}")
+        log.info("%s: send method called, state = %s", self.name, state)
 
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:

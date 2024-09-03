@@ -111,7 +111,7 @@ class Instance():
             # If called by next_rule: set scheduled_rule
             if scheduled:
                 self.scheduled_rule = valid_rule
-            log.info(f"{self.name}: Rule changed to {self.current_rule}")
+            log.info("%s: Rule changed to %s", self.name, self.current_rule)
             self.print(f"Rule changed to {self.current_rule}")
 
             # Update instance attributes to reflect new rule
@@ -120,7 +120,7 @@ class Instance():
             return True
 
         else:
-            log.error(f"{self.name}: Failed to change rule to {rule}")
+            log.error("%s: Failed to change rule to %s", self.name, rule)
             self.print(f"Failed to change rule to {rule}")
             return False
 
@@ -167,7 +167,7 @@ class Instance():
         '''Called by SoftwareTimer interrupt at each scheduled rule change.
         Calls set_rule with first item in rule_queue (see Config.build_queue).
         '''
-        log.debug(f"{self.name}: Scheduled rule change")
+        log.debug("%s: Scheduled rule change", self.name)
         self.print("Scheduled rule change")
         self.set_rule(self.rule_queue.pop(0), True)
 

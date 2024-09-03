@@ -25,13 +25,13 @@ class DesktopTarget(HttpGet):
     def __init__(self, name, nickname, _type, default_rule, ip, port=5000):
         super().__init__(name, nickname, _type, default_rule, f"{ip}:{port}", "on", "off")
 
-        log.info(f"Instantiated Desktop named {self.name}: uri = {self.uri}")
+        log.info("Instantiated Desktop named %s: uri = %s", self.name, self.uri)
 
     def send(self, state=1):
         '''Makes API call to turn screen ON if argument is True.
         Makes API call to turn screen OFF if argument is False.
         '''
-        log.info(f"{self.name}: send method called, state = {state}")
+        log.info("%s: send method called, state = %s", self.name, state)
 
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
@@ -60,7 +60,10 @@ class DesktopTarget(HttpGet):
             # Unexpected response (different service running on port 5000), disable
             if self.enabled:
                 self.print("Fatal error (unexpected response from desktop), disabling")
-                log.info(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+                log.info(
+                    "%s: Fatal error (unexpected response from desktop), disabling",
+                    self.name
+                )
                 self.disable()
 
         return False

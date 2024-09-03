@@ -46,7 +46,7 @@ class LoadCell(Sensor):
         # Start monitor loop (checks if threshold met every second)
         asyncio.create_task(self.monitor())
 
-        log.info(f"Instantiated load cell sensor named {self.name}")
+        log.info("Instantiated load cell sensor named %s", self.name)
 
     def validator(self, rule):
         '''Accepts any valid integer or float except NaN.'''

@@ -36,7 +36,10 @@ class MotionSensor(Sensor):
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            log.critical(
+                "%s: Received invalid default_rule: %s",
+                self.name, self.default_rule
+            )
             raise AttributeError
 
         # Pin setup
@@ -45,7 +48,10 @@ class MotionSensor(Sensor):
         # Create hardware interrupt
         self.enable()
 
-        log.info(f"Instantiated MotionSensor (type={self._type}) named {self.name} on pin {pin}")
+        log.info(
+            "Instantiated MotionSensor (type=%s) named %s on pin %s",
+            self._type, self.name, pin
+        )
 
     def enable(self):
         '''Sets enabled bool to True (allows sensor to be checked), ensures
@@ -153,7 +159,7 @@ class MotionSensor(Sensor):
         if not self.motion:
             self.motion = True
             self.print("Motion detected")
-            log.debug(f"{self.name}: Motion detected")
+            log.debug("%s: Motion detected", self.name)
 
         # Start reset timer (or restart if sensor retriggered)
         self.start_reset_timer()
@@ -175,7 +181,11 @@ class MotionSensor(Sensor):
                 SoftwareTimer.timer.create(off, self.reset_timer, self.name)
             except (ValueError, TypeError):
                 self.print(f"Failed to start reset timer, current_rule = {self.current_rule}")
-                log.debug(f"{self.name}: Failed to start reset timer, current_rule = {self.current_rule}")
+                log.debug(
+                    "%s: Failed to start reset timer, current_rule = %s",
+                    self.name,
+                    self.current_rule
+                )
         else:
             # Stop reset timer (may be running from before delay set to 0)
             SoftwareTimer.timer.cancel(self.name)
@@ -185,7 +195,7 @@ class MotionSensor(Sensor):
         off target devices.
         '''
 
-        log.info(f"{self.name}: reset_timer interrupt")
+        log.info("%s: reset_timer interrupt", self.name)
 
         # Only reset if sensor not detecting motion
         if not self.sensor.value():

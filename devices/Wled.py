@@ -37,7 +37,7 @@ class Wled(DimmableLight):
 
         self.ip = ip
 
-        log.info(f"Instantiated Wled named {self.name}: ip = {self.ip}")
+        log.info("Instantiated Wled named %s: ip = %s", self.name, self.ip)
 
     def get_payload(self, state=True):
         '''Returns WLED API payload (JSON) to set power state and brightness.
@@ -53,7 +53,7 @@ class Wled(DimmableLight):
         Makes API call to turn WLED instance OFF if argument is False.
         Sets WLED instance brightness to current_rule.
         '''
-        log.info(f"{self.name}: send method called, state = {state}")
+        log.info("%s: send method called, state = %s", self.name, state)
 
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
@@ -71,7 +71,7 @@ class Wled(DimmableLight):
         except OSError:
             # Wifi error, send failed
             self.print(f"{self.name}: send failed (wifi error)")
-            log.info(f"{self.name}: send failed (wifi error)")
+            log.info("%s: send failed (wifi error)", self.name)
             return False
 
         if response.status_code == 200:

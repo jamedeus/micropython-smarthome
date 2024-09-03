@@ -31,10 +31,13 @@ class Dummy(Sensor):
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            log.critical(
+                "%s: Received invalid default_rule: %s",
+                self.name, self.default_rule
+            )
             raise AttributeError
 
-        log.info(f"Instantiated dummy sensor named {self.name}")
+        log.info("Instantiated dummy sensor named %s", self.name)
 
     def validator(self, rule):
         '''Accepts "on" and "off", rejects all other rules.'''

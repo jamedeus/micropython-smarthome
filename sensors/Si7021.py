@@ -50,7 +50,7 @@ class Si7021(Thermostat):
 
         # Set mode, tolerance, units, current_rule, create monitor task
         super().__init__(name, nickname, _type, default_rule, mode, tolerance, units, targets)
-        log.info(f"Instantiated Si7021 named {self.name}")
+        log.info("Instantiated Si7021 named %s", self.name)
 
     def get_raw_temperature(self):
         '''Returns raw temperature reading in Celsius. Called by parent class

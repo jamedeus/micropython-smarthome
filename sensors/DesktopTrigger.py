@@ -50,7 +50,10 @@ class DesktopTrigger(Sensor):
         # Run monitor loop
         self.monitor_task = asyncio.create_task(self.monitor())
 
-        log.info(f"Instantiated Desktop named {self.name}: ip = {self.ip}, port = {self.port}")
+        log.info(
+            "Instantiated Desktop named %s: ip = %s, port = %s",
+            self.name, self.ip, self.port
+        )
 
     def enable(self):
         '''Sets enabled bool to True (allows sensor to be checked), ensures
@@ -90,7 +93,10 @@ class DesktopTrigger(Sensor):
         except OSError:
             # Desktop offline or different service running on port 5000, disable
             self.print("Fatal error (unable to connect to desktop), disabling")
-            log.info(f"{self.name}: Fatal error (unable to connect to desktop), disabling")
+            log.info(
+                "%s: Fatal error (unable to connect to desktop), disabling",
+                self.name
+            )
             self.disable()
             return False
 
@@ -110,7 +116,10 @@ class DesktopTrigger(Sensor):
         except ValueError:
             # Response doesn't contain JSON (different service running on port 5000), disable
             self.print("Fatal error (unexpected response from desktop), disabling")
-            log.info(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+            log.info(
+                "%s: Fatal error (unexpected response from desktop), disabling",
+                self.name
+            )
             self.disable()
             return False
 
@@ -141,7 +150,7 @@ class DesktopTrigger(Sensor):
         condition_met method returns response from most-recent check.
         '''
 
-        log.debug(f"{self.name}: Starting DesktopTrigger.monitor coro")
+        log.debug("%s: Starting DesktopTrigger.monitor coro", self.name)
         try:
             while True:
                 # Get new reading
@@ -156,7 +165,10 @@ class DesktopTrigger(Sensor):
                 # State changed, overwrite self.current with new reading
                 if new != self.current:
                     self.print(f"Monitors changed from {self.current} to {new}")
-                    log.debug(f"{self.name}: Monitors changed from {self.current} to {new}")
+                    log.debug(
+                        "%s: Monitors changed from %s to %s",
+                        self.name, self.current, new
+                    )
                     self.current = new
 
                     # TODO make this behavior configurable
@@ -189,7 +201,7 @@ class DesktopTrigger(Sensor):
 
         # Sensor disabled, exit loop
         except asyncio.CancelledError:
-            log.debug(f"{self.name}: Exiting DesktopTrigger.monitor coro")
+            log.debug("%s: Exiting DesktopTrigger.monitor coro", self.name)
             return False
 
     def get_attributes(self):
