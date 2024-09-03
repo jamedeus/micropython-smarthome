@@ -556,17 +556,21 @@ check-str-concat-over-line-jumps=no
 ignored-modules=network,machine,webrepl,micropython,flashbdev,inisetup,tls,
                 setup_ssl_certs,setup_page,default_config,api_keys,
                 hardware_classes,ir_code_classes,ir_tx,util,Api,SoftwareTimer,
-                Instance,dht,hx711,IrBlaster
+                Instance,dht,hx711,IrBlaster,si7021,uio,cpython_only,HttpGet,
+                Group,LoadCell,Dht22,ApiTarget,MotionSensor,Config,main,
+                Relay,LedStrip,Device,Sensor,DesktopTarget,Si7021,Thermostat,
+                DimmableLight,Tplink,TasmotaRelay,DesktopTarget,Dummy,Switch,
+                Wled,wifi_setup,mock_logging,mock_json,mock_requests,
+                mock_asyncio,flask,mock_cli_config,test_api_client
+
+# Silence no-member for methods that only exist in micropython
+generated-members=os.mount,time.sleep_us,time.sleep_ms,asyncio.sleep_ms,
+                  asyncio.sleep_us,sys.print_exception
 
 # List of decorators that produce context managers, such as
 # contextlib.contextmanager. Add to this list to register other decorators that
 # produce valid context managers.
 contextmanager-decorators=contextlib.contextmanager
-
-# List of members which are set dynamically and missed by pylint inference
-# system, and so shouldn't trigger E1101 when accessed. Python regular
-# expressions are accepted.
-generated-members=
 
 # Tells whether to warn about missing members when the owner of the attribute
 # is inferred to be None.
