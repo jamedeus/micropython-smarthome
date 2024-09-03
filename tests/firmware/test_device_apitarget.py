@@ -3,6 +3,7 @@ import json
 import network
 import unittest
 from Api import app
+from Group import Group
 from ApiTarget import ApiTarget
 from MotionSensor import MotionSensor
 from cpython_only import cpython_only
@@ -37,6 +38,7 @@ expected_attributes = {
     'port': config['mock_receiver']['api_port'],
     'node_ip': wlan.ifconfig()[0],
     'enabled': True,
+    'group': 'group1',
     'rule_queue': [],
     'state': None,
     'default_rule': {
@@ -105,6 +107,12 @@ class TestApiTarget(unittest.TestCase):
             MotionSensor('sensor1', 'sensor1', 'pir', '5', [], 4),
             MotionSensor('sensor2', 'sensor2', 'ld2410', '5', [], 25)
         ]
+        # Create mock group, add device and both sensors
+        cls.group = Group("group1", [
+            cls.instance.triggered_by[0],
+            cls.instance.triggered_by[1]
+        ])
+        cls.instance.group = cls.group
 
         # Create mock device and config for self-target tests
         cls.target = MockDevice()
@@ -323,8 +331,8 @@ class TestApiTarget(unittest.TestCase):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
         self.instance.set_rule('enabled')
-        # Rule should be set to default rule, NOT 'enabled'
-        self.assertEqual(self.instance.current_rule, default_rule)
+        # Rule should be set to scheduled rule, NOT 'enabled'
+        self.assertEqual(self.instance.current_rule, self.instance.scheduled_rule)
         self.assertTrue(self.instance.enabled)
         # Attempt to reproduce crash, should not crash
         self.assertTrue(self.instance.send(1))
@@ -386,3 +394,21 @@ class TestApiTarget(unittest.TestCase):
         # Send method should return True immediately without doing anything
         self.assertTrue(self.instance.send(1))
         self.assertTrue(self.instance.send(0))
+
+    # Original bug: If set_rule was called with "enabled" the apply_new_rule
+    # method would set current_rule to default_rule instead of scheduled_rule.
+    def test_19_regression_enable_with_rule_change_ignores_scheduled_rule(self):
+        # Starting conditions
+        self.instance.disable()
+        self.instance.scheduled_rule = {'on': ['enable', 'device2'], 'off': ['enable', 'device2']}
+        self.instance.default_rule = {'on': ['enable', 'device1'], 'off': ['enable', 'device1']}
+        self.assertFalse(self.instance.enabled)
+
+        # Enable device by calling set_rule method
+        self.assertTrue(self.instance.set_rule("enabled"))
+
+        # Confirm switched to scheduled_rule, not default_rule
+        self.assertEqual(
+            self.instance.current_rule,
+            {'on': ['enable', 'device2'], 'off': ['enable', 'device2']}
+        )
