@@ -48,11 +48,11 @@ class DesktopTarget(HttpGet):
                     self.print("Turned off")
                 return True
             # Off command 503 response indicates user is not idle
-            elif response.status_code == 503 and not state:
+            if response.status_code == 503 and not state:
                 self.print("User not idle, keeping screen on")
                 return True
-            else:
-                raise ValueError
+            # Unexpected status code
+            raise ValueError
         except OSError:
             # Wifi interruption, send failed
             return False

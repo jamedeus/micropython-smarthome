@@ -45,8 +45,7 @@ class Wled(DimmableLight):
         '''
         if state:
             return {"on": True, "bri": self.current_rule}
-        else:
-            return {"on": False, "bri": self.current_rule}
+        return {"on": False, "bri": self.current_rule}
 
     def send(self, state=1):
         '''Makes API call to turn WLED instance ON if argument is True.
@@ -74,7 +73,5 @@ class Wled(DimmableLight):
             log.info("%s: send failed (wifi error)", self.name)
             return False
 
-        if response.status_code == 200:
-            return True
-        else:
-            return False
+        # Request succeeded if status code is 200
+        return bool(response.status_code == 200)

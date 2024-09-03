@@ -57,10 +57,10 @@ class LoadCell(Sensor):
             if isinstance(rule, bool):
                 return False
             # Prevent accepting NaN (is valid float but breaks comparison)
-            elif isnan(float(rule)):
+            if isnan(float(rule)):
                 return False
-            else:
-                return float(rule)
+            # Rule valid if able to cast to float
+            return float(rule)
         except (ValueError, TypeError):
             return False
 

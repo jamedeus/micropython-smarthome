@@ -35,12 +35,14 @@ class LedStrip(DimmableLight):
     def __init__(self, name, nickname, _type, default_rule, min_rule, max_rule, pin):
         super().__init__(name, nickname, _type, True, None, default_rule, min_rule, max_rule)
 
-        # TODO - Find optimal PWM freq. Default (5 KHz) causes coil whine in downstairs bathroom at 128 duty cycle.
-        # Raising significantly reduces max brightness (exceed MOSFET switching time), may need different power supply?
+        # TODO - Find optimal PWM freq. Default (5 KHz) causes coil whine in
+        # downstairs bathroom at 128 duty cycle. Raising significantly reduces
+        # max brightness (exceed MOSFET switching time), may need different power supply?
         self.pwm = PWM(Pin(int(pin)), duty=0)
 
-        # Firmware bug workaround, occasionally instantiates with 512 duty cycle despite duty=0. Immediately calling
-        # pwm.duty(0) does nothing, but for some reason calling pwm.duty() with no argument fixes the issue. Works
+        # Firmware bug workaround, occasionally instantiates with 512 duty
+        # cycle despite duty=0. Immediately calling pwm.duty(0) does nothing,
+        # but for some reason calling pwm.duty() with no arg fixes issue. Works
         # whether called in print statement or conditional, tested 100+ times.
         if self.pwm.duty() != 0:
             self.pwm.duty(0)
@@ -68,7 +70,8 @@ class LedStrip(DimmableLight):
             target = 0
 
         # Exit if current already matches target, prevent division by 0 below
-        if self.bright == target: return True
+        if self.bright == target:
+            return True
 
         # Fade DOWN
         if self.bright > target:

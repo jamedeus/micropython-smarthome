@@ -45,6 +45,9 @@ class MotionSensor(Sensor):
         # Pin setup
         self.sensor = Pin(int(pin), Pin.IN, Pin.PULL_DOWN)
 
+        # Motion detection state from last hardware interrupt
+        self.motion = False
+
         # Create hardware interrupt
         self.enable()
 
@@ -103,10 +106,10 @@ class MotionSensor(Sensor):
             if isinstance(rule, bool):
                 return False
             # Prevent accepting NaN (is valid float but breaks arithmetic)
-            elif isnan(float(rule)):
+            if isnan(float(rule)):
                 return False
-            else:
-                return float(rule)
+            # Rule valid if able to cast to float
+            return float(rule)
         except (ValueError, TypeError):
             return False
 
@@ -131,7 +134,7 @@ class MotionSensor(Sensor):
 
         return self.set_rule(new)
 
-    def pin_interrupt(self, pin=""):
+    def pin_interrupt(self, _=None):
         '''Interrupt handler called when sensor pin value changes (rising or
         falling) while sensor is enabled. Turns target devices on when rising
         interrupt occurs (motion detected). Turns devices off when falling
@@ -174,7 +177,7 @@ class MotionSensor(Sensor):
         '''
 
         # Set reset timer unless disabled or current rule is 0 (no reset timer)
-        if not (self.current_rule == 0 or self.current_rule == "disabled"):
+        if self.current_rule not in [0, "disabled"]:
             try:
                 # Convert delay (minutes) to milliseconds, start timer
                 off = float(self.current_rule) * 60000
@@ -190,7 +193,7 @@ class MotionSensor(Sensor):
             # Stop reset timer (may be running from before delay set to 0)
             SoftwareTimer.timer.cancel(self.name)
 
-    def reset_timer(self, timer=None):
+    def reset_timer(self, _=None):
         '''Called when reset timer expires, resets motion attribute and turns
         off target devices.
         '''

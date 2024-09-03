@@ -67,8 +67,7 @@ class HttpGet(Device):
         '''
         if state:
             return f'http://{self.uri}/{self.on_path}'
-        else:
-            return f'http://{self.uri}/{self.off_path}'
+        return f'http://{self.uri}/{self.off_path}'
 
     def request(self, url):
         '''Takes URL, makes request, returns response object'''
@@ -98,7 +97,5 @@ class HttpGet(Device):
             self.print(f"{self.name}: send failed (wifi error)")
             return False
 
-        if response.status_code == 200:
-            return True
-        else:
-            return False
+        # Request succeeded if status code is 200
+        return bool(response.status_code == 200)

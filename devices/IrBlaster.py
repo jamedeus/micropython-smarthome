@@ -115,20 +115,20 @@ class IrBlaster():
         '''
 
         # Validation
-        if name not in self.macros.keys():
+        if name not in self.macros:
             raise ValueError(f"Macro {name} does not exist, use create_macro to add")
-        if target not in self.codes.keys():
+        if target not in self.codes:
             raise ValueError(f"No codes for {target}")
         if key not in self.codes[target]:
             raise ValueError(f"Target {target} has no key {key}")
         try:
             delay = int(delay)
-        except ValueError:
-            raise ValueError("Delay arg must be integer (milliseconds)")
+        except ValueError as exc:
+            raise ValueError("Delay arg must be integer (milliseconds)") from exc
         try:
             repeat = int(repeat)
-        except ValueError:
-            raise ValueError("Repeat arg must be integer (number of times to press key)")
+        except ValueError as exc:
+            raise ValueError("Repeat arg must be integer (number of times to press key)") from exc
 
         # Add action
         self.macros[name].append((target, key, delay, repeat))
@@ -150,7 +150,7 @@ class IrBlaster():
         print_with_timestamp("IR Blaster: run macro coro start")
         # Iterate actions and run each action
         for action in self.macros[name]:
-            for i in range(0, int(action[3])):
+            for _ in range(0, int(action[3])):
                 self.send(action[0], action[1])
                 await asyncio.sleep_ms(int(action[2]))
         print_with_timestamp("IR Blaster: run macro coro end")

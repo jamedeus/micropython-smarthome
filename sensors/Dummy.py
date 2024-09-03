@@ -43,10 +43,9 @@ class Dummy(Sensor):
         '''Accepts "on" and "off", rejects all other rules.'''
 
         try:
-            if rule.lower() == "on" or rule.lower() == "off":
+            if rule.lower() in ["on", "off"]:
                 return rule.lower()
-            else:
-                return False
+            return False
         except AttributeError:
             return False
 
@@ -59,7 +58,7 @@ class Dummy(Sensor):
           scheduled: Optional, if True also sets scheduled_rule if rule valid
         '''
 
-        result = super().set_rule(rule)
+        result = super().set_rule(rule, scheduled)
         # Refresh group if rule changed successfully
         if result and hasattr(self, "group"):
             self.refresh_group()
@@ -73,10 +72,9 @@ class Dummy(Sensor):
 
         if self.current_rule == "on":
             return True
-        elif self.current_rule == "off":
+        if self.current_rule == "off":
             return False
-        else:
-            return None
+        return None
 
     def trigger(self):
         '''Called by trigger_sensor API endpoint, sets current_rule to "on"

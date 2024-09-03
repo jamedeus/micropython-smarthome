@@ -40,7 +40,7 @@ class Switch(Sensor):
 
         log.info("Instantiated switch sensor named %s", self.name)
 
-    def interrupt_handler(self, arg=None):
+    def interrupt_handler(self, _=None):
         '''Interrupt handler called when switch is opened or closed, turns
         target devices on or off depending on switch state.
         '''
@@ -52,8 +52,7 @@ class Switch(Sensor):
 
         if self.switch.value():
             return True
-        else:
-            return False
+        return False
 
     def get_attributes(self):
         '''Return JSON-serializable dict containing all current attributes

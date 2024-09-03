@@ -89,7 +89,8 @@ class Thermostat(Sensor):
         self.current_rule = float(self.current_rule)
         self.set_threshold()
 
-        # Store last 3 temperature readings, used to detect failed on/off command (ir command didn't reach ac, etc)
+        # Store last 3 temperature readings, used to detect failed on/off
+        # command (ir command didn't reach ac, etc)
         self.recent_temps = []
 
         # Track output of condition_met (set by monitor callback)
@@ -104,9 +105,9 @@ class Thermostat(Sensor):
         try:
             if self.units == "celsius":
                 return self.get_raw_temperature()
-            elif self.units == "fahrenheit":
+            if self.units == "fahrenheit":
                 return celsius_to_fahrenheit(self.get_raw_temperature())
-            elif self.units == "kelvin":
+            if self.units == "kelvin":
                 return celsius_to_kelvin(self.get_raw_temperature())
         except TypeError:
             return "Error: Unexpected reading from sensor"
@@ -123,7 +124,7 @@ class Thermostat(Sensor):
         if self.current_rule == "disabled":
             return True
 
-        elif self.mode == "cool":
+        if self.mode == "cool":
             self.on_threshold = float(self.current_rule) + float(self.tolerance)
             self.off_threshold = float(self.current_rule) - float(self.tolerance)
 
@@ -139,13 +140,12 @@ class Thermostat(Sensor):
           rule:      The new rule, will be set as current_rule if valid
           scheduled: Optional, if True also sets scheduled_rule if rule valid
         '''
-        valid = super().set_rule(rule)
+        valid = super().set_rule(rule, scheduled)
 
         if valid:
             self.set_threshold()
             return True
-        else:
-            return False
+        return False
 
     def increment_rule(self, amount):
         '''Takes positive or negative float, adds to current_rule and calls
@@ -178,13 +178,13 @@ class Thermostat(Sensor):
         if self.mode == "cool":
             if current > self.on_threshold:
                 return True
-            elif current < self.off_threshold:
+            if current < self.off_threshold:
                 return False
 
         elif self.mode == "heat":
             if current < self.on_threshold:
                 return True
-            elif current > self.off_threshold:
+            if current > self.off_threshold:
                 return False
 
         # No action needed if temperature between on/off thresholds
@@ -222,8 +222,8 @@ class Thermostat(Sensor):
             if 18 <= float(converted_rule) <= 27:
                 # Return in original units if valid
                 return float(rule)
-            else:
-                return False
+            # Rule out of range
+            return False
         except (ValueError, TypeError):
             return False
 
@@ -246,8 +246,7 @@ class Thermostat(Sensor):
 
             action = None
 
-            # If 3 most recent readings trend in incorrect direction, assume command was not successful
-            # Flip target device states to reflect failed command (allows loop to turn on/off to correct)
+            # If last 3 readings trend in incorrect direction, assume command failed
             if self.recent_temps[0] < self.recent_temps[1] < self.recent_temps[2]:
                 # Temperature increasing, should be cooling
                 if self.mode == "cool" and self.condition_met() is True:
@@ -266,7 +265,6 @@ class Thermostat(Sensor):
                     )
                     action = True
 
-            # Neither covered
             elif self.recent_temps[0] > self.recent_temps[1] > self.recent_temps[2]:
                 # Temperature decreasing, should NOT be cooling
                 if self.mode == "cool" and self.condition_met() is False:
@@ -284,8 +282,9 @@ class Thermostat(Sensor):
                     )
                     action = False
 
-            # Override all targets' state attr, allows group to turn on/off again
-            # State set to opposite of correct state (immediately undone when loop sends turn on/off again)
+            # Override all targets' state attr with opposite of correct state
+            # (allows group to turn on/off again, state immediately undone when
+            # group refresh method calls apply_action)
             if action is not None:
                 for i in self.targets:
                     i.state = action
@@ -304,11 +303,13 @@ class Thermostat(Sensor):
         '''
         @self.group.add_post_action_routine()
         def restart_audit():
-            # Clear recent temps, avoids false positive when cooling starts (readings may take 30-60 sec to drop)
+            # Clear recent temps, avoids false positive when cooling starts
+            # (temperature may take 30-60 sec to drop when AC turns on)
             self.recent_temps = []
 
-            # Cancel and re-create callback, ensures 30 seconds pass before first reading
-            # False positive becomes likely if callback runs shortly after change, since only 2 readings are meaningful
+            # Cancel and re-create callback (ensure 30 seconds pass before first reading)
+            # Reduces chance of false positives (more likely if reading taken immediately
+            # when target turns on, temp hasn't changed yet so only 2 readings meaningful)
             SoftwareTimer.timer.cancel(self.name)
             SoftwareTimer.timer.create(30000, self.audit, self.name)
 

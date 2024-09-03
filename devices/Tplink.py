@@ -99,16 +99,17 @@ class Tplink(DimmableLight):
 
             # Dimmer has separate brightness and on/off commands, bulb combines into 1 command
             if self._type == "dimmer":
-                # Set on/off state, read response (dimmer won't listen for next command until reply read)
-                sock_tcp.send(self.encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}'))
-                data = sock_tcp.recv(2048)
+                # Set on/off state, read response (dimmer won't listen for next
+                # command until reply read)
+                sock_tcp.send(
+                    self.encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')
+                )
+                sock_tcp.recv(2048)
 
-            # Set brightness
+            # Set brightness, read response
             sock_tcp.send(self.encrypt(cmd))
-            data = sock_tcp.recv(2048)
+            sock_tcp.recv(2048)
             sock_tcp.close()
-
-            decrypted = self.decrypt(data[4:])  # Remove in final version (or put in debug conditional)
 
             self.print(f"brightness = {self.current_rule}, state = {state}")
             log.debug("%s: Success", self.name)

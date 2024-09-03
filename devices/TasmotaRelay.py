@@ -6,8 +6,8 @@ from HttpGet import HttpGet
 log = logging.getLogger("TasmotaRelay")
 
 # Paths used by Tasmota to turn on, off
-on_path = 'cm?cmnd=Power%20On'
-off_path = 'cm?cmnd=Power%20Off'
+ON_PATH = 'cm?cmnd=Power%20On'
+OFF_PATH = 'cm?cmnd=Power%20Off'
 
 
 class TasmotaRelay(HttpGet):
@@ -27,7 +27,7 @@ class TasmotaRelay(HttpGet):
     '''
 
     def __init__(self, name, nickname, _type, default_rule, ip):
-        super().__init__(name, nickname, _type, default_rule, ip, on_path, off_path)
+        super().__init__(name, nickname, _type, default_rule, ip, ON_PATH, OFF_PATH)
 
         log.info("Instantiated TasmotaRelay named %s: ip = %s", self.name, self.uri)
 

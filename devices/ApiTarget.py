@@ -85,16 +85,15 @@ class ApiTarget(Device):
 
         for i in rule:
             # Index must be "on" or "off"
-            if not i == "on" and not i == "off":
+            if i not in ["on", "off"]:
                 return False
 
             # Check against all valid sub-rule patterns
             if not self.sub_rule_validator(rule[i]):
                 return False
 
-        else:
-            # Iteration finished without a return False, rule is valid
-            return rule
+        # Iteration finished without a return False, rule is valid
+        return rule
 
     def sub_rule_validator(self, rule):
         '''Takes sub-rule (contents of "on" or "off" key in full rule). Returns
@@ -109,19 +108,19 @@ class ApiTarget(Device):
             return True
 
         # Endpoints that require a device or sensor arg
-        elif rule[0] in ['enable', 'disable', 'reset_rule'] and len(rule) == 2 and is_device_or_sensor(rule[1]):
+        if rule[0] in ['enable', 'disable', 'reset_rule'] and len(rule) == 2 and is_device_or_sensor(rule[1]):
             return True
 
         # Endpoints that require a sensor arg
-        elif rule[0] in ['condition_met', 'trigger_sensor'] and len(rule) == 2 and is_sensor(rule[1]):
+        if rule[0] in ['condition_met', 'trigger_sensor'] and len(rule) == 2 and is_sensor(rule[1]):
             return True
 
         # Endpoints that require a device arg
-        elif rule[0] in ['turn_on', 'turn_off'] and len(rule) == 2 and is_device(rule[1]):
+        if rule[0] in ['turn_on', 'turn_off'] and len(rule) == 2 and is_device(rule[1]):
             return True
 
         # Endpoints that require a device/sensor arg and int/float arg
-        elif rule[0] in ['enable_in', 'disable_in'] and len(rule) == 3 and is_device_or_sensor(rule[1]):
+        if rule[0] in ['enable_in', 'disable_in'] and len(rule) == 3 and is_device_or_sensor(rule[1]):
             try:
                 float(rule[2])
                 return True
@@ -130,20 +129,18 @@ class ApiTarget(Device):
 
         # Endpoint requires a device/sensor arg and rule arg
         # Rule arg not validated (device/sensor type not known), client returns error if invalid
-        elif rule[0] == 'set_rule' and len(rule) == 3 and is_device_or_sensor(rule[1]):
+        if rule[0] == 'set_rule' and len(rule) == 3 and is_device_or_sensor(rule[1]):
             return True
 
         # Endpoint requires IR target and IR key args
-        # Target and keys not validated (configured codes not known), client returns error if invalid
-        elif rule[0] == 'ir_key':
-            if len(rule) == 3 and type(rule[1]) == str and type(rule[2]) == str:
+        # Target and keys not validated (client codes not known), client returns error if invalid
+        if rule[0] == 'ir_key':
+            if len(rule) == 3 and isinstance(rule[1], str) and isinstance(rule[2], str):
                 return True
-            else:
-                return False
-
-        else:
-            # Did not match any valid patterns
             return False
+
+        # Did not match any valid patterns
+        return False
 
     def set_rule(self, rule, scheduled=False):
         '''Takes new rule, validates, if valid sets as current_rule (and
@@ -161,7 +158,8 @@ class ApiTarget(Device):
         # Check if rule is valid - may return a modified rule (ie cast str to int)
         valid_rule = self.rule_validator(rule)
 
-        # Turn off target before changing rule to disabled (cannot call send after changing, requires dict)
+        # Turn off target before changing rule to disabled
+        # (cannot call send after changing, requires dict)
         if valid_rule == "disabled":
             self.send(0)
 
@@ -177,10 +175,9 @@ class ApiTarget(Device):
 
             return True
 
-        else:
-            log.error("%s: Failed to change rule to %s", self.name, rule)
-            self.print(f"Failed to change rule to {rule}")
-            return False
+        log.error("%s: Failed to change rule to %s", self.name, rule)
+        self.print(f"Failed to change rule to {rule}")
+        return False
 
     def log_failed_request(self, msg, err):
         '''Called when an API call receives an error response. Takes full
@@ -232,7 +229,7 @@ class ApiTarget(Device):
 
         # Prevent exception if current rule is string ("Disabled")
         # TODO fix incorrect API response if turn_off called while rule is Disabled
-        elif type(self.current_rule) != dict:
+        if not isinstance(self.current_rule, dict):
             return True
 
         # Get correct command for state argument

@@ -127,10 +127,7 @@ class DesktopTrigger(Sensor):
         '''Returns True if computer screen is turned on, False if computer
         screen is turned off.
         '''
-        if self.current == "On":
-            return True
-        else:
-            return False
+        return self.current == "On"
 
     def trigger(self):
         '''Called by trigger_sensor API endpoint, simulates sensor condition
@@ -156,9 +153,9 @@ class DesktopTrigger(Sensor):
                 # Get new reading
                 new = self.get_monitor_state()
 
-                # At lock screen, or getting "Disabled" for a few seconds (NVIDIA Prime sync quirk)
+                # At lock screen, or getting "Disabled" for a few seconds (NVIDIA Prime quirk)
                 # Discard new reading, wait 1 second, try again
-                if new != "On" and new != "Off":
+                if new not in ["On", "Off"]:
                     await asyncio.sleep(1)
                     continue
 
@@ -174,18 +171,21 @@ class DesktopTrigger(Sensor):
                     # TODO make this behavior configurable
                     # If monitors just turned off (indicates user NOT present), turn off lights
                     if self.current == "Off":
-                        # Override motion sensors to False, devices will turn off unless dummy/switch/thermostat present
+                        # Override motion sensors to False (devices will turn
+                        # off unless another sensor type has condition met)
                         for sensor in self.group.triggers:
                             if sensor._type == "pir":
                                 sensor.motion = False
 
-                        # Update target's state, enables loop to turn screen back on if needed (dummy/switch present)
+                        # Update target's state (allows group to turn screen
+                        # back on if another sensor has condition met)
                         if self.desktop_target:
                             self.desktop_target.state = False
 
                         # Force group to apply actions so above overrides can take effect
-                        # If no dummy/switch is present (or if reading False), all devices will turn OFF
-                        # If dummy/switch reading True is present, lights stay ON and screen turns back ON to match
+                        # If no sensors in group have condition met devices will turn OFF.
+                        # If sensors in group do have condition met targets will stay ON
+                        # and screen will turn back ON to match rest of group.
                         self.group.reset_state()
 
                     # If monitors just turned on, update target's state
