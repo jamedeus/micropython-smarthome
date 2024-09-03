@@ -7,7 +7,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
     <div
       id="config"
     >
-      {"metadata":{"id":"All devices and sensors","floor":404,"location":"unit tests","schedule_keywords":{"morning":"08:00","sleep":"23:00","sunrise":"06:00","sunset":"18:00","relax":"20:00"},"gps":{"lat":"-77.8401068","lon":"166.6425345"}},"sensor1":{"_type":"switch","nickname":"Door switch","default_rule":"enabled","pin":"21","schedule":{},"targets":["device10","device3","device4","device6","device9"]},"device1":{"_type":"mosfet","nickname":"Humidifier","default_rule":"enabled","pin":"17","schedule":{}},"ir_blaster":{"pin":"13","target":["samsung_tv"]},"sensor2":{"_type":"dht22","nickname":"Temp sensor","units":"fahrenheit","default_rule":74,"mode":"cool","tolerance":1,"pin":"27","schedule":{"morning":68,"relax":72,"12:00":"disabled"},"targets":["device7","device8"]},"sensor3":{"_type":"si7021","nickname":"Thermostat","units":"celsius","default_rule":20,"mode":"heat","tolerance":1,"schedule":{"morning":23,"sleep":20},"targets":["device2","device1"]},"sensor4":{"_type":"desktop","nickname":"Computer activity","default_rule":"enabled","ip":"192.168.1.200","schedule":{"morning":"enabled","sleep":"disabled"},"targets":["device4","device10","device6"]},"sensor5":{"_type":"pir","nickname":"Motion","default_rule":10,"pin":"26","schedule":{"morning":10,"sleep":1},"targets":["device5","device3","device9"]},"device2":{"_type":"http-get","nickname":"Heater","default_rule":"enabled","uri":"http://192.168.1.250","on_path":"api/heat_on","off_path":"api/heat_off","schedule":{}},"device3":{"_type":"pwm","nickname":"Accent lights","min_rule":32,"max_rule":1023,"default_rule":767,"pin":"18","schedule":{"morning":1023,"relax":"fade/512/1800","sleep":"disabled"}},"device4":{"_type":"desktop","nickname":"Computer screen","ip":"192.168.1.200","default_rule":"enabled","schedule":{"morning":"enabled","sleep":"disabled"}},"device5":{"_type":"tasmota-relay","nickname":"Stairway lights","ip":"192.168.1.212","default_rule":"enabled","schedule":{}},"device6":{"_type":"dimmer","nickname":"Overhead lights","ip":"192.168.1.211","min_rule":27,"max_rule":100,"default_rule":100,"schedule":{"morning":"fade/100/900","relax":"fade/69/1800","sleep":"fade/37/900"}},"device7":{"_type":"api-target","nickname":"Air conditioner","ip":"192.168.1.104","default_rule":{"on":["ir_key","ac","start"],"off":["ir_key","ac","off"]},"schedule":{"morning":{"on":["ir_key","ac","start"],"off":["ir_key","ac","off"]}}},"device8":{"_type":"dumb-relay","nickname":"Fan","default_rule":"enabled","pin":"16","schedule":{}},"device9":{"_type":"bulb","nickname":"Lamp","ip":"192.168.1.205","min_rule":1,"max_rule":100,"default_rule":72,"schedule":{"morning":"fade/100/900","relax":"fade/72/1800","sleep":"disabled"}},"device10":{"_type":"wled","nickname":"Bias lights","ip":"192.168.1.233","min_rule":1,"max_rule":255,"default_rule":255,"schedule":{"morning":"fade/255/900","sleep":25,"relax":"fade/128/1800"}},"sensor6":{"_type":"dummy","nickname":"Sunrise","default_rule":"on","schedule":{"sunrise":"on","sunset":"off"},"targets":["device6"]}}
+      {"metadata":{"id":"All devices and sensors","floor":404,"location":"unit tests","schedule_keywords":{"morning":"08:00","sleep":"23:00","sunrise":"06:00","sunset":"18:00","relax":"20:00"},"gps":{"lat":"-77.8401068","lon":"166.6425345"}},"sensor1":{"_type":"switch","nickname":"Door switch","default_rule":"enabled","pin":"21","schedule":{},"targets":["device9","device2","device3","device5","device8"]},"ir_blaster":{"pin":"13","target":["samsung_tv"]},"sensor2":{"_type":"dht22","nickname":"Temp sensor","units":"fahrenheit","default_rule":74,"mode":"cool","tolerance":1,"pin":"27","schedule":{"morning":68,"relax":72,"12:00":"disabled"},"targets":["device6","device7"]},"sensor3":{"_type":"si7021","nickname":"Thermostat","units":"celsius","default_rule":20,"mode":"heat","tolerance":1,"schedule":{"morning":23,"sleep":20},"targets":["device1"]},"sensor4":{"_type":"desktop","nickname":"Computer activity","default_rule":"enabled","ip":"192.168.1.200","schedule":{"morning":"enabled","sleep":"disabled"},"targets":["device3","device9","device5"]},"sensor5":{"_type":"pir","nickname":"Motion","default_rule":10,"pin":"26","schedule":{"morning":10,"sleep":1},"targets":["device4","device2","device8"]},"device1":{"_type":"http-get","nickname":"Heater","default_rule":"enabled","uri":"http://192.168.1.250","on_path":"api/heat_on","off_path":"api/heat_off","schedule":{}},"device2":{"_type":"pwm","nickname":"Accent lights","min_rule":32,"max_rule":1023,"default_rule":767,"pin":"18","schedule":{"morning":1023,"relax":"fade/512/1800","sleep":"disabled"}},"device3":{"_type":"desktop","nickname":"Computer screen","ip":"192.168.1.200","default_rule":"enabled","schedule":{"morning":"enabled","sleep":"disabled"}},"device4":{"_type":"tasmota-relay","nickname":"Stairway lights","ip":"192.168.1.212","default_rule":"enabled","schedule":{}},"device5":{"_type":"dimmer","nickname":"Overhead lights","ip":"192.168.1.211","min_rule":27,"max_rule":100,"default_rule":100,"schedule":{"morning":"fade/100/900","relax":"fade/69/1800","sleep":"fade/37/900"}},"device6":{"_type":"api-target","nickname":"Air conditioner","ip":"192.168.1.104","default_rule":{"on":["ir_key","ac","start"],"off":["ir_key","ac","off"]},"schedule":{"morning":{"on":["ir_key","ac","start"],"off":["ir_key","ac","off"]}}},"device7":{"_type":"relay","nickname":"Fan","default_rule":"enabled","pin":"16","schedule":{}},"device8":{"_type":"bulb","nickname":"Lamp","ip":"192.168.1.205","min_rule":1,"max_rule":100,"default_rule":72,"schedule":{"morning":"fade/100/900","relax":"fade/72/1800","sleep":"disabled"}},"device9":{"_type":"wled","nickname":"Bias lights","ip":"192.168.1.233","min_rule":1,"max_rule":255,"default_rule":255,"schedule":{"morning":"fade/255/900","sleep":25,"relax":"fade/128/1800"}},"sensor6":{"_type":"dummy","nickname":"Sunrise","default_rule":"on","schedule":{"sunrise":"on","sunset":"off"},"targets":["device5"]}}
     </div>
     <div
       id="api_target_options"
@@ -17,7 +17,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
     <div
       id="instance_metadata"
     >
-      {"devices":{"mosfet":{"config_name":"mosfet","class_name":"Mosfet","display_name":"Mosfet","dependencies":["devices/Mosfet.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"mosfet","nickname":"placeholder","default_rule":"placeholder","pin":"placeholder","schedule":{}},"rule_prompt":"standard"},"http-get":{"config_name":"http-get","class_name":"HttpGet","display_name":"HTTP Get Request","dependencies":["devices/HttpGet.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"http-get","nickname":"placeholder","default_rule":"placeholder","uri":"placeholder","on_path":"placeholder","off_path":"placeholder","schedule":{}},"rule_prompt":"standard"},"pwm":{"config_name":"pwm","class_name":"LedStrip","display_name":"LED Strip","dependencies":["devices/LedStrip.py","devices/DimmableLight.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"pwm","nickname":"placeholder","min_rule":"placeholder","max_rule":"placeholder","default_rule":"placeholder","pin":"placeholder","schedule":{}},"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"config_name":"desktop","class_name":"DesktopTarget","display_name":"Computer Screen","dependencies":["devices/DesktopTarget.py","devices/HttpGet.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"desktop","nickname":"placeholder","ip":"placeholder","default_rule":"placeholder","schedule":{}},"rule_prompt":"standard"},"tasmota-relay":{"config_name":"tasmota-relay","class_name":"TasmotaRelay","display_name":"Tasmota Smart Relay","dependencies":["devices/TasmotaRelay.py","devices/HttpGet.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"tasmota-relay","nickname":"placeholder","ip":"placeholder","default_rule":"placeholder","schedule":{}},"rule_prompt":"standard"},"dimmer":{"config_name":"dimmer","class_name":"Tplink","display_name":"TP Link Smart Dimmer","dependencies":["devices/Tplink.py","devices/DimmableLight.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"dimmer","nickname":"placeholder","ip":"placeholder","min_rule":"placeholder","max_rule":"placeholder","default_rule":"placeholder","schedule":{}},"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"config_name":"api-target","class_name":"ApiTarget","display_name":"API command","dependencies":["devices/ApiTarget.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"api-target","nickname":"placeholder","ip":"placeholder","default_rule":"placeholder","schedule":{}},"rule_prompt":"api_target"},"dumb-relay":{"config_name":"dumb-relay","class_name":"DumbRelay","display_name":"Relay","dependencies":["devices/DumbRelay.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"dumb-relay","nickname":"placeholder","default_rule":"placeholder","pin":"placeholder","schedule":{}},"rule_prompt":"standard"},"bulb":{"config_name":"bulb","class_name":"Tplink","display_name":"TP Link Smart Bulb","dependencies":["devices/Tplink.py","devices/DimmableLight.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"bulb","nickname":"placeholder","ip":"placeholder","min_rule":"placeholder","max_rule":"placeholder","default_rule":"placeholder","schedule":{}},"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"config_name":"wled","class_name":"Wled","display_name":"WLED","dependencies":["devices/Wled.py","devices/DimmableLight.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"wled","nickname":"placeholder","ip":"placeholder","min_rule":"placeholder","max_rule":"placeholder","default_rule":"placeholder","schedule":{}},"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"config_name":"switch","class_name":"Switch","display_name":"Switch","dependencies":["sensors/Switch.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"switch","nickname":"placeholder","default_rule":"placeholder","pin":"placeholder","schedule":{},"targets":[]},"rule_prompt":"standard","triggerable":false},"dht22":{"config_name":"dht22","class_name":"Dht22","display_name":"DHT22 Temperature Sensor","dependencies":["sensors/Dht22.py","sensors/Thermostat.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"dht22","nickname":"placeholder","units":"placeholder","default_rule":"placeholder","mode":"placeholder","tolerance":"placeholder","pin":"placeholder","schedule":{},"targets":[]},"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"config_name":"ld2410","class_name":"MotionSensor","display_name":"LD2410 Radar Sensor","dependencies":["sensors/MotionSensor.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"ld2410","nickname":"placeholder","default_rule":"placeholder","pin":"placeholder","schedule":{},"targets":[]},"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"config_name":"si7021","class_name":"Si7021","display_name":"SI7021 Temperature Sensor","dependencies":["sensors/Si7021.py","sensors/Thermostat.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"si7021","nickname":"placeholder","units":"placeholder","default_rule":"placeholder","mode":"placeholder","tolerance":"placeholder","schedule":{},"targets":[]},"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"config_name":"desktop","class_name":"DesktopTrigger","display_name":"Computer Activity","dependencies":["sensors/DesktopTrigger.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"desktop","nickname":"placeholder","default_rule":"placeholder","ip":"placeholder","schedule":{},"targets":[]},"rule_prompt":"standard","triggerable":true},"pir":{"config_name":"pir","class_name":"MotionSensor","display_name":"PIR Motion Sensor","dependencies":["sensors/MotionSensor.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"pir","nickname":"placeholder","default_rule":"placeholder","pin":"placeholder","schedule":{},"targets":[]},"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"config_name":"load-cell","class_name":"LoadCell","display_name":"Load Cell Pressure Sensor","dependencies":["sensors/LoadCell.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"load-cell","nickname":"placeholder","default_rule":"placeholder","pin_data":"placeholder","pin_clock":"placeholder","schedule":{},"targets":[]},"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"config_name":"dummy","class_name":"Dummy","display_name":"Dummy Sensor","dependencies":["sensors/Dummy.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"dummy","nickname":"placeholder","default_rule":"placeholder","schedule":{},"targets":[]},"rule_prompt":"on_off","triggerable":true}}}
+      {"devices":{"http-get":{"config_name":"http-get","class_name":"HttpGet","display_name":"HTTP Get Request","dependencies":["devices/HttpGet.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"http-get","nickname":"placeholder","default_rule":"placeholder","uri":"placeholder","on_path":"placeholder","off_path":"placeholder","schedule":{}},"rule_prompt":"standard"},"pwm":{"config_name":"pwm","class_name":"LedStrip","display_name":"LED Strip","dependencies":["devices/LedStrip.py","devices/DimmableLight.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"pwm","nickname":"placeholder","min_rule":"placeholder","max_rule":"placeholder","default_rule":"placeholder","pin":"placeholder","schedule":{}},"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"config_name":"desktop","class_name":"DesktopTarget","display_name":"Computer Screen","dependencies":["devices/DesktopTarget.py","devices/HttpGet.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"desktop","nickname":"placeholder","ip":"placeholder","default_rule":"placeholder","schedule":{}},"rule_prompt":"standard"},"tasmota-relay":{"config_name":"tasmota-relay","class_name":"TasmotaRelay","display_name":"Tasmota Smart Relay","dependencies":["devices/TasmotaRelay.py","devices/HttpGet.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"tasmota-relay","nickname":"placeholder","ip":"placeholder","default_rule":"placeholder","schedule":{}},"rule_prompt":"standard"},"dimmer":{"config_name":"dimmer","class_name":"Tplink","display_name":"TP Link Smart Dimmer","dependencies":["devices/Tplink.py","devices/DimmableLight.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"dimmer","nickname":"placeholder","ip":"placeholder","min_rule":"placeholder","max_rule":"placeholder","default_rule":"placeholder","schedule":{}},"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"config_name":"api-target","class_name":"ApiTarget","display_name":"API command","dependencies":["devices/ApiTarget.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"api-target","nickname":"placeholder","ip":"placeholder","default_rule":"placeholder","schedule":{}},"rule_prompt":"api_target"},"relay":{"config_name":"relay","class_name":"Relay","display_name":"Relay","dependencies":["devices/Relay.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"relay","nickname":"placeholder","default_rule":"placeholder","pin":"placeholder","schedule":{}},"rule_prompt":"standard"},"bulb":{"config_name":"bulb","class_name":"Tplink","display_name":"TP Link Smart Bulb","dependencies":["devices/Tplink.py","devices/DimmableLight.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"bulb","nickname":"placeholder","ip":"placeholder","min_rule":"placeholder","max_rule":"placeholder","default_rule":"placeholder","schedule":{}},"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"config_name":"wled","class_name":"Wled","display_name":"WLED","dependencies":["devices/Wled.py","devices/DimmableLight.py","devices/Device.py","core/Instance.py"],"config_template":{"_type":"wled","nickname":"placeholder","ip":"placeholder","min_rule":"placeholder","max_rule":"placeholder","default_rule":"placeholder","schedule":{}},"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"config_name":"switch","class_name":"Switch","display_name":"Switch","dependencies":["sensors/Switch.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"switch","nickname":"placeholder","default_rule":"placeholder","pin":"placeholder","schedule":{},"targets":[]},"rule_prompt":"standard","triggerable":false},"dht22":{"config_name":"dht22","class_name":"Dht22","display_name":"DHT22 Temperature Sensor","dependencies":["sensors/Dht22.py","sensors/Thermostat.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"dht22","nickname":"placeholder","units":"placeholder","default_rule":"placeholder","mode":"placeholder","tolerance":"placeholder","pin":"placeholder","schedule":{},"targets":[]},"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"config_name":"ld2410","class_name":"MotionSensor","display_name":"LD2410 Radar Sensor","dependencies":["sensors/MotionSensor.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"ld2410","nickname":"placeholder","default_rule":"placeholder","pin":"placeholder","schedule":{},"targets":[]},"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"config_name":"si7021","class_name":"Si7021","display_name":"SI7021 Temperature Sensor","dependencies":["sensors/Si7021.py","sensors/Thermostat.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"si7021","nickname":"placeholder","units":"placeholder","default_rule":"placeholder","mode":"placeholder","tolerance":"placeholder","schedule":{},"targets":[]},"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"config_name":"desktop","class_name":"DesktopTrigger","display_name":"Computer Activity","dependencies":["sensors/DesktopTrigger.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"desktop","nickname":"placeholder","default_rule":"placeholder","ip":"placeholder","schedule":{},"targets":[]},"rule_prompt":"standard","triggerable":true},"pir":{"config_name":"pir","class_name":"MotionSensor","display_name":"PIR Motion Sensor","dependencies":["sensors/MotionSensor.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"pir","nickname":"placeholder","default_rule":"placeholder","pin":"placeholder","schedule":{},"targets":[]},"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"config_name":"load-cell","class_name":"LoadCell","display_name":"Load Cell Pressure Sensor","dependencies":["sensors/LoadCell.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"load-cell","nickname":"placeholder","default_rule":"placeholder","pin_data":"placeholder","pin_clock":"placeholder","schedule":{},"targets":[]},"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"config_name":"dummy","class_name":"Dummy","display_name":"Dummy Sensor","dependencies":["sensors/Dummy.py","sensors/Sensor.py","core/Instance.py"],"config_template":{"_type":"dummy","nickname":"placeholder","default_rule":"placeholder","schedule":{},"targets":[]},"rule_prompt":"on_off","triggerable":true}}}
     </div>
     <div
       id="edit_existing"
@@ -157,7 +157,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         16
                       </option>
                       <option
-                        disabled=""
                         value="17"
                       >
                         17
@@ -441,7 +440,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                               16
                             </option>
                             <option
-                              disabled=""
                               value="17"
                             >
                               17
@@ -711,7 +709,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                               16
                             </option>
                             <option
-                              disabled=""
                               value="17"
                             >
                               17
@@ -1482,7 +1479,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                               16
                             </option>
                             <option
-                              disabled=""
                               value="17"
                             >
                               17
@@ -1830,11 +1826,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                            type
                         </option>
                         <option
-                          value="mosfet"
-                        >
-                          Mosfet
-                        </option>
-                        <option
                           value="http-get"
                         >
                           HTTP Get Request
@@ -1865,7 +1856,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           API command
                         </option>
                         <option
-                          value="dumb-relay"
+                          value="relay"
                         >
                           Relay
                         </option>
@@ -1884,256 +1875,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     <div
                       class="card-body"
                       id="device1-params"
-                    >
-                      <div
-                        class="mb-2"
-                      >
-                        <label
-                          class="w-100 fw-bold"
-                        >
-                          Nickname
-                          :
-                          <input
-                            class="form-control"
-                            type="text"
-                            value="Humidifier"
-                          />
-                        </label>
-                      </div>
-                      <div
-                        class="mb-2"
-                      >
-                        <label
-                          class="w-100 fw-bold"
-                        >
-                          Pin
-                          :
-                          <select
-                            class="form-select"
-                          >
-                            <option
-                              value=""
-                            >
-                              Select pin
-                            </option>
-                            <option
-                              value="4"
-                            >
-                              4
-                            </option>
-                            <option
-                              disabled=""
-                              value="13"
-                            >
-                              13
-                            </option>
-                            <option
-                              disabled=""
-                              value="16"
-                            >
-                              16
-                            </option>
-                            <option
-                              value="17"
-                            >
-                              17
-                            </option>
-                            <option
-                              disabled=""
-                              value="18"
-                            >
-                              18
-                            </option>
-                            <option
-                              value="19"
-                            >
-                              19
-                            </option>
-                            <option
-                              disabled=""
-                              value="21"
-                            >
-                              21
-                            </option>
-                            <option
-                              value="22"
-                            >
-                              22
-                            </option>
-                            <option
-                              value="23"
-                            >
-                              23
-                            </option>
-                            <option
-                              value="25"
-                            >
-                              25
-                            </option>
-                            <option
-                              disabled=""
-                              value="26"
-                            >
-                              26
-                            </option>
-                            <option
-                              disabled=""
-                              value="27"
-                            >
-                              27
-                            </option>
-                            <option
-                              value="32"
-                            >
-                              32
-                            </option>
-                            <option
-                              value="33"
-                            >
-                              33
-                            </option>
-                          </select>
-                        </label>
-                      </div>
-                      <div
-                        class="mb-2"
-                      >
-                        <label
-                          class="w-100 fw-bold"
-                        >
-                          Default Rule
-                          :
-                          <select
-                            class="form-select"
-                          >
-                            <option
-                              value=""
-                            >
-                              Select 
-                              default rule
-                            </option>
-                            <option
-                              value="enabled"
-                            >
-                              Enabled
-                            </option>
-                            <option
-                              value="disabled"
-                            >
-                              Disabled
-                            </option>
-                          </select>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                class="mb-4 fade-in-card"
-                id="device2-card"
-              >
-                <div
-                  class="card"
-                >
-                  <div
-                    class="card-body"
-                  >
-                    <div
-                      class="d-flex justify-content-between"
-                    >
-                      <button
-                        class="ps-2 btn btn-primary"
-                        style="visibility: hidden;"
-                        type="button"
-                      >
-                        <i
-                          class="bi-x-lg"
-                        />
-                      </button>
-                      <h4
-                        class="card-title mx-auto my-auto"
-                      >
-                        device2
-                      </h4>
-                      <button
-                        class="my-auto pe-2 delete btn btn-link"
-                        type="button"
-                      >
-                        <i
-                          class="bi-x-lg"
-                        />
-                      </button>
-                    </div>
-                    <label
-                      class="w-100 fw-bold"
-                    >
-                      Type:
-                      <select
-                        class="form-select"
-                      >
-                        <option
-                          value="clear"
-                        >
-                          Select 
-                          device
-                           type
-                        </option>
-                        <option
-                          value="mosfet"
-                        >
-                          Mosfet
-                        </option>
-                        <option
-                          value="http-get"
-                        >
-                          HTTP Get Request
-                        </option>
-                        <option
-                          value="pwm"
-                        >
-                          LED Strip
-                        </option>
-                        <option
-                          value="desktop"
-                        >
-                          Computer Screen
-                        </option>
-                        <option
-                          value="tasmota-relay"
-                        >
-                          Tasmota Smart Relay
-                        </option>
-                        <option
-                          value="dimmer"
-                        >
-                          TP Link Smart Dimmer
-                        </option>
-                        <option
-                          value="api-target"
-                        >
-                          API command
-                        </option>
-                        <option
-                          value="dumb-relay"
-                        >
-                          Relay
-                        </option>
-                        <option
-                          value="bulb"
-                        >
-                          TP Link Smart Bulb
-                        </option>
-                        <option
-                          value="wled"
-                        >
-                          WLED
-                        </option>
-                      </select>
-                    </label>
-                    <div
-                      class="card-body"
-                      id="device2-params"
                     >
                       <div
                         class="mb-2"
@@ -2235,7 +1976,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
               </div>
               <div
                 class="mb-4 fade-in-card"
-                id="device3-card"
+                id="device2-card"
               >
                 <div
                   class="card"
@@ -2258,7 +1999,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                       <h4
                         class="card-title mx-auto my-auto"
                       >
-                        device3
+                        device2
                       </h4>
                       <button
                         class="my-auto pe-2 delete btn btn-link"
@@ -2282,11 +2023,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           Select 
                           device
                            type
-                        </option>
-                        <option
-                          value="mosfet"
-                        >
-                          Mosfet
                         </option>
                         <option
                           value="http-get"
@@ -2319,7 +2055,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           API command
                         </option>
                         <option
-                          value="dumb-relay"
+                          value="relay"
                         >
                           Relay
                         </option>
@@ -2337,7 +2073,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     </label>
                     <div
                       class="card-body"
-                      id="device3-params"
+                      id="device2-params"
                     >
                       <div
                         class="mb-2"
@@ -2388,7 +2124,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                               16
                             </option>
                             <option
-                              disabled=""
                               value="17"
                             >
                               17
@@ -2549,6 +2284,172 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
               </div>
               <div
                 class="mb-4 fade-in-card"
+                id="device3-card"
+              >
+                <div
+                  class="card"
+                >
+                  <div
+                    class="card-body"
+                  >
+                    <div
+                      class="d-flex justify-content-between"
+                    >
+                      <button
+                        class="ps-2 btn btn-primary"
+                        style="visibility: hidden;"
+                        type="button"
+                      >
+                        <i
+                          class="bi-x-lg"
+                        />
+                      </button>
+                      <h4
+                        class="card-title mx-auto my-auto"
+                      >
+                        device3
+                      </h4>
+                      <button
+                        class="my-auto pe-2 delete btn btn-link"
+                        type="button"
+                      >
+                        <i
+                          class="bi-x-lg"
+                        />
+                      </button>
+                    </div>
+                    <label
+                      class="w-100 fw-bold"
+                    >
+                      Type:
+                      <select
+                        class="form-select"
+                      >
+                        <option
+                          value="clear"
+                        >
+                          Select 
+                          device
+                           type
+                        </option>
+                        <option
+                          value="http-get"
+                        >
+                          HTTP Get Request
+                        </option>
+                        <option
+                          value="pwm"
+                        >
+                          LED Strip
+                        </option>
+                        <option
+                          value="desktop"
+                        >
+                          Computer Screen
+                        </option>
+                        <option
+                          value="tasmota-relay"
+                        >
+                          Tasmota Smart Relay
+                        </option>
+                        <option
+                          value="dimmer"
+                        >
+                          TP Link Smart Dimmer
+                        </option>
+                        <option
+                          value="api-target"
+                        >
+                          API command
+                        </option>
+                        <option
+                          value="relay"
+                        >
+                          Relay
+                        </option>
+                        <option
+                          value="bulb"
+                        >
+                          TP Link Smart Bulb
+                        </option>
+                        <option
+                          value="wled"
+                        >
+                          WLED
+                        </option>
+                      </select>
+                    </label>
+                    <div
+                      class="card-body"
+                      id="device3-params"
+                    >
+                      <div
+                        class="mb-2"
+                      >
+                        <label
+                          class="w-100 fw-bold"
+                        >
+                          Nickname
+                          :
+                          <input
+                            class="form-control"
+                            type="text"
+                            value="Computer screen"
+                          />
+                        </label>
+                      </div>
+                      <div
+                        class="mb-2"
+                      >
+                        <label
+                          class="w-100 fw-bold"
+                        >
+                          IP
+                          :
+                          <input
+                            class="form-control"
+                            pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+                            type="text"
+                            value="192.168.1.200"
+                          />
+                        </label>
+                      </div>
+                      <div
+                        class="mb-2"
+                      >
+                        <label
+                          class="w-100 fw-bold"
+                        >
+                          Default Rule
+                          :
+                          <select
+                            class="form-select"
+                          >
+                            <option
+                              value=""
+                            >
+                              Select 
+                              default rule
+                            </option>
+                            <option
+                              value="enabled"
+                            >
+                              Enabled
+                            </option>
+                            <option
+                              value="disabled"
+                            >
+                              Disabled
+                            </option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="mb-4 fade-in-card"
                 id="device4-card"
               >
                 <div
@@ -2598,11 +2499,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                            type
                         </option>
                         <option
-                          value="mosfet"
-                        >
-                          Mosfet
-                        </option>
-                        <option
                           value="http-get"
                         >
                           HTTP Get Request
@@ -2633,7 +2529,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           API command
                         </option>
                         <option
-                          value="dumb-relay"
+                          value="relay"
                         >
                           Relay
                         </option>
@@ -2664,7 +2560,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           <input
                             class="form-control"
                             type="text"
-                            value="Computer screen"
+                            value="Stairway lights"
                           />
                         </label>
                       </div>
@@ -2680,7 +2576,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             class="form-control"
                             pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
                             type="text"
-                            value="192.168.1.200"
+                            value="192.168.1.212"
                           />
                         </label>
                       </div>
@@ -2769,11 +2665,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                            type
                         </option>
                         <option
-                          value="mosfet"
-                        >
-                          Mosfet
-                        </option>
-                        <option
                           value="http-get"
                         >
                           HTTP Get Request
@@ -2804,7 +2695,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           API command
                         </option>
                         <option
-                          value="dumb-relay"
+                          value="relay"
                         >
                           Relay
                         </option>
@@ -2823,177 +2714,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     <div
                       class="card-body"
                       id="device5-params"
-                    >
-                      <div
-                        class="mb-2"
-                      >
-                        <label
-                          class="w-100 fw-bold"
-                        >
-                          Nickname
-                          :
-                          <input
-                            class="form-control"
-                            type="text"
-                            value="Stairway lights"
-                          />
-                        </label>
-                      </div>
-                      <div
-                        class="mb-2"
-                      >
-                        <label
-                          class="w-100 fw-bold"
-                        >
-                          IP
-                          :
-                          <input
-                            class="form-control"
-                            pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
-                            type="text"
-                            value="192.168.1.212"
-                          />
-                        </label>
-                      </div>
-                      <div
-                        class="mb-2"
-                      >
-                        <label
-                          class="w-100 fw-bold"
-                        >
-                          Default Rule
-                          :
-                          <select
-                            class="form-select"
-                          >
-                            <option
-                              value=""
-                            >
-                              Select 
-                              default rule
-                            </option>
-                            <option
-                              value="enabled"
-                            >
-                              Enabled
-                            </option>
-                            <option
-                              value="disabled"
-                            >
-                              Disabled
-                            </option>
-                          </select>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                class="mb-4 fade-in-card"
-                id="device6-card"
-              >
-                <div
-                  class="card"
-                >
-                  <div
-                    class="card-body"
-                  >
-                    <div
-                      class="d-flex justify-content-between"
-                    >
-                      <button
-                        class="ps-2 btn btn-primary"
-                        style="visibility: hidden;"
-                        type="button"
-                      >
-                        <i
-                          class="bi-x-lg"
-                        />
-                      </button>
-                      <h4
-                        class="card-title mx-auto my-auto"
-                      >
-                        device6
-                      </h4>
-                      <button
-                        class="my-auto pe-2 delete btn btn-link"
-                        type="button"
-                      >
-                        <i
-                          class="bi-x-lg"
-                        />
-                      </button>
-                    </div>
-                    <label
-                      class="w-100 fw-bold"
-                    >
-                      Type:
-                      <select
-                        class="form-select"
-                      >
-                        <option
-                          value="clear"
-                        >
-                          Select 
-                          device
-                           type
-                        </option>
-                        <option
-                          value="mosfet"
-                        >
-                          Mosfet
-                        </option>
-                        <option
-                          value="http-get"
-                        >
-                          HTTP Get Request
-                        </option>
-                        <option
-                          value="pwm"
-                        >
-                          LED Strip
-                        </option>
-                        <option
-                          value="desktop"
-                        >
-                          Computer Screen
-                        </option>
-                        <option
-                          value="tasmota-relay"
-                        >
-                          Tasmota Smart Relay
-                        </option>
-                        <option
-                          value="dimmer"
-                        >
-                          TP Link Smart Dimmer
-                        </option>
-                        <option
-                          value="api-target"
-                        >
-                          API command
-                        </option>
-                        <option
-                          value="dumb-relay"
-                        >
-                          Relay
-                        </option>
-                        <option
-                          value="bulb"
-                        >
-                          TP Link Smart Bulb
-                        </option>
-                        <option
-                          value="wled"
-                        >
-                          WLED
-                        </option>
-                      </select>
-                    </label>
-                    <div
-                      class="card-body"
-                      id="device6-params"
                     >
                       <div
                         class="mb-2"
@@ -3126,7 +2846,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
               </div>
               <div
                 class="mb-4 fade-in-card"
-                id="device7-card"
+                id="device6-card"
               >
                 <div
                   class="card"
@@ -3149,7 +2869,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                       <h4
                         class="card-title mx-auto my-auto"
                       >
-                        device7
+                        device6
                       </h4>
                       <button
                         class="my-auto pe-2 delete btn btn-link"
@@ -3173,11 +2893,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           Select 
                           device
                            type
-                        </option>
-                        <option
-                          value="mosfet"
-                        >
-                          Mosfet
                         </option>
                         <option
                           value="http-get"
@@ -3210,7 +2925,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           API command
                         </option>
                         <option
-                          value="dumb-relay"
+                          value="relay"
                         >
                           Relay
                         </option>
@@ -3228,7 +2943,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     </label>
                     <div
                       class="card-body"
-                      id="device7-params"
+                      id="device6-params"
                     >
                       <div
                         class="mb-2"
@@ -3299,7 +3014,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                       >
                         <button
                           class="btn btn-secondary"
-                          id="device7-default_rule-button"
+                          id="device6-default_rule-button"
                           type="button"
                         >
                           Set rule
@@ -3311,7 +3026,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
               </div>
               <div
                 class="mb-4 fade-in-card"
-                id="device8-card"
+                id="device7-card"
               >
                 <div
                   class="card"
@@ -3334,7 +3049,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                       <h4
                         class="card-title mx-auto my-auto"
                       >
-                        device8
+                        device7
                       </h4>
                       <button
                         class="my-auto pe-2 delete btn btn-link"
@@ -3358,11 +3073,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           Select 
                           device
                            type
-                        </option>
-                        <option
-                          value="mosfet"
-                        >
-                          Mosfet
                         </option>
                         <option
                           value="http-get"
@@ -3395,7 +3105,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           API command
                         </option>
                         <option
-                          value="dumb-relay"
+                          value="relay"
                         >
                           Relay
                         </option>
@@ -3413,7 +3123,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     </label>
                     <div
                       class="card-body"
-                      id="device8-params"
+                      id="device7-params"
                     >
                       <div
                         class="mb-2"
@@ -3463,7 +3173,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                               16
                             </option>
                             <option
-                              disabled=""
                               value="17"
                             >
                               17
@@ -3561,7 +3270,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
               </div>
               <div
                 class="mb-4 fade-in-card"
-                id="device9-card"
+                id="device8-card"
               >
                 <div
                   class="card"
@@ -3584,7 +3293,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                       <h4
                         class="card-title mx-auto my-auto"
                       >
-                        device9
+                        device8
                       </h4>
                       <button
                         class="my-auto pe-2 delete btn btn-link"
@@ -3608,11 +3317,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           Select 
                           device
                            type
-                        </option>
-                        <option
-                          value="mosfet"
-                        >
-                          Mosfet
                         </option>
                         <option
                           value="http-get"
@@ -3645,7 +3349,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           API command
                         </option>
                         <option
-                          value="dumb-relay"
+                          value="relay"
                         >
                           Relay
                         </option>
@@ -3663,7 +3367,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     </label>
                     <div
                       class="card-body"
-                      id="device9-params"
+                      id="device8-params"
                     >
                       <div
                         class="mb-2"
@@ -3796,7 +3500,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
               </div>
               <div
                 class="mb-4 fade-in-card"
-                id="device10-card"
+                id="device9-card"
               >
                 <div
                   class="card"
@@ -3819,7 +3523,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                       <h4
                         class="card-title mx-auto my-auto"
                       >
-                        device10
+                        device9
                       </h4>
                       <button
                         class="my-auto pe-2 delete btn btn-link"
@@ -3843,11 +3547,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           Select 
                           device
                            type
-                        </option>
-                        <option
-                          value="mosfet"
-                        >
-                          Mosfet
                         </option>
                         <option
                           value="http-get"
@@ -3880,7 +3579,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           API command
                         </option>
                         <option
-                          value="dumb-relay"
+                          value="relay"
                         >
                           Relay
                         </option>
@@ -3898,7 +3597,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     </label>
                     <div
                       class="card-body"
-                      id="device10-params"
+                      id="device9-params"
                     >
                       <div
                         class="mb-2"
@@ -4185,7 +3884,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                       16
                     </option>
                     <option
-                      disabled=""
                       value="17"
                     >
                       17
@@ -4469,7 +4167,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             16
                           </option>
                           <option
-                            disabled=""
                             value="17"
                           >
                             17
@@ -4739,7 +4436,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             16
                           </option>
                           <option
-                            disabled=""
                             value="17"
                           >
                             17
@@ -5510,7 +5206,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             16
                           </option>
                           <option
-                            disabled=""
                             value="17"
                           >
                             17
@@ -5858,11 +5553,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                          type
                       </option>
                       <option
-                        value="mosfet"
-                      >
-                        Mosfet
-                      </option>
-                      <option
                         value="http-get"
                       >
                         HTTP Get Request
@@ -5893,7 +5583,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         API command
                       </option>
                       <option
-                        value="dumb-relay"
+                        value="relay"
                       >
                         Relay
                       </option>
@@ -5912,256 +5602,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                   <div
                     class="card-body"
                     id="device1-params"
-                  >
-                    <div
-                      class="mb-2"
-                    >
-                      <label
-                        class="w-100 fw-bold"
-                      >
-                        Nickname
-                        :
-                        <input
-                          class="form-control"
-                          type="text"
-                          value="Humidifier"
-                        />
-                      </label>
-                    </div>
-                    <div
-                      class="mb-2"
-                    >
-                      <label
-                        class="w-100 fw-bold"
-                      >
-                        Pin
-                        :
-                        <select
-                          class="form-select"
-                        >
-                          <option
-                            value=""
-                          >
-                            Select pin
-                          </option>
-                          <option
-                            value="4"
-                          >
-                            4
-                          </option>
-                          <option
-                            disabled=""
-                            value="13"
-                          >
-                            13
-                          </option>
-                          <option
-                            disabled=""
-                            value="16"
-                          >
-                            16
-                          </option>
-                          <option
-                            value="17"
-                          >
-                            17
-                          </option>
-                          <option
-                            disabled=""
-                            value="18"
-                          >
-                            18
-                          </option>
-                          <option
-                            value="19"
-                          >
-                            19
-                          </option>
-                          <option
-                            disabled=""
-                            value="21"
-                          >
-                            21
-                          </option>
-                          <option
-                            value="22"
-                          >
-                            22
-                          </option>
-                          <option
-                            value="23"
-                          >
-                            23
-                          </option>
-                          <option
-                            value="25"
-                          >
-                            25
-                          </option>
-                          <option
-                            disabled=""
-                            value="26"
-                          >
-                            26
-                          </option>
-                          <option
-                            disabled=""
-                            value="27"
-                          >
-                            27
-                          </option>
-                          <option
-                            value="32"
-                          >
-                            32
-                          </option>
-                          <option
-                            value="33"
-                          >
-                            33
-                          </option>
-                        </select>
-                      </label>
-                    </div>
-                    <div
-                      class="mb-2"
-                    >
-                      <label
-                        class="w-100 fw-bold"
-                      >
-                        Default Rule
-                        :
-                        <select
-                          class="form-select"
-                        >
-                          <option
-                            value=""
-                          >
-                            Select 
-                            default rule
-                          </option>
-                          <option
-                            value="enabled"
-                          >
-                            Enabled
-                          </option>
-                          <option
-                            value="disabled"
-                          >
-                            Disabled
-                          </option>
-                        </select>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div
-              class="mb-4 fade-in-card"
-              id="device2-card"
-            >
-              <div
-                class="card"
-              >
-                <div
-                  class="card-body"
-                >
-                  <div
-                    class="d-flex justify-content-between"
-                  >
-                    <button
-                      class="ps-2 btn btn-primary"
-                      style="visibility: hidden;"
-                      type="button"
-                    >
-                      <i
-                        class="bi-x-lg"
-                      />
-                    </button>
-                    <h4
-                      class="card-title mx-auto my-auto"
-                    >
-                      device2
-                    </h4>
-                    <button
-                      class="my-auto pe-2 delete btn btn-link"
-                      type="button"
-                    >
-                      <i
-                        class="bi-x-lg"
-                      />
-                    </button>
-                  </div>
-                  <label
-                    class="w-100 fw-bold"
-                  >
-                    Type:
-                    <select
-                      class="form-select"
-                    >
-                      <option
-                        value="clear"
-                      >
-                        Select 
-                        device
-                         type
-                      </option>
-                      <option
-                        value="mosfet"
-                      >
-                        Mosfet
-                      </option>
-                      <option
-                        value="http-get"
-                      >
-                        HTTP Get Request
-                      </option>
-                      <option
-                        value="pwm"
-                      >
-                        LED Strip
-                      </option>
-                      <option
-                        value="desktop"
-                      >
-                        Computer Screen
-                      </option>
-                      <option
-                        value="tasmota-relay"
-                      >
-                        Tasmota Smart Relay
-                      </option>
-                      <option
-                        value="dimmer"
-                      >
-                        TP Link Smart Dimmer
-                      </option>
-                      <option
-                        value="api-target"
-                      >
-                        API command
-                      </option>
-                      <option
-                        value="dumb-relay"
-                      >
-                        Relay
-                      </option>
-                      <option
-                        value="bulb"
-                      >
-                        TP Link Smart Bulb
-                      </option>
-                      <option
-                        value="wled"
-                      >
-                        WLED
-                      </option>
-                    </select>
-                  </label>
-                  <div
-                    class="card-body"
-                    id="device2-params"
                   >
                     <div
                       class="mb-2"
@@ -6263,7 +5703,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
             </div>
             <div
               class="mb-4 fade-in-card"
-              id="device3-card"
+              id="device2-card"
             >
               <div
                 class="card"
@@ -6286,7 +5726,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     <h4
                       class="card-title mx-auto my-auto"
                     >
-                      device3
+                      device2
                     </h4>
                     <button
                       class="my-auto pe-2 delete btn btn-link"
@@ -6310,11 +5750,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         Select 
                         device
                          type
-                      </option>
-                      <option
-                        value="mosfet"
-                      >
-                        Mosfet
                       </option>
                       <option
                         value="http-get"
@@ -6347,7 +5782,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         API command
                       </option>
                       <option
-                        value="dumb-relay"
+                        value="relay"
                       >
                         Relay
                       </option>
@@ -6365,7 +5800,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                   </label>
                   <div
                     class="card-body"
-                    id="device3-params"
+                    id="device2-params"
                   >
                     <div
                       class="mb-2"
@@ -6416,7 +5851,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             16
                           </option>
                           <option
-                            disabled=""
                             value="17"
                           >
                             17
@@ -6577,6 +6011,172 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
             </div>
             <div
               class="mb-4 fade-in-card"
+              id="device3-card"
+            >
+              <div
+                class="card"
+              >
+                <div
+                  class="card-body"
+                >
+                  <div
+                    class="d-flex justify-content-between"
+                  >
+                    <button
+                      class="ps-2 btn btn-primary"
+                      style="visibility: hidden;"
+                      type="button"
+                    >
+                      <i
+                        class="bi-x-lg"
+                      />
+                    </button>
+                    <h4
+                      class="card-title mx-auto my-auto"
+                    >
+                      device3
+                    </h4>
+                    <button
+                      class="my-auto pe-2 delete btn btn-link"
+                      type="button"
+                    >
+                      <i
+                        class="bi-x-lg"
+                      />
+                    </button>
+                  </div>
+                  <label
+                    class="w-100 fw-bold"
+                  >
+                    Type:
+                    <select
+                      class="form-select"
+                    >
+                      <option
+                        value="clear"
+                      >
+                        Select 
+                        device
+                         type
+                      </option>
+                      <option
+                        value="http-get"
+                      >
+                        HTTP Get Request
+                      </option>
+                      <option
+                        value="pwm"
+                      >
+                        LED Strip
+                      </option>
+                      <option
+                        value="desktop"
+                      >
+                        Computer Screen
+                      </option>
+                      <option
+                        value="tasmota-relay"
+                      >
+                        Tasmota Smart Relay
+                      </option>
+                      <option
+                        value="dimmer"
+                      >
+                        TP Link Smart Dimmer
+                      </option>
+                      <option
+                        value="api-target"
+                      >
+                        API command
+                      </option>
+                      <option
+                        value="relay"
+                      >
+                        Relay
+                      </option>
+                      <option
+                        value="bulb"
+                      >
+                        TP Link Smart Bulb
+                      </option>
+                      <option
+                        value="wled"
+                      >
+                        WLED
+                      </option>
+                    </select>
+                  </label>
+                  <div
+                    class="card-body"
+                    id="device3-params"
+                  >
+                    <div
+                      class="mb-2"
+                    >
+                      <label
+                        class="w-100 fw-bold"
+                      >
+                        Nickname
+                        :
+                        <input
+                          class="form-control"
+                          type="text"
+                          value="Computer screen"
+                        />
+                      </label>
+                    </div>
+                    <div
+                      class="mb-2"
+                    >
+                      <label
+                        class="w-100 fw-bold"
+                      >
+                        IP
+                        :
+                        <input
+                          class="form-control"
+                          pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+                          type="text"
+                          value="192.168.1.200"
+                        />
+                      </label>
+                    </div>
+                    <div
+                      class="mb-2"
+                    >
+                      <label
+                        class="w-100 fw-bold"
+                      >
+                        Default Rule
+                        :
+                        <select
+                          class="form-select"
+                        >
+                          <option
+                            value=""
+                          >
+                            Select 
+                            default rule
+                          </option>
+                          <option
+                            value="enabled"
+                          >
+                            Enabled
+                          </option>
+                          <option
+                            value="disabled"
+                          >
+                            Disabled
+                          </option>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="mb-4 fade-in-card"
               id="device4-card"
             >
               <div
@@ -6626,11 +6226,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                          type
                       </option>
                       <option
-                        value="mosfet"
-                      >
-                        Mosfet
-                      </option>
-                      <option
                         value="http-get"
                       >
                         HTTP Get Request
@@ -6661,7 +6256,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         API command
                       </option>
                       <option
-                        value="dumb-relay"
+                        value="relay"
                       >
                         Relay
                       </option>
@@ -6692,7 +6287,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         <input
                           class="form-control"
                           type="text"
-                          value="Computer screen"
+                          value="Stairway lights"
                         />
                       </label>
                     </div>
@@ -6708,7 +6303,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           class="form-control"
                           pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
                           type="text"
-                          value="192.168.1.200"
+                          value="192.168.1.212"
                         />
                       </label>
                     </div>
@@ -6797,11 +6392,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                          type
                       </option>
                       <option
-                        value="mosfet"
-                      >
-                        Mosfet
-                      </option>
-                      <option
                         value="http-get"
                       >
                         HTTP Get Request
@@ -6832,7 +6422,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         API command
                       </option>
                       <option
-                        value="dumb-relay"
+                        value="relay"
                       >
                         Relay
                       </option>
@@ -6851,177 +6441,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                   <div
                     class="card-body"
                     id="device5-params"
-                  >
-                    <div
-                      class="mb-2"
-                    >
-                      <label
-                        class="w-100 fw-bold"
-                      >
-                        Nickname
-                        :
-                        <input
-                          class="form-control"
-                          type="text"
-                          value="Stairway lights"
-                        />
-                      </label>
-                    </div>
-                    <div
-                      class="mb-2"
-                    >
-                      <label
-                        class="w-100 fw-bold"
-                      >
-                        IP
-                        :
-                        <input
-                          class="form-control"
-                          pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
-                          type="text"
-                          value="192.168.1.212"
-                        />
-                      </label>
-                    </div>
-                    <div
-                      class="mb-2"
-                    >
-                      <label
-                        class="w-100 fw-bold"
-                      >
-                        Default Rule
-                        :
-                        <select
-                          class="form-select"
-                        >
-                          <option
-                            value=""
-                          >
-                            Select 
-                            default rule
-                          </option>
-                          <option
-                            value="enabled"
-                          >
-                            Enabled
-                          </option>
-                          <option
-                            value="disabled"
-                          >
-                            Disabled
-                          </option>
-                        </select>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div
-              class="mb-4 fade-in-card"
-              id="device6-card"
-            >
-              <div
-                class="card"
-              >
-                <div
-                  class="card-body"
-                >
-                  <div
-                    class="d-flex justify-content-between"
-                  >
-                    <button
-                      class="ps-2 btn btn-primary"
-                      style="visibility: hidden;"
-                      type="button"
-                    >
-                      <i
-                        class="bi-x-lg"
-                      />
-                    </button>
-                    <h4
-                      class="card-title mx-auto my-auto"
-                    >
-                      device6
-                    </h4>
-                    <button
-                      class="my-auto pe-2 delete btn btn-link"
-                      type="button"
-                    >
-                      <i
-                        class="bi-x-lg"
-                      />
-                    </button>
-                  </div>
-                  <label
-                    class="w-100 fw-bold"
-                  >
-                    Type:
-                    <select
-                      class="form-select"
-                    >
-                      <option
-                        value="clear"
-                      >
-                        Select 
-                        device
-                         type
-                      </option>
-                      <option
-                        value="mosfet"
-                      >
-                        Mosfet
-                      </option>
-                      <option
-                        value="http-get"
-                      >
-                        HTTP Get Request
-                      </option>
-                      <option
-                        value="pwm"
-                      >
-                        LED Strip
-                      </option>
-                      <option
-                        value="desktop"
-                      >
-                        Computer Screen
-                      </option>
-                      <option
-                        value="tasmota-relay"
-                      >
-                        Tasmota Smart Relay
-                      </option>
-                      <option
-                        value="dimmer"
-                      >
-                        TP Link Smart Dimmer
-                      </option>
-                      <option
-                        value="api-target"
-                      >
-                        API command
-                      </option>
-                      <option
-                        value="dumb-relay"
-                      >
-                        Relay
-                      </option>
-                      <option
-                        value="bulb"
-                      >
-                        TP Link Smart Bulb
-                      </option>
-                      <option
-                        value="wled"
-                      >
-                        WLED
-                      </option>
-                    </select>
-                  </label>
-                  <div
-                    class="card-body"
-                    id="device6-params"
                   >
                     <div
                       class="mb-2"
@@ -7154,7 +6573,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
             </div>
             <div
               class="mb-4 fade-in-card"
-              id="device7-card"
+              id="device6-card"
             >
               <div
                 class="card"
@@ -7177,7 +6596,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     <h4
                       class="card-title mx-auto my-auto"
                     >
-                      device7
+                      device6
                     </h4>
                     <button
                       class="my-auto pe-2 delete btn btn-link"
@@ -7201,11 +6620,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         Select 
                         device
                          type
-                      </option>
-                      <option
-                        value="mosfet"
-                      >
-                        Mosfet
                       </option>
                       <option
                         value="http-get"
@@ -7238,7 +6652,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         API command
                       </option>
                       <option
-                        value="dumb-relay"
+                        value="relay"
                       >
                         Relay
                       </option>
@@ -7256,7 +6670,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                   </label>
                   <div
                     class="card-body"
-                    id="device7-params"
+                    id="device6-params"
                   >
                     <div
                       class="mb-2"
@@ -7327,7 +6741,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     >
                       <button
                         class="btn btn-secondary"
-                        id="device7-default_rule-button"
+                        id="device6-default_rule-button"
                         type="button"
                       >
                         Set rule
@@ -7339,7 +6753,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
             </div>
             <div
               class="mb-4 fade-in-card"
-              id="device8-card"
+              id="device7-card"
             >
               <div
                 class="card"
@@ -7362,7 +6776,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     <h4
                       class="card-title mx-auto my-auto"
                     >
-                      device8
+                      device7
                     </h4>
                     <button
                       class="my-auto pe-2 delete btn btn-link"
@@ -7386,11 +6800,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         Select 
                         device
                          type
-                      </option>
-                      <option
-                        value="mosfet"
-                      >
-                        Mosfet
                       </option>
                       <option
                         value="http-get"
@@ -7423,7 +6832,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         API command
                       </option>
                       <option
-                        value="dumb-relay"
+                        value="relay"
                       >
                         Relay
                       </option>
@@ -7441,7 +6850,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                   </label>
                   <div
                     class="card-body"
-                    id="device8-params"
+                    id="device7-params"
                   >
                     <div
                       class="mb-2"
@@ -7491,7 +6900,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             16
                           </option>
                           <option
-                            disabled=""
                             value="17"
                           >
                             17
@@ -7589,7 +6997,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
             </div>
             <div
               class="mb-4 fade-in-card"
-              id="device9-card"
+              id="device8-card"
             >
               <div
                 class="card"
@@ -7612,7 +7020,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     <h4
                       class="card-title mx-auto my-auto"
                     >
-                      device9
+                      device8
                     </h4>
                     <button
                       class="my-auto pe-2 delete btn btn-link"
@@ -7636,11 +7044,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         Select 
                         device
                          type
-                      </option>
-                      <option
-                        value="mosfet"
-                      >
-                        Mosfet
                       </option>
                       <option
                         value="http-get"
@@ -7673,7 +7076,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         API command
                       </option>
                       <option
-                        value="dumb-relay"
+                        value="relay"
                       >
                         Relay
                       </option>
@@ -7691,7 +7094,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                   </label>
                   <div
                     class="card-body"
-                    id="device9-params"
+                    id="device8-params"
                   >
                     <div
                       class="mb-2"
@@ -7824,7 +7227,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
             </div>
             <div
               class="mb-4 fade-in-card"
-              id="device10-card"
+              id="device9-card"
             >
               <div
                 class="card"
@@ -7847,7 +7250,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                     <h4
                       class="card-title mx-auto my-auto"
                     >
-                      device10
+                      device9
                     </h4>
                     <button
                       class="my-auto pe-2 delete btn btn-link"
@@ -7871,11 +7274,6 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         Select 
                         device
                          type
-                      </option>
-                      <option
-                        value="mosfet"
-                      >
-                        Mosfet
                       </option>
                       <option
                         value="http-get"
@@ -7908,7 +7306,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                         API command
                       </option>
                       <option
-                        value="dumb-relay"
+                        value="relay"
                       >
                         Relay
                       </option>
@@ -7926,7 +7324,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                   </label>
                   <div
                     class="card-body"
-                    id="device10-params"
+                    id="device9-params"
                   >
                     <div
                       class="mb-2"

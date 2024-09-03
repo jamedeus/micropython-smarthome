@@ -14,11 +14,11 @@ describe('EditConfig', () => {
         createMockContext('edit_existing', existingConfigContext.edit_existing);
         createMockContext('ir_blaster_targets', existingConfigContext.ir_blaster_targets);
         createMockContext('target_node_ip', existingConfigContext.IP);
-        // Change ApiTarget (device7) IP to one that isn't in apiTargetOptionsContext
+        // Change ApiTarget (device6) IP to one that isn't in apiTargetOptionsContext
         createMockContext('config', {
             ...existingConfigContext.config,
-            device7: {
-                ...existingConfigContext.config.device7,
+            device6: {
+                ...existingConfigContext.config.device6,
                 ip: '10.0.0.69'
             }
         });

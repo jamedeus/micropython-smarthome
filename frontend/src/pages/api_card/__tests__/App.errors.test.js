@@ -53,7 +53,7 @@ describe('App', () => {
             })
         }));
 
-        // Get device5 power button (turned off), confirm does not have turn on or turn off class
+        // Get device4 power button (turned off), confirm does not have turn on or turn off class
         const powerButton = app.getByText('Stairway lights').parentElement.children[0];
         expect(powerButton.classList).not.toContain('btn-active-enter');
         expect(powerButton.classList).not.toContain('btn-active-exit');
@@ -76,7 +76,7 @@ describe('App', () => {
             })
         }));
 
-        // Get device3 power button (turned on), confirm does not have turn on or turn off class
+        // Get device2 power button (turned on), confirm does not have turn on or turn off class
         const powerButton = app.getByText('Stairway lights').parentElement.children[0];
         expect(powerButton.classList).not.toContain('btn-active-enter');
         expect(powerButton.classList).not.toContain('btn-active-exit');
@@ -122,7 +122,7 @@ describe('App', () => {
             })
         }));
 
-        // Get device5 card and top-right corner dropdown menu
+        // Get device4 card and top-right corner dropdown menu
         const card = app.getByText('Stairway lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
@@ -154,8 +154,8 @@ describe('App', () => {
             })
         }));
 
-        // Get device1 card and top-right corner dropdown menu
-        const card = app.getByText('Humidifier').parentElement.parentElement;
+        // Get device7 card and top-right corner dropdown menu
+        const card = app.getByText('Fan').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
         // Get card body collapse section, confirm closed (device disabled)
@@ -186,7 +186,7 @@ describe('App', () => {
             })
         }));
 
-        // Get device3 card and top-right corner dropdown menu
+        // Get device2 card and top-right corner dropdown menu
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
@@ -223,7 +223,7 @@ describe('App', () => {
             }, 100);
         }));
 
-        // Get device3 card, schedule rules button, schedule rules table, new rule button
+        // Get device2 card, schedule rules button, schedule rules table, new rule button
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const scheduleRulesButton = within(card).getByText('Schedule rules');
         const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
@@ -267,7 +267,7 @@ describe('App', () => {
             }, 100);
         }));
 
-        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        // Get device3 card, schedule rules button, schedule rules table, first rule row
         const card = app.getByText('Computer screen').parentElement.parentElement;
         const scheduleRulesButton = within(card).getByText('Schedule rules');
         const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
@@ -307,7 +307,7 @@ describe('App', () => {
             }, 100);
         }));
 
-        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        // Get device3 card, schedule rules button, schedule rules table, first rule row
         const card = app.getByText('Computer screen').parentElement.parentElement;
         const scheduleRulesButton = within(card).getByText('Schedule rules');
         const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
@@ -344,7 +344,7 @@ describe('App', () => {
         // Mock console.error
         console.error = jest.fn();
 
-        // Get device4 card, schedule rules table, click first delete button
+        // Get device3 card, schedule rules table, click first delete button
         const card = app.getByText('Computer screen').parentElement.parentElement;
         const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
         await user.click(within(rulesTable).getAllByRole('button')[0]);

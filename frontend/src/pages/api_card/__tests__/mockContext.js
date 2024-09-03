@@ -17,16 +17,6 @@ export const mockContext = {
         },
         "devices": {
             "device1": {
-                "schedule": {},
-                "scheduled_rule": "disabled",
-                "enabled": false,
-                "turned_on": false,
-                "nickname": "Humidifier",
-                "default_rule": "enabled",
-                "current_rule": "disabled",
-                "type": "mosfet"
-            },
-            "device2": {
                 "current_rule": "enabled",
                 "enabled": true,
                 "type": "http-get",
@@ -36,7 +26,7 @@ export const mockContext = {
                 "nickname": "Heater",
                 "default_rule": "enabled"
             },
-            "device3": {
+            "device2": {
                 "current_rule": 767,
                 "enabled": true,
                 "type": "pwm",
@@ -52,7 +42,7 @@ export const mockContext = {
                 "max_rule": 1023,
                 "default_rule": 767
             },
-            "device4": {
+            "device3": {
                 "current_rule": "enabled",
                 "enabled": true,
                 "type": "desktop",
@@ -65,7 +55,7 @@ export const mockContext = {
                 "nickname": "Computer screen",
                 "default_rule": "enabled"
             },
-            "device5": {
+            "device4": {
                 "current_rule": "enabled",
                 "enabled": true,
                 "type": "tasmota-relay",
@@ -75,7 +65,7 @@ export const mockContext = {
                 "nickname": "Stairway lights",
                 "default_rule": "enabled"
             },
-            "device6": {
+            "device5": {
                 "current_rule": 100,
                 "enabled": true,
                 "type": "dimmer",
@@ -91,7 +81,7 @@ export const mockContext = {
                 "max_rule": 100,
                 "default_rule": 100
             },
-            "device7": {
+            "device6": {
                 "current_rule": {
                     "on": [
                         "ir_key",
@@ -134,17 +124,17 @@ export const mockContext = {
                     ]
                 }
             },
-            "device8": {
+            "device7": {
                 "current_rule": "disabled",
                 "enabled": false,
-                "type": "dumb-relay",
+                "type": "relay",
                 "turned_on": true,
                 "schedule": {},
                 "scheduled_rule": "enabled",
                 "nickname": "Fan",
                 "default_rule": "enabled"
             },
-            "device9": {
+            "device8": {
                 "current_rule": "disabled",
                 "enabled": false,
                 "type": "bulb",
@@ -160,7 +150,7 @@ export const mockContext = {
                 "max_rule": 100,
                 "default_rule": 100
             },
-            "device10": {
+            "device9": {
                 "current_rule": "disabled",
                 "enabled": false,
                 "type": "wled",
@@ -182,11 +172,11 @@ export const mockContext = {
                 "scheduled_rule": "enabled",
                 "enabled": true,
                 "targets": [
-                    "device10",
+                    "device9",
+                    "device2",
                     "device3",
-                    "device4",
-                    "device6",
-                    "device9"
+                    "device5",
+                    "device8"
                 ],
                 "nickname": "Door switch",
                 "condition_met": false,
@@ -202,8 +192,8 @@ export const mockContext = {
                 "scheduled_rule": 72,
                 "enabled": true,
                 "targets": [
-                    "device7",
-                    "device8"
+                    "device6",
+                    "device7"
                 ],
                 "nickname": "Temp sensor",
                 "condition_met": true,
@@ -222,7 +212,7 @@ export const mockContext = {
                 "scheduled_rule": 20,
                 "enabled": true,
                 "targets": [
-                    "device2",
+                    "device1",
                     "device1"
                 ],
                 "nickname": "Thermostat",
@@ -239,9 +229,9 @@ export const mockContext = {
                 "scheduled_rule": "enabled",
                 "enabled": true,
                 "targets": [
-                    "device4",
-                    "device10",
-                    "device6"
+                    "device3",
+                    "device9",
+                    "device5"
                 ],
                 "nickname": "Computer activity",
                 "condition_met": false,
@@ -257,9 +247,9 @@ export const mockContext = {
                 "scheduled_rule": 10,
                 "enabled": true,
                 "targets": [
-                    "device5",
-                    "device3",
-                    "device9"
+                    "device4",
+                    "device2",
+                    "device8"
                 ],
                 "nickname": "Motion",
                 "condition_met": true,
@@ -275,7 +265,7 @@ export const mockContext = {
                 "scheduled_rule": "on",
                 "enabled": true,
                 "targets": [
-                    "device6"
+                    "device5"
                 ],
                 "nickname": "Sunrise",
                 "condition_met": true,
@@ -292,7 +282,7 @@ export const mockContext = {
     "target_ip": "192.168.1.100",
     "recording": false,
     "api_target_options": {
-        "device7": {
+        "device6": {
             "device1": {
                 "display": "Bias Lights (wled)",
                 "options": [
@@ -346,7 +336,7 @@ export const mockContext = {
                     ]
                 }
             },
-            "device2": {
+            "device1": {
                 "display": "TV (api-target)",
                 "options": [
                     "enable",

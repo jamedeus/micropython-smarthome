@@ -60,7 +60,7 @@ describe('App in record mode', () => {
             })
         }));
 
-        // Get device5 power button, confirm does not have turn on or turn off class
+        // Get device4 power button, confirm does not have turn on or turn off class
         const powerButton = app.getByText('Stairway lights').parentElement.children[0];
         expect(powerButton.classList).not.toContain('btn-active-enter');
         expect(powerButton.classList).not.toContain('btn-active-exit');
@@ -77,7 +77,7 @@ describe('App in record mode', () => {
                 name: "relax",
                 action: {
                     "command": "turn_on",
-                    "instance": "device5",
+                    "instance": "device4",
                     "target": "192.168.1.100",
                     "friendly_name": "Stairway lights"
                 }
@@ -97,7 +97,7 @@ describe('App in record mode', () => {
                 name: "relax",
                 action: {
                     "command": "turn_off",
-                    "instance": "device5",
+                    "instance": "device4",
                     "target": "192.168.1.100",
                     "friendly_name": "Stairway lights"
                 }
@@ -154,7 +154,7 @@ describe('App in record mode', () => {
             })
         }));
 
-        // Get device5 card and top-right corner dropdown menu
+        // Get device4 card and top-right corner dropdown menu
         const card = app.getByText('Stairway lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
@@ -175,7 +175,7 @@ describe('App in record mode', () => {
                 name: "relax",
                 action: {
                     "command": "disable",
-                    "instance": "device5",
+                    "instance": "device4",
                     "target": "192.168.1.100",
                     "friendly_name": "Stairway lights"
                 }
@@ -197,7 +197,7 @@ describe('App in record mode', () => {
                 name: "relax",
                 action: {
                     "command": "enable",
-                    "instance": "device5",
+                    "instance": "device4",
                     "target": "192.168.1.100",
                     "friendly_name": "Stairway lights"
                 }
@@ -220,7 +220,7 @@ describe('App in record mode', () => {
             })
         }));
 
-        // Get device6 card, slider minus button, slider plus button
+        // Get device5 card, slider minus button, slider plus button
         const card = app.getByText('Overhead lights').parentElement.parentElement;
         const minus = card.children[1].children[0].children[0].children[0];
         const plus = card.children[1].children[0].children[0].children[2];
@@ -234,7 +234,7 @@ describe('App in record mode', () => {
                     name: "relax",
                     action: {
                         "command": "set_rule",
-                        "instance": "device6",
+                        "instance": "device5",
                         "rule": 99,
                         "target": "192.168.1.100",
                         "friendly_name": "Overhead lights"
@@ -253,7 +253,7 @@ describe('App in record mode', () => {
                     name: "relax",
                     action: {
                         "command": "set_rule",
-                        "instance": "device6",
+                        "instance": "device5",
                         "rule": 100,
                         "target": "192.168.1.100",
                         "friendly_name": "Overhead lights"
@@ -275,7 +275,7 @@ describe('App in record mode', () => {
             })
         }));
 
-        // Get device3 card and top-right corner dropdown menu
+        // Get device2 card and top-right corner dropdown menu
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
@@ -292,7 +292,7 @@ describe('App in record mode', () => {
                 name: "relax",
                 action: {
                     "command": "reset_rule",
-                    "instance": "device3",
+                    "instance": "device2",
                     "target": "192.168.1.100",
                     "friendly_name": "Accent lights"
                 }

@@ -579,50 +579,45 @@ exports[`DefaultRuleApiTarget matches snapshot when self targetting 1`] = `
         <option
           value="device1"
         >
-          Humidifier (mosfet)
+          Heater (http-get)
         </option>
         <option
           value="device2"
         >
-          Heater (http-get)
+          Accent lights (pwm)
         </option>
         <option
           value="device3"
         >
-          Accent lights (pwm)
+          Computer screen (desktop)
         </option>
         <option
           value="device4"
         >
-          Computer screen (desktop)
+          Stairway lights (tasmota-relay)
         </option>
         <option
           value="device5"
         >
-          Stairway lights (tasmota-relay)
+          Overhead lights (dimmer)
         </option>
         <option
           value="device6"
         >
-          Overhead lights (dimmer)
+          Air conditioner (api-target)
         </option>
         <option
           value="device7"
         >
-          Air conditioner (api-target)
+          Fan (relay)
         </option>
         <option
           value="device8"
         >
-          Fan (dumb-relay)
-        </option>
-        <option
-          value="device9"
-        >
           Lamp (bulb)
         </option>
         <option
-          value="device10"
+          value="device9"
         >
           Bias lights (wled)
         </option>

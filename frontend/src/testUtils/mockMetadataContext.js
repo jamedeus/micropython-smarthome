@@ -1,23 +1,5 @@
 export const edit_config_metadata = {
     "devices": {
-        "mosfet": {
-            "config_name": "mosfet",
-            "class_name": "Mosfet",
-            "display_name": "Mosfet",
-            "dependencies": [
-                "devices/Mosfet.py",
-                "devices/Device.py",
-                "core/Instance.py"
-            ],
-            "config_template": {
-                "_type": "mosfet",
-                "nickname": "placeholder",
-                "default_rule": "placeholder",
-                "pin": "placeholder",
-                "schedule": {}
-            },
-            "rule_prompt": "standard"
-        },
         "http-get": {
             "config_name": "http-get",
             "class_name": "HttpGet",
@@ -144,17 +126,17 @@ export const edit_config_metadata = {
             },
             "rule_prompt": "api_target"
         },
-        "dumb-relay": {
-            "config_name": "dumb-relay",
-            "class_name": "DumbRelay",
+        "relay": {
+            "config_name": "relay",
+            "class_name": "Relay",
             "display_name": "Relay",
             "dependencies": [
-                "devices/DumbRelay.py",
+                "devices/Relay.py",
                 "devices/Device.py",
                 "core/Instance.py"
             ],
             "config_template": {
-                "_type": "dumb-relay",
+                "_type": "relay",
                 "nickname": "placeholder",
                 "default_rule": "placeholder",
                 "pin": "placeholder",
@@ -406,9 +388,6 @@ export const edit_config_metadata = {
 
 export const api_card_metadata = {
     "devices": {
-        "mosfet": {
-            "rule_prompt": "standard"
-        },
         "http-get": {
             "rule_prompt": "standard"
         },
@@ -435,7 +414,7 @@ export const api_card_metadata = {
         "api-target": {
             "rule_prompt": "api_target"
         },
-        "dumb-relay": {
+        "relay": {
             "rule_prompt": "standard"
         },
         "bulb": {

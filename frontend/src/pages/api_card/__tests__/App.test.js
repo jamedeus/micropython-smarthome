@@ -54,11 +54,11 @@ describe('App', () => {
             status: 200,
             json: () => Promise.resolve({
                 status: 'success',
-                message: { On: "device5" }
+                message: { On: "device4" }
             })
         }));
 
-        // Get device5 power button, confirm does not have turn on or turn off class
+        // Get device4 power button, confirm does not have turn on or turn off class
         const powerButton = app.getByText('Stairway lights').parentElement.children[0];
         expect(powerButton.classList).not.toContain('btn-active-enter');
         expect(powerButton.classList).not.toContain('btn-active-exit');
@@ -73,7 +73,7 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "turn_on",
-                "instance": "device5",
+                "instance": "device4",
                 "target": "192.168.1.100"
             }),
             headers: postHeaders
@@ -89,7 +89,7 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "turn_off",
-                "instance": "device5",
+                "instance": "device4",
                 "target": "192.168.1.100"
             }),
             headers: postHeaders
@@ -194,11 +194,11 @@ describe('App', () => {
             status: 200,
             json: () => Promise.resolve({
                 status: 'success',
-                message: { Enabled: "device9" }
+                message: { Enabled: "device8" }
             })
         }));
 
-        // Get device9 card and top-right corner dropdown menu
+        // Get device8 card and top-right corner dropdown menu
         // Current rule is "disabled" (causes NaN on slider), but scheduled_rule (72) is valid
         const card = app.getByText('Lamp').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
@@ -228,11 +228,11 @@ describe('App', () => {
             status: 200,
             json: () => Promise.resolve({
                 status: 'success',
-                message: { Enabled: "device10" }
+                message: { Enabled: "device9" }
             })
         }));
 
-        // Get device10 card and top-right corner dropdown menu
+        // Get device9 card and top-right corner dropdown menu
         // Current and scheduled rules are "disabled" (causes NaN on slider), but default (255) is valid
         const card = app.getByText('Bias lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
@@ -327,11 +327,11 @@ describe('App', () => {
             status: 200,
             json: () => Promise.resolve({
                 status: 'success',
-                message: { device6: "99" }
+                message: { device5: "99" }
             })
         }));
 
-        // Get device6 card, slider minus button, slider plus button
+        // Get device5 card, slider minus button, slider plus button
         const card = app.getByText('Overhead lights').parentElement.parentElement;
         const minus = card.children[1].children[0].children[0].children[0];
         const plus = card.children[1].children[0].children[0].children[2];
@@ -344,7 +344,7 @@ describe('App', () => {
                 method: 'POST',
                 body: JSON.stringify({
                     "command": "set_rule",
-                    "instance": "device6",
+                    "instance": "device5",
                     "rule": 99,
                     "target": "192.168.1.100"
                 }),
@@ -360,7 +360,7 @@ describe('App', () => {
                 method: 'POST',
                 body: JSON.stringify({
                     "command": "set_rule",
-                    "instance": "device6",
+                    "instance": "device5",
                     "rule": 100,
                     "target": "192.168.1.100"
                 }),
@@ -383,7 +383,7 @@ describe('App', () => {
         // Spy on console.log to confirm error logged
         const consoleSpy = jest.spyOn(console, 'log');
 
-        // Get device6 card, slider minus button
+        // Get device5 card, slider minus button
         const card = app.getByText('Overhead lights').parentElement.parentElement;
         const minus = card.children[1].children[0].children[0].children[0];
 
@@ -395,7 +395,7 @@ describe('App', () => {
                 method: 'POST',
                 body: JSON.stringify({
                     "command": "set_rule",
-                    "instance": "device6",
+                    "instance": "device5",
                     "rule": 99,
                     "target": "192.168.1.100"
                 }),
@@ -406,7 +406,7 @@ describe('App', () => {
         // Confirm error response was logged to console
         await waitFor(() => {
             expect(consoleSpy).toHaveBeenCalledWith(
-                'Failed to set rule for device6,', 'Unable to connect'
+                'Failed to set rule for device5,', 'Unable to connect'
             );
         });
     });
@@ -420,11 +420,11 @@ describe('App', () => {
             status: 200,
             json: () => Promise.resolve({
                 status: 'success',
-                message: { device3: "512" }
+                message: { device2: "512" }
             })
         }));
 
-        // Get device3 card, rule slider elements
+        // Get device2 card, rule slider elements
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const sliderHandle = card.querySelector('.sliderHandle');
         const sliderTrack = card.querySelector('.sliderTrack');
@@ -467,7 +467,7 @@ describe('App', () => {
                 method: 'POST',
                 body: JSON.stringify({
                     "command": "set_rule",
-                    "instance": "device3",
+                    "instance": "device2",
                     "rule": 512,
                     "target": "192.168.1.100"
                 }),
@@ -495,7 +495,7 @@ describe('App', () => {
             })
         }));
 
-        // Get device3 card and top-right corner dropdown menu
+        // Get device2 card and top-right corner dropdown menu
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
@@ -514,7 +514,7 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "reset_rule",
-                "instance": "device3",
+                "instance": "device2",
                 "target": "192.168.1.100"
             }),
             headers: postHeaders
@@ -542,7 +542,7 @@ describe('App', () => {
             })
         }));
 
-        // Get device3 card, top-right corner dropdown menu, and slider elements
+        // Get device2 card, top-right corner dropdown menu, and slider elements
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
         const sliderHandle = card.querySelector('.sliderHandle');
@@ -613,7 +613,7 @@ describe('App', () => {
             }, 100);
         }));
 
-        // Get device3 card, schedule rules button, schedule rules table, new rule button
+        // Get device2 card, schedule rules button, schedule rules table, new rule button
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const scheduleRulesButton = within(card).getByText('Schedule rules');
         const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
@@ -637,7 +637,7 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "add_rule",
-                "instance": "device3",
+                "instance": "device2",
                 "time": "10:00",
                 "rule": "enabled",
                 "target": "192.168.1.100"
@@ -669,7 +669,7 @@ describe('App', () => {
             }, 100);
         }));
 
-        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        // Get device3 card, schedule rules button, schedule rules table, first rule row
         const card = app.getByText('Computer screen').parentElement.parentElement;
         const scheduleRulesButton = within(card).getByText('Schedule rules');
         const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
@@ -692,7 +692,7 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "add_rule",
-                "instance": "device4",
+                "instance": "device3",
                 "time": "morning",
                 "rule": "disabled",
                 "overwrite": "overwrite",
@@ -725,7 +725,7 @@ describe('App', () => {
             }, 100);
         }));
 
-        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        // Get device3 card, schedule rules button, schedule rules table, first rule row
         const card = app.getByText('Computer screen').parentElement.parentElement;
         const scheduleRulesButton = within(card).getByText('Schedule rules');
         const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
@@ -748,7 +748,7 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "add_rule",
-                "instance": "device4",
+                "instance": "device3",
                 "time": "sunrise",
                 "rule": "enabled",
                 "overwrite": "overwrite",
@@ -763,7 +763,7 @@ describe('App', () => {
                 method: 'POST',
                 body: JSON.stringify({
                     "command": "remove_rule",
-                    "instance": "device4",
+                    "instance": "device3",
                     "rule": "morning",
                     "target": "192.168.1.100"
                 }),
@@ -789,7 +789,7 @@ describe('App', () => {
             }, 100);
         }));
 
-        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        // Get device3 card, schedule rules button, schedule rules table, first rule row
         const card = app.getByText('Computer screen').parentElement.parentElement;
         const scheduleRulesButton = within(card).getByText('Schedule rules');
         const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
@@ -804,7 +804,7 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "remove_rule",
-                "instance": "device4",
+                "instance": "device3",
                 "rule": "morning",
                 "target": "192.168.1.100"
             }),
@@ -813,7 +813,7 @@ describe('App', () => {
     });
 
     it('disables edit schedule rule button when time field is blank', async () => {
-        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        // Get device3 card, schedule rules button, schedule rules table, first rule row
         const card = app.getByText('Computer screen').parentElement.parentElement;
         const scheduleRulesButton = within(card).getByText('Schedule rules');
         const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
@@ -863,7 +863,7 @@ describe('App', () => {
             })
         }));
 
-        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        // Get device3 card, schedule rules button, schedule rules table, first rule row
         const card = app.getByText('Computer screen').parentElement.parentElement;
         const scheduleRulesButton = within(card).getByText('Schedule rules');
         const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
@@ -891,7 +891,7 @@ describe('App', () => {
     });
 
     it('does not make API call when user clicks no in save rules toast', async () => {
-        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        // Get device3 card, schedule rules button, schedule rules table, first rule row
         const card = app.getByText('Computer screen').parentElement.parentElement;
         const scheduleRulesButton = within(card).getByText('Schedule rules');
         const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
@@ -949,14 +949,14 @@ describe('App', () => {
                         "sensor5"
                     ],
                     "default_rule": 1023,
-                    "name": "device3",
+                    "name": "device2",
                     "bright": 0,
                     "fading": false
                 }
             })
         }));
 
-        // Get device3 card and top-right corner dropdown menu
+        // Get device2 card and top-right corner dropdown menu
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
@@ -967,7 +967,7 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "get_attributes",
-                "instance": "device3",
+                "instance": "device2",
                 "target": "192.168.1.100"
             }),
             headers: postHeaders
@@ -995,7 +995,7 @@ describe('App', () => {
     });
 
     it('shows schedule toggle modal when dropdown option clicked', async () => {
-        // Get device3 card and top-right corner dropdown menu
+        // Get device2 card and top-right corner dropdown menu
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
@@ -1006,7 +1006,7 @@ describe('App', () => {
     });
 
     it('shows start fade modal when dropdown option clicked', async () => {
-        // Get device3 card and top-right corner dropdown menu
+        // Get device2 card and top-right corner dropdown menu
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
@@ -1017,14 +1017,14 @@ describe('App', () => {
     });
 
     it('highlights correct devices when sensor Show triggers option clicked', async () => {
-        // Get sensor2 card, device7 card, device8 card
+        // Get sensor2 card, device6 card, device7 card
         const sensor2 = app.getByText('Temp sensor').parentElement.parentElement;
-        const device7 = app.getByText('Air Conditioner').parentElement.parentElement;
-        const device8 = app.getByText('Fan').parentElement.parentElement;
+        const device6 = app.getByText('Air Conditioner').parentElement.parentElement;
+        const device7 = app.getByText('Fan').parentElement.parentElement;
 
         // Confirm device cards do not have highlight class
+        expect(device6.parentElement.classList).not.toContain('highlight-enter');
         expect(device7.parentElement.classList).not.toContain('highlight-enter');
-        expect(device8.parentElement.classList).not.toContain('highlight-enter');
         expect(app.container.querySelectorAll('.highlight-enter').length).toBe(0);
 
         // Click sensor2 "Show targets" dropdown option
@@ -1034,8 +1034,8 @@ describe('App', () => {
 
         // Confirm both target devices have highlight class, but no other cards
         await waitFor(() => {
+            expect(device6.parentElement.classList).toContain('highlight-enter');
             expect(device7.parentElement.classList).toContain('highlight-enter');
-            expect(device8.parentElement.classList).toContain('highlight-enter');
             expect(app.container.querySelectorAll('.highlight-enter').length).toBe(2);
             expect(app.container.querySelectorAll('.highlight-enter-done').length).toBe(0);
         });
@@ -1043,23 +1043,23 @@ describe('App', () => {
         // Wait for highlight animation to complete
         jest.advanceTimersByTime(1000);
         await waitFor(() => {
+            expect(device6.parentElement.classList).toContain('highlight-enter-done');
             expect(device7.parentElement.classList).toContain('highlight-enter-done');
-            expect(device8.parentElement.classList).toContain('highlight-enter-done');
             expect(app.container.querySelectorAll('.highlight-enter').length).toBe(0);
             expect(app.container.querySelectorAll('.highlight-enter-done').length).toBe(2);
         });
 
         // Click anywhere in page, confirm highlight fades out
         await user.click(app.getByText('Motion'));
+        expect(device6.parentElement.classList).not.toContain('highlight-enter');
         expect(device7.parentElement.classList).not.toContain('highlight-enter');
-        expect(device8.parentElement.classList).not.toContain('highlight-enter');
+        expect(device6.parentElement.classList).toContain('highlight-exit');
         expect(device7.parentElement.classList).toContain('highlight-exit');
-        expect(device8.parentElement.classList).toContain('highlight-exit');
         expect(app.container.querySelectorAll('.highlight-exit').length).toBe(2);
     });
 
     it('shows ApiTargetRuleModal when "Change rule" dropdown option clicked', async () => {
-        // Get device7 card and top-right corner dropdown menu
+        // Get device6 card and top-right corner dropdown menu
         const card = app.getByText('Air Conditioner').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
@@ -1070,7 +1070,7 @@ describe('App', () => {
     });
 
     it('sends the correct payload when ApiTarget rule is changed', async () => {
-        // Get device7 card, open change rule modal
+        // Get device6 card, open change rule modal
         const card = app.getByText('Air Conditioner').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
         await user.click(dropdown.children[0]);
@@ -1088,7 +1088,7 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "set_rule",
-                "instance": "device7",
+                "instance": "device6",
                 "rule": {
                     "on": [
                         "ignore"

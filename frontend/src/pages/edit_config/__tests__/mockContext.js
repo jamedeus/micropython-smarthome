@@ -57,19 +57,12 @@ export const existingConfigContext = {
             "pin": "21",
             "schedule": {},
             "targets": [
-                "device10",
+                "device9",
+                "device2",
                 "device3",
-                "device4",
-                "device6",
-                "device9"
+                "device5",
+                "device8"
             ]
-        },
-        "device1": {
-            "_type": "mosfet",
-            "nickname": "Humidifier",
-            "default_rule": "enabled",
-            "pin": "17",
-            "schedule": {}
         },
         "ir_blaster": {
             "pin": "13",
@@ -91,8 +84,8 @@ export const existingConfigContext = {
                 "12:00": "disabled"
             },
             "targets": [
-                "device7",
-                "device8"
+                "device6",
+                "device7"
             ]
         },
         "sensor3": {
@@ -107,7 +100,6 @@ export const existingConfigContext = {
                 "sleep": 20
             },
             "targets": [
-                "device2",
                 "device1"
             ]
         },
@@ -121,9 +113,9 @@ export const existingConfigContext = {
                 "sleep": "disabled"
             },
             "targets": [
-                "device4",
-                "device10",
-                "device6"
+                "device3",
+                "device9",
+                "device5"
             ]
         },
         "sensor5": {
@@ -136,12 +128,12 @@ export const existingConfigContext = {
                 "sleep": 1
             },
             "targets": [
-                "device5",
-                "device3",
-                "device9"
+                "device4",
+                "device2",
+                "device8"
             ]
         },
-        "device2": {
+        "device1": {
             "_type": "http-get",
             "nickname": "Heater",
             "default_rule": "enabled",
@@ -150,7 +142,7 @@ export const existingConfigContext = {
             "off_path": "api/heat_off",
             "schedule": {}
         },
-        "device3": {
+        "device2": {
             "_type": "pwm",
             "nickname": "Accent lights",
             "min_rule": 32,
@@ -163,7 +155,7 @@ export const existingConfigContext = {
                 "sleep": "disabled"
             }
         },
-        "device4": {
+        "device3": {
             "_type": "desktop",
             "nickname": "Computer screen",
             "ip": "192.168.1.200",
@@ -173,14 +165,14 @@ export const existingConfigContext = {
                 "sleep": "disabled"
             }
         },
-        "device5": {
+        "device4": {
             "_type": "tasmota-relay",
             "nickname": "Stairway lights",
             "ip": "192.168.1.212",
             "default_rule": "enabled",
             "schedule": {}
         },
-        "device6": {
+        "device5": {
             "_type": "dimmer",
             "nickname": "Overhead lights",
             "ip": "192.168.1.211",
@@ -193,7 +185,7 @@ export const existingConfigContext = {
                 "sleep": "fade/37/900"
             }
         },
-        "device7": {
+        "device6": {
             "_type": "api-target",
             "nickname": "Air conditioner",
             "ip": "192.168.1.104",
@@ -224,14 +216,14 @@ export const existingConfigContext = {
                 }
             }
         },
-        "device8": {
-            "_type": "dumb-relay",
+        "device7": {
+            "_type": "relay",
             "nickname": "Fan",
             "default_rule": "enabled",
             "pin": "16",
             "schedule": {}
         },
-        "device9": {
+        "device8": {
             "_type": "bulb",
             "nickname": "Lamp",
             "ip": "192.168.1.205",
@@ -244,7 +236,7 @@ export const existingConfigContext = {
                 "sleep": "disabled"
             }
         },
-        "device10": {
+        "device9": {
             "_type": "wled",
             "nickname": "Bias lights",
             "ip": "192.168.1.233",
@@ -266,7 +258,7 @@ export const existingConfigContext = {
                 "sunset": "off"
             },
             "targets": [
-                "device6"
+                "device5"
             ]
         }
     }

@@ -22,17 +22,17 @@ exports[`App matches snapshot 1`] = `
     <div
       id="instance_metadata"
     >
-      {"devices":{"mosfet":{"rule_prompt":"standard"},"http-get":{"rule_prompt":"standard"},"pwm":{"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"rule_prompt":"standard"},"tasmota-relay":{"rule_prompt":"standard"},"dimmer":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"rule_prompt":"api_target"},"dumb-relay":{"rule_prompt":"standard"},"bulb":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"rule_prompt":"standard","triggerable":false},"dht22":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"rule_prompt":"standard","triggerable":true},"pir":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"rule_prompt":"on_off","triggerable":true}}}
+      {"devices":{"http-get":{"rule_prompt":"standard"},"pwm":{"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"rule_prompt":"standard"},"tasmota-relay":{"rule_prompt":"standard"},"dimmer":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"rule_prompt":"api_target"},"relay":{"rule_prompt":"standard"},"bulb":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"rule_prompt":"standard","triggerable":false},"dht22":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"rule_prompt":"standard","triggerable":true},"pir":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"rule_prompt":"on_off","triggerable":true}}}
     </div>
     <div
       id="api_target_options"
     >
-      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
+      {"device6":{"device1":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
     >
-      {"metadata":{"next_reload":"3:46","ir_blaster":false,"location":"Bedroom","floor":2,"id":"Test Node","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{"device1":{"schedule":{},"scheduled_rule":"disabled","enabled":false,"turned_on":false,"nickname":"Humidifier","default_rule":"enabled","current_rule":"disabled","type":"mosfet"},"device2":{"current_rule":"enabled","enabled":true,"type":"http-get","turned_on":false,"schedule":{},"scheduled_rule":"enabled","nickname":"Heater","default_rule":"enabled"},"device3":{"current_rule":767,"enabled":true,"type":"pwm","turned_on":true,"schedule":{"morning":1023,"relax":"fade/512/1800","sleep":"disabled"},"scheduled_rule":1023,"min_rule":0,"nickname":"Accent lights","max_rule":1023,"default_rule":767},"device4":{"current_rule":"enabled","enabled":true,"type":"desktop","turned_on":false,"schedule":{"morning":"enabled","sleep":"disabled"},"scheduled_rule":"enabled","nickname":"Computer screen","default_rule":"enabled"},"device5":{"current_rule":"enabled","enabled":true,"type":"tasmota-relay","turned_on":false,"schedule":{},"scheduled_rule":"enabled","nickname":"Stairway lights","default_rule":"enabled"},"device6":{"current_rule":100,"enabled":true,"type":"dimmer","turned_on":true,"schedule":{"morning":"fade/100/900","relax":"fade/69/1800","sleep":"fade/37/900"},"scheduled_rule":100,"min_rule":1,"nickname":"Overhead lights","max_rule":100,"default_rule":100},"device7":{"current_rule":{"on":["ir_key","whynter_ac","start"],"off":["ir_key","whynter_ac","stop"]},"enabled":true,"type":"api-target","turned_on":true,"schedule":{},"scheduled_rule":{"on":["ir_key","whynter_ac","start"],"off":["ir_key","whynter_ac","stop"]},"nickname":"Air Conditioner","default_rule":{"on":["ir_key","whynter_ac","start"],"off":["ir_key","whynter_ac","stop"]}},"device8":{"current_rule":"disabled","enabled":false,"type":"dumb-relay","turned_on":true,"schedule":{},"scheduled_rule":"enabled","nickname":"Fan","default_rule":"enabled"},"device9":{"current_rule":"disabled","enabled":false,"type":"bulb","turned_on":true,"schedule":{"morning":"fade/100/900","relax":"fade/72/1800","sleep":"disabled"},"scheduled_rule":72,"min_rule":1,"nickname":"Lamp","max_rule":100,"default_rule":100},"device10":{"current_rule":"disabled","enabled":false,"type":"wled","turned_on":false,"schedule":{"morning":"fade/255/900","sleep":25,"relax":"fade/128/1800"},"scheduled_rule":"disabled","min_rule":1,"nickname":"Bias lights","max_rule":255,"default_rule":255}},"sensors":{"sensor1":{"scheduled_rule":"enabled","enabled":true,"targets":["device10","device3","device4","device6","device9"],"nickname":"Door switch","condition_met":false,"default_rule":"enabled","current_rule":"enabled","schedule":{},"type":"switch"},"sensor2":{"humid":72.53317,"temp":72.07256,"units":"fahrenheit","scheduled_rule":72,"enabled":true,"targets":["device7","device8"],"nickname":"Temp sensor","condition_met":true,"default_rule":74,"current_rule":70,"schedule":{"morning":68,"relax":72},"type":"dht22"},"sensor3":{"humid":72.53317,"temp":22.26253,"units":"celsius","scheduled_rule":20,"enabled":true,"targets":["device2","device1"],"nickname":"Thermostat","condition_met":false,"default_rule":20,"current_rule":20,"schedule":{"morning":23,"sleep":20},"type":"si7021"},"sensor4":{"scheduled_rule":"enabled","enabled":true,"targets":["device4","device10","device6"],"nickname":"Computer activity","condition_met":false,"default_rule":"enabled","current_rule":"enabled","schedule":{"morning":"enabled","sleep":"disabled"},"type":"desktop"},"sensor5":{"scheduled_rule":10,"enabled":true,"targets":["device5","device3","device9"],"nickname":"Motion","condition_met":true,"default_rule":10,"current_rule":10,"schedule":{"morning":10,"sleep":1},"type":"pir"},"sensor6":{"scheduled_rule":"on","enabled":true,"targets":["device6"],"nickname":"Sunrise","condition_met":true,"default_rule":"on","current_rule":"on","schedule":{"sunrise":"on","sunset":"off"},"type":"dummy"}}}
+      {"metadata":{"next_reload":"3:46","ir_blaster":false,"location":"Bedroom","floor":2,"id":"Test Node","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{"device1":{"current_rule":"enabled","enabled":true,"type":"http-get","turned_on":false,"schedule":{},"scheduled_rule":"enabled","nickname":"Heater","default_rule":"enabled"},"device2":{"current_rule":767,"enabled":true,"type":"pwm","turned_on":true,"schedule":{"morning":1023,"relax":"fade/512/1800","sleep":"disabled"},"scheduled_rule":1023,"min_rule":0,"nickname":"Accent lights","max_rule":1023,"default_rule":767},"device3":{"current_rule":"enabled","enabled":true,"type":"desktop","turned_on":false,"schedule":{"morning":"enabled","sleep":"disabled"},"scheduled_rule":"enabled","nickname":"Computer screen","default_rule":"enabled"},"device4":{"current_rule":"enabled","enabled":true,"type":"tasmota-relay","turned_on":false,"schedule":{},"scheduled_rule":"enabled","nickname":"Stairway lights","default_rule":"enabled"},"device5":{"current_rule":100,"enabled":true,"type":"dimmer","turned_on":true,"schedule":{"morning":"fade/100/900","relax":"fade/69/1800","sleep":"fade/37/900"},"scheduled_rule":100,"min_rule":1,"nickname":"Overhead lights","max_rule":100,"default_rule":100},"device6":{"current_rule":{"on":["ir_key","whynter_ac","start"],"off":["ir_key","whynter_ac","stop"]},"enabled":true,"type":"api-target","turned_on":true,"schedule":{},"scheduled_rule":{"on":["ir_key","whynter_ac","start"],"off":["ir_key","whynter_ac","stop"]},"nickname":"Air Conditioner","default_rule":{"on":["ir_key","whynter_ac","start"],"off":["ir_key","whynter_ac","stop"]}},"device7":{"current_rule":"disabled","enabled":false,"type":"relay","turned_on":true,"schedule":{},"scheduled_rule":"enabled","nickname":"Fan","default_rule":"enabled"},"device8":{"current_rule":"disabled","enabled":false,"type":"bulb","turned_on":true,"schedule":{"morning":"fade/100/900","relax":"fade/72/1800","sleep":"disabled"},"scheduled_rule":72,"min_rule":1,"nickname":"Lamp","max_rule":100,"default_rule":100},"device9":{"current_rule":"disabled","enabled":false,"type":"wled","turned_on":false,"schedule":{"morning":"fade/255/900","sleep":25,"relax":"fade/128/1800"},"scheduled_rule":"disabled","min_rule":1,"nickname":"Bias lights","max_rule":255,"default_rule":255}},"sensors":{"sensor1":{"scheduled_rule":"enabled","enabled":true,"targets":["device9","device2","device3","device5","device8"],"nickname":"Door switch","condition_met":false,"default_rule":"enabled","current_rule":"enabled","schedule":{},"type":"switch"},"sensor2":{"humid":72.53317,"temp":72.07256,"units":"fahrenheit","scheduled_rule":72,"enabled":true,"targets":["device6","device7"],"nickname":"Temp sensor","condition_met":true,"default_rule":74,"current_rule":70,"schedule":{"morning":68,"relax":72},"type":"dht22"},"sensor3":{"humid":72.53317,"temp":22.26253,"units":"celsius","scheduled_rule":20,"enabled":true,"targets":["device1","device1"],"nickname":"Thermostat","condition_met":false,"default_rule":20,"current_rule":20,"schedule":{"morning":23,"sleep":20},"type":"si7021"},"sensor4":{"scheduled_rule":"enabled","enabled":true,"targets":["device3","device9","device5"],"nickname":"Computer activity","condition_met":false,"default_rule":"enabled","current_rule":"enabled","schedule":{"morning":"enabled","sleep":"disabled"},"type":"desktop"},"sensor5":{"scheduled_rule":10,"enabled":true,"targets":["device4","device2","device8"],"nickname":"Motion","condition_met":true,"default_rule":10,"current_rule":10,"schedule":{"morning":10,"sleep":1},"type":"pir"},"sensor6":{"scheduled_rule":"on","enabled":true,"targets":["device5"],"nickname":"Sunrise","condition_met":true,"default_rule":"on","current_rule":"on","schedule":{"sunrise":"on","sunset":"off"},"type":"dummy"}}}
     </div>
     <div>
       <div
@@ -1423,129 +1423,6 @@ exports[`App matches snapshot 1`] = `
                   <h4
                     class="card-title text-center m-auto"
                   >
-                    Humidifier
-                  </h4>
-                  <div
-                    class="ms-auto my-auto dropdown"
-                  >
-                    <button
-                      aria-expanded="false"
-                      class="menu-button dropdown-toggle btn btn-outline-secondary"
-                      id="react-aria-:r7:"
-                      type="button"
-                    >
-                      <i
-                        class="bi-list"
-                      />
-                    </button>
-                  </div>
-                </div>
-                <div
-                  class="collapse"
-                >
-                  <div
-                    class="text-center my-3"
-                  >
-                    <button
-                      class="btn btn-primary btn-sm"
-                      type="button"
-                    >
-                      Schedule rules
-                    </button>
-                  </div>
-                  <div
-                    class="text-center collapse"
-                  >
-                    <table
-                      class="table table-borderless"
-                    >
-                      <thead>
-                        <tr>
-                          <th
-                            class="w-50"
-                          >
-                            Time
-                          </th>
-                          <th
-                            class="w-50"
-                          >
-                            Rule
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          class="d-none"
-                        >
-                          <td>
-                            <div>
-                              <span
-                                class="form-control "
-                              >
-                                Set time
-                              </span>
-                            </div>
-                          </td>
-                          <td>
-                            <div>
-                              <span
-                                class="form-control"
-                              >
-                                enabled
-                              </span>
-                            </div>
-                          </td>
-                          <td
-                            class="min"
-                          >
-                            <button
-                              class="btn btn-danger btn-sm"
-                              type="button"
-                            >
-                              <i
-                                class="bi-trash"
-                              />
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <div
-                      class="text-center mx-3 mb-3"
-                    >
-                      <button
-                        class="btn btn-secondary btn-sm"
-                        type="button"
-                      >
-                        <i
-                          class="bi-plus-lg"
-                        />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div
-              class="mb-4 card"
-            >
-              <div
-                class="d-flex flex-column card-body"
-              >
-                <div
-                  class="d-flex justify-content-between"
-                >
-                  <button
-                    class="power-button my-auto me-auto btn btn-outline-secondary"
-                    type="button"
-                  >
-                    <i
-                      class="bi-lightbulb"
-                    />
-                  </button>
-                  <h4
-                    class="card-title text-center m-auto"
-                  >
                     Heater
                   </h4>
                   <div
@@ -1554,7 +1431,7 @@ exports[`App matches snapshot 1`] = `
                     <button
                       aria-expanded="false"
                       class="menu-button dropdown-toggle btn btn-outline-secondary"
-                      id="react-aria-:r8:"
+                      id="react-aria-:r7:"
                       type="button"
                     >
                       <i
@@ -1677,7 +1554,7 @@ exports[`App matches snapshot 1`] = `
                     <button
                       aria-expanded="false"
                       class="menu-button dropdown-toggle btn btn-outline-secondary"
-                      id="react-aria-:r9:"
+                      id="react-aria-:r8:"
                       type="button"
                     >
                       <i
@@ -1947,7 +1824,7 @@ exports[`App matches snapshot 1`] = `
                     <button
                       aria-expanded="false"
                       class="menu-button dropdown-toggle btn btn-outline-secondary"
-                      id="react-aria-:ra:"
+                      id="react-aria-:r9:"
                       type="button"
                     >
                       <i
@@ -2138,7 +2015,7 @@ exports[`App matches snapshot 1`] = `
                     <button
                       aria-expanded="false"
                       class="menu-button dropdown-toggle btn btn-outline-secondary"
-                      id="react-aria-:rb:"
+                      id="react-aria-:ra:"
                       type="button"
                     >
                       <i
@@ -2261,7 +2138,7 @@ exports[`App matches snapshot 1`] = `
                     <button
                       aria-expanded="false"
                       class="menu-button dropdown-toggle btn btn-outline-secondary"
-                      id="react-aria-:rc:"
+                      id="react-aria-:rb:"
                       type="button"
                     >
                       <i
@@ -2531,7 +2408,7 @@ exports[`App matches snapshot 1`] = `
                     <button
                       aria-expanded="false"
                       class="menu-button dropdown-toggle btn btn-outline-secondary"
-                      id="react-aria-:rd:"
+                      id="react-aria-:rc:"
                       type="button"
                     >
                       <i
@@ -2652,7 +2529,7 @@ exports[`App matches snapshot 1`] = `
                     <button
                       aria-expanded="false"
                       class="menu-button dropdown-toggle btn btn-outline-secondary"
-                      id="react-aria-:re:"
+                      id="react-aria-:rd:"
                       type="button"
                     >
                       <i
@@ -2775,7 +2652,7 @@ exports[`App matches snapshot 1`] = `
                     <button
                       aria-expanded="false"
                       class="menu-button dropdown-toggle btn btn-outline-secondary"
-                      id="react-aria-:rf:"
+                      id="react-aria-:re:"
                       type="button"
                     >
                       <i
@@ -3045,7 +2922,7 @@ exports[`App matches snapshot 1`] = `
                     <button
                       aria-expanded="false"
                       class="menu-button dropdown-toggle btn btn-outline-secondary"
-                      id="react-aria-:rg:"
+                      id="react-aria-:rf:"
                       type="button"
                     >
                       <i
@@ -4681,129 +4558,6 @@ exports[`App matches snapshot 1`] = `
                 <h4
                   class="card-title text-center m-auto"
                 >
-                  Humidifier
-                </h4>
-                <div
-                  class="ms-auto my-auto dropdown"
-                >
-                  <button
-                    aria-expanded="false"
-                    class="menu-button dropdown-toggle btn btn-outline-secondary"
-                    id="react-aria-:r7:"
-                    type="button"
-                  >
-                    <i
-                      class="bi-list"
-                    />
-                  </button>
-                </div>
-              </div>
-              <div
-                class="collapse"
-              >
-                <div
-                  class="text-center my-3"
-                >
-                  <button
-                    class="btn btn-primary btn-sm"
-                    type="button"
-                  >
-                    Schedule rules
-                  </button>
-                </div>
-                <div
-                  class="text-center collapse"
-                >
-                  <table
-                    class="table table-borderless"
-                  >
-                    <thead>
-                      <tr>
-                        <th
-                          class="w-50"
-                        >
-                          Time
-                        </th>
-                        <th
-                          class="w-50"
-                        >
-                          Rule
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        class="d-none"
-                      >
-                        <td>
-                          <div>
-                            <span
-                              class="form-control "
-                            >
-                              Set time
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          <div>
-                            <span
-                              class="form-control"
-                            >
-                              enabled
-                            </span>
-                          </div>
-                        </td>
-                        <td
-                          class="min"
-                        >
-                          <button
-                            class="btn btn-danger btn-sm"
-                            type="button"
-                          >
-                            <i
-                              class="bi-trash"
-                            />
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <div
-                    class="text-center mx-3 mb-3"
-                  >
-                    <button
-                      class="btn btn-secondary btn-sm"
-                      type="button"
-                    >
-                      <i
-                        class="bi-plus-lg"
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            class="mb-4 card"
-          >
-            <div
-              class="d-flex flex-column card-body"
-            >
-              <div
-                class="d-flex justify-content-between"
-              >
-                <button
-                  class="power-button my-auto me-auto btn btn-outline-secondary"
-                  type="button"
-                >
-                  <i
-                    class="bi-lightbulb"
-                  />
-                </button>
-                <h4
-                  class="card-title text-center m-auto"
-                >
                   Heater
                 </h4>
                 <div
@@ -4812,7 +4566,7 @@ exports[`App matches snapshot 1`] = `
                   <button
                     aria-expanded="false"
                     class="menu-button dropdown-toggle btn btn-outline-secondary"
-                    id="react-aria-:r8:"
+                    id="react-aria-:r7:"
                     type="button"
                   >
                     <i
@@ -4935,7 +4689,7 @@ exports[`App matches snapshot 1`] = `
                   <button
                     aria-expanded="false"
                     class="menu-button dropdown-toggle btn btn-outline-secondary"
-                    id="react-aria-:r9:"
+                    id="react-aria-:r8:"
                     type="button"
                   >
                     <i
@@ -5205,7 +4959,7 @@ exports[`App matches snapshot 1`] = `
                   <button
                     aria-expanded="false"
                     class="menu-button dropdown-toggle btn btn-outline-secondary"
-                    id="react-aria-:ra:"
+                    id="react-aria-:r9:"
                     type="button"
                   >
                     <i
@@ -5396,7 +5150,7 @@ exports[`App matches snapshot 1`] = `
                   <button
                     aria-expanded="false"
                     class="menu-button dropdown-toggle btn btn-outline-secondary"
-                    id="react-aria-:rb:"
+                    id="react-aria-:ra:"
                     type="button"
                   >
                     <i
@@ -5519,7 +5273,7 @@ exports[`App matches snapshot 1`] = `
                   <button
                     aria-expanded="false"
                     class="menu-button dropdown-toggle btn btn-outline-secondary"
-                    id="react-aria-:rc:"
+                    id="react-aria-:rb:"
                     type="button"
                   >
                     <i
@@ -5789,7 +5543,7 @@ exports[`App matches snapshot 1`] = `
                   <button
                     aria-expanded="false"
                     class="menu-button dropdown-toggle btn btn-outline-secondary"
-                    id="react-aria-:rd:"
+                    id="react-aria-:rc:"
                     type="button"
                   >
                     <i
@@ -5910,7 +5664,7 @@ exports[`App matches snapshot 1`] = `
                   <button
                     aria-expanded="false"
                     class="menu-button dropdown-toggle btn btn-outline-secondary"
-                    id="react-aria-:re:"
+                    id="react-aria-:rd:"
                     type="button"
                   >
                     <i
@@ -6033,7 +5787,7 @@ exports[`App matches snapshot 1`] = `
                   <button
                     aria-expanded="false"
                     class="menu-button dropdown-toggle btn btn-outline-secondary"
-                    id="react-aria-:rf:"
+                    id="react-aria-:re:"
                     type="button"
                   >
                     <i
@@ -6303,7 +6057,7 @@ exports[`App matches snapshot 1`] = `
                   <button
                     aria-expanded="false"
                     class="menu-button dropdown-toggle btn btn-outline-secondary"
-                    id="react-aria-:rg:"
+                    id="react-aria-:rf:"
                     type="button"
                   >
                     <i
@@ -6625,12 +6379,12 @@ exports[`App matches snapshot when both IR remotes are configured 1`] = `
     <div
       id="instance_metadata"
     >
-      {"devices":{"mosfet":{"rule_prompt":"standard"},"http-get":{"rule_prompt":"standard"},"pwm":{"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"rule_prompt":"standard"},"tasmota-relay":{"rule_prompt":"standard"},"dimmer":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"rule_prompt":"api_target"},"dumb-relay":{"rule_prompt":"standard"},"bulb":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"rule_prompt":"standard","triggerable":false},"dht22":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"rule_prompt":"standard","triggerable":true},"pir":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"rule_prompt":"on_off","triggerable":true}}}
+      {"devices":{"http-get":{"rule_prompt":"standard"},"pwm":{"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"rule_prompt":"standard"},"tasmota-relay":{"rule_prompt":"standard"},"dimmer":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"rule_prompt":"api_target"},"relay":{"rule_prompt":"standard"},"bulb":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"rule_prompt":"standard","triggerable":false},"dht22":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"rule_prompt":"standard","triggerable":true},"pir":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"rule_prompt":"on_off","triggerable":true}}}
     </div>
     <div
       id="api_target_options"
     >
-      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
+      {"device6":{"device1":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
@@ -7402,12 +7156,12 @@ exports[`App matches snapshot when no devices, sensors, or ir_blaster configured
     <div
       id="instance_metadata"
     >
-      {"devices":{"mosfet":{"rule_prompt":"standard"},"http-get":{"rule_prompt":"standard"},"pwm":{"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"rule_prompt":"standard"},"tasmota-relay":{"rule_prompt":"standard"},"dimmer":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"rule_prompt":"api_target"},"dumb-relay":{"rule_prompt":"standard"},"bulb":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"rule_prompt":"standard","triggerable":false},"dht22":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"rule_prompt":"standard","triggerable":true},"pir":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"rule_prompt":"on_off","triggerable":true}}}
+      {"devices":{"http-get":{"rule_prompt":"standard"},"pwm":{"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"rule_prompt":"standard"},"tasmota-relay":{"rule_prompt":"standard"},"dimmer":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"rule_prompt":"api_target"},"relay":{"rule_prompt":"standard"},"bulb":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"rule_prompt":"standard","triggerable":false},"dht22":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"rule_prompt":"standard","triggerable":true},"pir":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"rule_prompt":"on_off","triggerable":true}}}
     </div>
     <div
       id="api_target_options"
     >
-      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
+      {"device6":{"device1":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
@@ -7609,12 +7363,12 @@ exports[`App matches snapshot when only AC remote is configured 1`] = `
     <div
       id="instance_metadata"
     >
-      {"devices":{"mosfet":{"rule_prompt":"standard"},"http-get":{"rule_prompt":"standard"},"pwm":{"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"rule_prompt":"standard"},"tasmota-relay":{"rule_prompt":"standard"},"dimmer":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"rule_prompt":"api_target"},"dumb-relay":{"rule_prompt":"standard"},"bulb":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"rule_prompt":"standard","triggerable":false},"dht22":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"rule_prompt":"standard","triggerable":true},"pir":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"rule_prompt":"on_off","triggerable":true}}}
+      {"devices":{"http-get":{"rule_prompt":"standard"},"pwm":{"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"rule_prompt":"standard"},"tasmota-relay":{"rule_prompt":"standard"},"dimmer":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"rule_prompt":"api_target"},"relay":{"rule_prompt":"standard"},"bulb":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"rule_prompt":"standard","triggerable":false},"dht22":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"rule_prompt":"standard","triggerable":true},"pir":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"rule_prompt":"on_off","triggerable":true}}}
     </div>
     <div
       id="api_target_options"
     >
-      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
+      {"device6":{"device1":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
@@ -7988,12 +7742,12 @@ exports[`App matches snapshot when only TV remote is configured 1`] = `
     <div
       id="instance_metadata"
     >
-      {"devices":{"mosfet":{"rule_prompt":"standard"},"http-get":{"rule_prompt":"standard"},"pwm":{"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"rule_prompt":"standard"},"tasmota-relay":{"rule_prompt":"standard"},"dimmer":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"rule_prompt":"api_target"},"dumb-relay":{"rule_prompt":"standard"},"bulb":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"rule_prompt":"standard","triggerable":false},"dht22":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"rule_prompt":"standard","triggerable":true},"pir":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"rule_prompt":"on_off","triggerable":true}}}
+      {"devices":{"http-get":{"rule_prompt":"standard"},"pwm":{"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"rule_prompt":"standard"},"tasmota-relay":{"rule_prompt":"standard"},"dimmer":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"rule_prompt":"api_target"},"relay":{"rule_prompt":"standard"},"bulb":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"rule_prompt":"standard","triggerable":false},"dht22":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"rule_prompt":"standard","triggerable":true},"pir":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"rule_prompt":"on_off","triggerable":true}}}
     </div>
     <div
       id="api_target_options"
     >
-      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
+      {"device6":{"device1":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"

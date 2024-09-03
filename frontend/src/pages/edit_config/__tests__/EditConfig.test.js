@@ -166,7 +166,7 @@ describe('EditConfig', () => {
 
         // Clear device1 nickname, enter nickname of device2
         await user.clear(device1Nickname);
-        await user.type(device1Nickname, 'Heater');
+        await user.type(device1Nickname, 'Accent lights');
 
         // Confirm both nickname fields now have red highlight
         expect(device1Nickname.classList).toContain('is-invalid');
@@ -175,7 +175,7 @@ describe('EditConfig', () => {
         // Confirm next page button is disabled
         expect(app.getByRole('button', { name: 'Next' })).toHaveAttribute('disabled');
 
-        // Change device1 nickname to "Heater2" (unique)
+        // Change device1 nickname to "Accent lights2" (unique)
         await user.type(device1Nickname, '2');
 
         // Confirm next page button enabled, red highlights removed
@@ -190,7 +190,7 @@ describe('EditConfig', () => {
         const typeSelect = within(device1Card).getByLabelText('Type:');
 
         // Confirm nickname field has expected value
-        expect(within(device1Card).getByLabelText('Nickname:').value).toBe('Humidifier');
+        expect(within(device1Card).getByLabelText('Nickname:').value).toBe('Heater');
 
         // Change type to pwm, confirm nickname field was cleared
         await user.selectOptions(typeSelect, 'pwm');
@@ -211,30 +211,30 @@ describe('EditConfig', () => {
     });
 
     it('disables pin dropdown options that are already used by other cards', async () => {
-        // Get device1 pin select dropdown, sensor1 pin select dropdown
-        const device1Pin = within(document.getElementById('device1-card')).getByLabelText('Pin:');
+        // Get device2 pin select dropdown, sensor1 pin select dropdown
+        const device2Pin = within(document.getElementById('device2-card')).getByLabelText('Pin:');
         const sensor1Pin = within(document.getElementById('sensor1-card')).getByLabelText('Pin:');
 
-        // Confirm pin 21 (used by sensor1) is disabled in device1 dropdown, 22 is not
-        expect(within(device1Pin).getByText('21').disabled).toBe(true);
-        expect(within(device1Pin).getByText('22').disabled).toBe(false);
+        // Confirm pin 21 (used by sensor1) is disabled in device2 dropdown, 22 is not
+        expect(within(device2Pin).getByText('21').disabled).toBe(true);
+        expect(within(device2Pin).getByText('22').disabled).toBe(false);
 
         // Select pin 22 in sensor1 dropdown
         await user.selectOptions(sensor1Pin, '22');
 
-        // Confirm pin 22 is now disabled, pin 21 is enabled in device1 pin dropdown
-        expect(within(device1Pin).getByText('21').disabled).toBe(false);
-        expect(within(device1Pin).getByText('22').disabled).toBe(true);
+        // Confirm pin 22 is now disabled, pin 21 is enabled in device2 pin dropdown
+        expect(within(device2Pin).getByText('21').disabled).toBe(false);
+        expect(within(device2Pin).getByText('22').disabled).toBe(true);
     });
 
     it('adds cards when "Add Device" and "Add Sensor" buttons are clicked', async () => {
-        // Confirm device11 and sensor7 don't exist
-        expect(app.queryByText('device11')).toBeNull();
+        // Confirm device10 and sensor7 don't exist
+        expect(app.queryByText('device10')).toBeNull();
         expect(app.queryByText('sensor7')).toBeNull();
 
-        // Click "Add Device", confirm device11 card appears
+        // Click "Add Device", confirm device10 card appears
         await user.click(app.getByRole('button', { name: 'Add Device' }));
-        expect(app.queryByText('device11')).not.toBeNull();
+        expect(app.queryByText('device10')).not.toBeNull();
 
         // Click "Add Sensor", confirm sensor7 card appears
         await user.click(app.getByRole('button', { name: 'Add Sensor' }));
@@ -267,22 +267,22 @@ describe('EditConfig', () => {
         };
 
         // Confirm nicknames of first 4 devices
-        expect(getNicknameInput('device1').value).toBe('Humidifier');
-        expect(getNicknameInput('device2').value).toBe('Heater');
-        expect(getNicknameInput('device3').value).toBe('Accent lights');
-        expect(getNicknameInput('device4').value).toBe('Computer screen');
+        expect(getNicknameInput('device1').value).toBe('Heater');
+        expect(getNicknameInput('device2').value).toBe('Accent lights');
+        expect(getNicknameInput('device3').value).toBe('Computer screen');
+        expect(getNicknameInput('device4').value).toBe('Stairway lights');
 
         // Delete device2, wait for card to unmount
         await user.click(app.getByText('device2').parentElement.children[2]);
         await waitFor(() => {
-            expect(app.queryByText('device10')).toBeNull();
+            expect(app.queryByText('device9')).toBeNull();
         });
 
         // Confirm device1 nickname did not change
-        expect(getNicknameInput('device1').value).toBe('Humidifier');
+        expect(getNicknameInput('device1').value).toBe('Heater');
         // Confirm device3 is now device2, device4 is now device3
-        expect(getNicknameInput('device2').value).toBe('Accent lights');
-        expect(getNicknameInput('device3').value).toBe('Computer screen');
+        expect(getNicknameInput('device2').value).toBe('Computer screen');
+        expect(getNicknameInput('device3').value).toBe('Stairway lights');
     });
 
     it('updates sensor IDs to keep them sequential when cards are deleted', async () => {
@@ -341,7 +341,7 @@ describe('EditConfig', () => {
         await user.click(app.getByRole('button', { name: 'Add Device' }));
 
         // Confirm no fields in blank card have invalid highlight
-        const newDeviceCard = document.getElementById('device11-card');
+        const newDeviceCard = document.getElementById('device10-card');
         expect(newDeviceCard.querySelectorAll('.is-invalid').length).toBe(0);
 
         // Click next button, confirm page2 is not shown
@@ -564,11 +564,11 @@ describe('EditConfig', () => {
         await user.click(app.getByText('sensor5').parentElement.parentElement
             .querySelector('.bi-dash-lg'));
 
-        // Change device3 default_rule to 757
-        await user.click(app.getByText('device3').parentElement.parentElement
+        // Change device2 default_rule to 757
+        await user.click(app.getByText('device2').parentElement.parentElement
             .querySelector('.bi-dash-lg'));
 
-        // Change device7 (api-target) default_rule to ignore (both actions)
+        // Change device6 (api-target) default_rule to ignore (both actions)
         await user.click(app.getByText('Set rule'));
         // Change on and off actions to ignore, click submit
         const modal = app.getByText('API Target Rule').parentElement.parentElement;
@@ -599,12 +599,12 @@ describe('EditConfig', () => {
                     ...existingConfigContext.config.sensor5,
                     default_rule: 9.5
                 },
-                device3: {
-                    ...existingConfigContext.config.device3,
+                device2: {
+                    ...existingConfigContext.config.device2,
                     default_rule: 757
                 },
-                device7: {
-                    ...existingConfigContext.config.device7,
+                device6: {
+                    ...existingConfigContext.config.device6,
                     default_rule: {
                         "on": [
                             "ignore"
@@ -633,7 +633,7 @@ describe('EditConfig', () => {
         await user.selectOptions(app.getByRole('combobox'), 'enabled');
         await user.type(app.getByRole('combobox'), '{enter}');
 
-        // Open device7 (Api Target) rule modal
+        // Open device6 (Api Target) rule modal
         await user.click(app.getByText('Click to edit'));
         // Change on and off actions to ignore, click submit
         await user.selectOptions(app.getAllByRole('combobox')[0], 'ignore');
@@ -643,9 +643,9 @@ describe('EditConfig', () => {
             app.getByText('API Target Rule').parentElement.parentElement
         ).getByRole('button', { name: 'Submit' }));
 
-        // Delete device9 (TP Link bulb) second rule (relax keyword)
-        const device9Rules = app.getByText('Lamp (bulb)').parentElement;
-        await user.click(within(device9Rules).getAllByRole('button')[1]);
+        // Delete device8 (TP Link bulb) second rule (relax keyword)
+        const device8Rules = app.getByText('Lamp (bulb)').parentElement;
+        await user.click(within(device8Rules).getAllByRole('button')[1]);
 
         // Click submit button, confirm payload contains modified rules
         await user.click(app.getByText('Submit'));
@@ -660,8 +660,8 @@ describe('EditConfig', () => {
                         sleep: 1
                     }
                 },
-                device7: {
-                    ...existingConfigContext.config.device7,
+                device6: {
+                    ...existingConfigContext.config.device6,
                     schedule: {
                         morning: {
                             "on": [
@@ -673,8 +673,8 @@ describe('EditConfig', () => {
                         }
                     }
                 },
-                device9: {
-                    ...existingConfigContext.config.device9,
+                device8: {
+                    ...existingConfigContext.config.device8,
                     schedule: {
                         morning: "fade/100/900",
                         sleep: "disabled"
@@ -753,10 +753,10 @@ describe('EditConfig', () => {
                 sensor1: {
                     ...existingConfigContext.config.sensor1,
                     targets: [
+                        'device2',
                         'device3',
-                        'device4',
-                        'device6',
-                        'device9'
+                        'device5',
+                        'device8'
                     ]
                 }
             }),
