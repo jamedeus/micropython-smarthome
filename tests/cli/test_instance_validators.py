@@ -22,7 +22,7 @@ class ValidatorTests(TestCase):
 
     def test_api_target_single_param(self):
         # Should accept all 3 single-parameter commands
-        valid = self.config['device9']['default_rule']
+        valid = self.config['device8']['default_rule']
         valid['on'] = ['ignore']
         self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['reboot']
@@ -32,7 +32,7 @@ class ValidatorTests(TestCase):
 
     def test_api_target_enable_disable(self):
         # Should accept accept enable and disable if arg is sensor or device
-        valid = self.config['device9']['default_rule']
+        valid = self.config['device8']['default_rule']
         valid['on'] = ['enable', 'sensor1']
         self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['disable', 'device1']
@@ -40,7 +40,7 @@ class ValidatorTests(TestCase):
 
     def test_api_target_sensor_commands(self):
         # Should accept sensor-only commands if arg is sensor
-        valid = self.config['device9']['default_rule']
+        valid = self.config['device8']['default_rule']
         valid['on'] = ['trigger_sensor', 'sensor1']
         self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['condition_met', 'sensor1']
@@ -51,7 +51,7 @@ class ValidatorTests(TestCase):
 
     def test_api_target_enable_in_disable_in(self):
         # Should accept accept enable and disable if args ar sensor/device and int/float
-        valid = self.config['device9']['default_rule']
+        valid = self.config['device8']['default_rule']
         valid['on'] = ['enable_in', 'sensor1', '5']
         self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['disable_in', 'device1', '2.5']
@@ -62,7 +62,7 @@ class ValidatorTests(TestCase):
 
     def test_api_target_turn_on_turn_off(self):
         # Should accept turn_on/off if arg is device
-        valid = self.config['device9']['default_rule']
+        valid = self.config['device8']['default_rule']
         valid['on'] = ['turn_on', 'device1']
         self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['turn_off', 'device1']
@@ -70,7 +70,7 @@ class ValidatorTests(TestCase):
 
     def test_api_target_set_rule(self):
         # Should accept set_rule if args are sensor/device and rule
-        valid = self.config['device9']['default_rule']
+        valid = self.config['device8']['default_rule']
         valid['on'] = ['set_rule', 'sensor1', '50']
         self.assertIs(api_target_validator(valid), True)
         valid['on'] = ['set_rule', 'device1', '50']
@@ -84,7 +84,7 @@ class ValidatorTests(TestCase):
 
     def test_api_target_ir_key(self):
         # Should accept valid command
-        valid = self.config['device9']['default_rule']
+        valid = self.config['device8']['default_rule']
         self.assertIs(api_target_validator(valid), True)
         # Should reject unknown args
         valid['on'] = ['ir_key', 'invalid', 'invalid', 'invalid']
@@ -220,32 +220,32 @@ class ValidatorErrorTests(TestCase):
 
     def test_api_target_dict_too_long(self):
         # Should reject after adding 3rd key
-        invalid = self.config['device9']
+        invalid = self.config['device8']
         invalid['default_rule']['value'] = '50'
         self.assertFalse(api_target_validator(invalid))
 
     def test_api_target_invalid_key(self):
         # Should reject keys other than on and off
-        invalid = self.config['device9']['default_rule']
+        invalid = self.config['device8']['default_rule']
         invalid['new'] = invalid['on'].copy()
         del invalid['on']
         self.assertFalse(api_target_validator(invalid))
 
     def test_api_target_invalid_non_list_subrule(self):
         # Keys (on and off) must contain list of parameters
-        invalid = self.config['device9']['default_rule']
+        invalid = self.config['device8']['default_rule']
         invalid['on'] = 42
         self.assertFalse(api_target_validator(invalid))
 
     def test_api_target_invalid_ir_key_rule(self):
         # Create rule with ir_key command with invalid key
-        invalid_rule = deepcopy(self.config['device9']['default_rule'])
+        invalid_rule = deepcopy(self.config['device8']['default_rule'])
         invalid_rule['on'][2] = 'fake_key'
         # Confirm rule is rejected
         self.assertFalse(api_target_validator(invalid_rule))
 
         # Create rule with ir_key command with invalid target
-        invalid_rule = deepcopy(self.config['device9']['default_rule'])
+        invalid_rule = deepcopy(self.config['device8']['default_rule'])
         invalid_rule['on'][1] = 'fake_target'
         # Confirm rule is rejected
         self.assertFalse(api_target_validator(invalid_rule))
@@ -373,8 +373,8 @@ class ValidatorErrorTests(TestCase):
         self.config['device1']['default_rule'] = 'enabled'
         self.config['device2']['default_rule'] = 'disabled'
         self.config['device6']['default_rule'] = 'enabled'
-        self.config['device8']['default_rule'] = 'disabled'
-        self.config['device9']['default_rule'] = 'enabled'
+        self.config['device7']['default_rule'] = 'disabled'
+        self.config['device8']['default_rule'] = 'enabled'
         self.config['sensor1']['default_rule'] = 'disabled'
         self.config['sensor3']['default_rule'] = 'enabled'
         self.config['sensor5']['default_rule'] = 'disabled'
@@ -393,11 +393,11 @@ class ValidatorErrorTests(TestCase):
             'Cabinet Lights: Invalid default rule enabled'
         )
         self.assertEqual(
-            validate_rules(self.config['device8']),
+            validate_rules(self.config['device7']),
             'TV Bias Lights: Invalid default rule disabled'
         )
         self.assertEqual(
-            validate_rules(self.config['device9']),
+            validate_rules(self.config['device8']),
             'Remote Control: Invalid default rule enabled'
         )
         self.assertEqual(
@@ -427,7 +427,7 @@ class ValidatorErrorTests(TestCase):
         del self.config['device1']['min_rule']
         del self.config['device2']['max_rule']
         del self.config['device6']['min_rule']
-        del self.config['device8']['max_rule']
+        del self.config['device7']['max_rule']
         del self.config['sensor5']['tolerance']
 
         self.assertEqual(
@@ -443,7 +443,7 @@ class ValidatorErrorTests(TestCase):
             'Instance missing required min_rule and/or max_rule property'
         )
         self.assertEqual(
-            validate_rules(self.config['device8']),
+            validate_rules(self.config['device7']),
             'Instance missing required min_rule and/or max_rule property'
         )
         self.assertEqual(
@@ -458,8 +458,8 @@ class ValidatorErrorTests(TestCase):
         # Set invalid limits
         self.config['device1']['min_rule'] = 100
         self.config['device1']['max_rule'] = 1
-        self.config['device8']['min_rule'] = 255
-        self.config['device8']['max_rule'] = 1
+        self.config['device7']['min_rule'] = 255
+        self.config['device7']['max_rule'] = 1
 
         # Confirm rejected with correct error
         self.assertEqual(
@@ -467,7 +467,7 @@ class ValidatorErrorTests(TestCase):
             'min_rule cannot be greater than max_rule'
         )
         self.assertEqual(
-            validate_rules(self.config['device8']),
+            validate_rules(self.config['device7']),
             'min_rule cannot be greater than max_rule'
         )
 

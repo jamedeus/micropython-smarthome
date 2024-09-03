@@ -48,7 +48,7 @@
     },
     "device4": {
         "nickname": "Fan",
-        "_type": "dumb-relay",
+        "_type": "relay",
         "pin": "18",
         "default_rule": "disabled",
         "schedule": {
@@ -77,15 +77,6 @@
         }
     },
     "device7": {
-        "nickname": "Humidifier",
-        "_type": "mosfet",
-        "pin": "19",
-        "default_rule": "disabled",
-        "schedule": {
-
-        }
-    },
-    "device8": {
         "nickname": "TV Bias Lights",
         "_type": "wled",
         "ip": "192.168.1.110",
@@ -96,7 +87,7 @@
         "min_rule": "1",
         "max_rule": "255"
     },
-    "device9": {
+    "device8": {
         "nickname": "Remote Control",
         "_type": "api-target",
         "ip": "127.0.0.1",
@@ -127,7 +118,7 @@
             }
         }
     },
-    "device10": {
+    "device9": {
         "nickname": "Log sensor state",
         "_type": "http-get",
         "default_rule": "enabled",
@@ -158,8 +149,7 @@
         "pin": "5",
         "default_rule": "enabled",
         "targets": [
-            "device4",
-            "device7"
+            "device4"
         ],
         "schedule": {
 
@@ -201,8 +191,7 @@
         "units": "fahrenheit",
         "default_rule": "71",
         "targets": [
-            "device4",
-            "device7"
+            "device4"
         ],
         "schedule": {
             "08:00": "73",

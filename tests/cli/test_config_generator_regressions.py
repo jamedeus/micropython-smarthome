@@ -293,14 +293,14 @@ class TestRegressions(TestCase):
                 "location": "Test Environment"
             },
             "device1": {
-                "_type": "mosfet",
+                "_type": "relay",
                 "nickname": "Target1",
                 "default_rule": "Enabled",
                 "pin": "4",
                 "schedule": {}
             },
             "device2": {
-                "_type": "mosfet",
+                "_type": "relay",
                 "nickname": "Target2",
                 "default_rule": "Enabled",
                 "pin": "13",
@@ -332,7 +332,7 @@ class TestRegressions(TestCase):
 
         # Mock user deleting device1 and sensor1, run prompt
         self.mock_ask.unsafe_ask.return_value = [
-            "Target1 (mosfet)",
+            "Target1 (relay)",
             "Sensor1 (pir)"
         ]
         with patch("questionary.checkbox", return_value=self.mock_ask):

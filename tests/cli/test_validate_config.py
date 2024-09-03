@@ -97,7 +97,7 @@ class ValidateConfigTests(TestCase):
         )
 
     def test_invalid_uri(self):
-        self.valid_config['device10']['uri'] = 'localhost'
+        self.valid_config['device9']['uri'] = 'localhost'
         result = validate_full_config(self.valid_config)
         self.assertEqual(
             result,

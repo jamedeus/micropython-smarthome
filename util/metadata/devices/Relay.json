@@ -1,14 +1,14 @@
 {
-    "config_name": "dumb-relay",
-    "class_name": "DumbRelay",
+    "config_name": "relay",
+    "class_name": "Relay",
     "display_name": "Relay",
     "dependencies": [
-        "devices/DumbRelay.py",
+        "devices/Relay.py",
         "devices/Device.py",
         "core/Instance.py"
     ],
     "config_template": {
-        "_type": "dumb-relay",
+        "_type": "relay",
         "nickname": "placeholder",
         "default_rule": "placeholder",
         "pin": "placeholder",

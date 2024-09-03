@@ -106,10 +106,9 @@ class TestHelperFunctions(TestCase):
                 'dimmer',
                 'bulb',
                 'tasmota-relay',
-                'dumb-relay',
+                'relay',
                 'desktop',
                 'pwm',
-                'mosfet',
                 'wled',
                 'api-target',
                 'http-get',
@@ -124,7 +123,7 @@ class TestHelperFunctions(TestCase):
         # Should return list of device and sensor pin key values
         self.assertEqual(
             get_config_param_list(unit_test_config, "pin"),
-            ['18', '26', '19', '4', '5', '23']
+            ['18', '26', '4', '5', '23']
         )
 
         # Should return list of device and sensor ip key values

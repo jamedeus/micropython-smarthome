@@ -167,7 +167,7 @@ request_payload = {
         }
     },
     "device4": {
-        "_type": "dumb-relay",
+        "_type": "relay",
         "nickname": "Fan",
         "default_rule": "disabled",
         "pin": "18",
@@ -193,13 +193,6 @@ request_payload = {
         "schedule": {}
     },
     "device7": {
-        "_type": "mosfet",
-        "nickname": "Humidifier",
-        "default_rule": "disabled",
-        "pin": "19",
-        "schedule": {}
-    },
-    "device8": {
         "_type": "wled",
         "nickname": "TV Bias Lights",
         "ip": "192.168.1.110",
@@ -210,7 +203,7 @@ request_payload = {
             "08:00": "100"
         }
     },
-    "device9": {
+    "device8": {
         "_type": "api-target",
         "nickname": "Remote Control",
         "ip": "127.0.0.1",
@@ -225,7 +218,7 @@ request_payload = {
             }
         }
     },
-    "device10": {
+    "device9": {
         "_type": "http-get",
         "nickname": "Log sensor state",
         "default_rule": "enabled",
@@ -257,8 +250,7 @@ request_payload = {
         "pin": "5",
         "schedule": {},
         "targets": [
-            "device4",
-            "device7"
+            "device4"
         ]
     },
     "sensor3": {
@@ -301,8 +293,7 @@ request_payload = {
             "22:00": "69"
         },
         "targets": [
-            "device4",
-            "device7"
+            "device4"
         ]
     }
 }

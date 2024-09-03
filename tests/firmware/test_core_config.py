@@ -356,7 +356,7 @@ class TestConfig(unittest.TestCase):
         # Should be disabled with all rule set to "disabled"
         self.config.device_configs = {
             'device1': {
-                '_type': 'mosfet',
+                '_type': 'relay',
                 'nickname': 'test',
                 'pin': 4,
                 'default_rule': '9999',
@@ -435,7 +435,7 @@ class TestConfig(unittest.TestCase):
         # Undo instantiate_peripherals
         self.config = reset_test_config(self.config)
 
-        # Add PWM device with invalid default rule, valid mosfet, valid motion sensor
+        # Add PWM device with invalid default rule, valid relay, valid motion sensor
         # PWM should fail to instantiate, others should instantiate
         self.config.device_configs = {
             "device1": {
@@ -451,7 +451,7 @@ class TestConfig(unittest.TestCase):
                 }
             },
             "device2": {
-                "_type": "mosfet",
+                "_type": "relay",
                 "nickname": "Countertop LEDs",
                 "pin": 19,
                 "default_rule": "enabled",
@@ -474,12 +474,12 @@ class TestConfig(unittest.TestCase):
         self.config.instantiate_peripherals()
         self.config.build_queue()
 
-        # Confirm only the mosfet sensor instantiated
+        # Confirm only the relay sensor instantiated
         self.assertEqual(len(self.config.devices), 1)
-        self.assertEqual(self.config.devices[0]._type, "mosfet")
-        # Confirm sensor only has 1 target (mosfet)
+        self.assertEqual(self.config.devices[0]._type, "relay")
+        # Confirm sensor only has 1 target (relay)
         self.assertEqual(len(self.config.sensors[0].targets), 1)
-        self.assertEqual(self.config.sensors[0].targets[0]._type, "mosfet")
+        self.assertEqual(self.config.sensors[0].targets[0]._type, "relay")
 
     # Original bug: Some sensor types would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
@@ -532,7 +532,7 @@ class TestConfig(unittest.TestCase):
         }
         self.config.device_configs = {
             "device1": {
-                "_type": "mosfet",
+                "_type": "relay",
                 "nickname": "Countertop LEDs",
                 "pin": 19,
                 "default_rule": "enabled",

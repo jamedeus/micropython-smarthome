@@ -3,12 +3,13 @@ from machine import Pin
 from Device import Device
 
 # Set name for module's log lines
-log = logging.getLogger("Mosfet")
+log = logging.getLogger("Relay")
 
 
-class Mosfet(Device):
-    '''Driver for mosfet used as a switch. Changes state of pin connected to
-    mosfet when send method called (HIGH if arg is True, LOW if arg is False).
+class Relay(Device):
+    '''Driver for relay breakout boards and other devices controlled by an
+    output pin. Changes state of output pin connected to device when send
+    method is called (HIGH if arg is True, LOW if arg is False).
 
     Args:
       name:         Unique, sequential config name (device1, device2, etc)
@@ -17,7 +18,7 @@ class Mosfet(Device):
       enabled:      Initial enable state (True or False)
       current_rule: Initial rule, has different effects depending on subclass
       default_rule: Fallback rule used when no other valid rules are available
-      pin:          The ESP32 pin connected to the mosfet
+      pin:          The ESP32 pin connected to the relay or other device
 
     Supports universal rules ("enabled" and "disabled").
     '''
@@ -25,14 +26,15 @@ class Mosfet(Device):
     def __init__(self, name, nickname, _type, default_rule, pin):
         super().__init__(name, nickname, _type, True, None, default_rule)
 
-        self.mosfet = Pin(int(pin), Pin.OUT, Pin.PULL_DOWN)
+        self.output = Pin(int(pin), Pin.OUT, Pin.PULL_DOWN)
 
-        log.info(f"Instantiated Mosfet named {self.name} on pin {pin}")
+        log.info(f"Instantiated Relay named {self.name} on pin {pin}")
 
     def send(self, state=1):
         '''Sets pin level HIGH if arg is True.
         Sets pin level LOW if arg is False.
         '''
+        log.info(f"{self.name}: send method called, state = {state}")
 
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
@@ -40,7 +42,7 @@ class Mosfet(Device):
             # This allows turning off (would be skipped if state already == False)
             return True
 
-        self.mosfet.value(state)
+        self.output.value(state)
         return True
 
     def get_attributes(self):
@@ -49,5 +51,5 @@ class Mosfet(Device):
         '''
         attributes = super().get_attributes()
         # Remove Pin object (not serializable)
-        del attributes["mosfet"]
+        del attributes["output"]
         return attributes

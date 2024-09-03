@@ -455,14 +455,14 @@ class TestGenerateConfigFile(TestCase):
                 "location": "Test Environment"
             },
             "device1": {
-                "_type": "mosfet",
+                "_type": "relay",
                 "nickname": "Target1",
                 "default_rule": "Enabled",
                 "pin": "4",
                 "schedule": {}
             },
             "device2": {
-                "_type": "mosfet",
+                "_type": "relay",
                 "nickname": "Target2",
                 "default_rule": "Enabled",
                 "pin": "13",
@@ -479,7 +479,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock user selecting both devices, run prompt
-        self.mock_ask.unsafe_ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)']
+        self.mock_ask.unsafe_ask.return_value = ['Target1 (relay)', 'Target2 (relay)']
         with patch('questionary.checkbox', return_value=self.mock_ask):
             self.generator.delete_devices_and_sensors()
             self.assertTrue(self.mock_ask.called_once)
@@ -547,10 +547,10 @@ class TestGenerateConfigFile(TestCase):
             config = self.generator._GenerateConfigFile__configure_device()
             self.assertEqual(config, expected_output)
 
-        # Repeat test with mosfet
+        # Repeat test with relay
         expected_output = {
-            "_type": "mosfet",
-            "nickname": "Mosfet",
+            "_type": "relay",
+            "nickname": "Relay",
             "default_rule": "Enabled",
             "pin": "4",
             "schedule": {}
@@ -558,8 +558,8 @@ class TestGenerateConfigFile(TestCase):
 
         # Mock ask to return parameters in expected order
         self.mock_ask.unsafe_ask.side_effect = [
-            'Mosfet',
-            'Mosfet',
+            'Relay',
+            'Relay',
             'Enabled',
             '4',
             'No'
@@ -1050,14 +1050,14 @@ class TestGenerateConfigFile(TestCase):
                 "location": "Test Environment"
             },
             "device1": {
-                "_type": "mosfet",
+                "_type": "relay",
                 "nickname": "Target1",
                 "default_rule": "Enabled",
                 "pin": "4",
                 "schedule": {}
             },
             "device2": {
-                "_type": "mosfet",
+                "_type": "relay",
                 "nickname": "Target2",
                 "default_rule": "Enabled",
                 "pin": "13",
@@ -1074,7 +1074,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock responses to sensor target prompt
-        self.mock_ask.unsafe_ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)']
+        self.mock_ask.unsafe_ask.return_value = ['Target1 (relay)', 'Target2 (relay)']
         with patch('questionary.checkbox', return_value=self.mock_ask):
             self.generator.select_sensor_targets()
             self.assertTrue(self.mock_ask.called_once)
@@ -1111,8 +1111,8 @@ class TestGenerateConfigFile(TestCase):
     def test_add_schedule_rule_keyword(self):
         # Simulate user reaching schedule rule prompt
         config = {
-            "_type": "mosfet",
-            "nickname": "Mosfet",
+            "_type": "relay",
+            "nickname": "Relay",
             "default_rule": "Enabled",
             "pin": "4",
             "schedule": {}
@@ -1137,8 +1137,8 @@ class TestGenerateConfigFile(TestCase):
 
         # Simulate user reaching schedule rule prompt
         config = {
-            "_type": "mosfet",
-            "nickname": "Mosfet",
+            "_type": "relay",
+            "nickname": "Relay",
             "default_rule": "Enabled",
             "pin": "4",
             "schedule": {}
@@ -1311,7 +1311,7 @@ class TestGenerateConfigFile(TestCase):
                 }
             },
             "device1": {
-                "_type": "mosfet",
+                "_type": "relay",
                 "nickname": "LED",
                 "default_rule": "Enabled",
                 "pin": "4",

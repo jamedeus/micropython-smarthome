@@ -32,7 +32,7 @@
         }
     },
     "device2": {
-        "_type": "dumb-relay",
+        "_type": "relay",
         "nickname": "device2",
         "default_rule": "Enabled",
         "pin": 26,

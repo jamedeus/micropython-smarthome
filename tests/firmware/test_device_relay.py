@@ -1,11 +1,11 @@
 import unittest
 from machine import Pin
-from Mosfet import Mosfet
+from Relay import Relay
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
     'nickname': 'device1',
-    '_type': 'mosfet',
+    '_type': 'relay',
     'scheduled_rule': 'enabled',
     'current_rule': None,
     'default_rule': 'enabled',
@@ -17,16 +17,16 @@ expected_attributes = {
 }
 
 
-class TestMosfet(unittest.TestCase):
+class TestRelay(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = Mosfet("device1", "device1", "mosfet", "enabled", 4)
+        cls.instance = Relay("device1", "device1", "relay", "enabled", 4)
         cls.instance.scheduled_rule = "enabled"
 
     def test_01_initial_state(self):
-        self.assertIsInstance(self.instance, Mosfet)
-        self.assertFalse(self.instance.mosfet.value())
+        self.assertIsInstance(self.instance, Relay)
+        self.assertFalse(self.instance.output.value())
         self.assertTrue(self.instance.enabled)
 
     def test_02_get_attributes(self):
@@ -36,11 +36,11 @@ class TestMosfet(unittest.TestCase):
 
     def test_03_turn_on(self):
         self.assertTrue(self.instance.send(1))
-        self.assertEqual(self.instance.mosfet.value(), 1)
+        self.assertEqual(self.instance.output.value(), 1)
 
     def test_04_turn_off(self):
         self.assertTrue(self.instance.send(0))
-        self.assertEqual(self.instance.mosfet.value(), 0)
+        self.assertEqual(self.instance.output.value(), 0)
 
     def test_05_enable_after_disable_by_rule_change(self):
         # Disable by rule change, enable with method
@@ -59,18 +59,18 @@ class TestMosfet(unittest.TestCase):
         # Disable, confirm disabled and off
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
-        self.assertEqual(self.instance.mosfet.value(), 0)
+        self.assertEqual(self.instance.output.value(), 0)
 
         # Manually turn on while disabled
-        self.instance.mosfet.value(1)
+        self.instance.output.value(1)
 
         # Off command should still return True, should revert override
         self.assertTrue(self.instance.send(0))
-        self.assertEqual(self.instance.mosfet.value(), 0)
+        self.assertEqual(self.instance.output.value(), 0)
 
         # On command should also return True, but shouldn't cause any action
         self.assertTrue(self.instance.send(1))
-        self.assertEqual(self.instance.mosfet.value(), 0)
+        self.assertEqual(self.instance.output.value(), 0)
 
     # Original bug: Config.__init__ formerly contained a conditional to instantiate devices
     # in the appropriate class, which cast pin arguments to int. When this was replaced with a
@@ -78,6 +78,6 @@ class TestMosfet(unittest.TestCase):
     # file contained a string pin. Fixed by casting to int in device init methods.
     def test_07_regression_string_pin_number(self):
         # Attempt to instantiate with a string pin number
-        self.instance = Mosfet("device1", "device1", "mosfet", "enabled", "4")
-        self.assertIsInstance(self.instance, Mosfet)
-        self.assertIsInstance(self.instance.mosfet, Pin)
+        self.instance = Relay("device1", "device1", "relay", "enabled", "4")
+        self.assertIsInstance(self.instance, Relay)
+        self.assertIsInstance(self.instance.output, Pin)

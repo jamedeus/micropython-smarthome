@@ -466,14 +466,13 @@ class GetModulesTests(TestCase):
         expected_modules = {
             os.path.join(settings.REPO_DIR, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Wled.py'): 'Wled.py',
-            os.path.join(settings.REPO_DIR, 'devices', 'Mosfet.py'): 'Mosfet.py',
             os.path.join(settings.REPO_DIR, 'devices', 'TasmotaRelay.py'): 'TasmotaRelay.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Dummy.py'): 'Dummy.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Device.py'): 'Device.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Switch.py'): 'Switch.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'DesktopTrigger.py'): 'DesktopTrigger.py',
-            os.path.join(settings.REPO_DIR, 'devices', 'DumbRelay.py'): 'DumbRelay.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Relay.py'): 'Relay.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Tplink.py'): 'Tplink.py',
             os.path.join(settings.REPO_DIR, 'devices', 'DesktopTarget.py'): 'DesktopTarget.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Thermostat.py'): 'Thermostat.py',
@@ -515,14 +514,13 @@ class GetModulesTests(TestCase):
         expected_modules = {
             os.path.join(settings.REPO_DIR, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Wled.py'): 'Wled.py',
-            os.path.join(settings.REPO_DIR, 'devices', 'Mosfet.py'): 'Mosfet.py',
             os.path.join(settings.REPO_DIR, 'devices', 'TasmotaRelay.py'): 'TasmotaRelay.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Dummy.py'): 'Dummy.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Device.py'): 'Device.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Switch.py'): 'Switch.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'DesktopTrigger.py'): 'DesktopTrigger.py',
-            os.path.join(settings.REPO_DIR, 'devices', 'DumbRelay.py'): 'DumbRelay.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Relay.py'): 'Relay.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Tplink.py'): 'Tplink.py',
             os.path.join(settings.REPO_DIR, 'devices', 'DesktopTarget.py'): 'DesktopTarget.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Thermostat.py'): 'Thermostat.py',
@@ -549,14 +547,13 @@ class GetModulesTests(TestCase):
         expected_modules = {
             os.path.join(settings.REPO_DIR, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Wled.py'): 'Wled.py',
-            os.path.join(settings.REPO_DIR, 'devices', 'Mosfet.py'): 'Mosfet.py',
             os.path.join(settings.REPO_DIR, 'devices', 'TasmotaRelay.py'): 'TasmotaRelay.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Dummy.py'): 'Dummy.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Device.py'): 'Device.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Switch.py'): 'Switch.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'DesktopTrigger.py'): 'DesktopTrigger.py',
-            os.path.join(settings.REPO_DIR, 'devices', 'DumbRelay.py'): 'DumbRelay.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Relay.py'): 'Relay.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Tplink.py'): 'Tplink.py',
             os.path.join(settings.REPO_DIR, 'devices', 'DesktopTarget.py'): 'DesktopTarget.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Sensor.py'): 'Sensor.py',
@@ -583,7 +580,6 @@ class GetModulesTests(TestCase):
         del self.config['sensor5']
         del self.config['device4']
         del self.config['device5']
-        del self.config['device7']
 
         expected_modules = {
             os.path.join(settings.REPO_DIR, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
