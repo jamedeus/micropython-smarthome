@@ -423,3 +423,22 @@ class TestDimmableLight(unittest.TestCase):
         response = self.instance.increment_rule([5])
         self.assertEqual(response, {'ERROR': 'Invalid argument [5]'})
         self.assertEqual(self.instance.current_rule, 70.0)
+
+    # Original issue: The initial scheduled_rule is set by the set_rule method,
+    # but DimmableLight.set_rule handles fade rules by calling start_fade
+    # before the conditional that sets scheduled_rule. The callback created by
+    # start_fade updates scheduled_rule, but if the first rule on boot (assumed
+    # if current_rule == None) is a fade rule no callback is created and
+    # current_rule is set to the fade target. This bypassed scheduled_rule and
+    # resulted in scheduled_rule == None when the initial rule was a fade rule.
+    def test_22_regression_fade_rule_on_boot_causes_null_scheduled_rule(self):
+        # Simulate newly-instantiated instance
+        self.instance.current_rule = None
+        self.instance.scheduled_rule = None
+
+        # Simulate Config.build_queue setting initial rule
+        self.instance.set_rule('fade/100/600', scheduled=True)
+
+        # Confirm BOTH current and scheduled rules were set to fade target
+        self.assertEqual(self.instance.current_rule, 100)
+        self.assertEqual(self.instance.scheduled_rule, 100)

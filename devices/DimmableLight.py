@@ -187,14 +187,16 @@ class DimmableLight(Device):
         # Parse parameters from rule
         _, target, period = valid_rule.split("/")
 
-        # If first rule on boot is fade, set target as current_rule (animation probably overdue)
+        # If first rule on boot is fade, set target as current_rule and
+        # scheduled_rule (fade animation probably overdue)
         if self.current_rule is None:
             self.current_rule = int(target)
+            self.scheduled_rule = int(target)
             self.print(f"Rule changed to {self.current_rule}")
             log.info("%s: Rule changed to %s", self.name, self.current_rule)
             return True
 
-        # If rule changes to fade after boot, start fade and return first step as current_rule
+        # If rule changes to fade after boot, start fade
         self.print(f"fading to {target} in {period} seconds")
         log.info("%s: fading to %s in %s seconds", self.name, target, period)
 
