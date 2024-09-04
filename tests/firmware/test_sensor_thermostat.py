@@ -293,7 +293,12 @@ class TestThermostat(unittest.TestCase):
         with self.assertRaises(ValueError):
             Thermostat("sensor1", "sensor1", "Thermostat", 74, "cool", 1, "invalid", [])
 
-    def test_15_get_temperature_and_humidity(self):
+    def test_15_get_raw_temperature(self):
+        # Base class, must be implemented in subclass
+        with self.assertRaises(NotImplementedError):
+            Thermostat.get_raw_temperature(Thermostat)
+
+    def test_16_get_temperature_and_humidity(self):
         # Instantiate test instance
         test = Thermostat("sensor1", "sensor1", "Thermostat", 74, "cool", 1, "celsius", [])
 
@@ -327,7 +332,7 @@ class TestThermostat(unittest.TestCase):
     # Original bug: Some sensors would crash or behave unexpectedly in various situations if
     # default_rule was "enabled" or "disabled". These classes now raise exception in init
     # method to prevent this. Should not be possible to instantiate with invalid default_rule.
-    def test_16_regression_invalid_default_rule(self):
+    def test_17_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
             Thermostat("sensor1", "sensor1", "Thermostat", "enabled", "cool", 1, "fahrenheit", [])
 
@@ -338,7 +343,7 @@ class TestThermostat(unittest.TestCase):
     # on exception to detect invalid argument. Since NaN is a valid float no exception
     # was raised and set_rule was called with NaN. The validator correctly rejected NaN
     # but with an ambiguous error. NaN is now rejected directly by increment_rule.
-    def test_17_regression_increment_by_nan(self):
+    def test_18_regression_increment_by_nan(self):
         # Starting condition
         self.instance.set_rule(70)
 
@@ -350,7 +355,7 @@ class TestThermostat(unittest.TestCase):
     # Original bug: set_threshold was called by set_rule method, but enable method set
     # current_rule directly without calling set_rule. This could result in inaccurate
     # thresholds, effectively ignoring the current_rule.
-    def test_18_regression_fail_to_update_thresholds(self):
+    def test_19_regression_fail_to_update_thresholds(self):
         # Confirm initial thresholds
         self.instance.tolerance = 1.0
         self.instance.set_rule(70)
@@ -373,7 +378,7 @@ class TestThermostat(unittest.TestCase):
     # scheduled_rule as current_rule with no validation. This made it possible for a string
     # representation of float to be set as current_rule, raising exception when set_threshold
     # method called. Now uses set_rule method to cast rule to required type.
-    def test_19_regression_enable_sets_string_rule(self):
+    def test_20_regression_enable_sets_string_rule(self):
         # Set scheduled_rule to string representation of int
         self.instance.scheduled_rule = '70.0'
 

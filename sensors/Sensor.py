@@ -59,6 +59,12 @@ class Sensor(Instance):
         # Check conditions of all sensors in group
         self.refresh_group()
 
+    def condition_met(self):
+        '''Placeholder method - subclasses must implement method which returns
+        True when sensor activated, False when not activated.
+        '''
+        raise NotImplementedError('Must be implemented in subclass')
+
     def trigger(self):
         '''Called by trigger_sensor API endpoint, simulates sensor condition
         met. Disabled by default, must be implemented in supported subclasses.

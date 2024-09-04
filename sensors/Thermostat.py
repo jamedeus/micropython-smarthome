@@ -47,9 +47,9 @@ class Thermostat(Sensor):
       targets:      List of device names (device1 etc) controlled by sensor
 
     Subclassed by all temperature sensor drivers, cannot be used standalone.
-    Subclasses must implement get_raw_temperature method (returns current
+    Subclasses must implement a get_raw_temperature method (returns current
     temperature reading). Drivers for sensors which detect humidity may also
-    implement get_humidity method (returns current humidity reading).
+    implement a get_humidity method (returns current humidity reading).
 
     Supports universal rules ("enabled" and "disabled") and temperature cutoff
     rules (float between 18 and 27 celsius or equivalent in configured units).
@@ -110,6 +110,12 @@ class Thermostat(Sensor):
                 return celsius_to_kelvin(self.get_raw_temperature())
         except TypeError:
             return "Error: Unexpected reading from sensor"
+
+    def get_raw_temperature(self):
+        '''Placeholder method - subclasses must implement method which returns
+        current temperature reading in celsius.
+        '''
+        raise NotImplementedError('Must be implemented in subclass')
 
     def get_humidity(self):
         '''Placeholder function, replaced by subclasses which support humidity.'''

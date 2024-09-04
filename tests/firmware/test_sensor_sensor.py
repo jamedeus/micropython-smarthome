@@ -139,9 +139,14 @@ class TestSensor(unittest.TestCase):
         self.instance.refresh_group()
         self.assertTrue(self.group.refresh_called)
 
+    def test_11_condition_met(self):
+        # Base class, must be implemented in subclass
+        with self.assertRaises(NotImplementedError):
+            self.instance.condition_met()
+
     # Original bug: If set_rule was called with "enabled" the apply_new_rule
     # method would set current_rule to default_rule instead of scheduled_rule.
-    def test_11_regression_enable_with_rule_change_ignores_scheduled_rule(self):
+    def test_12_regression_enable_with_rule_change_ignores_scheduled_rule(self):
         # Starting conditions
         self.instance.disable()
         self.instance.scheduled_rule = 25
@@ -162,7 +167,7 @@ class TestSensor(unittest.TestCase):
     # The apply_new_rule method now only calls enable if the sensor is disabled
     # (ensures enable and refresh_group are only called once).
     @cpython_only
-    def test_12_regression_enable_method_called_twice(self):
+    def test_13_regression_enable_method_called_twice(self):
         # Set current_rule to "disabled", confirm disabled
         self.instance.set_rule("disabled")
         self.assertFalse(self.instance.enabled)
@@ -190,7 +195,7 @@ class TestSensor(unittest.TestCase):
     # disable, making it impossible to enable the device until scheduled_rule
     # changed to something else. The enable method now checks default_rule and
     # only calls set_rule if it is not "disabled".
-    def test_13_regression_enable_method_breaks_if_default_rule_is_disabled(self):
+    def test_14_regression_enable_method_breaks_if_default_rule_is_disabled(self):
         # Set current_rule to "disabled", confirm disabled
         self.instance.set_rule("disabled")
         self.assertFalse(self.instance.enabled)

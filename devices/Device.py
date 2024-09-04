@@ -71,6 +71,12 @@ class Device(Instance):
             self.state = False
         super().disable()
 
+    def send(self, _):
+        '''Placeholder method - subclasses must implement method which turns
+        device on when argument is True, turns off when argument is False
+        '''
+        raise NotImplementedError('Must be implemented in subclass')
+
     def apply_new_rule(self):
         '''Called by set_rule after successful rule change, updates instance
         attributes to reflect new rule. If device currently turned on calls
