@@ -14,7 +14,6 @@ class DesktopTarget(HttpGet):
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
-      current_rule: Initial rule, has different effects depending on subclass
       default_rule: Fallback rule used when no other valid rules are available
       ip:           The IPv4 address of the Linux computer
       port:         The port that the daemon is listening on (default=5000)

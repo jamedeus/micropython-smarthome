@@ -26,7 +26,6 @@ class HttpGet(Device):
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
-      current_rule: Initial rule, has different effects depending on subclass
       default_rule: Fallback rule used when no other valid rules are available
       uri:          The base URL with no path
       on_path:      The path added to uri for ON action
@@ -39,7 +38,7 @@ class HttpGet(Device):
     '''
 
     def __init__(self, name, nickname, _type, default_rule, uri, on_path, off_path):
-        super().__init__(name, nickname, _type, True, None, default_rule)
+        super().__init__(name, nickname, _type, True, default_rule)
 
         # Can be IP or domain, remove protocol if present
         self.uri = str(uri).replace('http://', '').replace('https://', '')

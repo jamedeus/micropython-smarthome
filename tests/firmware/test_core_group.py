@@ -5,8 +5,8 @@ from Sensor import Sensor
 
 
 class MockDevice(Device):
-    def __init__(self, name, nickname, _type, enabled, current_rule, default_rule):
-        super().__init__(name, nickname, _type, enabled, current_rule, default_rule)
+    def __init__(self, name, nickname, _type, enabled, default_rule):
+        super().__init__(name, nickname, _type, enabled, default_rule)
 
         # Used to confirm that send method was called
         self.send_method_called = False
@@ -26,8 +26,8 @@ class MockDevice(Device):
 
 
 class MockSensor(Sensor):
-    def __init__(self, name, nickname, _type, enabled, current_rule, default_rule, targets):
-        super().__init__(name, nickname, _type, enabled, current_rule, default_rule, targets)
+    def __init__(self, name, nickname, _type, enabled, default_rule, targets):
+        super().__init__(name, nickname, _type, enabled, default_rule, targets)
 
         self.enabled = True
 
@@ -52,8 +52,8 @@ class TestGroup(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Instantiate test device, sensor, and group
-        cls.device = MockDevice('device1', 'device1', 'device', True, 'enabled', 'enabled')
-        cls.sensor = MockSensor('sensor1', 'sensor1', 'sensor', True, 'enabled', 'enabled', [cls.device])
+        cls.device = MockDevice('device1', 'device1', 'device', True, 'enabled')
+        cls.sensor = MockSensor('sensor1', 'sensor1', 'sensor', True, 'enabled', [cls.device])
         cls.group = Group("group1", [cls.sensor])
         cls.device.group = cls.group
         cls.sensor.group = cls.group

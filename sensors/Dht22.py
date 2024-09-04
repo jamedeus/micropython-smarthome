@@ -17,7 +17,6 @@ class Dht22(Thermostat):
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
-      current_rule: Initial rule, has different effects depending on subclass
       default_rule: Fallback rule used when no other valid rules are available
       mode:         Must be "cool" (turn on when temperature > current_rule) or
                     "heat" (turn on when temperature < current_rule)

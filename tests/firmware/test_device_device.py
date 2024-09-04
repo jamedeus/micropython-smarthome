@@ -14,7 +14,7 @@ expected_attributes = {
     'nickname': 'Test',
     '_type': 'device',
     'scheduled_rule': 50,
-    'current_rule': 'enabled',
+    'current_rule': 50,
     'default_rule': 50,
     'enabled': True,
     'group': 'group1',
@@ -27,8 +27,8 @@ expected_attributes = {
 
 # Mock subclass with send method + attributes used for testing
 class MockDevice(Device):
-    def __init__(self, name, nickname, _type, enabled, current_rule, default_rule):
-        super().__init__(name, nickname, _type, enabled, current_rule, default_rule)
+    def __init__(self, name, nickname, _type, enabled, default_rule):
+        super().__init__(name, nickname, _type, enabled, default_rule)
 
         # Used to confirm that send method was called
         self.send_method_called = False
@@ -63,12 +63,13 @@ class TestDevice(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Instantiate test device with mock subclass, add rules to queue
-        cls.instance = MockDevice("device1", "Test", "device", True, "enabled", 50)
+        cls.instance = MockDevice("device1", "Test", "device", True, 50)
         cls.instance.rule_queue = [10, 20]
+        cls.instance.current_rule = cls.instance.default_rule
         cls.instance.scheduled_rule = cls.instance.default_rule
 
         # Create mock sensor targeting device, add both to mock group
-        cls.sensor = Sensor('sensor1', 'sensor1', 'sensor', True, 'enabled', 'enabled', [cls.instance])
+        cls.sensor = Sensor('sensor1', 'sensor1', 'sensor', True, 'enabled', [cls.instance])
         cls.group = Group("group1", [cls.sensor])
         cls.instance.triggered_by.append(cls.sensor)
         cls.instance.group = cls.group
@@ -80,7 +81,7 @@ class TestDevice(unittest.TestCase):
         self.assertEqual(self.instance.nickname, "Test")
         self.assertTrue(self.instance.enabled)
         self.assertEqual(self.instance.state, None)
-        self.assertEqual(self.instance.current_rule, "enabled")
+        self.assertEqual(self.instance.current_rule, 50)
         self.assertEqual(self.instance.scheduled_rule, 50)
         self.assertEqual(self.instance.default_rule, 50)
         self.assertEqual(self.instance.triggered_by, [self.sensor])

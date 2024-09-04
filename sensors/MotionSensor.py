@@ -19,7 +19,6 @@ class MotionSensor(Sensor):
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
-      current_rule: Initial rule, has different effects depending on subclass
       default_rule: Fallback rule used when no other valid rules are available
       targets:      List of device names (device1 etc) controlled by sensor
       pin:          The ESP32 pin connected to the sensor output pin
@@ -32,7 +31,7 @@ class MotionSensor(Sensor):
     '''
 
     def __init__(self, name, nickname, _type, default_rule, targets, pin):
-        super().__init__(name, nickname, _type, True, None, default_rule, targets)
+        super().__init__(name, nickname, _type, True, default_rule, targets)
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):

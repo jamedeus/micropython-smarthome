@@ -16,7 +16,6 @@ class Wled(DimmableLight):
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
-      current_rule: Initial rule, has different effects depending on subclass
       default_rule: Fallback rule used when no other valid rules are available
       min_rule:     The minimum supported integer rule, used by rule validator
       max_rule:     The maximum supported integer rule, used by rule validator
@@ -33,7 +32,7 @@ class Wled(DimmableLight):
     '''
 
     def __init__(self, name, nickname, _type, default_rule, min_rule, max_rule, ip):
-        super().__init__(name, nickname, _type, True, None, default_rule, min_rule, max_rule)
+        super().__init__(name, nickname, _type, True, default_rule, min_rule, max_rule)
 
         self.ip = ip
 

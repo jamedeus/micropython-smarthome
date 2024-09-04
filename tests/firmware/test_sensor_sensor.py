@@ -25,8 +25,10 @@ class TestSensor(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Create test instance, add rule to queue
-        cls.instance = Sensor("sensor1", "Test", "sensor", True, "enabled", "enabled", [])
+        cls.instance = Sensor("sensor1", "Test", "sensor", True, "enabled", [])
         cls.instance.rule_queue = ["disabled"]
+        cls.instance.current_rule = "enabled"
+        cls.instance.scheduled_rule = "enabled"
 
         # Create mock group
         cls.group = MockGroup("group1", [cls.instance])

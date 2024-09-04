@@ -38,7 +38,6 @@ class Thermostat(Sensor):
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
-      current_rule: Initial rule, has different effects depending on subclass
       default_rule: Fallback rule used when no other valid rules are available
       mode:         Must be "cool" (turn on when temperature > current_rule) or
                     "heat" (turn on when temperature < current_rule)
@@ -58,7 +57,7 @@ class Thermostat(Sensor):
     '''
 
     def __init__(self, name, nickname, _type, default_rule, mode, tolerance, units, targets):
-        super().__init__(name, nickname, _type, True, default_rule, default_rule, targets)
+        super().__init__(name, nickname, _type, True, default_rule, targets)
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
@@ -85,8 +84,8 @@ class Thermostat(Sensor):
         # Tolerance determines on/off thresholds (current_rule +/- tolerance)
         self.tolerance = float(tolerance)
 
-        # Cast initial rule to float, get initial threshold
-        self.current_rule = float(self.current_rule)
+        # Cast default_rule to float, get initial threshold
+        self.current_rule = float(default_rule)
         self.set_threshold()
 
         # Store last 3 temperature readings, used to detect failed on/off

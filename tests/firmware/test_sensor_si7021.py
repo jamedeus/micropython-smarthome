@@ -9,7 +9,7 @@ expected_attributes = {
     "tolerance": 1.0,
     "current_rule": 74.0,
     "targets": [],
-    "scheduled_rule": 74,
+    "scheduled_rule": None,
     "recent_temps": [],
     "name": "sensor1",
     "enabled": True,

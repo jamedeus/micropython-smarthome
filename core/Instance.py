@@ -14,7 +14,6 @@ class Instance():
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
-      current_rule: Initial rule, has different effects depending on subclass
       default_rule: Fallback rule used when no other valid rules are available
 
     Subclassed by the Device and Sensor base classes which implement functions
@@ -25,7 +24,7 @@ class Instance():
     be supported by replacing the validator method in subclass.
     '''
 
-    def __init__(self, name, nickname, _type, enabled, current_rule, default_rule):
+    def __init__(self, name, nickname, _type, enabled, default_rule):
 
         # Unique, sequential name (sensor1, sensor2, ...) used in backend
         self.name = name
@@ -44,12 +43,12 @@ class Instance():
         # The rule currently being followed, has different effects depending on subclass
         # - Devices: determines whether device can be turned on, device brightness, etc
         # - Sensors: determines how sensor is triggered, how long before sensor resets, etc
-        self.current_rule = current_rule
+        self.current_rule = None
 
         # The rule that should be followed at the current time unless changed by API
         # The reset_rule endpoint overwrites current_rule with this rule
         # This rule will be set when a disabled instance is re-enabled
-        self.scheduled_rule = current_rule
+        self.scheduled_rule = None
 
         # The fallback rule used when no other valid rules are available, examples:
         # - Config file contains invalid schedule rules

@@ -17,7 +17,6 @@ class DimmableLight(Device):
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
-      current_rule: Initial rule, has different effects depending on subclass
       default_rule: Fallback rule used when no other valid rules are available
       min_rule:     The minimum supported integer rule, used by rule validator
       max_rule:     The maximum supported integer rule, used by rule validator
@@ -36,8 +35,8 @@ class DimmableLight(Device):
     The default_rule must be an integer or fade (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, enabled, current_rule, default_rule, min_rule, max_rule):
-        super().__init__(name, nickname, _type, enabled, current_rule, default_rule)
+    def __init__(self, name, nickname, _type, enabled, default_rule, min_rule, max_rule):
+        super().__init__(name, nickname, _type, enabled, default_rule)
 
         self.min_rule = int(min_rule)
         self.max_rule = int(max_rule)

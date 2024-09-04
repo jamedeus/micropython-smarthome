@@ -15,7 +15,6 @@ class Sensor(Instance):
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
-      current_rule: Initial rule, has different effects depending on subclass
       default_rule: Fallback rule used when no other valid rules are available
       targets:      List of device names (device1 etc) controlled by sensor
 
@@ -27,8 +26,8 @@ class Sensor(Instance):
     be supported by replacing the validator method in subclass.
     '''
 
-    def __init__(self, name, nickname, _type, enabled, current_rule, default_rule, targets):
-        super().__init__(name, nickname, _type, enabled, current_rule, default_rule)
+    def __init__(self, name, nickname, _type, enabled, default_rule, targets):
+        super().__init__(name, nickname, _type, enabled, default_rule)
 
         # List of Device instances controlled by Sensor, used by Config.build_groups
         # to determine which sensors belong in same Group instance

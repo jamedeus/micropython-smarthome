@@ -14,7 +14,6 @@ class Device(Instance):
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
-      current_rule: Initial rule, has different effects depending on subclass
       default_rule: Fallback rule used when no other valid rules are available
 
     Subclassed by all device drivers. Drivers must implement send method (takes
@@ -24,8 +23,8 @@ class Device(Instance):
     be supported by replacing the validator method in subclass.
     '''
 
-    def __init__(self, name, nickname, _type, enabled, current_rule, default_rule):
-        super().__init__(name, nickname, _type, enabled, current_rule, default_rule)
+    def __init__(self, name, nickname, _type, enabled, default_rule):
+        super().__init__(name, nickname, _type, enabled, default_rule)
 
         # Record device's on/off state, prevent turning on/off when already on/off
         # Included in status object, used by API to display device state

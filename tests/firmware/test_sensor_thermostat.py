@@ -13,7 +13,7 @@ expected_attributes = {
     '_type': 'si7021',
     'current': None,
     'current_rule': 74.0,
-    'scheduled_rule': 74,
+    'scheduled_rule': None,
     'default_rule': 74,
     'enabled': True,
     'group': 'group1',
@@ -43,7 +43,7 @@ class TestThermostat(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Create test instance, mock device, mock group
-        cls.target = Device('device1', 'target', 'device', True, '70', '70')
+        cls.target = Device('device1', 'target', 'device', True, '70')
         cls.instance = Si7021("sensor1", "sensor1", "si7021", 74, "cool", 1, "fahrenheit", [cls.target])
         cls.group = MockGroup('group1', [cls.instance])
         cls.instance.group = cls.group
