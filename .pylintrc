@@ -67,7 +67,11 @@ ignored-modules=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-#init-hook=
+init-hook='import sys;
+      sys.path.append("core");
+      sys.path.append("devices");
+      sys.path.append("sensors");
+      sys.path.append("lib")'
 
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use, and will cap the count on Windows to
@@ -383,7 +387,7 @@ int-import-graph=
 
 # Force import order to recognize a module as part of the standard
 # compatibility libraries.
-known-standard-library=
+known-standard-library=tls,network,dht
 
 # Force import order to recognize a module as part of a third party library.
 known-third-party=enchant
@@ -553,15 +557,10 @@ check-str-concat-over-line-jumps=no
 [TYPECHECK]
 
 # Silence import-error for modules that only exist in micropython
-ignored-modules=network,machine,webrepl,micropython,flashbdev,inisetup,tls,
-                setup_ssl_certs,setup_page,default_config,api_keys,
-                hardware_classes,ir_code_classes,ir_tx,util,Api,SoftwareTimer,
-                Instance,dht,hx711,IrBlaster,si7021,uio,cpython_only,HttpGet,
-                Group,LoadCell,Dht22,ApiTarget,MotionSensor,Config,main,
-                Relay,LedStrip,Device,Sensor,DesktopTarget,Si7021,Thermostat,
-                DimmableLight,Tplink,TasmotaRelay,DesktopTarget,Dummy,Switch,
-                Wled,wifi_setup,mock_logging,mock_json,mock_requests,
-                mock_asyncio,flask,mock_cli_config,test_api_client
+ignored-modules=network,machine,webrepl,micropython,flashbdev,inisetup,tls,uio,
+                setup_ssl_certs,setup_page,api_keys,hardware_classes,dht,ir_tx,
+                ir_code_classes,tls,flask,mock_json,mock_requests,mock_asyncio,
+                mock_logging,mock_cli_config
 
 # Silence no-member for methods that only exist in micropython
 generated-members=os.mount,time.sleep_us,time.sleep_ms,asyncio.sleep_ms,

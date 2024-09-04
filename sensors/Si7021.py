@@ -1,5 +1,5 @@
-import si7021
 import logging
+import si7021
 from machine import Pin, SoftI2C
 from Thermostat import Thermostat
 
