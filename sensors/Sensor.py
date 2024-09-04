@@ -37,7 +37,7 @@ class Sensor(Instance):
         '''Calls Group._refresh method to check conditions of all sensors in
         group, update state of all devices in group to match condition.
         '''
-        if hasattr(self, 'group'):
+        if self.group:
             self.print(f"Refreshing {self.group.name}")
             schedule(self.group._refresh, None)
 

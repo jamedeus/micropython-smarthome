@@ -55,6 +55,11 @@ class Instance():
         # - Instance enabled while both current and scheduled rules are "disabled"
         self.default_rule = default_rule
 
+        # Stores reference to Group instance (set by Config.build_groups)
+        # Groups contain device(s) and sensor(s) that target them (devices turn
+        # on when >=1 sensor condition is met, off when no conditions are met)
+        self.group = None
+
         # Stores sequential schedule rules, next_rule method applies the first rule in queue
         # Config.build_queue populates list + adds callback timers for each rule change
         self.rule_queue = []
@@ -177,7 +182,7 @@ class Instance():
         attributes = self.__dict__.copy()
 
         # Replace group object with group name (JSON-compatibility)
-        if "group" in self.__dict__:
+        if self.group:
             attributes["group"] = self.group.name
 
         return attributes

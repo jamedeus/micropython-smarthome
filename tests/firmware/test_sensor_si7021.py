@@ -13,6 +13,7 @@ expected_attributes = {
     "recent_temps": [],
     "name": "sensor1",
     "enabled": True,
+    "group": None,
     "units": "fahrenheit",
     "on_threshold": 75.0,
     "nickname": "sensor1",

@@ -10,6 +10,7 @@ expected_attributes = {
     'current_rule': None,
     'default_rule': 'enabled',
     'enabled': True,
+    "group": None,
     'rule_queue': [],
     'state': None,
     'name': 'device1',
