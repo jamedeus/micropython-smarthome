@@ -30,6 +30,7 @@ class TestSi7021(unittest.TestCase):
     def setUpClass(cls):
         # Create test instance
         cls.instance = Si7021("sensor1", "sensor1", "si7021", 74, "cool", 1, "fahrenheit", [])
+        cls.instance.set_rule(74)
 
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation

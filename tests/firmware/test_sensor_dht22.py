@@ -29,6 +29,7 @@ class TestDht22(unittest.TestCase):
     def setUpClass(cls):
         # Create test instance, mock device, mock group
         cls.instance = Dht22("sensor1", "sensor1", "dht22", 74, "cool", 1, "fahrenheit", [], 15)
+        cls.instance.set_rule(74)
 
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation

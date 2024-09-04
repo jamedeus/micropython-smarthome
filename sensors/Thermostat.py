@@ -84,9 +84,9 @@ class Thermostat(Sensor):
         # Tolerance determines on/off thresholds (current_rule +/- tolerance)
         self.tolerance = float(tolerance)
 
-        # Cast default_rule to float, get initial threshold
-        self.current_rule = float(default_rule)
-        self.set_threshold()
+        # On and off temperature thresholds (calculated when set_rule called)
+        self.on_threshold = None
+        self.off_threshold = None
 
         # Store last 3 temperature readings, used to detect failed on/off
         # command (ir command didn't reach ac, etc)
