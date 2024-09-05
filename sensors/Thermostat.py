@@ -108,6 +108,9 @@ class Thermostat(Sensor):
                 return celsius_to_fahrenheit(self.get_raw_temperature())
             if self.units == "kelvin":
                 return celsius_to_kelvin(self.get_raw_temperature())
+            raise ValueError(
+                'Unsupported mode (must be "celsius", "fahrenheit", or "kelvin")'
+            )
         except TypeError:
             return "Error: Unexpected reading from sensor"
 
@@ -127,7 +130,7 @@ class Thermostat(Sensor):
         and tolerance attribute. Called after changing current_rule.
         '''
         if self.current_rule == "disabled":
-            return True
+            return
 
         if self.mode == "cool":
             self.on_threshold = float(self.current_rule) + float(self.tolerance)
@@ -136,6 +139,9 @@ class Thermostat(Sensor):
         elif self.mode == "heat":
             self.on_threshold = float(self.current_rule) - float(self.tolerance)
             self.off_threshold = float(self.current_rule) + float(self.tolerance)
+
+        else:
+            raise ValueError('Unsupported mode (must be "cool" or "heat")')
 
     def set_rule(self, rule, scheduled=False):
         '''Takes new rule, validates, if valid sets as current_rule (and
