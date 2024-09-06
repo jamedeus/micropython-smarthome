@@ -516,6 +516,19 @@ def clear_log_file(args):
         return {"ERROR": "no log file found"}
 
 
+@app.route("set_log_level")
+@app.required_args(1)
+def set_log_level(args):
+    if args[0] not in logging._nameToLevel:
+        return {
+            "ERROR": "Unsupported log level",
+            "options": list(logging._nameToLevel.keys())
+        }
+    with open("log_level.py", "w") as file:
+        file.write(f"LOG_LEVEL = '{args[0]}'")
+    return {"Success": "Log level set (takes effect after reboot)"}
+
+
 @app.route("ir_key")
 @app.required_args(2)
 def ir_key(args):

@@ -2,6 +2,7 @@ import os
 import json
 import asyncio
 import network
+import logging
 import unittest
 from machine import reset, Pin
 import SoftwareTimer
@@ -120,10 +121,20 @@ class TestApi(unittest.TestCase):
         except OSError:
             pass
 
+        try:
+            os.remove('log_level.py')
+        except OSError:
+            pass
+
     @classmethod
     def tearDownClass(cls):
         try:
             os.remove('ir_macros.json')
+        except OSError:
+            pass
+
+        try:
+            os.remove('log_level.py')
         except OSError:
             pass
 
@@ -868,11 +879,38 @@ class TestApi(unittest.TestCase):
         with patch('Api.asyncio.wait_for', side_effect=asyncio.TimeoutError):
             self.assertEqual(self.send_command(['status']), "Error: Timed out waiting for response")
 
+    def test_50_set_log_level(self):
+        # Confirm module does not exist
+        self.assertFalse('log_level.py' in os.listdir())
+
+        # Call with invalid log level, confirm error
+        response = self.send_command(['set_log_level', 'EVERYTHING'])
+        self.assertEqual(response, {
+            "ERROR": "Unsupported log level",
+            "options": list(logging._nameToLevel.keys())
+        })
+
+        # Call with valid log level, confirm response
+        response = self.send_command(['set_log_level', 'DEBUG'])
+        self.assertEqual(
+            response,
+            {"Success": "Log level set (takes effect after reboot)"}
+        )
+
+        # Confirm module created on disk with correct contents
+        self.assertTrue('log_level.py' in os.listdir())
+        with open('log_level.py', 'r') as file:
+            contents = file.read()
+            self.assertEqual(
+                contents,
+                "LOG_LEVEL = 'DEBUG'"
+            )
+
     # Original bug: Some device and sensor classes have attributes containing class objects, which
     # cannot be json-serialized. These are supposed to be deleted or replaced with string
     # representations when building get_attributes response. Earlier versions of API failed to do
     # this for some classes, breaking get_attributes and resulting in an "unable to decode" error.
-    def test_50_regression_get_attributes(self):
+    def test_51_regression_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor3'])
         self.assertEqual(
             response,
@@ -894,7 +932,7 @@ class TestApi(unittest.TestCase):
     # Original bug: enable_in and disable_in cast delay argument to float with no error handling,
     # leading to exceptions when invalid arguments were received. In production this could only
     # occur when argument was NaN, other types were rejected by client-side validation.
-    def test_51_regression_enable_in_disable_in_invalid_arguments(self):
+    def test_52_regression_enable_in_disable_in_invalid_arguments(self):
         # Confirm correct error for string argument
         response = self.send_command(['enable_in', 'sensor1', 'foo'])
         self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
@@ -912,7 +950,7 @@ class TestApi(unittest.TestCase):
     # api_client, which parses it to float before encoding as JSON. NaN is supported in JSON
     # on cpython but not micropython. This lead to crash when micropython attempted to parse
     # JSON containing NaN (rather than "NaN" string). Should now catch and return error.
-    def test_52_regression_received_invalid_json(self):
+    def test_53_regression_received_invalid_json(self):
         # Micropython's json module cannot parse NaN
         response = self.send_command(['enable_in', 'sensor1', float('NaN')])
         self.assertEqual(response, {"ERROR": "Syntax error in received JSON"})
@@ -921,7 +959,7 @@ class TestApi(unittest.TestCase):
     # value of increment_rule method in bare conditional, assuming the method only returned
     # True and False. Method can also return error JSON, which was interpreted as success
     # resulting in success message instead of error.
-    def test_53_regression_increment_rule_wrong_error(self):
+    def test_54_regression_increment_rule_wrong_error(self):
         # Call with invalid argument, confirm correct error
         response = self.send_command(['increment_rule', 'sensor1', 'string'])
         self.assertEqual(response, {'ERROR': 'Invalid argument string'})
@@ -934,7 +972,7 @@ class TestApi(unittest.TestCase):
     # before releasing lock. The server continued listening for API calls but would hang
     # while waiting to acquire lock resulting in client-side timeout. Lock is now acquired
     # with context manager and automatically released if an exception occurs.
-    def test_54_regression_fails_to_release_lock(self):
+    def test_55_regression_fails_to_release_lock(self):
         # Call endpoint that raises uncaught exception, should time out
         response = self.send_command(['uncaught_exception'])
         self.assertEqual(response, "Error: Timed out waiting for response")
@@ -946,7 +984,7 @@ class TestApi(unittest.TestCase):
     # Original bug: The set_rule endpoint used "if ... in" to check if the new rule contained
     # url-encoded forward slashes (detect fade rule) without casting the rule to string. This
     # resulted in "TypeError: 'int' object isn't iterable" if the new rule was an integer.
-    def test_55_regression_set_rule_fails_if_rule_is_int(self):
+    def test_56_regression_set_rule_fails_if_rule_is_int(self):
         response = self.send_command(['set_rule', 'device1', 100])
         self.assertEqual(self.device1.current_rule, 100)
         self.assertEqual(response, {'device1': 100})

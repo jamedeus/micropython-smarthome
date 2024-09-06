@@ -6,12 +6,16 @@ from Api import app
 from Config import Config
 from SoftwareTimer import timer
 from util import read_config_from_disk, check_log_size
+try:
+    from log_level import LOG_LEVEL
+except ImportError:
+    LOG_LEVEL = 'ERROR'
 
 print("--------Booted--------")
 
 # Set log file and syntax
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging._nameToLevel[LOG_LEVEL],
     filename='app.log',
     format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
     style='%'

@@ -686,6 +686,19 @@ class TestEndpoints(TestCase):
             response = parse_command('192.168.1.123', ['clear_log'])
             self.assertEqual(response, {'clear_log': 'success'})
 
+    def test_set_log_level(self):
+        # Mock request to return expected response
+        with patch(
+            'api_endpoints.request',
+            return_value={"Success": "Log level set (takes effect after reboot)"}
+        ):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['set_log_level', 'DEBUG'])
+            self.assertEqual(
+                response,
+                {"Success": "Log level set (takes effect after reboot)"}
+            )
+
     def test_condition_met(self):
         # Mock request to return expected response
         with patch('api_endpoints.request', return_value={'Condition': False}):

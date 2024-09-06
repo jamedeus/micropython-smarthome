@@ -57,7 +57,8 @@ endpoint_descriptions = {
     "get_humid":                                "Get current relative humidity from temp sensor",
     "get_climate":                              "Get current temp and humidity from sensor",
     "set_gps_coords":                           "Set the latitude and longitude used to look up sunrise/sunset times",
-    "clear_log":                                "Delete node's log file"
+    "clear_log":                                "Delete node's log file",
+    "set_log_level":                            "Set log level to argument ('DEBUG', 'INFO', 'WARNING', 'ERROR', or 'CRITICAL')"
 }
 
 
@@ -87,6 +88,7 @@ example_usage = {
     'ir_add_macro_action': {"Example usage": "./api_client.py ir_add_macro_action [name] [target] [key] <delay> <repeats>"},
     'ir_run_macro': {"Example usage": "./api_client.py ir_run_macro [name]"},
     'set_gps_coords': {"Example usage": "./api_client.py set_gps_coords [latitude] [longitude]"},
+    'set_log_level': {"Example usage": "./api_client.py set_log_level [LEVEL]"}
 }
 # pylint: enable=line-too-long
 
@@ -580,6 +582,14 @@ def api_prompt():
                 validate=FloatRange(-180, 180)
             ).unsafe_ask()
             command_args.append(longitude)
+
+        elif endpoint == 'set_log_level':
+            # Prompt user to select log level
+            level = questionary.select(
+                'Select log level',
+                choices=('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+            ).unsafe_ask()
+            command_args.append(level)
 
         # Send command, print response
         response = parse_command(node_ip, command_args)

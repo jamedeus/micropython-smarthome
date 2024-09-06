@@ -697,6 +697,48 @@ class InteractiveMenuTests(TestCase):
                 ("192.168.1.123", ["status"])
             )
 
+    def test_set_log_level_endpoint(self):
+        # Simulate user selecting node1, set_log_level, DEBUG
+        self.mock_ask.unsafe_ask.side_effect = [
+            'node1',
+            'set_log_level',
+            'DEBUG',
+            'Done',
+            'Done'
+        ]
+
+        # Mock parse_command to return status, then API response from ESP32,
+        # then status again (prompt restarts)
+        with patch('api_client.parse_command', side_effect=[
+            mock_status_object,
+            {"Success": "Log level set (takes effect after reboot)"},
+            mock_status_object
+        ]) as mock_parse_command:
+
+            # Run prompt, will complete immediately with mock input
+            api_prompt()
+
+            # Confirm called parse_command 3 times
+            self.assertEqual(mock_parse_command.call_count, 3)
+
+            # First call: requested status object from target node
+            self.assertEqual(
+                mock_parse_command.call_args_list[0][0],
+                ("192.168.1.123", ["status"])
+            )
+
+            # Second call: sent set_log_level command with correct arg
+            self.assertEqual(
+                mock_parse_command.call_args_list[1][0],
+                ("192.168.1.123", ["set_log_level", "DEBUG"])
+            )
+
+            # Third call: requested updated status object after API call
+            self.assertEqual(
+                mock_parse_command.call_args_list[2][0],
+                ("192.168.1.123", ["status"])
+            )
+
     def test_exit_without_selecting_node(self):
         # Simulate user selecting "Done" at node select prompt
         self.mock_ask.unsafe_ask.side_effect = ['Done']
@@ -1210,6 +1252,7 @@ class GetEndpointOptionsTests(TestCase):
                 'remove_schedule_keyword',
                 'save_schedule_keywords',
                 'clear_log',
+                'set_log_level',
                 'set_gps_coords',
                 'Done'
             ]
@@ -1253,6 +1296,7 @@ class GetEndpointOptionsTests(TestCase):
                 'save_schedule_keywords',
                 'get_attributes',
                 'clear_log',
+                'set_log_level',
                 'condition_met',
                 'trigger_sensor',
                 'set_gps_coords',
@@ -1298,6 +1342,7 @@ class GetEndpointOptionsTests(TestCase):
                 'save_schedule_keywords',
                 'get_attributes',
                 'clear_log',
+                'set_log_level',
                 'turn_on',
                 'turn_off',
                 'set_gps_coords',
@@ -1333,6 +1378,7 @@ class GetEndpointOptionsTests(TestCase):
                 'ir_add_macro_action',
                 'ir_run_macro',
                 'clear_log',
+                'set_log_level',
                 'set_gps_coords',
                 'Done'
             ]
@@ -1379,6 +1425,7 @@ class GetEndpointOptionsTests(TestCase):
                 'get_humid',
                 'get_climate',
                 'clear_log',
+                'set_log_level',
                 'condition_met',
                 'trigger_sensor',
                 'set_gps_coords',
@@ -1424,6 +1471,7 @@ class GetEndpointOptionsTests(TestCase):
                 'save_schedule_keywords',
                 'get_attributes',
                 'clear_log',
+                'set_log_level',
                 'condition_met',
                 'trigger_sensor',
                 'set_gps_coords',

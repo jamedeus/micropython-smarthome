@@ -1,5 +1,25 @@
 import os
 
+# Copied from lib/logging.py
+CRITICAL = 50
+ERROR    = 40
+WARNING  = 30
+INFO     = 20
+DEBUG    = 10
+NOTSET   = 0
+
+# Copied from lib/logging.py
+_level_dict = {
+    CRITICAL: "CRITICAL",
+    ERROR: "ERROR",
+    WARNING: "WARNING",
+    INFO: "INFO",
+    DEBUG: "DEBUG",
+}
+
+# Copied from lib/logging.p
+_nameToLevel = {v: k for k, v in _level_dict.items()}
+
 
 class Handler:
     def close(self):

@@ -449,6 +449,15 @@ def clear_log(ip, _):
     return asyncio.run(request(ip, ['clear_log']))
 
 
+@add_endpoint("set_log_level")
+@requires_params
+def set_log_level(ip, params):
+    '''Makes /set_log_level API call to requested IP, returns response.
+    Requires 'DEBUG', 'INFO', 'WARNING', 'ERROR', or 'CRITICAL' as argument.
+    '''
+    return asyncio.run(request(ip, ['set_log_level', params[0]]))
+
+
 @add_endpoint("condition_met")
 @requires_params
 @requires_sensor("Must specify sensor")
