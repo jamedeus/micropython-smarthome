@@ -45,6 +45,7 @@ class Device(Instance):
         # If other devices in group are on, turn on to match state
         try:
             if self.group.state is True:
+                log.debug("%s: group state is True, turning on", self.name)
                 success = self.send(1)
                 if success:
                     self.state = True
@@ -67,6 +68,7 @@ class Device(Instance):
 
         # Turn off before disabling
         if self.state:
+            log.debug("%s: turning off", self.name)
             self.send(0)
             self.state = False
         super().disable()

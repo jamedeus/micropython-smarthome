@@ -125,8 +125,7 @@ class Config():
 
         # Get HH:MM timestamp of next reload, write to log
         self.reload_time = f"{time.localtime(next_reload + adjust)[3]}:{time.localtime(next_reload + adjust)[4]}"
-        log.debug("Reload_schedule_rules callback scheduled for %s am", self.reload_time)
-        print_with_timestamp(f"Reload_schedule_rules callback scheduled for {self.reload_time} am")
+        log.info("Reload_schedule_rules callback scheduled for %s am", self.reload_time)
 
         # Add timer to queue
         SoftwareTimer.timer.create(ms_until_reload, self.reload_schedule_rules, "reload_schedule_rules")
@@ -168,6 +167,7 @@ class Config():
 
     # Takes config dict (devices only), instantiates each with appropriate class, adds to self.devices
     def instantiate_devices(self, conf):
+        log.debug("Instantiating devices")
         for device in sorted(conf):
             # Add device's schedule rules to dict
             self.schedule[device] = conf[device]["schedule"]
@@ -192,10 +192,11 @@ class Config():
                 )
                 print_with_timestamp(f"ERROR: Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
 
-        log.debug("Finished creating device instances")
+        log.debug("Finished instantiating device instances")
 
     # Takes config dict (sensors only), instantiates each with appropriate class, adds to self.sensors
     def instantiate_sensors(self, conf):
+        log.debug("Instantiating sensors")
         for sensor in sorted(conf):
             # Add sensor's schedule rules to dict
             self.schedule[sensor] = conf[sensor]["schedule"]
@@ -230,12 +231,14 @@ class Config():
                 )
                 print_with_timestamp(f"ERROR: Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
 
-        log.debug("Finished creating sensor instances")
+        log.debug("Finished instantiating sensor instances")
 
     # Maps relationships between sensors ("triggers") and devices ("targets")
     # Multiple sensors with identical targets are merged into groups (or 1 sensor per group if unique targets)
     # Main loop iterates Groups, calls Group methods to check sensor conditions and apply device actions
     def build_groups(self):
+        log.debug("Building groups")
+
         # Stores completed Group instances
         self.groups = []
 
@@ -270,6 +273,8 @@ class Config():
 
             for device in instance.targets:
                 device.group = instance
+
+        log.debug("Finished building %s groups", len(self.groups))
 
     # Called by status API endpoint, frontend polls every 5 seconds while viewing node
     # Returns object with metadata + current status info for all devices and sensors
@@ -325,19 +330,23 @@ class Config():
                 continue
             else:
                 print_with_timestamp(f"Successfully connected to {credentials['ssid']}")
-                log.info("Successfully connected to %s", credentials['ssid'])
+                log.debug("Successfully connected to %s", credentials['ssid'])
 
         failed_attempts = 0
 
         # Ensure enough free ram for API response
         gc.collect()
 
-        # Set time from internet in correct timezone, retry until successful (ntptime easier but no timezone support)
+        # Set system clock and sunrise/sunset times with timestamps from ipgeo API
+        # Determines timezone by IP address unless config file contains GPS coords
+        # Retry up to 5 times if API call fails, reboot after 5th failure
         while True:
             try:
+                log.debug("Getting system time from ipgeolocation.io API...")
                 # Use GPS coordinates if present, otherwise rely on IP lookup
                 url = f"https://api.ipgeolocation.io/astronomy?apiKey={ipgeo_key}"
                 if self.gps:
+                    log.debug("Using GPS coordinates from config file")
                     url += f"&lat={self.gps['lat']}&long={self.gps['lon']}"
 
                 response = requests.get(url, timeout=5)
@@ -351,10 +360,16 @@ class Config():
 
                 # Set RTC (uses different parameter order than time.localtime)
                 RTC().datetime((year, month, day, 0, int(hour), int(minute), int(second), int(millisecond)))
+                log.debug("System clock set")
 
                 # Set sunrise/sunset times
                 self.schedule_keywords["sunrise"] = response.json()["sunrise"]
                 self.schedule_keywords["sunset"] = response.json()["sunset"]
+                log.debug(
+                    "Received sunrise time = %s, sunset time = %s",
+                    self.schedule_keywords["sunrise"],
+                    self.schedule_keywords["sunset"]
+                )
                 response.close()
                 break
 
@@ -367,10 +382,10 @@ class Config():
             # Network issue
             except OSError:
                 print_with_timestamp("Failed to set system time, retrying...")
-                log.debug("Failed to set system time, retrying...")
+                log.error("Failed to set system time, retrying...")
                 failed_attempts += 1
                 if failed_attempts > 5:
-                    log.info("Failed to set system time 5 times, reboot triggered")
+                    log.critical("Failed to set system time 5 times, reboot triggered")
                     reboot()
                 time.sleep_ms(1500)  # If failed, wait 1.5 seconds before retrying
                 gc.collect()  # Free up memory before retrying
@@ -449,6 +464,8 @@ class Config():
 
     # Add callbacks for all schedule rules to SoftwareTimer queue
     def build_queue(self):
+        log.debug("Building schedule rule queue for all devices and sensors")
+
         # Delete all existing schedule rule timers to avoid conflicts
         SoftwareTimer.timer.cancel("scheduler")
 
@@ -518,7 +535,7 @@ class Config():
                 SoftwareTimer.timer.create(milliseconds, instance.next_rule, "scheduler")
                 gc.collect()
 
-        print_with_timestamp(f"Finished building queue, total timers = {len(SoftwareTimer.timer.queue)}")
+        print_with_timestamp("Finished building schedule rule queue")
         log.debug("Finished building queue, total timers = %s", len(SoftwareTimer.timer.queue))
 
     # Takes ID (device1, sensor2, etc), returns instance or False

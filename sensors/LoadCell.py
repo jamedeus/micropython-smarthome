@@ -82,19 +82,24 @@ class LoadCell(Sensor):
         '''Tares the sensor (surface must not be occupied).
         Called by load_cell_tare API endpoint.
         '''
-
+        log.debug("%s: tare_sensor method called", self.name)
         self.sensor.tare()
 
     async def monitor(self):
         '''Async coroutine, checks load cell condition every second. Turns
         target devices on or off when condition changes.
         '''
+        log.debug("%s: Starting LoadCell.monitor coro", self.name)
         while True:
-            self.print(f"Load cell monitor: {self.sensor.get_value()}")
+            log.debug("%s: sensor value: %s", self.name, self.get_value())
             new = self.condition_met()
 
             # If condition changed, overwrite and refresh group
             if new != self.current and new is not None:
+                log.debug(
+                    "%s: monitor: condition changed from %s to %s",
+                    self.name, self.current, new
+                )
                 self.current = new
                 self.refresh_group()
 

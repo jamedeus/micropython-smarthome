@@ -81,7 +81,7 @@ def write_ir_macros_to_disk(conf):
 # Must accept arg (hardware Timer passes self as arg)
 def reboot(arg=None):
     print_with_timestamp("Reboot function called, rebooting...")
-    log.info("Reboot function called, rebooting...\n")
+    log.critical("Reboot function called, rebooting...\n")
     from machine import reset
     reset()
 
@@ -106,7 +106,7 @@ def check_log_size():
     if os.stat('app.log')[6] > 100000:
         print_with_timestamp("\nLog exceeded 100 KB, clearing...\n")
         clear_log()
-        log.info("Deleted old log (exceeded 100 KB size limit)")
+        log.critical("Deleted old log (exceeded 100 KB size limit)")
 
     # Add back to queue
     SoftwareTimer.timer.create(60000, check_log_size, "check_log_size")

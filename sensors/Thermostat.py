@@ -135,10 +135,18 @@ class Thermostat(Sensor):
         if self.mode == "cool":
             self.on_threshold = float(self.current_rule) + float(self.tolerance)
             self.off_threshold = float(self.current_rule) - float(self.tolerance)
+            log.debug(
+                "%s: set_threshold: on_threshold = %s, off_threshold = %s",
+                self.name, self.on_threshold, self.off_threshold
+            )
 
         elif self.mode == "heat":
             self.on_threshold = float(self.current_rule) - float(self.tolerance)
             self.off_threshold = float(self.current_rule) + float(self.tolerance)
+            log.debug(
+                "%s: set_threshold: on_threshold = %s, off_threshold = %s",
+                self.name, self.on_threshold, self.off_threshold
+            )
 
         else:
             raise ValueError('Unsupported mode (must be "cool" or "heat")')
@@ -162,6 +170,7 @@ class Thermostat(Sensor):
         '''Takes positive or negative float, adds to current_rule and calls
         set_rule method. Throws error if current_rule is not an int or float.
         '''
+        log.debug("%s: increment_rule called with %s", self.name, amount)
 
         # Throw error if arg is not int or float
         try:
@@ -169,12 +178,17 @@ class Thermostat(Sensor):
             if isnan(amount):
                 raise ValueError
         except (ValueError, TypeError):
+            log.error("%s: increment_rule: invalid argument: %s", self.name, amount)
             return {"ERROR": f"Invalid argument {amount}"}
 
         # Add amount to current rule
         try:
             new = float(self.current_rule) + amount
         except (ValueError, TypeError):
+            log.error(
+                "%s: Unable to increment current rule (%s)",
+                self.name, self.current_rule
+            )
             return {"ERROR": f"Unable to increment current rule ({self.current_rule})"}
 
         return self.set_rule(new)
@@ -205,12 +219,17 @@ class Thermostat(Sensor):
         '''Async coroutine, checks temperature every 5 seconds and turns target
         devices on or off if on_threshold or off_threshold exceeded.
         '''
+        log.debug("%s: Starting Thermostat.monitor coro", self.name)
         while True:
-            self.print(f"Thermostat monitor: {self.get_temperature()}")
+            log.debug("%s: temperature: %s", self.name, self.get_temperature())
             new = self.condition_met()
 
             # If condition changed, overwrite and refresh group
             if new != self.current and new is not None:
+                log.debug(
+                    "%s: monitor: condition changed from %s to %s",
+                    self.name, self.current, new
+                )
                 self.current = new
                 self.refresh_group()
 
@@ -298,6 +317,7 @@ class Thermostat(Sensor):
             # group refresh method calls apply_action)
             if action is not None:
                 for i in self.targets:
+                    log.debug("%s: set %s state to %s", self.name, i.name, action)
                     i.state = action
 
             # Force group to turn targets on/off again

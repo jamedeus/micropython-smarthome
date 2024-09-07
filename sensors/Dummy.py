@@ -59,6 +59,7 @@ class Dummy(Sensor):
 
         result = super().set_rule(rule, scheduled)
         # Refresh group if rule changed successfully
+        # TODO
         if result and hasattr(self, "group"):
             self.refresh_group()
         return result
@@ -80,5 +81,6 @@ class Dummy(Sensor):
         (turns on target devices). Rule must be changed or sensor disabled to
         turn target devices off (will stay on forever while rule is "on").
         '''
+        log.debug("%s: trigger method called", self.name)
         self.set_rule("on")
         return True

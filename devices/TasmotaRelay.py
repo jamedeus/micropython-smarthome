@@ -39,4 +39,5 @@ class TasmotaRelay(HttpGet):
                 timeout=2
             ).json()["POWER"]
         except OSError:
+            log.error("%s: network error while checking state", self.name)
             return "Network Error"

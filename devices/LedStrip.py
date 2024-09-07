@@ -56,6 +56,10 @@ class LedStrip(DimmableLight):
         Sets PWM duty cycle to 0 if argument is False.
         Gradually fades to new brightness with 1 second transition.
         '''
+        log.debug(
+            "%s: send method called, rule=%s, state=%s",
+            self.name, self.current_rule, state
+        )
 
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:

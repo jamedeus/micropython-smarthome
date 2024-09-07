@@ -51,7 +51,10 @@ class Wled(DimmableLight):
         Makes API call to turn WLED instance OFF if argument is False.
         Sets WLED instance brightness to current_rule.
         '''
-        log.info("%s: send method called, state = %s", self.name, state)
+        log.debug(
+            "%s: send method called, rule=%s, state=%s",
+            self.name, self.current_rule, state
+        )
 
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
@@ -65,11 +68,12 @@ class Wled(DimmableLight):
                 json=self.get_payload(state),
                 timeout=2
             )
+            log.debug("%s: response status: %s", self.name, response.status_code)
             self.print(f"brightness = {self.current_rule}, state = {state}")
         except OSError:
             # Wifi error, send failed
             self.print(f"{self.name}: send failed (wifi error)")
-            log.info("%s: send failed (wifi error)", self.name)
+            log.error("%s: send failed (wifi error)", self.name)
             return False
 
         # Request succeeded if status code is 200

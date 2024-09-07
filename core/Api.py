@@ -510,7 +510,7 @@ def get_climate_data(args):
 def clear_log_file(args):
     try:
         clear_log()
-        log.info("Deleted old log (API request)")
+        log.critical("Deleted old log (API request)")
         return {"clear_log": "success"}
     except OSError:
         return {"ERROR": "no log file found"}
@@ -526,6 +526,7 @@ def set_log_level(args):
         }
     with open("log_level.py", "w") as file:
         file.write(f"LOG_LEVEL = '{args[0]}'")
+    log.critical("Log level changed to %s", args[0])
     return {"Success": "Log level set (takes effect after reboot)"}
 
 

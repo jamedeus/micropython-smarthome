@@ -21,7 +21,7 @@ logging.basicConfig(
     style='%'
 )
 log = logging.getLogger("Main")
-log.info("Booted")
+log.critical("Booted")
 
 
 # Log uncaught exceptions to disk before calling default handler
@@ -36,7 +36,7 @@ def start():
         config = Config(read_config_from_disk())
     # Load blank config template if config.json does not exist (initial setup)
     except OSError:
-        log.info("config.json not found, loading blank template")
+        log.critical("config.json not found, loading blank template")
         from default_config import default_config
         config = Config(default_config)
     gc.collect()

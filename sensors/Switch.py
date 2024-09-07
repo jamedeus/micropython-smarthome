@@ -44,6 +44,7 @@ class Switch(Sensor):
         target devices on or off depending on switch state.
         '''
         self.switch_closed = bool(self.switch.value())
+        log.debug("%s: interrupt, switch_closed = %s", self.name, self.switch_closed)
         self.refresh_group()
 
     def condition_met(self):

@@ -30,7 +30,10 @@ class DesktopTarget(HttpGet):
         '''Makes API call to turn screen ON if argument is True.
         Makes API call to turn screen OFF if argument is False.
         '''
-        log.info("%s: send method called, state = %s", self.name, state)
+        log.debug(
+            "%s: send method called, rule=%s, state=%s",
+            self.name, self.current_rule, state
+        )
 
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
@@ -40,6 +43,7 @@ class DesktopTarget(HttpGet):
 
         try:
             response = self.request(self.get_url(state))
+            log.debug("%s: response status: %s", self.name, response.status_code)
             if response.status_code == 200:
                 if state:
                     self.print("Turned on")
@@ -54,12 +58,13 @@ class DesktopTarget(HttpGet):
             raise ValueError
         except OSError:
             # Wifi interruption, send failed
+            log.error("%s: send failed (wifi error)", self.name)
             return False
         except ValueError:
             # Unexpected response (different service running on port 5000), disable
             if self.enabled:
                 self.print("Fatal error (unexpected response from desktop), disabling")
-                log.info(
+                log.critical(
                     "%s: Fatal error (unexpected response from desktop), disabling",
                     self.name
                 )

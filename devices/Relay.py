@@ -33,7 +33,10 @@ class Relay(Device):
         '''Sets pin level HIGH if arg is True.
         Sets pin level LOW if arg is False.
         '''
-        log.info("%s: send method called, state = %s", self.name, state)
+        log.debug(
+            "%s: send method called, rule=%s, state=%s",
+            self.name, self.current_rule, state
+        )
 
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:

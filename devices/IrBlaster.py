@@ -54,6 +54,7 @@ class IrBlaster():
         '''Takes target name, imports codes and adds to self.codes dict.'''
 
         if target not in ir_code_classes.keys():
+            log.error("Unsupported IR target %s", target)
             raise ValueError(f'Unsupported IR target "{target}"')
 
         module = __import__(ir_code_classes[target])
@@ -62,13 +63,16 @@ class IrBlaster():
     def send(self, dev, key):
         '''Takes IR target name and key, plays IR code.'''
 
-        print_with_timestamp(f"IR Blaster: Sending IR key {key} to {dev}")
+        log.debug("IrBlaster: Sending IR key %s to %s", key, dev)
+        print_with_timestamp(f"IrBlaster: Sending IR key {key} to {dev}")
         try:
             self.ir.play(self.codes[dev.lower()][key.lower()])
-            print_with_timestamp("IR Blaster: Send success")
+            log.debug("IrBlaster: Send success")
+            print_with_timestamp("IrBlaster: Send success")
             return True
         except (KeyError, AttributeError):
-            print_with_timestamp("IR Blaster: Send fail")
+            log.error("IrBlaster: Send fail")
+            print_with_timestamp("IrBlaster: Send fail")
             return False
 
     def get_existing_macros(self):
@@ -88,8 +92,10 @@ class IrBlaster():
         empty list. Raises ValueError if the macro name already exists.
         '''
         if name not in self.macros.keys():
+            log.debug("IrBlaster.create_macro: creating macro named %s", name)
             self.macros[name] = []
         else:
+            log.error("IrBlaster.create_macro: macro named %s already exists", name)
             raise ValueError(f"Macro named {name} already exists")
 
     def delete_macro(self, name):
@@ -97,8 +103,10 @@ class IrBlaster():
         ValueError if the macro name does not exist.
         '''
         if name in self.macros.keys():
+            log.debug("IrBlaster.delete_macro: deleting macro %s", name)
             del self.macros[name]
         else:
+            log.error("IrBlaster.delete_macro: macro named %s does not exist", name)
             raise ValueError(f"Macro named {name} does not exist")
 
     def save_macros(self):
@@ -113,44 +121,56 @@ class IrBlaster():
         Optional: Repeat (number of times the code is replayed). The delay, if
                   configured, is repeated after each repeat.
         '''
+        log.debug(
+            "IrBlaster: add_macro_action args: name=%s, target=%s, key=%s, delay=%s, repeat=%s",
+            name, target, key, delay, repeat
+        )
 
         # Validation
         if name not in self.macros:
+            log.error("IrBlaster.add_macro_action: macro named %s does not exist", name)
             raise ValueError(f"Macro {name} does not exist, use create_macro to add")
         if target not in self.codes:
+            log.error("IrBlaster.add_macro_action: no codes for %s", target)
             raise ValueError(f"No codes for {target}")
         if key not in self.codes[target]:
+            log.error("IrBlaster.add_macro_action: target %s has no key %s", target, key)
             raise ValueError(f"Target {target} has no key {key}")
         try:
             delay = int(delay)
         except ValueError as exc:
+            log.error("IrBlaster.add_macro_action: delay arg must be integer")
             raise ValueError("Delay arg must be integer (milliseconds)") from exc
         try:
             repeat = int(repeat)
         except ValueError as exc:
+            log.error("IrBlaster.add_macro_action: repeat arg must be integer")
             raise ValueError("Repeat arg must be integer (number of times to press key)") from exc
 
         # Add action
         self.macros[name].append((target, key, delay, repeat))
+        log.debug("IrBlaster.add_macro_action: action added")
 
     def run_macro(self, name):
         '''Takes name of existing macro, runs all actions in async coroutine to
         avoid blocking API response if macro contains long delays.'''
 
         if name not in self.macros.keys():
+            log.error("IrBlaster.run_macro: macro named %s does not exist", name)
             raise ValueError(f"Macro {name} does not exist, use create_macro to add")
 
         # Run macro
+        log.debug("IrBlaster.run_macro: running %s", name)
         asyncio.run(self.run_macro_coro(name))
 
     async def run_macro_coro(self, name):
         '''Async coroutine called by run_macro. Takes name of existing macro,
         runs all actions.
         '''
-        print_with_timestamp("IR Blaster: run macro coro start")
+        log.debug("IrBlaster: run macro coro start")
         # Iterate actions and run each action
         for action in self.macros[name]:
             for _ in range(0, int(action[3])):
                 self.send(action[0], action[1])
                 await asyncio.sleep_ms(int(action[2]))
-        print_with_timestamp("IR Blaster: run macro coro end")
+        log.debug("IrBlaster: run macro coro end")

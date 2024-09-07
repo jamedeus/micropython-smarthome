@@ -153,6 +153,10 @@ class ApiTarget(Device):
         If new rule is "enabled" replaces with default_rule and calls enable.
         If device is already on calls send method so new rule takes effect.
         '''
+        log.debug(
+            "%s: set_rule called with %s (scheduled=%s)",
+            self.name, rule, scheduled
+        )
 
         # Check if rule is valid - may return a modified rule (ie cast str to int)
         valid_rule = self.rule_validator(rule)
@@ -182,7 +186,7 @@ class ApiTarget(Device):
         '''Called when an API call receives an error response. Takes full
         payload and response, writes multiline log with indent for readability.
         '''
-        log.error("""%s: Send method failed
+        log.error("""%s: Request failed
         Payload: %s
         Response: %s""", self.name, msg, err)
         self.print(f"Send method failed with payload {msg}")
@@ -200,6 +204,7 @@ class ApiTarget(Device):
             res = s.recv(1000).decode()
             res = json.loads(res)
         except (OSError, ValueError):
+            log.error("%s: exception during request", self.name)
             res = False
         s.close()
 
@@ -219,6 +224,10 @@ class ApiTarget(Device):
         '''Sends API call in current_rule "on" key if argument is True.
         Sends API call in current_rule "off" key if argument is False.
         '''
+        log.debug(
+            "%s: send method called, rule=%s, state=%s",
+            self.name, self.current_rule, state
+        )
 
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
@@ -257,6 +266,8 @@ class ApiTarget(Device):
         if state:
             for sensor in self.triggered_by:
                 if sensor._type in ["pir", "ld2410"]:
+                    # BUG this is only appropriate when
+                    log.debug("%s: Reset %s motion attribute", self.name, sensor.name)
                     sensor.motion = False
 
         # Tells group send succeeded
@@ -267,6 +278,7 @@ class ApiTarget(Device):
         Passes current_rule directly to API backend without opening connection
         (request method is synchronous, blocks Api.run_client method).
         '''
+        log.debug("%s: send_to_self method called, command=%s", self.name, command)
         path = command[0]
         args = command[1:]
 

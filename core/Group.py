@@ -1,5 +1,4 @@
 import logging
-from util import print_with_timestamp
 
 # Set name for module's log lines
 log = logging.getLogger("Group")
@@ -26,9 +25,10 @@ class Group():
         # https://docs.micropython.org/en/latest/reference/isr_rules.html#creation-of-python-objects
         self._refresh = self.refresh
 
-        log.info(f"Instantiated Group named {self.name}")
+        log.info("Instantiated Group named %s", self.name)
 
     def reset_state(self):
+        log.debug("%s: reset state to None", self.name)
         self.state = None
 
     # Called by decorators in some sensor's add_routines method, appends functions to self.post_action_routines
@@ -46,6 +46,7 @@ class Group():
             if sensor.enabled:
                 conditions.append(sensor.condition_met())
 
+        log.debug("%s: Sensor conditions: %s", self.name, conditions)
         return conditions
 
     def determine_correct_action(self, conditions):
@@ -68,6 +69,7 @@ class Group():
     def apply_action(self, action):
         # No action needed if group state already matches desired state
         if self.state == action:
+            log.debug("%s: current state already matches action", self.name)
             return
 
         failed = False
@@ -75,6 +77,7 @@ class Group():
         for device in self.targets:
             # Do not turn device on/off if already on/off
             if not action == device.state:
+                log.debug("%s: applying action to %s", self.name, device.name)
                 # int converts True to 1, False to 0
                 success = device.send(int(action))
 
@@ -87,17 +90,23 @@ class Group():
 
         # If all succeeded, change group state to prevent re-sending
         if not failed:
+            log.debug("%s: finished applying action, no errors", self.name)
             self.state = action
 
             # Run post-action routines (if any) for all sensors in group
             for function in self.post_action_routines:
                 function()
 
+        else:
+            log.debug("%s: encountered errors while applying action", self.name)
+
     # Check condition of all sensors in group, turn devices on/off if needed
     # Arg is required for micropython.schedule but unused
     # Called by all sensors when condition changes
     def refresh(self, arg=None):
+        log.debug("%s: refresh group", self.name)
         action = self.determine_correct_action(self.check_sensor_conditions())
+        log.debug("%s: correct action: %s", self.name, action)
         if action is not None:
-            print_with_timestamp(f"{self.name}: Applying action: {action}")
+            log.info("%s: applying action: %s", self.name, action)
             self.apply_action(action)

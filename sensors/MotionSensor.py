@@ -65,6 +65,7 @@ class MotionSensor(Sensor):
         super().enable()
 
         # Create hardware interrupt (both rising and falling)
+        log.debug("%s: create hardware interrupt", self.name)
         self.sensor.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.pin_interrupt)
 
     def disable(self):
@@ -75,6 +76,7 @@ class MotionSensor(Sensor):
         super().disable()
 
         # Disable hardware interrupt
+        log.debug("%s: remove hardware interrupt", self.name)
         self.sensor.irq(handler=None)
 
         # Stop any reset timer that may be running
@@ -143,11 +145,13 @@ class MotionSensor(Sensor):
 
         # Turn targets on and start reset timer if motion detected
         if self.sensor.value():
+            log.debug("%s: Motion detected", self.name)
             self.motion_detected()
 
         # Turn off targets if motion not detected and reset timer is disabled
         # (otherwise leave targets on until reset timer expires)
         elif self.current_rule == 0:
+            log.debug("%s: Motion no longer detected", self.name)
             self.motion = False
             self.refresh_group()
 
@@ -161,7 +165,6 @@ class MotionSensor(Sensor):
         if not self.motion:
             self.motion = True
             self.print("Motion detected")
-            log.debug("%s: Motion detected", self.name)
 
         # Start reset timer (or restart if sensor retriggered)
         self.start_reset_timer()
@@ -174,6 +177,10 @@ class MotionSensor(Sensor):
         target devices) in <current_rule> minutes. Called when motion detected
         or current_rule changes.
         '''
+        log.debug(
+            "%s: starting reset timer, current_rule = %s",
+            self.name, self.current_rule
+        )
 
         # Set reset timer unless disabled or current rule is 0 (no reset timer)
         if self.current_rule not in [0, "disabled"]:
@@ -183,7 +190,7 @@ class MotionSensor(Sensor):
                 SoftwareTimer.timer.create(off, self.reset_timer, self.name)
             except (ValueError, TypeError):
                 self.print(f"Failed to start reset timer, current_rule = {self.current_rule}")
-                log.debug(
+                log.error(
                     "%s: Failed to start reset timer, current_rule = %s",
                     self.name,
                     self.current_rule
@@ -196,12 +203,12 @@ class MotionSensor(Sensor):
         '''Called when reset timer expires, resets motion attribute and turns
         off target devices.
         '''
-
-        log.info("%s: reset_timer interrupt", self.name)
+        log.debug("%s: reset_timer interrupt", self.name)
 
         # Only reset if sensor not detecting motion
         if not self.sensor.value():
             # Reset motion, causes main loop to fade lights off
+            log.debug("%s: motion no longer detected", self.name)
             self.motion = False
 
             # Check conditions of all sensors in group
@@ -211,12 +218,14 @@ class MotionSensor(Sensor):
         # motion continuously detected for whole timer duration - if it stopped
         # detecting and restarted the timer would have been reset before this).
         else:
+            log.debug("%s: motion still detected", self.name)
             self.start_reset_timer()
 
     def trigger(self):
         '''Called by trigger_sensor API endpoint, simulates sensor detecting
         motion (sets motion attribute to True, starts reset timer).
         '''
+        log.debug("%s: trigger method called", self.name)
         self.motion_detected()
         return True
 

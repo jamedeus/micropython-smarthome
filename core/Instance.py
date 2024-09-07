@@ -68,6 +68,7 @@ class Instance():
         '''Sets enabled bool to True (allows sensors to be checked, devices to
         be turned on/off), and ensures current_rule contains a usable value.
         '''
+        log.debug("%s: enabled", self.name)
         self.enabled = True
 
         # Replace "disabled" with usable rule
@@ -78,6 +79,7 @@ class Instance():
         '''Sets enabled bool to False (prevents sensor from being checked,
         prevents devices from being turned on).
         '''
+        log.debug("%s: disabled", self.name)
         self.enabled = False
 
     def get_usable_rule(self):
@@ -107,6 +109,10 @@ class Instance():
           rule:      The new rule, will be set as current_rule if valid
           scheduled: Optional, if True also sets scheduled_rule if rule valid
         '''
+        log.debug(
+            "%s: set_rule called with %s (scheduled=%s)",
+            self.name, rule, scheduled
+        )
 
         # Check if rule is valid (may return modified rule, eg cast str to int)
         valid_rule = self.rule_validator(rule)
@@ -171,7 +177,7 @@ class Instance():
         '''Called by SoftwareTimer interrupt at each scheduled rule change.
         Calls set_rule with first item in rule_queue (see Config.build_queue).
         '''
-        log.debug("%s: Scheduled rule change", self.name)
+        log.info("%s: Scheduled rule change", self.name)
         self.print("Scheduled rule change")
         self.set_rule(self.rule_queue.pop(0), True)
 

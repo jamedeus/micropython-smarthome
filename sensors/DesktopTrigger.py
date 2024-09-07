@@ -62,7 +62,7 @@ class DesktopTrigger(Sensor):
 
         # Restart loop if stopped
         if self.monitor_task is None:
-            self.print(f"{self.name}: Start monitor loop")
+            log.debug("%s: start monitor loop", self.name)
             self.monitor_task = asyncio.create_task(self.monitor())
         super().enable()
 
@@ -74,7 +74,7 @@ class DesktopTrigger(Sensor):
 
         # Stop loop if running
         if self.monitor_task is not None:
-            self.print(f"{self.name}: Stop monitor loop")
+            log.debug("%s: stop monitor loop", self.name)
             self.monitor_task.cancel()
             # Allow enable method to restart loop
             self.monitor_task = None
@@ -92,7 +92,7 @@ class DesktopTrigger(Sensor):
         except OSError:
             # Desktop offline or different service running on port 5000, disable
             self.print("Fatal error (unable to connect to desktop), disabling")
-            log.info(
+            log.critical(
                 "%s: Fatal error (unable to connect to desktop), disabling",
                 self.name
             )
@@ -110,12 +110,13 @@ class DesktopTrigger(Sensor):
             ).json()["state"]
         except (OSError, IndexError):
             # Wifi interruption, return False - caller will try again in 1 second
+            log.error("%s: failed to get state (wifi error)", self.name)
             self.print(f"{self.name}: failed to get state (wifi error)")
             return False
         except ValueError:
             # Response doesn't contain JSON (different service running on port 5000), disable
             self.print("Fatal error (unexpected response from desktop), disabling")
-            log.info(
+            log.critical(
                 "%s: Fatal error (unexpected response from desktop), disabling",
                 self.name
             )
@@ -132,6 +133,7 @@ class DesktopTrigger(Sensor):
         '''Called by trigger_sensor API endpoint, simulates sensor condition
         met (computer screen turned on).
         '''
+        log.debug("%s: trigger method called", self.name)
         self.current = "On"
         self.refresh_group()
         return True
@@ -151,6 +153,7 @@ class DesktopTrigger(Sensor):
             while True:
                 # Get new reading
                 new = self.get_monitor_state()
+                log.debug("%s: monitor state: %s", self.name, new)
 
                 # At lock screen, or getting "Disabled" for a few seconds (NVIDIA Prime quirk)
                 # Discard new reading, wait 1 second, try again
@@ -162,7 +165,7 @@ class DesktopTrigger(Sensor):
                 if new != self.current:
                     self.print(f"Monitors changed from {self.current} to {new}")
                     log.debug(
-                        "%s: Monitors changed from %s to %s",
+                        "%s: monitors changed from %s to %s",
                         self.name, self.current, new
                     )
                     self.current = new
@@ -174,11 +177,19 @@ class DesktopTrigger(Sensor):
                         # off unless another sensor type has condition met)
                         for sensor in self.group.triggers:
                             if sensor._type == "pir":
+                                log.debug(
+                                    "%s: reset %s motion attribute",
+                                    self.name, sensor.name
+                                )
                                 sensor.motion = False
 
                         # Update target's state (allows group to turn screen
                         # back on if another sensor has condition met)
                         if self.desktop_target:
+                            log.debug(
+                                "%s: Set desktop target (%s) state to False",
+                                self.name, self.desktop_target.name
+                            )
                             self.desktop_target.state = False
 
                         # Force group to apply actions so above overrides can take effect
@@ -190,6 +201,10 @@ class DesktopTrigger(Sensor):
                     # If monitors just turned on, update target's state
                     elif self.current == "On":
                         if self.desktop_target:
+                            log.debug(
+                                "%s: Set desktop target (%s) state to True",
+                                self.name, self.desktop_target.name
+                            )
                             self.desktop_target.state = True
 
                     # Refresh group

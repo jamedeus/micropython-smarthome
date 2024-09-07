@@ -77,7 +77,10 @@ class HttpGet(Device):
         '''Makes request to ON action URL if argument is True.
         Makes request to OFF action URL if argument is False.
         '''
-        log.info("%s: send method called, state = %s", self.name, state)
+        log.debug(
+            "%s: send method called, rule=%s, state=%s",
+            self.name, self.current_rule, state
+        )
 
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
@@ -87,12 +90,14 @@ class HttpGet(Device):
 
         try:
             response = self.request(self.get_url(state))
+            log.debug("%s: response status: %s", self.name, response.status_code)
             if state:
                 self.print("Turned on")
             else:
                 self.print("Turned off")
         except OSError:
             # Wifi interruption, send failed
+            log.error("%s: send method failed (wifi error)", self.name)
             self.print(f"{self.name}: send failed (wifi error)")
             return False
 

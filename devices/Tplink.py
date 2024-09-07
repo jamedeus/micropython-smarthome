@@ -74,8 +74,8 @@ class Tplink(DimmableLight):
         Makes API call to turn Tplink device OFF if argument is False.
         Sets Tplink device brightness to current_rule.
         '''
-        log.info(
-            "%s: send method called, brightness=%s, state=%s",
+        log.debug(
+            "%s: send method called, rule=%s, state=%s",
             self.name, self.current_rule, state
         )
 
@@ -107,8 +107,11 @@ class Tplink(DimmableLight):
 
             # Set brightness, read response
             sock_tcp.send(self.encrypt(cmd))
-            sock_tcp.recv(2048)
+            data = sock_tcp.recv(2048)
             sock_tcp.close()
+
+            decrypted = self.decrypt(data[4:])
+            log.debug("%s: Response: %s", self.name, decrypted)
 
             self.print(f"brightness = {self.current_rule}, state = {state}")
             log.debug("%s: Success", self.name)
@@ -118,7 +121,7 @@ class Tplink(DimmableLight):
 
         except Exception as ex:
             self.print(f"Could not connect to host {self.ip}, exception: {ex}")
-            log.info("%s: Could not connect to host %s", self.name, self.ip)
+            log.error("%s: Could not connect to host %s", self.name, self.ip)
 
             # Tell calling function that request failed
             return False
