@@ -59,8 +59,7 @@ class Dummy(Sensor):
 
         result = super().set_rule(rule, scheduled)
         # Refresh group if rule changed successfully
-        # TODO
-        if result and hasattr(self, "group"):
+        if self.group:
             self.refresh_group()
         return result
 
