@@ -3,13 +3,13 @@ import logging
 from math import isnan
 from machine import Pin
 from hx711 import HX711
-from Sensor import Sensor
+from SensorWithLoop import SensorWithLoop
 
 # Set name for module's log lines
 log = logging.getLogger("Load_Cell")
 
 
-class LoadCell(Sensor):
+class LoadCell(SensorWithLoop):
     '''Driver for HX711 chip connected to load cell, used as a pressure sensor.
     Turns target devices on when load cell value is greater than current_rule,
     turns devices off when load cell value is less than current_rule. Can be
@@ -46,32 +46,6 @@ class LoadCell(Sensor):
         self.monitor_task = asyncio.create_task(self.monitor())
 
         log.info("Instantiated load cell sensor named %s", self.name)
-
-    def enable(self):
-        '''Sets enabled bool to True (allows sensor to be checked), ensures
-        current_rule contains a usable value, refreshes group (check sensor),
-        restarts monitor loop if stopped (checks user activity every second).
-        '''
-
-        # Restart loop if stopped
-        if self.monitor_task is None:
-            log.debug("%s: start monitor loop", self.name)
-            self.monitor_task = asyncio.create_task(self.monitor())
-        super().enable()
-
-    def disable(self):
-        '''Sets enabled bool to False (prevents sensor from being checked),
-        stops monitor loop, and refreshes group (turn devices OFF if other
-        sensor conditions not met).
-        '''
-
-        # Stop loop if running
-        if self.monitor_task is not None:
-            log.debug("%s: stop monitor loop", self.name)
-            self.monitor_task.cancel()
-            # Allow enable method to restart loop
-            self.monitor_task = None
-        super().disable()
 
     def validator(self, rule):
         '''Accepts any valid integer or float except NaN.'''
@@ -147,14 +121,6 @@ class LoadCell(Sensor):
         Called by API get_attributes endpoint, more verbose than status
         '''
         attributes = super().get_attributes()
-
         # Remove non-serializable object
         del attributes["sensor"]
-
-        # Replace monitor_task with True or False
-        if attributes["monitor_task"] is not None:
-            attributes["monitor_task"] = True
-        else:
-            attributes["monitor_task"] = False
-
         return attributes

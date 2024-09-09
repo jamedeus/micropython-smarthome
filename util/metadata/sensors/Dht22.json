@@ -5,6 +5,7 @@
     "dependencies": [
         "sensors/Dht22.py",
         "sensors/Thermostat.py",
+        "sensors/SensorWithLoop.py",
         "sensors/Sensor.py",
         "core/Instance.py"
     ],

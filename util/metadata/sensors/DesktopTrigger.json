@@ -4,6 +4,7 @@
     "display_name": "Computer Activity",
     "dependencies": [
         "sensors/DesktopTrigger.py",
+        "sensors/SensorWithLoop.py",
         "sensors/Sensor.py",
         "core/Instance.py"
     ],

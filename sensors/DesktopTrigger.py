@@ -1,13 +1,13 @@
 import logging
 import asyncio
 import requests
-from Sensor import Sensor
+from SensorWithLoop import SensorWithLoop
 
 # Set name for module's log lines
 log = logging.getLogger("DesktopTrigger")
 
 
-class DesktopTrigger(Sensor):
+class DesktopTrigger(SensorWithLoop):
     '''Driver for Linux computers running desktop-integration daemon. Makes API
     call every second to check if computer screen is turned on or off. Turns
     target devices on when screen is on, turns devices off when screen is off.
@@ -53,32 +53,6 @@ class DesktopTrigger(Sensor):
             "Instantiated Desktop named %s: ip = %s, port = %s",
             self.name, self.ip, self.port
         )
-
-    def enable(self):
-        '''Sets enabled bool to True (allows sensor to be checked), ensures
-        current_rule contains a usable value, refreshes group (check sensor),
-        restarts monitor loop if stopped (checks user activity every second).
-        '''
-
-        # Restart loop if stopped
-        if self.monitor_task is None:
-            log.debug("%s: start monitor loop", self.name)
-            self.monitor_task = asyncio.create_task(self.monitor())
-        super().enable()
-
-    def disable(self):
-        '''Sets enabled bool to False (prevents sensor from being checked),
-        stops monitor loop, and refreshes group (turn devices OFF if other
-        sensor conditions not met).
-        '''
-
-        # Stop loop if running
-        if self.monitor_task is not None:
-            log.debug("%s: stop monitor loop", self.name)
-            self.monitor_task.cancel()
-            # Allow enable method to restart loop
-            self.monitor_task = None
-        super().disable()
 
     def get_idle_time(self):
         '''Makes API call to get time (milliseconds) since last user activity,
@@ -223,14 +197,6 @@ class DesktopTrigger(Sensor):
         Called by API get_attributes endpoint, more verbose than status
         '''
         attributes = super().get_attributes()
-
         # Replace desktop_target instance with instance.name
         attributes["desktop_target"] = attributes["desktop_target"].name
-
-        # Replace monitor_task with True or False
-        if attributes["monitor_task"] is not None:
-            attributes["monitor_task"] = True
-        else:
-            attributes["monitor_task"] = False
-
         return attributes

@@ -2,7 +2,7 @@ import asyncio
 import logging
 from math import isnan
 import SoftwareTimer
-from Sensor import Sensor
+from SensorWithLoop import SensorWithLoop
 
 # Set name for module's log lines
 log = logging.getLogger("Thermostat")
@@ -28,8 +28,8 @@ def celsius_to_kelvin(celsius):
     return celsius + 273.15
 
 
-class Thermostat(Sensor):
-    '''Base class for all temperature/humidity sensors. Inherits from Sensor
+class Thermostat(SensorWithLoop):
+    '''Base class for all temperature sensors. Inherits from SensorWithLoop
     and adds attributes and methods to use the sensor as a thermostat (turn
     devices on and off when a configurable temperature threshold is crossed).
 
@@ -98,32 +98,6 @@ class Thermostat(Sensor):
 
         # Start monitor loop (checks temp every 5 seconds)
         self.monitor_task = asyncio.create_task(self.monitor())
-
-    def enable(self):
-        '''Sets enabled bool to True (allows sensor to be checked), ensures
-        current_rule contains a usable value, refreshes group (check sensor),
-        restarts monitor loop if stopped (checks user activity every second).
-        '''
-
-        # Restart loop if stopped
-        if self.monitor_task is None:
-            log.debug("%s: start monitor loop", self.name)
-            self.monitor_task = asyncio.create_task(self.monitor())
-        super().enable()
-
-    def disable(self):
-        '''Sets enabled bool to False (prevents sensor from being checked),
-        stops monitor loop, and refreshes group (turn devices OFF if other
-        sensor conditions not met).
-        '''
-
-        # Stop loop if running
-        if self.monitor_task is not None:
-            log.debug("%s: stop monitor loop", self.name)
-            self.monitor_task.cancel()
-            # Allow enable method to restart loop
-            self.monitor_task = None
-        super().disable()
 
     def get_temperature(self):
         '''Returns current temperature reading in configured units.'''
@@ -376,18 +350,6 @@ class Thermostat(Sensor):
             # when target turns on, temp hasn't changed yet so only 2 readings meaningful)
             SoftwareTimer.timer.cancel(self.name)
             SoftwareTimer.timer.create(30000, self.audit, self.name)
-
-    def get_attributes(self):
-        '''Return JSON-serializable dict containing all current attributes
-        Called by API get_attributes endpoint, more verbose than status
-        '''
-        attributes = super().get_attributes()
-        # Replace monitor_task with True or False
-        if attributes["monitor_task"] is not None:
-            attributes["monitor_task"] = True
-        else:
-            attributes["monitor_task"] = False
-        return attributes
 
     def get_status(self):
         '''Return JSON-serializable dict containing status information.
