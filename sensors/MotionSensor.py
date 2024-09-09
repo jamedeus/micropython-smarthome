@@ -73,14 +73,13 @@ class MotionSensor(Sensor):
         removes sensor pin interrupt, stops reset timer if running, and
         refreshes group (turn devices OFF if other sensor conditions not met).
         '''
-        super().disable()
 
-        # Disable hardware interrupt
+        # Disable hardware interrupt, ensure reset timer not running
         log.debug("%s: remove hardware interrupt", self.name)
         self.sensor.irq(handler=None)
-
-        # Stop any reset timer that may be running
         SoftwareTimer.timer.cancel(self.name)
+
+        super().disable()
 
     def condition_met(self):
         '''Returns True if sensor detected motion and reset timer has not yet
