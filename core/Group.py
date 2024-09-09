@@ -5,20 +5,41 @@ log = logging.getLogger("Group")
 
 
 class Group():
+    '''Class used to group one or more sensors with identical targets.
+    Instantiated by Config.build_groups.
+
+    Args:
+      name:         Unique, sequential name (group1, group2, etc)
+      sensors:      List of sensor instances with identical targets
+
+    Sensors call the refresh method when their condition changes (checks all
+    sensor conditions, determines correct action, calls all device send methods
+    if correct action does not match current state).
+
+    Devices are turned on when one or more sensor conditions are True.
+    Devices are turned off when all sensor conditions are False.
+    Devices do not change if one or more sensor conditions are None and no
+    sensor conditions are True.
+    '''
+
     def __init__(self, name, sensors):
         self.name = name
 
         # List of instances for all sensors in group
         self.triggers = sensors
 
-        # List of instances for all devices in group (don't need to iterate, all triggers have same targets)
+        # List of instances for all devices in group
+        # (don't need to iterate, all triggers have same targets)
         self.targets = self.triggers[0].targets
 
-        # Changes to same state as targets after successful on/off command, main loop skips group until change needed
+        # Changes to match device state after successful refresh (no failed
+        # devuce.send calls). Allows sensor to skip refresh when no changes
+        # needed (current state already matches target state).
         self.state = None
 
-        # Some sensor types run routines after turning their targets on/off
-        # After adding sensor to group, Config calls sensor's add_routines method to populate list with functions
+        # Some sensor types run routines after turning their targets on/off.
+        # After adding sensor to group, Config calls sensor's add_routines
+        # method to populate this list with functions to call.
         self.post_action_routines = []
 
         # Preallocate reference to bound method so it can be called in ISR
@@ -28,16 +49,26 @@ class Group():
         log.info("Instantiated Group named %s", self.name)
 
     def reset_state(self):
+        '''Changes group.state to None (used to bypass check in apply_action
+        that skips send methods if group.state matches action arg).
+        '''
         log.debug("%s: reset state to None", self.name)
         self.state = None
 
-    # Called by decorators in some sensor's add_routines method, appends functions to self.post_action_routines
     def add_post_action_routine(self):
+        '''Decorator used inside sensor add_routines methods.
+        Appends sensor functions to self.post_action_routines (each function is
+        called after a successful group.refresh with no failed send calls).
+        '''
         def _add_post_action_routine(func):
             self.post_action_routines.append(func)
         return _add_post_action_routine
 
     def check_sensor_conditions(self):
+        '''Calls condition_met method of each sensor in group, returns list
+        with response from each sensor.
+        '''
+
         # Store return value from each sensor in group
         conditions = []
 
@@ -50,18 +81,27 @@ class Group():
         return conditions
 
     def determine_correct_action(self, conditions):
-        # Determine action to apply to target devices: True = turn on, False = turn off, None = do nothing
-        # Turn on: Requires only 1 sensor to return True
-        # Turn off: Requires ALL sensors to return False
-        # Nothing: Requires 1 sensor to return None and 0 sensors returning True
+        '''Takes sensor conditions returned by check_sensor_conditions, returns
+        correct action to apply to target devices (True = turn on, False = turn
+        off, None = do nothing).
+
+        Turn on: Requires 1 or more sensor(s) to return True
+        Turn off: Requires ALL sensors to return False
+        Nothing: Requires 1 sensor to return None and 0 sensors returning True
+        '''
         if True in conditions:
             return True
-        elif None in conditions:
+        if None in conditions:
             return None
-        else:
-            return False
+        return False
 
     def apply_action(self, action):
+        '''Takes action (bool), calls send method of every device in group.
+        Sets device.state to match action if send call succeeds.
+        Sets group.state to match action if all send calls succeeded.
+        Sets group.state to None if any send calls fail.
+        '''
+
         # No action needed if group state already matches desired state
         if self.state == action:
             log.debug("%s: current state already matches action", self.name)
@@ -105,10 +145,11 @@ class Group():
             log.debug("%s: encountered errors while applying action", self.name)
             self.reset_state()
 
-    # Check condition of all sensors in group, turn devices on/off if needed
-    # Arg is required for micropython.schedule but unused
-    # Called by all sensors when condition changes
-    def refresh(self, arg=None):
+    def refresh(self, *args):
+        '''Checks all sensors conditions, turns devices on or off if needed.
+        Called by all sensors when condition changes.
+        Args not used (required for micropython schedule).
+        '''
         log.debug("%s: refresh group", self.name)
         action = self.determine_correct_action(self.check_sensor_conditions())
         log.debug("%s: correct action: %s", self.name, action)
