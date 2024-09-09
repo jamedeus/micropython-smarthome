@@ -87,9 +87,6 @@ class TestGroup(unittest.TestCase):
         self.sensor.enabled = True
 
     def test_04_determine_correct_action(self):
-        # Ensure group state is None
-        self.group.state = None
-
         # Should return True if any conditions are True
         self.assertTrue(self.group.determine_correct_action([False, True, None]))
 
@@ -99,10 +96,6 @@ class TestGroup(unittest.TestCase):
         # Should return False if all conditions are False
         self.assertFalse(self.group.determine_correct_action([False, False, False]))
 
-        # Should return None if correct action matches current state
-        self.group.state = True
-        self.assertEqual(self.group.determine_correct_action([True, False, None]), None)
-
     def test_05_apply_action(self):
         # Confirm send method not called if action matches group state
         self.group.state = True
@@ -110,7 +103,7 @@ class TestGroup(unittest.TestCase):
         self.assertFalse(self.device.send_method_called)
         self.assertFalse(self.sensor.routine_called)
 
-        # Confirm that send method is called, group action changes to reflect applied action
+        # Confirm that send method is called, group state changes to reflect applied action
         self.group.apply_action(False)
         self.assertFalse(self.group.state)
         self.assertTrue(self.device.send_method_called)
@@ -118,10 +111,10 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(self.sensor.routine_called)
         self.sensor.routine_called = False
 
-        # Confirm that group state does not change when send methods fail
+        # Confirm that group state changes to None when send methods fail
         self.device.send_result = False
         self.group.apply_action(True)
-        self.assertFalse(self.group.state)
+        self.assertEqual(self.group.state, None)
         self.assertTrue(self.device.send_method_called)
         self.assertFalse(self.sensor.routine_called)
         self.device.send_method_called = False
@@ -230,3 +223,52 @@ class TestGroup(unittest.TestCase):
 
         # State should be True even though device is disabled and off
         self.assertTrue(self.device.state)
+
+    # Original bug: Group state was only updated after apply_action ran with no
+    # errors in device send calls. If errors occurred the group state would not
+    # change, which could result in a sensor interupt being ignored (new action
+    # matches outdated group state). Example: If group state is True and action
+    # changes to False devices turn off, but if 1 fails group state still True.
+    # When action changes back to True devices will not turn on (action matches
+    # current group state because it didn't change after the failed send).
+    #
+    # Group.apply_action now resets state to None when an error occurs to allow
+    # applying opposite action when sensor conditions change (or retry failed
+    # send if group refreshed again).
+    def test_09_regression_failed_send_causes_group_to_stop_responding(self):
+        # Ensure device and sensor are enabled
+        self.device.enable()
+        self.sensor.enable()
+
+        # Simulate group turned off
+        self.group.state = False
+        self.device.state = None
+        self.device.hardware_state = False
+        self.device.send_method_called = False
+
+        # Simulate sensor condition changing to True, device send method
+        # failing to turn on
+        self.sensor.condition = True
+        self.device.send_result = False
+        self.sensor.refresh_group()
+
+        # Confirm device.send called, device.state did not change, group.state
+        # was reset to None (should not remain False)
+        self.assertTrue(self.device.send_method_called)
+        self.assertEqual(self.device.state, None)
+        self.assertEqual(self.group.state, None)
+
+        # Simulate device coming back online (send method will succeed)
+        self.device.send_result = True
+        self.device.send_method_called = False
+
+        # Simulate sensor condition changing to False
+        self.sensor.condition = False
+        self.sensor.refresh_group()
+
+        # Confirm group called device send method (before fix sensor change was
+        # ignored because new action matched existing state) and set device and
+        # group states to False
+        self.assertTrue(self.device.send_method_called)
+        self.assertFalse(self.device.state)
+        self.assertFalse(self.group.state)

@@ -55,16 +55,11 @@ class Group():
         # Turn off: Requires ALL sensors to return False
         # Nothing: Requires 1 sensor to return None and 0 sensors returning True
         if True in conditions:
-            action = True
+            return True
         elif None in conditions:
-            action = None
-        else:
-            action = False
-
-        if not action == self.state:
-            return action
-        else:
             return None
+        else:
+            return False
 
     def apply_action(self, action):
         # No action needed if group state already matches desired state
@@ -87,6 +82,11 @@ class Group():
 
                 else:
                     failed = True
+            else:
+                log.debug(
+                    "%s: skipping %s (state already matches action)",
+                    self.name, device.name
+                )
 
         # If all succeeded, change group state to prevent re-sending
         if not failed:
@@ -97,8 +97,13 @@ class Group():
             for function in self.post_action_routines:
                 function()
 
+        # Reset group state if send failed (prevents getting stuck - if action
+        # is True and group.state remains False due to a failed send then when
+        # action changes to False it will match current state and send will not
+        # be called. Changing to None allows any action to be applied).
         else:
             log.debug("%s: encountered errors while applying action", self.name)
+            self.reset_state()
 
     # Check condition of all sensors in group, turn devices on/off if needed
     # Arg is required for micropython.schedule but unused
