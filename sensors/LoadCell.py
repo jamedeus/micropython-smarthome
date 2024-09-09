@@ -91,7 +91,7 @@ class LoadCell(Sensor):
         '''
         log.debug("%s: Starting LoadCell.monitor coro", self.name)
         while True:
-            log.debug("%s: sensor value: %s", self.name, self.get_value())
+            log.debug("%s: sensor value: %s", self.name, self.get_raw_reading())
             new = self.condition_met()
 
             # If condition changed, overwrite and refresh group
