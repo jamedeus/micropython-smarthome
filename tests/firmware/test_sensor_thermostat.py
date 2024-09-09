@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 from machine import SoftI2C
 from Group import Group
@@ -18,6 +19,7 @@ expected_attributes = {
     'enabled': True,
     'group': 'group1',
     'mode': 'cool',
+    "monitor_task": True,
     'targets': ['device1'],
     'rule_queue': [],
     'name': 'sensor1',
@@ -273,7 +275,34 @@ class TestThermostat(unittest.TestCase):
         self.assertFalse(self.target.state)
         self.assertTrue(self.group.refresh_called)
 
-    def test_13_add_routines(self):
+    def test_13_disable_stops_loop(self):
+        # Confirm loop task exists
+        self.assertIsInstance(self.instance.monitor_task, asyncio.Task)
+
+        # Ensure cancel and yield are in same event loop (cpython test
+        # environment, not required for pure micropython)
+        async def test():
+            # Disable, should call monitor_task.cancel()
+            self.instance.disable()
+
+            # Yield to loop to allow monitor_task to exit
+            await asyncio.sleep(0.1)
+
+        # Disable and yield to loop, confirm task replaced with None
+        asyncio.run(test())
+        self.assertEqual(self.instance.monitor_task, None)
+
+    def test_14_enable_starts_loop(self):
+        # Cancel existing loop and replace with None
+        if self.instance.monitor_task:
+            self.instance.monitor_task.cancel()
+            self.instance.monitor_task = None
+
+        # Enable, confirm loop task created
+        self.instance.enable()
+        self.assertIsInstance(self.instance.monitor_task, asyncio.Task)
+
+    def test_15_add_routines(self):
         # Confirm no routines in group, instance.recent_temps not empty
         self.assertEqual(len(self.instance.group.post_action_routines), 0)
         self.instance.recent_temps = [69, 70, 71]
@@ -286,7 +315,7 @@ class TestThermostat(unittest.TestCase):
         self.instance.group.post_action_routines[0]()
         self.assertEqual(len(self.instance.recent_temps), 0)
 
-    def test_14_instantiate_with_all_modes(self):
+    def test_16_instantiate_with_all_modes(self):
         # Instantiate in heat mode
         test = Thermostat("sensor1", "sensor1", "Thermostat", 74, "heat", 1, "fahrenheit", [])
         self.assertEqual(test.mode, "heat")
@@ -299,7 +328,7 @@ class TestThermostat(unittest.TestCase):
         with self.assertRaises(ValueError):
             Thermostat("sensor1", "sensor1", "Thermostat", 74, "invalid", 1, "fahrenheit", [])
 
-    def test_15_instantiate_with_all_units(self):
+    def test_17_instantiate_with_all_units(self):
         # Instantiate with celsius
         test = Thermostat("sensor1", "sensor1", "Thermostat", 74, "cool", 1, "celsius", [])
         self.assertEqual(test.units, "celsius")
@@ -316,18 +345,18 @@ class TestThermostat(unittest.TestCase):
         with self.assertRaises(ValueError):
             Thermostat("sensor1", "sensor1", "Thermostat", 74, "cool", 1, "invalid", [])
 
-    def test_16_get_raw_temperature(self):
+    def test_18_get_raw_temperature(self):
         # Base class, must be implemented in subclass
         with self.assertRaises(NotImplementedError):
             Thermostat.get_raw_temperature(Thermostat)
 
-    def test_17_get_temperature_invalid_units(self):
+    def test_19_get_temperature_invalid_units(self):
         self.instance.units = 'rankine'
         with self.assertRaises(ValueError):
             self.instance.get_temperature()
         self.instance.units = 'fahrenheit'
 
-    def test_18_get_temperature_and_humidity(self):
+    def test_20_get_temperature_and_humidity(self):
         # Instantiate test instance
         test = Thermostat("sensor1", "sensor1", "Thermostat", 74, "cool", 1, "celsius", [])
 
@@ -361,7 +390,7 @@ class TestThermostat(unittest.TestCase):
     # Original bug: Some sensors would crash or behave unexpectedly in various situations if
     # default_rule was "enabled" or "disabled". These classes now raise exception in init
     # method to prevent this. Should not be possible to instantiate with invalid default_rule.
-    def test_19_regression_invalid_default_rule(self):
+    def test_21_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
             Thermostat("sensor1", "sensor1", "Thermostat", "enabled", "cool", 1, "fahrenheit", [])
 
@@ -372,7 +401,7 @@ class TestThermostat(unittest.TestCase):
     # on exception to detect invalid argument. Since NaN is a valid float no exception
     # was raised and set_rule was called with NaN. The validator correctly rejected NaN
     # but with an ambiguous error. NaN is now rejected directly by increment_rule.
-    def test_20_regression_increment_by_nan(self):
+    def test_22_regression_increment_by_nan(self):
         # Starting condition
         self.instance.set_rule(70)
 
@@ -384,7 +413,7 @@ class TestThermostat(unittest.TestCase):
     # Original bug: set_threshold was called by set_rule method, but enable method set
     # current_rule directly without calling set_rule. This could result in inaccurate
     # thresholds, effectively ignoring the current_rule.
-    def test_21_regression_fail_to_update_thresholds(self):
+    def test_23_regression_fail_to_update_thresholds(self):
         # Confirm initial thresholds
         self.instance.tolerance = 1.0
         self.instance.set_rule(70)
@@ -407,7 +436,7 @@ class TestThermostat(unittest.TestCase):
     # scheduled_rule as current_rule with no validation. This made it possible for a string
     # representation of float to be set as current_rule, raising exception when set_threshold
     # method called. Now uses set_rule method to cast rule to required type.
-    def test_22_regression_enable_sets_string_rule(self):
+    def test_24_regression_enable_sets_string_rule(self):
         # Set scheduled_rule to string representation of int
         self.instance.scheduled_rule = '70.0'
 

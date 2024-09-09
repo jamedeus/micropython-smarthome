@@ -92,11 +92,38 @@ class Thermostat(Sensor):
         # command (ir command didn't reach ac, etc)
         self.recent_temps = []
 
-        # Track output of condition_met (set by monitor callback)
+        # Track output of condition_met (set by monitor coro, calls
+        # refresh_group when current changes instead of every read)
         self.current = None
 
         # Start monitor loop (checks temp every 5 seconds)
-        asyncio.create_task(self.monitor())
+        self.monitor_task = asyncio.create_task(self.monitor())
+
+    def enable(self):
+        '''Sets enabled bool to True (allows sensor to be checked), ensures
+        current_rule contains a usable value, refreshes group (check sensor),
+        restarts monitor loop if stopped (checks user activity every second).
+        '''
+
+        # Restart loop if stopped
+        if self.monitor_task is None:
+            log.debug("%s: start monitor loop", self.name)
+            self.monitor_task = asyncio.create_task(self.monitor())
+        super().enable()
+
+    def disable(self):
+        '''Sets enabled bool to False (prevents sensor from being checked),
+        stops monitor loop, and refreshes group (turn devices OFF if other
+        sensor conditions not met).
+        '''
+
+        # Stop loop if running
+        if self.monitor_task is not None:
+            log.debug("%s: stop monitor loop", self.name)
+            self.monitor_task.cancel()
+            # Allow enable method to restart loop
+            self.monitor_task = None
+        super().disable()
 
     def get_temperature(self):
         '''Returns current temperature reading in configured units.'''
@@ -220,20 +247,26 @@ class Thermostat(Sensor):
         devices on or off if on_threshold or off_threshold exceeded.
         '''
         log.debug("%s: Starting Thermostat.monitor coro", self.name)
-        while True:
-            log.debug("%s: temperature: %s", self.name, self.get_temperature())
-            new = self.condition_met()
+        try:
+            while True:
+                log.debug("%s: temperature: %s", self.name, self.get_temperature())
+                new = self.condition_met()
 
-            # If condition changed, overwrite and refresh group
-            if new != self.current and new is not None:
-                log.debug(
-                    "%s: monitor: condition changed from %s to %s",
-                    self.name, self.current, new
-                )
-                self.current = new
-                self.refresh_group()
+                # If condition changed, overwrite and refresh group
+                if new != self.current and new is not None:
+                    log.debug(
+                        "%s: monitor: condition changed from %s to %s",
+                        self.name, self.current, new
+                    )
+                    self.current = new
+                    self.refresh_group()
 
-            await asyncio.sleep(5)
+                await asyncio.sleep(5)
+
+        # Sensor disabled, exit loop
+        except asyncio.CancelledError:
+            log.debug("%s: Exiting Thermostat.monitor coro", self.name)
+            return False
 
     def validator(self, rule):
         '''Accepts any integer or float between 18 and 27 celsius (or
@@ -343,6 +376,18 @@ class Thermostat(Sensor):
             # when target turns on, temp hasn't changed yet so only 2 readings meaningful)
             SoftwareTimer.timer.cancel(self.name)
             SoftwareTimer.timer.create(30000, self.audit, self.name)
+
+    def get_attributes(self):
+        '''Return JSON-serializable dict containing all current attributes
+        Called by API get_attributes endpoint, more verbose than status
+        '''
+        attributes = super().get_attributes()
+        # Replace monitor_task with True or False
+        if attributes["monitor_task"] is not None:
+            attributes["monitor_task"] = True
+        else:
+            attributes["monitor_task"] = False
+        return attributes
 
     def get_status(self):
         '''Return JSON-serializable dict containing status information.

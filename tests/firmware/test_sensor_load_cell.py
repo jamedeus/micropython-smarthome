@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 from Group import Group
 from LoadCell import LoadCell
@@ -14,6 +15,7 @@ expected_attributes = {
     'current': None,
     'current_rule': None,
     'scheduled_rule': None,
+    "monitor_task": True,
     'targets': []
 }
 
@@ -62,7 +64,34 @@ class TestLoadCellSensor(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator({"rule": "100000"}))
         self.assertFalse(self.instance.rule_validator(float('NaN')))
 
-    def test_05_condition_met(self):
+    def test_05_disable_stops_loop(self):
+        # Confirm loop task exists
+        self.assertIsInstance(self.instance.monitor_task, asyncio.Task)
+
+        # Ensure cancel and yield are in same event loop (cpython test
+        # environment, not required for pure micropython)
+        async def test():
+            # Disable, should call monitor_task.cancel()
+            self.instance.disable()
+
+            # Yield to loop to allow monitor_task to exit
+            await asyncio.sleep(0.1)
+
+        # Disable and yield to loop, confirm task replaced with None
+        asyncio.run(test())
+        self.assertEqual(self.instance.monitor_task, None)
+
+    def test_06_enable_starts_loop(self):
+        # Cancel existing loop and replace with None
+        if self.instance.monitor_task:
+            self.instance.monitor_task.cancel()
+            self.instance.monitor_task = None
+
+        # Enable, confirm loop task created
+        self.instance.enable()
+        self.assertIsInstance(self.instance.monitor_task, asyncio.Task)
+
+    def test_07_condition_met(self):
         # Get raw reading
         current = self.instance.get_raw_reading()
 
@@ -74,13 +103,13 @@ class TestLoadCellSensor(unittest.TestCase):
         self.instance.set_rule(current + 10000)
         self.assertFalse(self.instance.condition_met())
 
-    def test_06_trigger(self):
+    def test_08_trigger(self):
         # Should not be able to trigger this sensor type
         self.assertFalse(self.instance.trigger())
 
     # Original bug: validator cast rule to float and only rejected if an
     # exception was raised. If the validator received True or False it would
     # cast to 1.0 or 0.0 respectively and accept incorrectly.
-    def test_07_regression_validator_excepts_bool(self):
+    def test_09_regression_validator_excepts_bool(self):
         self.assertFalse(self.instance.rule_validator(True))
         self.assertFalse(self.instance.rule_validator(False))

@@ -20,6 +20,7 @@ expected_attributes = {
     "off_threshold": 73.0,
     "rule_queue": [],
     "mode": "cool",
+    "monitor_task": True,
     "_type": "si7021",
     "default_rule": 74
 }

@@ -43,9 +43,35 @@ class LoadCell(Sensor):
         self.current = None
 
         # Start monitor loop (checks if threshold met every second)
-        asyncio.create_task(self.monitor())
+        self.monitor_task = asyncio.create_task(self.monitor())
 
         log.info("Instantiated load cell sensor named %s", self.name)
+
+    def enable(self):
+        '''Sets enabled bool to True (allows sensor to be checked), ensures
+        current_rule contains a usable value, refreshes group (check sensor),
+        restarts monitor loop if stopped (checks user activity every second).
+        '''
+
+        # Restart loop if stopped
+        if self.monitor_task is None:
+            log.debug("%s: start monitor loop", self.name)
+            self.monitor_task = asyncio.create_task(self.monitor())
+        super().enable()
+
+    def disable(self):
+        '''Sets enabled bool to False (prevents sensor from being checked),
+        stops monitor loop, and refreshes group (turn devices OFF if other
+        sensor conditions not met).
+        '''
+
+        # Stop loop if running
+        if self.monitor_task is not None:
+            log.debug("%s: stop monitor loop", self.name)
+            self.monitor_task.cancel()
+            # Allow enable method to restart loop
+            self.monitor_task = None
+        super().disable()
 
     def validator(self, rule):
         '''Accepts any valid integer or float except NaN.'''
@@ -74,9 +100,13 @@ class LoadCell(Sensor):
         '''Returns True if absolute value of current load cell reading exceeds
         current_rule threshold, otherwise False.
         '''
-        if abs(self.sensor.get_value()) > self.current_rule:
-            return True
-        return False
+        try:
+            if abs(self.sensor.get_value()) > self.current_rule:
+                return True
+            return False
+        except TypeError:
+            # Current rule is not int (sensor disabled)
+            return False
 
     def tare_sensor(self):
         '''Tares the sensor (surface must not be occupied).
@@ -90,26 +120,41 @@ class LoadCell(Sensor):
         target devices on or off when condition changes.
         '''
         log.debug("%s: Starting LoadCell.monitor coro", self.name)
-        while True:
-            log.debug("%s: sensor value: %s", self.name, self.get_raw_reading())
-            new = self.condition_met()
+        try:
+            while True:
+                log.debug("%s: sensor value: %s", self.name, self.get_raw_reading())
+                new = self.condition_met()
 
-            # If condition changed, overwrite and refresh group
-            if new != self.current and new is not None:
-                log.debug(
-                    "%s: monitor: condition changed from %s to %s",
-                    self.name, self.current, new
-                )
-                self.current = new
-                self.refresh_group()
+                # If condition changed, overwrite and refresh group
+                if new != self.current and new is not None:
+                    log.debug(
+                        "%s: monitor: condition changed from %s to %s",
+                        self.name, self.current, new
+                    )
+                    self.current = new
+                    self.refresh_group()
 
-            await asyncio.sleep(1)
+                # Poll every second
+                await asyncio.sleep(1)
+
+        # Sensor disabled, exit loop
+        except asyncio.CancelledError:
+            log.debug("%s: Exiting LoadCell.monitor coro", self.name)
+            return False
 
     def get_attributes(self):
         '''Return JSON-serializable dict containing all current attributes
         Called by API get_attributes endpoint, more verbose than status
         '''
         attributes = super().get_attributes()
+
         # Remove non-serializable object
         del attributes["sensor"]
+
+        # Replace monitor_task with True or False
+        if attributes["monitor_task"] is not None:
+            attributes["monitor_task"] = True
+        else:
+            attributes["monitor_task"] = False
+
         return attributes
