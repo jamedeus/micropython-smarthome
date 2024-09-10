@@ -30,29 +30,32 @@ class Handler:
 
 
 class Logger:
+
+    level = ERROR
+
     def __init__(self):
         self.handlers = []
         self.addHandler()
 
-    def info(self, msg, *args):
-        with open('app.log', 'w') as file:
-            file.write(msg)
+    def log(self, level, msg, *args):
+        if level >= self.level:
+            with open('app.log', 'w') as file:
+                file.write(msg)
 
     def debug(self, msg, *args):
-        with open('app.log', 'w') as file:
-            file.write(msg)
+        self.log(DEBUG, msg, *args)
+
+    def info(self, msg, *args):
+        self.log(INFO, msg, *args)
 
     def warning(self, msg, *args):
-        with open('app.log', 'w') as file:
-            file.write(msg)
+        self.log(WARNING, msg, *args)
 
     def error(self, msg, *args):
-        with open('app.log', 'w') as file:
-            file.write(msg)
+        self.log(ERROR, msg, *args)
 
     def critical(self, msg, *args):
-        with open('app.log', 'w') as file:
-            file.write(msg)
+        self.log(CRITICAL, msg, *args)
 
     def addHandler(self, hdlr=None):
         self.handlers.append(Handler())

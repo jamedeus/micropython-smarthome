@@ -102,6 +102,7 @@ class Api:
             if str(req).startswith("GET"):
                 http = True
                 path, args = await self.parse_http_request(req)
+                log.debug('received HTTP request, endpoint: %s, args: %s', path, args)
 
                 # Read until end of headers
                 while True:
@@ -119,6 +120,7 @@ class Api:
                     data = json.loads(req)
                     path = data[0]
                     args = data[1:]
+                    log.debug('received async request, endpoint: %s, args: %s', path, args)
                 except ValueError:
                     # Return error if request JSON is invalid
                     swriter.write(json.dumps({"ERROR": "Syntax error in received JSON"}).encode())
@@ -139,6 +141,7 @@ class Api:
                         # Send headers before error
                         swriter.write("HTTP/1.0 404 NA\r\nContent-Type: application/json\r\n\r\n".encode())
                     swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
+                    log.error('received invalid command (%s)', path)
 
                 # Return endpoint reply to client
                 else:
