@@ -199,6 +199,12 @@ class TestApi(unittest.TestCase):
         self.assertTrue(self.device1.enabled)
         self.assertEqual(response, {'Enabled': 'device1'})
 
+        # Simulate SoftwareTimer from previous disable_in call with same target
+        SoftwareTimer.timer.create(9999, self.device1.disable, "device1_enable_in")
+        # Call enable endpoint, should cancel disable_in callback timer
+        self.send_command(['enable', 'device1'])
+        self.assertTrue("device1_enable_in" not in str(SoftwareTimer.timer.schedule))
+
     def test_04_disable(self):
         # Enable target device (might succeed incorrectly if it's already disabled)
         self.device1.enable()
@@ -207,31 +213,49 @@ class TestApi(unittest.TestCase):
         self.assertFalse(self.device1.enabled)
         self.assertEqual(response, {'Disabled': 'device1'})
 
+        # Simulate SoftwareTimer from previous enable_in call with same target
+        SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
+        # Call enable endpoint, should cancel enable_in callback timer
+        self.send_command(['enable', 'device1'])
+        self.assertTrue("device1_enable_in" not in str(SoftwareTimer.timer.schedule))
+
     def test_05_enable_in(self):
-        # Cancel all SoftwareTimers created by API
-        SoftwareTimer.timer.cancel("API")
+        # Cancel all SoftwareTimers created by enable_in/disable_in for device1
+        SoftwareTimer.timer.cancel("device1_enable_in")
         # Disable target device (might succeed incorrectly if it's already enabled)
         self.device1.disable()
         # Send API command to enable in 5 minutes
         response = self.send_command(['enable_in', 'device1', '5'])
         self.assertEqual(response, {'Enabled': 'device1', 'Enable_in_seconds': 300.0})
-        # SoftwareTimer queue should now contain entry set by "API"
-        self.assertIn("API", str(SoftwareTimer.timer.schedule))
+        # SoftwareTimer queue should now contain entry named "device1_enable_in"
+        self.assertIn("device1_enable_in", str(SoftwareTimer.timer.schedule))
         # Device should still be disabled since timer hasn't expired yet
         self.assertFalse(self.device1.enabled)
 
+        # Simulate SoftwareTimer from previous enable_in call with same target
+        SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
+        # Call enable_in endpoint, confirm old timer expiring at 9999 was canceled
+        response = self.send_command(['enable_in', 'device1', '5'])
+        self.assertTrue(9999 not in SoftwareTimer.timer.schedule)
+
     def test_06_disable_in(self):
-        # Cancel all SoftwareTimers created by API
-        SoftwareTimer.timer.cancel("API")
+        # Cancel all SoftwareTimers created by enable_in/disable_in for device1
+        SoftwareTimer.timer.cancel("device1_enable_in")
         # Enable target device (might succeed incorrectly if it's already disabled)
         self.device1.enable()
         # Send API command to disable in 5 minutes
         response = self.send_command(['disable_in', 'device1', '5'])
         self.assertEqual(response, {'Disable_in_seconds': 300.0, 'Disabled': 'device1'})
-        # SoftwareTimer queue should now contain entry set by "API"
-        self.assertIn("API", str(SoftwareTimer.timer.schedule))
+        # SoftwareTimer queue should now contain entry named "device1_enable_in"
+        self.assertIn("device1_enable_in", str(SoftwareTimer.timer.schedule))
         # Device should still be enabled since timer hasn't expired yet
         self.assertTrue(self.device1.enabled)
+
+        # Simulate SoftwareTimer from previous disable_in call with same target
+        SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
+        # Call disable_in endpoint, confirm old timer expiring at 9999 was canceled
+        response = self.send_command(['disable_in', 'device1', '5'])
+        self.assertTrue(9999 not in SoftwareTimer.timer.schedule)
 
     def test_07_set_rule(self):
         # Set to valid rule 5

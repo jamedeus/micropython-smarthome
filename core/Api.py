@@ -201,20 +201,21 @@ def status(args):
 @app.get_target_instance
 def enable(target, args):
     target.enable()
+    SoftwareTimer.timer.cancel(f"{target.name}_enable_in")
     return {"Enabled": target.name}
 
 
 @app.route("enable_in")
 @app.required_args(2)
 @app.get_target_instance
-def enable_for(target, args):
+def enable_in(target, args):
     try:
         period = float(args[0]) * 60000
         if isnan(period):
             raise ValueError
     except (ValueError, TypeError):
         return {"ERROR": "Delay argument must be int or float"}
-    SoftwareTimer.timer.create(period, target.enable, "API")
+    SoftwareTimer.timer.create(period, target.enable, f"{target.name}_enable_in")
     return {"Enabled": target.name, "Enable_in_seconds": period / 1000}
 
 
@@ -223,20 +224,21 @@ def enable_for(target, args):
 @app.get_target_instance
 def disable(target, args):
     target.disable()
+    SoftwareTimer.timer.cancel(f"{target.name}_enable_in")
     return {"Disabled": target.name}
 
 
 @app.route("disable_in")
 @app.required_args(2)
 @app.get_target_instance
-def disable_for(target, args):
+def disable_in(target, args):
     try:
         period = float(args[0]) * 60000
         if isnan(period):
             raise ValueError
     except (ValueError, TypeError):
         return {"ERROR": "Delay argument must be int or float"}
-    SoftwareTimer.timer.create(period, target.disable, "API")
+    SoftwareTimer.timer.create(period, target.disable, f"{target.name}_enable_in")
     return {"Disabled": target.name, "Disable_in_seconds": period / 1000}
 
 
