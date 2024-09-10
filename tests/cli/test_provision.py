@@ -257,6 +257,7 @@ class TestInstantiation(TestCase):
             os.path.join(repo, 'tests', 'firmware', 'test_sensor_dummy.py'): 'test_sensor_dummy.py',
             os.path.join(repo, 'tests', 'firmware', 'test_sensor_load_cell.py'): 'test_sensor_load_cell.py',
             os.path.join(repo, 'tests', 'firmware', 'test_device_tasmota_relay.py'): 'test_device_tasmota_relay.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_core_boot.py'): 'test_core_boot.py',
             os.path.join(repo, 'tests', 'firmware', 'test_core_main.py'): 'test_core_main.py',
             os.path.join(repo, 'tests', 'firmware', 'test_core_softwaretimer.py'): 'test_core_softwaretimer.py',
             os.path.join(repo, 'tests', 'firmware', 'test_core_util.py'): 'test_core_util.py',
