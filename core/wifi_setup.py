@@ -4,11 +4,15 @@ import json
 import socket
 import asyncio
 import network
+import logging
 import binascii
 from machine import Timer
 import setup_ssl_certs
 from util import reboot
 from setup_page import setup_page
+
+log = logging.getLogger("Setup")
+log.critical("Wifi credentials not found, starting captive portal")
 
 reboot_timer = Timer(1)
 
