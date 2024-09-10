@@ -26,7 +26,7 @@ log = logging.getLogger("API")
 lock = Lock()
 
 # Matches HH:MM
-timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+TIMESTAMP_REGEX = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
 
 
 # Ensure API call complete, connection closed before rebooting (reboot endpoint)
@@ -48,6 +48,9 @@ class Api:
         self.port = port
         self.backlog = backlog
         self.timeout = timeout
+
+        # Stores Config instance (used to look up device/sensor instances)
+        self.config = None
 
         # Populated by decorators + self.route
         # Key = endpoint, value = function
@@ -84,7 +87,12 @@ class Api:
         return wrapper
 
     async def run(self):
-        self.server = await asyncio.start_server(self.run_client, host=self.host, port=self.port, backlog=self.backlog)
+        await asyncio.start_server(
+            self.run_client,
+            host=self.host,
+            port=self.port,
+            backlog=self.backlog
+        )
         print_with_timestamp('API: Awaiting client connection.\n')
         log.info("API ready")
 
@@ -111,7 +119,7 @@ class Api:
                     if line == b"\r\n":
                         break
 
-            # Raw JSON request (faster than HTTP, used by api_client, frontend, ApiTarget device type)
+            # Raw JSON request (faster than HTTP, used by CLI, frontend, ApiTarget devices)
             else:
                 http = False
 
@@ -121,11 +129,11 @@ class Api:
                     path = data[0]
                     args = data[1:]
                     log.debug('received async request, endpoint: %s, args: %s', path, args)
-                except ValueError:
+                except ValueError as exc:
                     # Return error if request JSON is invalid
                     swriter.write(json.dumps({"ERROR": "Syntax error in received JSON"}).encode())
                     await swriter.drain()
-                    raise OSError
+                    raise OSError from exc
 
             # Acquire lock, prevent multiple endpoints running simultaneously
             # Ensures response sent + connection closed before reboot task runs
@@ -139,7 +147,9 @@ class Api:
                 except KeyError:
                     if http:
                         # Send headers before error
-                        swriter.write("HTTP/1.0 404 NA\r\nContent-Type: application/json\r\n\r\n".encode())
+                        swriter.write(
+                            "HTTP/1.0 404 NA\r\nContent-Type: application/json\r\n\r\n".encode()
+                        )
                     swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
                     log.error('received invalid command (%s)', path)
 
@@ -147,7 +157,9 @@ class Api:
                 else:
                     if http:
                         # Send headers before reply
-                        swriter.write("HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n".encode())
+                        swriter.write(
+                            "HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n".encode()
+                        )
                     swriter.write(json.dumps(reply).encode())
 
                 # Send response, close stream
@@ -254,8 +266,7 @@ def set_rule(target, args):
 
     if target.set_rule(rule):
         return {target.name: rule}
-    else:
-        return {"ERROR": "Invalid rule"}
+    return {"ERROR": "Invalid rule"}
 
 
 @app.route("increment_rule")
@@ -268,10 +279,9 @@ def increment_rule(target, args):
     response = target.increment_rule(args[0])
     if response is True:
         return {target.name: target.current_rule}
-    elif response is False:
+    if response is False:
         return {"ERROR": "Invalid rule"}
-    else:
-        return response
+    return response
 
 
 @app.route("reset_rule")
@@ -311,7 +321,7 @@ def get_schedule_rules(target, args):
 def add_schedule_rule(target, args):
     rules = app.config.schedule[target.name]
 
-    if re.match(timestamp_regex, args[0]):
+    if re.match(TIMESTAMP_REGEX, args[0]):
         timestamp = args[0]
     elif args[0] in app.config.schedule_keywords.keys():
         timestamp = args[0]
@@ -325,12 +335,12 @@ def add_schedule_rule(target, args):
 
     if timestamp in rules and (not len(args) >= 3 or not args[2] == "overwrite"):
         return {"ERROR": f"Rule already exists at {timestamp}, add 'overwrite' arg to replace"}
-    else:
-        rules[timestamp] = valid
-        app.config.schedule[target.name] = rules
-        # Schedule queue rebuild after connection closes (blocks for several seconds)
-        SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
-        return {"Rule added": valid, "time": timestamp}
+
+    rules[timestamp] = valid
+    app.config.schedule[target.name] = rules
+    # Schedule queue rebuild after connection closes (blocks for several seconds)
+    SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
+    return {"Rule added": valid, "time": timestamp}
 
 
 @app.route("remove_rule")
@@ -339,7 +349,7 @@ def add_schedule_rule(target, args):
 def remove_rule(target, args):
     rules = app.config.schedule[target.name]
 
-    if re.match(timestamp_regex, args[0]):
+    if re.match(TIMESTAMP_REGEX, args[0]):
         timestamp = args[0]
     elif args[0] in app.config.schedule_keywords.keys():
         timestamp = args[0]
@@ -382,13 +392,12 @@ def add_schedule_keyword(args):
 
     keyword, timestamp = args[0].popitem()
 
-    if re.match(timestamp_regex, timestamp):
+    if re.match(TIMESTAMP_REGEX, timestamp):
         app.config.schedule_keywords[keyword] = timestamp
         # Schedule queue rebuild after connection closes (blocks for several seconds)
         SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
         return {"Keyword added": keyword, "time": timestamp}
-    else:
-        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
+    return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
 
 
 @app.route("remove_schedule_keyword")
@@ -396,7 +405,7 @@ def add_schedule_keyword(args):
 def remove_schedule_keyword(args):
     if args[0] in ['sunrise', 'sunset']:
         return {"ERROR": "Cannot delete sunrise or sunset"}
-    elif args[0] in app.config.schedule_keywords.keys():
+    if args[0] in app.config.schedule_keywords.keys():
         keyword = args[0]
     else:
         return {"ERROR": "Keyword does not exist"}
@@ -433,8 +442,7 @@ def get_attributes(target, args):
 def condition_met(target, args):
     if not is_sensor(target.name):
         return {"ERROR": "Must specify sensor"}
-    else:
-        return {"Condition": target.condition_met()}
+    return {"Condition": target.condition_met()}
 
 
 @app.route("trigger_sensor")
@@ -446,8 +454,7 @@ def trigger_sensor(target, args):
 
     if target.trigger():
         return {"Triggered": target.name}
-    else:
-        return {"ERROR": f"Cannot trigger {target._type} sensor type"}
+    return {"ERROR": f"Cannot trigger {target._type} sensor type"}
 
 
 @app.route("turn_on")
@@ -463,8 +470,7 @@ def turn_on(target, args):
     if target.send(1):
         target.state = True
         return {"On": target.name}
-    else:
-        return {"ERROR": f"Unable to turn on {target.name}"}
+    return {"ERROR": f"Unable to turn on {target.name}"}
 
 
 @app.route("turn_off")
@@ -477,8 +483,7 @@ def turn_off(target, args):
     if target.send(0):
         target.state = False
         return {"Off": target.name}
-    else:
-        return {"ERROR": f"Unable to turn off {target.name}"}
+    return {"ERROR": f"Unable to turn off {target.name}"}
 
 
 @app.route("get_temp")
@@ -486,8 +491,7 @@ def get_temp(args):
     for sensor in app.config.sensors:
         if sensor._type in ["si7021", "dht22"]:
             return {"Temp": sensor.get_temperature()}
-    else:
-        return {"ERROR": "No temperature sensor configured"}
+    return {"ERROR": "No temperature sensor configured"}
 
 
 @app.route("get_humid")
@@ -495,8 +499,7 @@ def get_humid(args):
     for sensor in app.config.sensors:
         if sensor._type in ["si7021", "dht22"]:
             return {"Humidity": sensor.get_humidity()}
-    else:
-        return {"ERROR": "No temperature sensor configured"}
+    return {"ERROR": "No temperature sensor configured"}
 
 
 @app.route("get_climate_data")
@@ -507,8 +510,7 @@ def get_climate_data(args):
                 "temp": sensor.get_temperature(),
                 "humid": sensor.get_humidity()
             }
-    else:
-        return {"ERROR": "No temperature sensor configured"}
+    return {"ERROR": "No temperature sensor configured"}
 
 
 @app.route("clear_log")
@@ -552,9 +554,8 @@ def ir_key(args):
     if not key.lower() in blaster.codes[target]:
         return {"ERROR": f'Target "{target}" has no key "{key}"'}
 
-    else:
-        blaster.send(target, key.lower())
-        return {target: key}
+    blaster.send(target, key.lower())
+    return {target: key}
 
 
 @app.route("ir_get_existing_macros")
@@ -639,12 +640,16 @@ def ir_run_macro(args):
 @app.route("set_gps_coords")
 @app.required_args(1)
 def set_gps_coords(args):
-    if not isinstance(args[0], dict) or 'latitude' not in args[0].keys() or 'longitude' not in args[0].keys():
+    if (
+        not isinstance(args[0], dict)
+        or 'latitude' not in args[0]
+        or 'longitude' not in args[0]
+    ):
         return {"ERROR": "Requires dict with longitude and latitude keys"}
 
     if not is_latitude(args[0]['latitude']):
         return {"ERROR": "Latitude must be between -90 and 90"}
-    elif not is_longitude(args[0]['longitude']):
+    if not is_longitude(args[0]['longitude']):
         return {"ERROR": "Longitude must be between -180 and 180"}
 
     config = read_config_from_disk()
