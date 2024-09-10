@@ -129,10 +129,9 @@ class Instance():
 
             return True
 
-        else:
-            log.error("%s: Failed to change rule to %s", self.name, rule)
-            self.print(f"Failed to change rule to {rule}")
-            return False
+        log.error("%s: Failed to change rule to %s", self.name, rule)
+        self.print(f"Failed to change rule to {rule}")
+        return False
 
     def apply_new_rule(self):
         '''Called by set_rule after successful rule change, updates instance
@@ -164,10 +163,9 @@ class Instance():
         '''
         if str(rule).lower() == "enabled" or str(rule).lower() == "disabled":
             return str(rule).lower()
-        else:
-            return self.validator(rule)
+        return self.validator(rule)
 
-    def validator(self, rule):
+    def validator(self, *args):
         '''Placeholder method called by rule_validator, intended to be replaced
         by subclasses that support additional rule types.
         '''

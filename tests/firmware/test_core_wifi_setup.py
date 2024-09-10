@@ -203,10 +203,11 @@ class WifiSetupTests(unittest.TestCase):
         self.assertEqual(
             mock_writer.write.call_args_list,
             [
-                call(b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n'),
-                call(b'<html><head><meta http-equiv="refresh" content="0; url=https://192.168.4.1:443/"></head>'),
+                call(b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head>'),
+                call(b'<meta http-equiv="refresh" content="0; url=https://192.168.4.1:443/"></head>'),
                 call(b'<body><script>window.location="https://192.168.4.1:443/";</script>'),
-                call(b'<a href="https://192.168.4.1:443/">Click here if you are not redirected</a></body></html>\r\n')
+                call(b'<a href="https://192.168.4.1:443/">Click here if you are not redirected</a>'),
+                call(b'</body></html>\r\n')
             ]
         )
 
@@ -224,10 +225,11 @@ class WifiSetupTests(unittest.TestCase):
         self.assertEqual(
             mock_writer.write.call_args_list,
             [
-                call(b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n'),
-                call(b'<html><head><meta http-equiv="refresh" content="0; url=https://192.168.4.1:443/"></head>'),
+                call(b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head>'),
+                call(b'<meta http-equiv="refresh" content="0; url=https://192.168.4.1:443/"></head>'),
                 call(b'<body><script>window.location="https://192.168.4.1:443/";</script>'),
-                call(b'<a href="https://192.168.4.1:443/">Click here if you are not redirected</a></body></html>\r\n')
+                call(b'<a href="https://192.168.4.1:443/">Click here if you are not redirected</a>'),
+                call(b'</body></html>\r\n')
             ]
         )
 

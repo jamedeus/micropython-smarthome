@@ -8,6 +8,7 @@ log = logging.getLogger("Util")
 
 
 def is_device(string):
+    '''Takes string, returns True if it begins with "device"'''
     try:
         return string.startswith("device")
     except AttributeError:
@@ -15,6 +16,7 @@ def is_device(string):
 
 
 def is_sensor(string):
+    '''Takes string, returns True if it begins with "sensor"'''
     try:
         return string.startswith("sensor")
     except AttributeError:
@@ -22,22 +24,23 @@ def is_sensor(string):
 
 
 def is_device_or_sensor(string):
+    '''Takes string, returns True if it begins with "device" or "sensor"'''
     try:
         return (string.startswith("device") or string.startswith("sensor"))
     except AttributeError:
         return False
 
 
-# Returns True if argument is valid latitude
 def is_latitude(num):
+    '''Takes number, returns True if between -90 and 90 (valid latitude)'''
     try:
         return -90 <= float(num) <= 90
     except ValueError:
         return False
 
 
-# Returns True if argument is valid longitude
 def is_longitude(num):
+    '''Takes number, returns True if between -180 and 180 (valid longitude)'''
     try:
         return -180 <= float(num) <= 180
     except ValueError:
@@ -45,41 +48,48 @@ def is_longitude(num):
 
 
 def read_wifi_credentials_from_disk():
-    with open('wifi_credentials.json', 'r') as file:
+    '''Reads wifi_credentials.json from disk and returns as dict'''
+    with open('wifi_credentials.json', 'r', encoding='utf-8') as file:
         return json.load(file)
 
 
 def read_config_from_disk():
-    with open('config.json', 'r') as file:
+    '''Reads config.json from disk and returns as dict'''
+    with open('config.json', 'r', encoding='utf-8') as file:
         return json.load(file)
 
 
 def write_config_to_disk(conf):
+    '''Takes config dict, writes to config.json on disk'''
     if not isinstance(conf, dict):
         return False
-    with open('config.json', 'w') as file:
+    with open('config.json', 'w', encoding='utf-8') as file:
         json.dump(conf, file)
     return True
 
 
 def read_ir_macros_from_disk():
+    '''Reads ir_macros.json from disk and returns as dict'''
     try:
-        with open('ir_macros.json', 'r') as file:
+        with open('ir_macros.json', 'r', encoding='utf-8') as file:
             return json.load(file)
     except OSError:
         return {}
 
 
 def write_ir_macros_to_disk(conf):
+    '''Takes IR macros dict, writes to ir_macros.json on disk'''
     if not isinstance(conf, dict):
         return False
-    with open('ir_macros.json', 'w') as file:
+    with open('ir_macros.json', 'w', encoding='utf-8') as file:
         json.dump(conf, file)
     return True
 
 
-# Must accept arg (hardware Timer passes self as arg)
-def reboot(arg=None):
+def reboot(*args):
+    '''Writes log message and performs hard reboot. Accepts args to allow
+    calling with hardware timer (passes self as arg).
+    '''
     print_with_timestamp("Reboot function called, rebooting...")
     log.critical("Reboot function called, rebooting...\n")
     from machine import reset
@@ -87,6 +97,8 @@ def reboot(arg=None):
 
 
 def clear_log():
+    '''Deletes app.log from disk, creates blank log and new handler'''
+
     # Close file, remove
     logging.root.handlers[0].close()
     os.remove('app.log')
@@ -100,9 +112,10 @@ def clear_log():
     logging.root.addHandler(h)
 
 
-# Checks log size and deletes when 100 KB exceeded
-# Called by SoftwareTimer every 60 seconds
 def check_log_size():
+    '''Checks app.log size, deletes if larger than 100 KB.
+    Called by SoftwareTimer every 60 seconds to keep log from filling disk.
+    '''
     if os.stat('app.log')[6] > 100000:
         print_with_timestamp("\nLog exceeded 100 KB, clearing...\n")
         clear_log()
@@ -112,8 +125,8 @@ def check_log_size():
     SoftwareTimer.timer.create(60000, check_log_size, "check_log_size")
 
 
-# Returns current timestamp with YYYY-MM-DD HH:MM:SS format
 def get_timestamp():
+    '''Returns current timestamp with YYYY-MM-DD HH:MM:SS format'''
     ct = list(time.localtime())
     # Add leading 0 to single-digit month, day, hour, min, sec
     for i in range(1, 6):
@@ -122,6 +135,6 @@ def get_timestamp():
     return "{0}-{1}-{2} {3}:{4}:{5}".format(*ct)
 
 
-# Takes message, prints with prepended timestamp
 def print_with_timestamp(msg):
+    '''Takes message, prints to console with prepended timestamp'''
     print(f"{get_timestamp()}: {msg}")

@@ -27,6 +27,10 @@ ssl_context.load_cert_chain(setup_ssl_certs.CERT, setup_ssl_certs.KEY)
 
 
 def test_connection(ssid, password):
+    '''Takes wifi SSID and password, returns True if able to connect, False if
+    unable to connect. Used to confirm user-entered credentials are valid
+    before creating wifi_credentials.json on disk.
+    '''
     wlan.connect(ssid, password)
 
     # Wait until connection succeeds or fails
@@ -43,6 +47,10 @@ def test_connection(ssid, password):
 
 
 def create_config_file(data):
+    '''Takes dict with ssid, password, and webrepl keys containing form data.
+    Creates wifi_credentials.json on disk (contains wifi credentials).
+    Creates webrepl_cfg.py on disk (contains webrepl password).
+    '''
     try:
         # Confirm credentials are valid before writing to disk
         if not test_connection(data["ssid"], data["password"]):
@@ -56,11 +64,11 @@ def create_config_file(data):
         }
 
         # Write credentials to disk
-        with open('wifi_credentials.json', 'w') as file:
+        with open('wifi_credentials.json', 'w', encoding='utf-8') as file:
             json.dump(credentials, file)
 
         # Write webrepl password to disk
-        with open('webrepl_cfg.py', 'w') as file:
+        with open('webrepl_cfg.py', 'w', encoding='utf-8') as file:
             file.write(f"PASS = '{data['webrepl']}'")
 
         return True
@@ -69,22 +77,28 @@ def create_config_file(data):
         return False
 
 
-# Redirect all HTTP requests to port 443
 async def handle_http_client(reader, writer):
+    '''Redirect all HTTP requests to port 443'''
+
     request = await reader.read(1024)
     print('Received HTTP request:', request)
 
     # Serve page with meta refresh tag to redirect to HTTPS
     print("Serving redirect page")
-    writer.write(b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n')
-    writer.write(b'<html><head><meta http-equiv="refresh" content="0; url=https://192.168.4.1:443/"></head>')
+    writer.write(b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><head>')
+    writer.write(b'<meta http-equiv="refresh" content="0; url=https://192.168.4.1:443/"></head>')
     writer.write(b'<body><script>window.location="https://192.168.4.1:443/";</script>')
-    writer.write(b'<a href="https://192.168.4.1:443/">Click here if you are not redirected</a></body></html>\r\n')
+    writer.write(b'<a href="https://192.168.4.1:443/">Click here if you are not redirected</a>')
+    writer.write(b'</body></html>\r\n')
     await writer.drain()
     await writer.aclose()
 
 
 async def handle_https_client(reader, writer):
+    '''Serves setup page when any GET request is received.
+    Parses form data when POST request is received. Tests wifi credentials from
+    form data, if valid writes to disk and reboots (setup complete).
+    '''
     try:
         request = await reader.read(1024)
         print('Received HTTPS request:', request)
@@ -121,7 +135,9 @@ async def handle_https_client(reader, writer):
         else:
             print("Serving setup page")
             writer.write(b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n')
-            writer.write(b'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload\r\n\r\n')
+            writer.write(
+                b'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload\r\n\r\n'
+            )
             writer.write(setup_page)
             await writer.drain()
 
@@ -132,9 +148,11 @@ async def handle_https_client(reader, writer):
         pass
 
 
-# Respond to all DNS queries with setup page IP
-# Port defaults to 53, only changed in unit tests
 async def run_captive_portal(port=53):
+    '''Redirects all DNS queries to setup page IP.
+    Port defaults to 53, only changed in unit tests
+    '''
+
     # Create non-blocking UDP socket (avoid blocking event loop)
     udps = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udps.setblocking(False)
@@ -154,8 +172,11 @@ async def run_captive_portal(port=53):
             await asyncio.sleep_ms(3000)
 
 
-# Takes DNS query + arbitrary IP address, returns DNS response pointing to IP
 def dns_redirect(query, ip):
+    '''Takes DNS query + arbitrary IP address, returns DNS response pointing to
+    IP. Used by run_captive_portal to redirect all DNS queries to setup page.
+    '''
+
     # Copy transaction ID, add response flags
     response = query[:2] + b'\x81\x80'
     # Copy QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT, add placeholder bytes
@@ -171,6 +192,12 @@ def dns_redirect(query, ip):
 
 
 def serve_setup_page():
+    '''Entrypoint, creates access point and listens for requests.
+    Port 53 (DNS query): Redirect to setup page
+    Port 80 (http request): Redirect to setup page on port 443 (https).
+    Port 443 (https): Serve setup page used to enter wifi credentials.
+    '''
+
     # Append last byte of access point mac address to SSID
     mac_address = binascii.hexlify(ap.config('mac')).decode()
     ap.config(ssid=f'Smarthome_Setup_{mac_address.upper()[-4:]}')
