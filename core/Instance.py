@@ -96,7 +96,7 @@ class Instance():
             return self.scheduled_rule
         if str(self.default_rule).lower() not in ["enabled", "disabled"]:
             return self.default_rule
-        # Last resort: return "enabled" (device/sensor types taht do not
+        # Last resort: return "enabled" (device/sensor types that do not
         # support enabled won't reach this because their default_rule cannot
         # be "enabled" or "disabled")
         return "enabled"

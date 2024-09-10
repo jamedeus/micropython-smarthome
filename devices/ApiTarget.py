@@ -24,7 +24,7 @@ class ApiTarget(Device):
       enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
       ip:           The IPv4 address of the target node (can be own IP address)
-      port:         Only used in unit testing (allows overridding the API port)
+      port:         Only used in unit testing (allows overriding the API port)
 
     Supports universal rules ("enabled" and "disabled") and dicts containing a
     pair of API calls (dict must contain "on" and "off" keys, each containing a

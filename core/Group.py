@@ -33,7 +33,7 @@ class Group():
         self.targets = self.triggers[0].targets
 
         # Changes to match device state after successful refresh (no failed
-        # devuce.send calls). Allows sensor to skip refresh when no changes
+        # device.send calls). Allows sensor to skip refresh when no changes
         # needed (current state already matches target state).
         self.state = None
 

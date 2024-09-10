@@ -25,7 +25,7 @@ class IrBlaster():
     display a remote control UI element for each configured IR target.
 
     A maximum of 1 IrBlaster can be configured per ESP32 (upstream driver
-    limitation). Unlike other device drivers IrBlaster can not be targetted by
+    limitation). Unlike other device drivers IrBlaster can not be targeted by
     sensors - IR codes and macros are only played in response to API calls. It
     is possible to circumvent this by configuring an ApiTarget device with the
     node's own IP (or 127.0.0.1) that sends IR API calls when turned on/off by
