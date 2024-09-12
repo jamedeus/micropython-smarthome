@@ -55,10 +55,6 @@ const ThermostatParamInputs = ({ id }) => {
         handleInstanceUpdate(id, update);
     };
 
-    const changeMode = (newMode) => {
-        handleInputChange(id, "mode", newMode);
-    };
-
     // Add invalid highlight to tolerance field if:
     // - Form has been validated and field still empty
     // - Field contains 0
@@ -74,14 +70,6 @@ const ThermostatParamInputs = ({ id }) => {
 
     return (
         <>
-            <Dropdown
-                value={instance.mode}
-                options={["Cool", "Heat"]}
-                onChange={changeMode}
-                label="Mode"
-                isInvalid={highlightInvalid && !instance.mode}
-            />
-
             <Dropdown
                 value={instance.units}
                 options={["Celsius", "Fahrenheit", "Kelvin"]}

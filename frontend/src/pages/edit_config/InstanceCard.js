@@ -10,6 +10,7 @@ import IPInput from './IPInput';
 import URIInput from './URIInput';
 import HttpGetPathInputs from './HttpGetPathInputs';
 import TargetNodeDropdown from './TargetNodeDropdown';
+import ModeSelectDropdown from './ModeSelectDropdown';
 import PinSelectDropdown from './PinSelectDropdown';
 import DefaultRuleStandard from './DefaultRuleStandard';
 import DefaultRuleFloatRange from './DefaultRuleFloatRange';
@@ -82,7 +83,14 @@ const ConfigParamInput = ({ id, configKey, metadata }) => {
         case('uri'):
             return <URIInput id={id} />;
         case('on_path'):
-            return <HttpGetPathInputs id={id}/>;
+            return <HttpGetPathInputs id={id} />;
+        case('mode'):
+            return (
+                <ModeSelectDropdown
+                    id={id}
+                    options={metadata.mode_options}
+                />
+            );
         default:
             return null;
     }

@@ -18,5 +18,6 @@
         "targets": []
     },
     "rule_prompt": "standard",
+    "mode_options": ["screen", "activity"],
     "triggerable": true
 }

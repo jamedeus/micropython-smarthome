@@ -242,6 +242,10 @@ export const edit_config_metadata = {
                 18,
                 27
             ],
+            "mode_options": [
+                "cool",
+                "heat"
+            ],
             "triggerable": false
         },
         "ld2410": {
@@ -293,6 +297,10 @@ export const edit_config_metadata = {
                 18,
                 27
             ],
+            "mode_options": [
+                "cool",
+                "heat"
+            ],
             "triggerable": false
         },
         "desktop": {
@@ -313,6 +321,10 @@ export const edit_config_metadata = {
                 "targets": []
             },
             "rule_prompt": "standard",
+            "mode_options": [
+                "screen",
+                "activity"
+            ],
             "triggerable": true
         },
         "pir": {

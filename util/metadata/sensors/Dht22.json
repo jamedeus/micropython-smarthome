@@ -22,5 +22,6 @@
     },
     "rule_prompt": "thermostat",
     "rule_limits": [18, 27],
+    "mode_options": ["cool", "heat"],
     "triggerable": false
 }

@@ -30,7 +30,8 @@ from helper_functions import (
     is_device,
     is_sensor,
     is_device_or_sensor,
-    is_int
+    is_int,
+    get_device_and_sensor_metadata
 )
 from config_prompt_validators import (
     IntRange,
@@ -49,6 +50,10 @@ from cli_config_manager import CliConfigManager
 
 # Read cli_config.json from disk (contains existing nodes and schedule keywords)
 cli_config = CliConfigManager()
+
+# Get dict with "devices" and "sensors" keys containing metadata for each
+# supported peripheral type (used to populate config prompts)
+metadata = get_device_and_sensor_metadata()
 
 
 class GenerateConfigFile:
@@ -486,9 +491,10 @@ class GenerateConfigFile:
                 config[i] = self.__ip_address_prompt()
 
             elif i == "mode":
+                options = metadata["sensors"][config["_type"]]["mode_options"]
                 config[i] = questionary.select(
                     "Select mode",
-                    choices=['cool', 'heat']
+                    choices=options
                 ).unsafe_ask()
 
             elif i == "units":

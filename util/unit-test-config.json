@@ -172,6 +172,7 @@
         "nickname": "Activity",
         "ip": "192.168.1.150",
         "default_rule": "enabled",
+        "mode": "screen",
         "targets": [
             "device1",
             "device2",

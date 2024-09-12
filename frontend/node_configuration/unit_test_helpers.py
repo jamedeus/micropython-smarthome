@@ -270,6 +270,7 @@ request_payload = {
         "nickname": "Activity",
         "default_rule": "enabled",
         "ip": "192.168.1.150",
+        "mode": "screen",
         "schedule": {
             "08:00": "enabled",
             "22:00": "disabled"
