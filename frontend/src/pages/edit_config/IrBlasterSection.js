@@ -57,11 +57,12 @@ const IrBlasterSection = () => {
     // Replaces underscores with spaces, capitalizes each word, replaces
     // ac with AC, replaces tv with TV
     const getTargetLabel = (target) => {
-        return target.split('_').map(word =>
-            word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ')
-        .replace('Tv', 'TV')
-        .replace('Ac', 'AC');
+        return target
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
+            .replace('Tv', 'TV')
+            .replace('Ac', 'AC');
     };
 
     return (

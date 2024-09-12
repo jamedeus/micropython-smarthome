@@ -336,7 +336,7 @@ export const mockContext = {
                     ]
                 }
             },
-            "device1": {
+            "device2": {
                 "display": "TV (api-target)",
                 "options": [
                     "enable",

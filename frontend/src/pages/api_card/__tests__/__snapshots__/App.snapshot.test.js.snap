@@ -27,7 +27,7 @@ exports[`App matches snapshot 1`] = `
     <div
       id="api_target_options"
     >
-      {"device6":{"device1":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"ignore":{"display":"Ignore action"}}}
+      {"device6":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
@@ -6384,7 +6384,7 @@ exports[`App matches snapshot when both IR remotes are configured 1`] = `
     <div
       id="api_target_options"
     >
-      {"device6":{"device1":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"ignore":{"display":"Ignore action"}}}
+      {"device6":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
@@ -7161,7 +7161,7 @@ exports[`App matches snapshot when no devices, sensors, or ir_blaster configured
     <div
       id="api_target_options"
     >
-      {"device6":{"device1":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"ignore":{"display":"Ignore action"}}}
+      {"device6":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
@@ -7368,7 +7368,7 @@ exports[`App matches snapshot when only AC remote is configured 1`] = `
     <div
       id="api_target_options"
     >
-      {"device6":{"device1":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"ignore":{"display":"Ignore action"}}}
+      {"device6":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
@@ -7747,7 +7747,7 @@ exports[`App matches snapshot when only TV remote is configured 1`] = `
     <div
       id="api_target_options"
     >
-      {"device6":{"device1":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"ignore":{"display":"Ignore action"}}}
+      {"device6":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
     </div>
     <div
       id="status"
