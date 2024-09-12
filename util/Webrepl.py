@@ -154,7 +154,7 @@ class Webrepl():
             self._login()
             return True
 
-        except OSError:
+        except (OSError, AssertionError):
             self.close_connection()
             print(f"Error: Unable to open connection to {self.ip}")
             return False
