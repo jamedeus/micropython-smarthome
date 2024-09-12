@@ -894,6 +894,7 @@ class TestManageNodeFunctions(TestCase):
         # Create mock Webrepl instance to confirm methods were called
         mock_connection = MagicMock()
         mock_connection.get_file_mem = MagicMock(return_value=b'mock_log')
+        mock_connection.close_connection = MagicMock()
 
         # Mock select prompt to return mocked node selection
         # Mock text prompt to return mocked log filename
@@ -917,6 +918,9 @@ class TestManageNodeFunctions(TestCase):
 
             # Confirm get_file_mem was called with name of log file
             mock_connection.get_file_mem.assert_called_once_with('app.log')
+
+            # Confirm connection was closed
+            mock_connection.close_connection.assert_called_once()
 
             # Confirm pager was called with decoded log
             mock_pager.assert_called_once_with('mock_log')

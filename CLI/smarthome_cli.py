@@ -275,6 +275,7 @@ def view_log_prompt():
     connection = Webrepl(ip, cli_config.config['webrepl_password'])
     print('Downloading log, this may take a few minutes...')
     log = connection.get_file_mem('app.log')
+    connection.close_connection()
 
     # Display log in pager
     pydoc.pager(log.decode())
