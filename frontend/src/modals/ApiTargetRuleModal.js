@@ -339,13 +339,14 @@ const ApiTargetRuleModal = () => {
         // If editing existing rule pre-populate dropdowns
         if (current_rule) {
             // IR command uses different order
-            if (current_rule.on[0] === "ir_key") {
+            // Ignore action requires instance to be "ignore", rest to be blank
+            if (current_rule.on[0] === "ir_key" || current_rule.on[0] === "ignore") {
                 [update.on.instance, update.on.command, update.on.sub_command] = current_rule.on;
             } else {
                 [update.on.command, update.on.instance, update.on.command_arg] = current_rule.on;
             }
             // Repeat for off rule
-            if (current_rule.off[0] === "ir_key") {
+            if (current_rule.off[0] === "ir_key" || current_rule.off[0] === "ignore") {
                 [update.off.instance, update.off.command, update.off.sub_command] = current_rule.off;
             } else {
                 [update.off.command, update.off.instance, update.off.command_arg] = current_rule.off;
