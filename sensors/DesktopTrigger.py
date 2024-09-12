@@ -19,6 +19,7 @@ class DesktopTrigger(SensorWithLoop):
       enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
       targets:      List of device names (device1 etc) controlled by sensor
+      mode:         Either "screen" or "activity", determines sensor condition
       ip:           The IPv4 address of the Linux computer
       port:         The port that the daemon is listening on (default=5000)
 
@@ -26,9 +27,14 @@ class DesktopTrigger(SensorWithLoop):
 
     Can be used to keep lights on while user is at computer even if motion
     sensor does not detect motion (sitting still etc).
+
+    If the mode argument is "activity" the sensor condition is met when there
+    has been user activity (mouse or keyboard) in the last 60 seconds. If mode
+    is "screen" the condition is met whenever the screen is turned on and not
+    met when the screen is off, regardless of last user activity.
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, targets, ip, port=5000):
+    def __init__(self, name, nickname, _type, default_rule, targets, mode, ip, port=5000):
         super().__init__(name, nickname, _type, True, default_rule, targets)
 
         self.ip = ip
@@ -36,6 +42,12 @@ class DesktopTrigger(SensorWithLoop):
 
         # Current monitor state
         self.current = None
+
+        # Determines when condition is met, must be "screen" or "activity"
+        if mode.lower() in ["screen", "activity"]:
+            self.mode = mode.lower()
+        else:
+            raise ValueError('Invalid mode, must be "screen" or "activity"')
 
         # Find desktop target so monitor loop (below) can update target's state
         # attribute when screen turns on/off
@@ -50,8 +62,8 @@ class DesktopTrigger(SensorWithLoop):
         self.monitor_task = asyncio.create_task(self.monitor())
 
         log.info(
-            "Instantiated Desktop named %s: ip = %s, port = %s",
-            self.name, self.ip, self.port
+            "Instantiated Desktop named %s: ip = %s, port = %s, mode = %s",
+            self.name, self.ip, self.port, self.mode
         )
 
     def get_idle_time(self):
@@ -61,13 +73,18 @@ class DesktopTrigger(SensorWithLoop):
         try:
             response = requests.get(f'http://{self.ip}:{self.port}/idle_time', timeout=2)
             if response.status_code == 200:
-                return response.json()
+                return response.json()["idle_time"]
             raise OSError
         except OSError:
-            # Desktop offline or different service running on port 5000, disable
-            self.print("Fatal error (unable to connect to desktop), disabling")
+            # Wifi interruption, return False - caller will try again in 1 second
+            log.error("%s: failed to get idle time (wifi error)", self.name)
+            self.print(f"{self.name}: failed to get idle time (wifi error)")
+            return False
+        except (ValueError, IndexError):
+            # Response doesn't contain JSON (different service running on port 5000), disable
+            self.print("Fatal error (unexpected response from desktop), disabling")
             log.critical(
-                "%s: Fatal error (unable to connect to desktop), disabling",
+                "%s: Fatal error (unexpected response from desktop), disabling",
                 self.name
             )
             self.disable()
@@ -78,16 +95,16 @@ class DesktopTrigger(SensorWithLoop):
         response ("On" or "Off"). Returns False if request fails.
         '''
         try:
-            return requests.get(
-                f'http://{self.ip}:{self.port}/state',
-                timeout=2
-            ).json()["state"]
-        except (OSError, IndexError):
+            response = requests.get(f'http://{self.ip}:{self.port}/state', timeout=2)
+            if response.status_code == 200:
+                return response.json()["state"]
+            raise OSError
+        except OSError:
             # Wifi interruption, return False - caller will try again in 1 second
             log.error("%s: failed to get state (wifi error)", self.name)
             self.print(f"{self.name}: failed to get state (wifi error)")
             return False
-        except ValueError:
+        except (ValueError, IndexError):
             # Response doesn't contain JSON (different service running on port 5000), disable
             self.print("Fatal error (unexpected response from desktop), disabling")
             log.critical(
@@ -97,92 +114,135 @@ class DesktopTrigger(SensorWithLoop):
             self.disable()
             return False
 
-    def condition_met(self):
+    def _condition_met_screen_mode(self):
         '''Returns True if computer screen is turned on, False if computer
         screen is turned off.
         '''
         return self.current == "On"
 
+    def _condition_met_activity_mode(self):
+        '''Returns True if computer user was active in last 60 seconds, False
+        if no activity (keyboard or mouse) in last 60 seconds.
+        '''
+        try:
+            return self.current <= 60000
+        except TypeError:
+            return False
+
+    def condition_met(self):
+        '''Checks condition configured with mode argument (screen or activity).
+        Screen mode: Return True if computer screen is on, return False if off.
+        Activity mode: Return True if user active in last 60 seconds, return
+        False if no activity in last 60 seconds.
+        '''
+        if self.mode == "screen":
+            return self._condition_met_screen_mode()
+        return self._condition_met_activity_mode()
+
     def trigger(self):
         '''Called by trigger_sensor API endpoint, simulates sensor condition
-        met (computer screen turned on).
+        met. If mode is "screen" sets current to "On" (simulate screen turned
+        on), if mode is "activity" sets current to 0 (0ms since user active).
         '''
         log.debug("%s: trigger method called", self.name)
-        self.current = "On"
+        if self.mode == "screen":
+            self.current = "On"
+        else:
+            self.current = 0
         self.refresh_group()
         return True
 
-    async def monitor(self):
-        '''Async coroutine that runs while sensor is enabled. Makes API call
-        every second to check monitor state, saves in self.current attribute.
+    def _get_current_screen_mode(self):
+        '''Fetches current monitor state ("On" or "Off") from desktop daemon
+        API, saves response in self.current attribute checked by condition_met.
+        Refreshes group if response has changed since last API call.
 
         Desktop returns values other than "On" and "Off" in some situations
-        (standby, lock screen, etc), so condition_met cannot rely on a single
-        get_monitor_state call. Instead state is continuously monitored and the
-        condition_met method returns response from most-recent check.
+        (standby, lock screen, etc), these are ignored (self.current retains
+        previous response until a new valid response is received).
         '''
 
+        # Get new reading
+        new = self.get_monitor_state()
+        log.debug("%s: monitor state: %s", self.name, new)
+
+        # At lock screen, or getting "Disabled" for a few seconds (NVIDIA Prime
+        # quirk), return without updating self.current
+        if new not in ["On", "Off"]:
+            return
+
+        if new != self.current:
+            self.print(f"Monitor state changed from {self.current} to {new}")
+            log.debug(
+                "%s: monitors changed from %s to %s",
+                self.name, self.current, new
+            )
+            self.current = new
+
+            if self.current == "Off":
+                # Update desktop target's state (allows group to turn screen
+                # back on, will get stuck off if state remains True)
+                if self.desktop_target:
+                    log.debug(
+                        "%s: Set desktop target (%s) state to False",
+                        self.name, self.desktop_target.name
+                    )
+                    self.desktop_target.state = False
+
+                # Allow group to turn screen back on if other sensors in group
+                # have condition met
+                self.group.reset_state()
+
+            # If monitors just turned on, update target's state
+            elif self.current == "On":
+                if self.desktop_target:
+                    log.debug(
+                        "%s: Set desktop target (%s) state to True",
+                        self.name, self.desktop_target.name
+                    )
+                    self.desktop_target.state = True
+
+            # Refresh group so new screen state can take effect
+            self.refresh_group()
+
+    def _get_current_activity_mode(self):
+        '''Fetches time since last user activity (milliseconds) from desktop
+        daemon API, saves response in self.current attribute checked by
+        condition_met. Calls condition_met and refreshes group if condition
+        does not match group state.
+        '''
+
+        # Get new reading
+        new = self.get_idle_time()
+        if new is not False:
+            self.current = int(new)
+            log.debug("%s: idle time: %s", self.name, self.current)
+
+            if self.condition_met() != self.group.state:
+                self.refresh_group()
+
+        else:
+            log.error("%s: failed to get idle time (backend error)", self.name)
+
+    async def monitor(self):
+        '''Async coroutine that runs while sensor is enabled. Makes API call
+        to desktop daemon every second, refreshes group when condition changes.
+
+        Screen mode: Check if computer monitors are turned On or Off, save
+        response in self.current, refresh group when response changes.
+
+        Activity mode: Get milliseconds since last user activity, save in
+        self.current, refresh group when time exceeds/no longer exceeds 60
+        seconds.
+        '''
         log.debug("%s: Starting DesktopTrigger.monitor coro", self.name)
         try:
             while True:
-                # Get new reading
-                new = self.get_monitor_state()
-                log.debug("%s: monitor state: %s", self.name, new)
-
-                # At lock screen, or getting "Disabled" for a few seconds (NVIDIA Prime quirk)
-                # Discard new reading, wait 1 second, try again
-                if new not in ["On", "Off"]:
-                    await asyncio.sleep(1)
-                    continue
-
-                # State changed, overwrite self.current with new reading
-                if new != self.current:
-                    self.print(f"Monitors changed from {self.current} to {new}")
-                    log.debug(
-                        "%s: monitors changed from %s to %s",
-                        self.name, self.current, new
-                    )
-                    self.current = new
-
-                    # TODO make this behavior configurable
-                    # If monitors just turned off (indicates user NOT present), turn off lights
-                    if self.current == "Off":
-                        # Override motion sensors to False (devices will turn
-                        # off unless another sensor type has condition met)
-                        for sensor in self.group.triggers:
-                            if sensor._type == "pir":
-                                log.debug(
-                                    "%s: reset %s motion attribute",
-                                    self.name, sensor.name
-                                )
-                                sensor.motion = False
-
-                        # Update target's state (allows group to turn screen
-                        # back on if another sensor has condition met)
-                        if self.desktop_target:
-                            log.debug(
-                                "%s: Set desktop target (%s) state to False",
-                                self.name, self.desktop_target.name
-                            )
-                            self.desktop_target.state = False
-
-                        # Force group to apply actions so above overrides can take effect
-                        # If no sensors in group have condition met devices will turn OFF.
-                        # If sensors in group do have condition met targets will stay ON
-                        # and screen will turn back ON to match rest of group.
-                        self.group.reset_state()
-
-                    # If monitors just turned on, update target's state
-                    elif self.current == "On":
-                        if self.desktop_target:
-                            log.debug(
-                                "%s: Set desktop target (%s) state to True",
-                                self.name, self.desktop_target.name
-                            )
-                            self.desktop_target.state = True
-
-                    # Refresh group
-                    self.refresh_group()
+                # Check correct condition for configured mode
+                if self.mode == "screen":
+                    self._get_current_screen_mode()
+                else:
+                    self._get_current_activity_mode()
 
                 # Poll every second
                 await asyncio.sleep(1)

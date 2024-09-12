@@ -12,6 +12,10 @@ from cpython_only import cpython_only
 with open('config.json', 'r') as file:
     config = json.load(file)
 
+# Get mock command receiver address
+ip = config["mock_receiver"]["ip"]
+port = config["mock_receiver"]["port"]
+
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
     'ip': config['mock_receiver']['ip'],
@@ -20,6 +24,7 @@ expected_attributes = {
     'current': None,
     'desktop_target': 'device1',
     'enabled': True,
+    'mode': 'screen',
     'group': 'group1',
     'rule_queue': [],
     'name': 'sensor1',
@@ -48,18 +53,21 @@ class TestDesktopTrigger(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Get mock command receiver address
-        ip = config["mock_receiver"]["ip"]
-        port = config["mock_receiver"]["port"]
-
         # Create test group with desktop_trigger and motion sensor targeting desktop_target
         cls.target = DesktopTarget("device1", "device1", "desktop", "enabled", ip, port)
-        cls.instance = DesktopTrigger("sensor1", "sensor1", "desktop", "enabled", [cls.target], ip, port)
+        cls.instance = DesktopTrigger("sensor1", "sensor1", "desktop", "enabled", [cls.target], "screen", ip, port)
         cls.pir = MotionSensor("sensor1", "sensor1", "pir", None, [cls.target], 15)
         cls.group = MockGroup('group1', [cls.instance, cls.pir])
         cls.instance.group = cls.group
         cls.pir.group = cls.group
         cls.target.group = cls.group
+
+    def setUp(self):
+        # Enable instance, set normal IP and port (not error), reset group refresh_called
+        self.instance.enable()
+        self.instance.ip = config["mock_receiver"]["ip"]
+        self.instance.port = config["mock_receiver"]["port"]
+        self.group.refresh_called = False
 
     @classmethod
     def tearDownClass(cls):
@@ -81,8 +89,7 @@ class TestDesktopTrigger(unittest.TestCase):
 
     def test_03_get_idle_time(self):
         idle_time = self.instance.get_idle_time()
-        self.assertIsInstance(idle_time, dict)
-        self.assertIsInstance(int(idle_time["idle_time"]), int)
+        self.assertIsInstance(idle_time, int)
 
     def test_04_get_monitor_state(self):
         state = self.instance.get_monitor_state()
@@ -98,29 +105,54 @@ class TestDesktopTrigger(unittest.TestCase):
         self.assertTrue(self.instance.condition_met())
         self.assertEqual(self.instance.current, "On")
 
+        # Change mode to "activity", ensure not triggered
+        self.instance.mode = "activity"
+        self.instance.current = 999999
+        self.assertFalse(self.instance.condition_met())
+        # Trigger, condition should now be met, current should be 0
+        self.assertTrue(self.instance.trigger())
+        self.assertTrue(self.instance.condition_met())
+        self.assertEqual(self.instance.current, 0)
+
     def test_06_network_errors(self):
         # Change port to error port (mock receiver returns error for all requests on this port)
         self.instance.port = config["mock_receiver"]["error_port"]
 
-        # Confirm that network error in get_idle_time() disables instance
+        # Configure mock receiver to return 400 error
+        url = f'{ip}:{config["mock_receiver"]["error_port"]}'
+        requests.get(f'http://{url}/set_bad_request_error')
+
+        # Confirm that get_idle_time returns False, does not disable sensor
+        self.assertTrue(self.instance.enabled)
+        self.assertFalse(self.instance.get_idle_time())
+        self.assertTrue(self.instance.enabled)
+
+        # Confirm that get_monitor_state returns False, does not disable sensor
+        self.assertTrue(self.instance.enabled)
+        self.assertFalse(self.instance.get_monitor_state())
+        self.assertTrue(self.instance.enabled)
+
+        # Configure mock receiver to return 200 status with unexpected JSON
+        requests.get(f'http://{url}/set_unexpected_json_error')
+
+        # Confirm that invalid json response in get_monitor_state disables instance
+        self.assertTrue(self.instance.enabled)
+        self.assertFalse(self.instance.get_monitor_state())
+        self.assertFalse(self.instance.enabled)
+        self.instance.enable()
+
+        # Confirm that invalid json response in get_idle_time disables instance
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.get_idle_time())
         self.assertFalse(self.instance.enabled)
         self.instance.enable()
 
-        # Confirm that invalid json response in get_monitor_state() disables instance
-        self.assertTrue(self.instance.enabled)
-        self.assertFalse(self.instance.get_monitor_state())
-        self.assertFalse(self.instance.enabled)
-        self.instance.enable()
-
-        # Revert port, change to invalid IP to simulate failed network request
-        self.instance.port = config["mock_receiver"]["error_port"]
+        # Change to invalid IP to simulate failed network request
         self.instance.ip = "0.0.0."
 
-        # Confirm get_monitor_state returns False when network error encountered
+        # Confirm both methods return False when network error encountered
         self.assertFalse(self.instance.get_monitor_state())
-        self.instance.ip = config["mock_receiver"]["ip"]
+        self.assertFalse(self.instance.get_idle_time())
 
     def test_07_enable_starts_loop(self):
         # Cancel existing loop and replace with None
@@ -148,53 +180,125 @@ class TestDesktopTrigger(unittest.TestCase):
         asyncio.run(test())
         self.assertEqual(self.instance.monitor_task, None)
 
-    def test_09_monitor(self):
-        # Ensure instance enabled, using correct port, Group.refresh not called
-        self.instance.enable()
-        self.instance.port = config["mock_receiver"]["port"]
+    def test_09_condition_met_screen_mode(self):
+        # Should return True when self.current is On
+        self.instance.current = "On"
+        self.assertTrue(self.instance._condition_met_screen_mode())
+
+        # Should return False when self.current is Off
+        self.instance.current = "Off"
+        self.assertFalse(self.instance._condition_met_screen_mode())
+
+    def test_10_condition_met_activity_mode(self):
+        # Should return True when self.current is less than 60000 (1 minute)
+        self.instance.current = 0
+        self.assertTrue(self.instance._condition_met_activity_mode())
+
+        # Should return False when self.current is greater than 60000
+        self.instance.current = 999999
+        self.assertFalse(self.instance._condition_met_activity_mode())
+
+        # Should return False when self.current is not integer
+        self.instance.current = "On"
+        self.assertFalse(self.instance._condition_met_activity_mode())
+
+    def test_11_get_current_screen_mode(self):
+        # Reset instance.current, ensure screen mode
+        self.instance.current = None
+        self.instance.mode = "screen"
+
+        # Configure mock receiver to return On for first reading
+        requests.post(f'http://{ip}:{port}/set_screen_state', json={'state': 'On'})
+
+        # Call method
+        self.instance._get_current_screen_mode()
+        # Confirm current is "On", condition is met, Group.refresh called
+        self.assertEqual(self.instance.current, "On")
+        self.assertTrue(self.instance.condition_met())
+        self.assertTrue(self.group.refresh_called)
+
+        # Reset group, set next reading to Off
         self.group.refresh_called = False
+        requests.post(f'http://{ip}:{port}/set_screen_state', json={'state': 'Off'})
 
-        # Get URL of mock command receiver, set first reading to On
-        url = f'{config["mock_receiver"]["ip"]}:{config["mock_receiver"]["port"]}'
-        requests.get(f'http://{url}/on')
+        # Call method
+        self.instance._get_current_screen_mode()
+        # Confirm current is "Off", condition not met, Group.refresh called
+        self.assertEqual(self.instance.current, "Off")
+        self.assertFalse(self.instance.condition_met())
+        self.assertTrue(self.group.refresh_called)
 
-        # Task breaks monitor loop after 3 readings
+        # Reset group, set next reading to standby
+        self.group.refresh_called = False
+        requests.post(f'http://{ip}:{port}/set_screen_state', json={'state': 'standby'})
+
+        # Call method
+        self.instance._get_current_screen_mode()
+        # Confirm current did not change, condition not met, Group.refresh not called
+        self.assertEqual(self.instance.current, "Off")
+        self.assertFalse(self.instance.condition_met())
+        self.assertFalse(self.group.refresh_called)
+
+        # Reset
+        requests.post(f'http://{ip}:{port}/set_screen_state', json={'state': 'Off'})
+
+    def test_12_get_current_activity_mode(self):
+        # Reset instance.current, ensure activity mode
+        self.instance.current = None
+        self.instance.mode = "activity"
+
+        # Configure mock receiver to return 0ms for first reading
+        requests.post(f'http://{ip}:{port}/set_idle_time', json={'idle_time': 0})
+
+        # Call method
+        self.instance._get_current_activity_mode()
+        # Confirm current is 0, condition is met, Group.refresh called
+        self.assertEqual(self.instance.current, 0)
+        self.assertTrue(self.instance.condition_met())
+        self.assertTrue(self.group.refresh_called)
+
+        # Reset group, set next reading to 999999
+        self.group.refresh_called = False
+        self.group.state = True
+        requests.post(f'http://{ip}:{port}/set_idle_time', json={'idle_time': 999999})
+
+        # Call method
+        self.instance._get_current_activity_mode()
+        # Confirm current is 999999, condition not met, Group.refresh called
+        self.assertEqual(self.instance.current, 999999)
+        self.assertFalse(self.instance.condition_met())
+        self.assertTrue(self.group.refresh_called)
+
+        # Change to error port to simulate failed request
+        self.instance.port = config["mock_receiver"]["error_port"]
+        # Call method, confirm returns False
+        self.assertFalse(self.instance._get_current_activity_mode())
+
+    def test_13_instantiate_with_invalid_mode(self):
+        # Instantiate with unsupported mode
+        with self.assertRaises(ValueError):
+            DesktopTrigger("sensor1", "sensor1", "desktop", "enabled", [], "invalid", ip, port)
+
+    def test_14_monitor_screen(self):
+        # Configure mock receiver to return On for first reading
+        requests.post(f'http://{ip}:{port}/set_screen_state', json={'state': 'On'})
+
+        # Set sensor mode to screen, set current to Off
+        self.instance.mode = "screen"
+        self.instance.current = "Off"
+
+        # Task breaks monitor loop after first reading
         async def break_loop(task):
-            await asyncio.sleep(3.1)
+            await asyncio.sleep(1.1)
             task.cancel()
 
-        # Task changes response from mock receiver /state endpoint between
-        # each monitor reading, verifies previous reading handled correctly
-        async def change_state(url):
-            # Let monitor get initial reading (On)
-            await asyncio.sleep(0.1)
-
-            # Simulate MotionSensor triggered
-            self.pir.motion = True
-            # Change response to Off, wait for monitor to read
-            # Must call twice (mock receiver alternates between idle/not idle responses)
-            requests.get(f'http://{url}/off')
-            requests.get(f'http://{url}/off')
-            await asyncio.sleep(1.0)
-
-            # Confirm monitor read Off, reset MotionSensor
-            self.assertEqual(self.instance.current, 'Off')
-            self.assertFalse(self.pir.motion)
-            # Change response to Disabled, wait for monitor to read
-            requests.get(f'http://{url}/Disabled')
-            await asyncio.sleep(1.0)
-
-            # Confirm monitor did not set current to Disabled (rest of
-            # loop skipped if value is not On or Off), change to On
-            self.assertEqual(self.instance.current, 'Off')
-            requests.get(f'http://{url}/on')
-
-        # Run instance.monitor + 2 tasks above with asyncio.gather
+        # Runs instance.monitor + task to kill loop after first request
         async def test_monitor_and_kill():
             task_monitor = asyncio.create_task(self.instance.monitor())
             task_kill = asyncio.create_task(break_loop(task_monitor))
-            task_toggle = asyncio.create_task(change_state(url))
-            await asyncio.gather(task_monitor, task_kill, task_toggle)
+            await asyncio.gather(task_monitor, task_kill)
+
+        # Run loop for 1 second
         asyncio.run(test_monitor_and_kill())
 
         # Confirm instance + target attributes match last reading (On)
@@ -203,13 +307,71 @@ class TestDesktopTrigger(unittest.TestCase):
         # Confirm refresh called
         self.assertTrue(self.group.refresh_called)
 
+        # Reset, set next reading to Off
+        requests.post(f'http://{ip}:{port}/set_screen_state', json={'state': 'Off'})
+        self.group.refresh_called = False
+
+        # Run loop for 1 second
+        asyncio.run(test_monitor_and_kill())
+
+        # Confirm instance + target attributes match last reading (On)
+        self.assertEqual(self.instance.current, 'Off')
+        self.assertFalse(self.target.state)
+        # Confirm refresh called
+        self.assertTrue(self.group.refresh_called)
+
+    def test_15_monitor_activity(self):
+        # Configure mock receiver to return 42ms for first reading
+        requests.post(f'http://{ip}:{port}/set_idle_time', json={'idle_time': 42})
+
+        # Set sensor mode to activity
+        self.instance.mode = "activity"
+
+        # Task breaks monitor loop after first reading
+        async def break_loop(task):
+            await asyncio.sleep(1.1)
+            task.cancel()
+
+        # Runs instance.monitor + task to kill loop after first request
+        async def test_monitor_and_kill():
+            task_monitor = asyncio.create_task(self.instance.monitor())
+            task_kill = asyncio.create_task(break_loop(task_monitor))
+            await asyncio.gather(task_monitor, task_kill)
+
+        # Run loop for 1 second
+        asyncio.run(test_monitor_and_kill())
+
+        # Confirm current is 42, condition met, group refreshed
+        self.assertEqual(self.instance.current, 42)
+        self.assertTrue(self.instance.condition_met())
+        self.assertTrue(self.group.refresh_called)
+
+        # Reset, set group.state = True (condition currently met)
+        self.group.refresh_called = False
+        self.group.state = True
+
+        # Run again, confirm group NOT refreshed (condition matches state)
+        asyncio.run(test_monitor_and_kill())
+        self.assertFalse(self.group.refresh_called)
+
+        # Set reading >60,000 (user not active)
+        requests.post(f'http://{ip}:{port}/set_idle_time', json={'idle_time': 999999})
+
+        # Run loop for 1 second
+        asyncio.run(test_monitor_and_kill())
+
+        # Confirm current is 999999, condition NOT met, group refreshed
+        self.assertEqual(self.instance.current, 999999)
+        self.assertFalse(self.instance.condition_met())
+        self.assertTrue(self.group.refresh_called)
+
     # Original bug: trigger method set Desktop current reading to 'On', which caused
     # main loop to turn targets on. After main loop was removed in c6f5e1d2 Desktop
     # only calls refresh_group when monitor loop receives new reading - overwriting
     # reading did not achieve this. Instead, overwriting with 'On' caused monitor
     # to interpret next reading ('Off') as new, resulting in targets being turned
     # OFF by trigger instead of ON. Trigger method now calls refresh_group directly.
-    def test_10_regression_trigger_does_not_turn_on(self):
+    def test_16_regression_trigger_does_not_turn_on(self):
         # Ensure target enabled, target turned off
         self.target.enable()
         self.target.state = False
@@ -237,13 +399,9 @@ class TestDesktopTrigger(unittest.TestCase):
     # still contain the canceled Task, preventing the loop from being started.
     # This is now handled in the disable method to ensure monitor_task is None.
     @cpython_only
-    def test_11_regression_disabled_at_boot_breaks_monitor_loop(self):
-        # Get mock command receiver address
-        ip = config["mock_receiver"]["ip"]
-        port = config["mock_receiver"]["port"]
-
+    def test_17_regression_disabled_at_boot_breaks_monitor_loop(self):
         # Simulate instantiating with current_rule = disabled
-        instance = DesktopTrigger("sensor1", "sensor1", "desktop", "disabled", [], ip, port)
+        instance = DesktopTrigger("sensor1", "sensor1", "desktop", "disabled", [], "screen", ip, port)
         instance.set_rule("disabled")
 
         # Confirm monitor_task is None

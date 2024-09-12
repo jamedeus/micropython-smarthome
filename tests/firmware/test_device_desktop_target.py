@@ -1,5 +1,6 @@
 import json
 import unittest
+import requests
 from DesktopTarget import DesktopTarget
 
 # Read mock API receiver address
@@ -38,8 +39,10 @@ class TestDesktopTarget(unittest.TestCase):
         self.instance.uri = f'0.0.0.:{config["mock_receiver"]["port"]}'
         self.assertFalse(self.instance.send(1))
 
-        # Change port to error port (mock receiver returns error for all requests on this port)
+        # Change port to error port, configure mock receiver to return 400 error
+        uri = f'{config["mock_receiver"]["ip"]}:{config["mock_receiver"]["error_port"]}'
+        requests.get(f'http://{uri}/set_bad_request_error')
+        self.instance.uri = uri
         # Confirm send method returns False
-        self.instance.uri = f'{config["mock_receiver"]["ip"]}:{config["mock_receiver"]["error_port"]}'
         self.instance.send(1)
         self.assertFalse(self.instance.enabled)

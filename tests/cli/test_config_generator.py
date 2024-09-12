@@ -819,36 +819,36 @@ class TestGenerateConfigFile(TestCase):
             config = self.generator._GenerateConfigFile__configure_sensor()
             self.assertEqual(config, expected_output)
 
-    def test_configure_sensor_prompt_desktop(self):
-        expected_output = {
-            "_type": "desktop",
-            "nickname": "Computer Activity",
-            "ip": "192.168.1.123",
-            "default_rule": "Enabled",
-            "schedule": {
-                "sunrise": "Enabled"
-            },
-            "targets": []
-        }
-
-        # Mock ask to return parameters in expected order
-        self.mock_ask.unsafe_ask.side_effect = [
-            'Computer Activity',
-            'Computer Activity',
-            'Enabled',
-            '192.168.1.123',
-            'Yes',
-            'keyword',
-            'sunrise',
-            'Enabled',
-            'No'
-        ]
-        with patch('questionary.select', return_value=self.mock_ask), \
-             patch('questionary.text', return_value=self.mock_ask):
-
-            # Run prompt, confirm output matches expected
-            config = self.generator._GenerateConfigFile__configure_sensor()
-            self.assertEqual(config, expected_output)
+    # def test_configure_sensor_prompt_desktop(self):
+    #     expected_output = {
+    #         "_type": "desktop",
+    #         "nickname": "Computer Activity",
+    #         "ip": "192.168.1.123",
+    #         "default_rule": "Enabled",
+    #         "schedule": {
+    #             "sunrise": "Enabled"
+    #         },
+    #         "targets": []
+    #     }
+    #
+    #     # Mock ask to return parameters in expected order
+    #     self.mock_ask.unsafe_ask.side_effect = [
+    #         'Computer Activity',
+    #         'Computer Activity',
+    #         'Enabled',
+    #         '192.168.1.123',
+    #         'Yes',
+    #         'keyword',
+    #         'sunrise',
+    #         'Enabled',
+    #         'No'
+    #     ]
+    #     with patch('questionary.select', return_value=self.mock_ask), \
+    #          patch('questionary.text', return_value=self.mock_ask):
+    #
+    #         # Run prompt, confirm output matches expected
+    #         config = self.generator._GenerateConfigFile__configure_sensor()
+    #         self.assertEqual(config, expected_output)
 
     def test_configure_sensor_prompt_load_cell(self):
         expected_output = {

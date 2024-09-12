@@ -18,7 +18,7 @@ tasmota_relay_last = "ON"
 wled_brightness = 255
 wled_state = 1
 desktop_state = 'On'
-desktop_idle_time_toggle = True
+desktop_idle_time = 0
 
 
 # Tasmota relay mock
@@ -82,17 +82,29 @@ def get_dpms_state():
     return {'state': desktop_state}, 200
 
 
-# Desktop integration - get idle time
-# Response alternates between long and short values to allow testing both
+# Set desktop screen state for unit tests
+@app.post("/set_screen_state")
+def set_screen_state():
+    data = request.get_json()
+    global desktop_state
+    desktop_state = data['state']
+    return {'state': desktop_state}, 200
+
+
+# Desktop integration - get idle time (returns value set with /set_idle_time)
 @app.get("/idle_time")
 def get_idle_time():
-    global desktop_idle_time_toggle
-    if desktop_idle_time_toggle:
-        desktop_idle_time_toggle = False
-        return {'idle_time': 456323}, 200
-    else:
-        desktop_idle_time_toggle = True
-        return {'idle_time': 523}, 200
+    global desktop_idle_time
+    return {'idle_time': desktop_idle_time}, 200
+
+
+# Set desktop idle time for unit tests
+@app.post("/set_idle_time")
+def set_idle_time():
+    data = request.get_json()
+    global desktop_idle_time
+    desktop_idle_time = data['idle_time']
+    return {'idle_time': desktop_idle_time}, 200
 
 
 # Desktop integration - turn screen on
@@ -104,17 +116,14 @@ def monitor_on():
 
 
 # Desktop integration - turn screen off
-# Response alternates between user idle/NOT idle to allow testing both
 @app.get("/off")
 def monitor_off():
-    global desktop_idle_time_toggle
-    if desktop_idle_time_toggle:
-        desktop_idle_time_toggle = False
+    global desktop_idle_time
+    if desktop_idle_time > 60000:
         global desktop_state
         desktop_state = 'Off'
         return {'state': 'off'}, 200
     else:
-        desktop_idle_time_toggle = True
         return {'state': 'user not idle'}, 503
 
 
@@ -194,11 +203,31 @@ class MockTpLink:
 # Create second flask app that returns error for all requests
 # Used for coverage of error handling lines
 error_app = Flask(__name__)
+error_type = 400
+
+
+@error_app.get("/set_bad_request_error")
+def set_bad_request_error():
+    '''Sets the catchall error route to return 400 error'''
+    global error_type
+    error_type = 400
+    return "Done", 200
+
+
+@error_app.get("/set_unexpected_json_error")
+def set_unexpected_json_error():
+    '''Sets the catchall error route to return unexpected JSON with status 200'''
+    global error_type
+    error_type = 200
+    return "Done", 200
 
 
 # Match all paths
 @error_app.route('/<path:path>', methods=['GET', 'POST', 'PUT'])
 def catch_all(path):
+    global error_type
+    if error_type == 200:
+        return Response({"unexpected": "json"}, status=200)
     return Response("Bad request", status=400)
 
 

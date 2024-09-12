@@ -13,6 +13,7 @@
         "nickname": "placeholder",
         "default_rule": "placeholder",
         "ip": "placeholder",
+        "mode": "placeholder",
         "schedule": {},
         "targets": []
     },

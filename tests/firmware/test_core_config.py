@@ -524,6 +524,7 @@ class TestConfig(unittest.TestCase):
                 "ip": test_config["mock_receiver"]["ip"],
                 "port": test_config["mock_receiver"]["port"],
                 "default_rule": "enabled",
+                "mode": "screen",
                 "schedule": {},
                 "targets": [
                     "device1"
