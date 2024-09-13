@@ -39,6 +39,31 @@ def validate_ip(ip):
     return ip
 
 
+class CustomHelpFormatter(argparse.RawDescriptionHelpFormatter):
+    '''Custom help formatter to improve help message for existing node options.
+
+    Prints 2-column help message with node name (can be used as CLI arg) in
+    left column, description ("Reupload X to IP") in right.
+
+    Prints standard help message for all other
+    '''
+
+    def _format_action(self, action):
+        '''Node names: Print 2-column help message with line for each node.
+        Other options: Print standard help message
+        '''
+        if action.dest == "node":
+            result = ''
+            for node in action.choices:
+                ip = cli_config.config['nodes'][node]
+                left_column = f'  {node:<22}'
+                right_column = f'Reupload {node} to {ip}'
+                result += f'{left_column}{right_column}\n'
+            return result
+        # Use parent class for all other actions
+        return super()._format_action(action)
+
+
 def parse_args():
     '''Parse command line arguments, return parameters used to instantiate
     Provisioner class
@@ -50,7 +75,7 @@ Upload config files + dependencies to micropython smarthome nodes
 Pick one of the modes listed below (Manual, Node Name, All, Test)
 The password flag is optional and works with all modes''',
         usage='%(prog)s [--all | --test <IP> | <node name> | --c /path/to/config.json --ip IP]',
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=CustomHelpFormatter
     )
 
     # Arguments that accept arbitrary IP address and config file path
