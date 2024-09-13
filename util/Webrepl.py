@@ -206,37 +206,45 @@ class Webrepl():
         request = struct.pack("<2sBBQLH64s", b"WA", 2, 0, 0, 0, len(remote_file), remote_file)
 
         # Send request (no response = success)
-        self.ws.write(request)
-        assert self._read_resp() == 0
+        try:
+            self.ws.write(request)
+            assert self._read_resp() == 0
 
-        with open(local_file, "wb") as output_file:
-            count = 0
-            while True:
-                # Request chunk, parse size
-                self.ws.write(b"\0")
-                (sz,) = struct.unpack("<H", self.ws.read(2))
+            with open(local_file, "wb") as output_file:
+                count = 0
+                while True:
+                    # Request chunk, parse size
+                    self.ws.write(b"\0")
+                    (sz,) = struct.unpack("<H", self.ws.read(2))
 
-                # End of file reached
-                if sz == 0:
-                    break
+                    # End of file reached
+                    if sz == 0:
+                        break
 
-                # Read bytes into buffer, write to output file
-                while sz:
-                    buf = self.ws.read(sz)
-                    if not buf:
-                        raise OSError()
-                    count += len(buf)
-                    output_file.write(buf)
-                    sz -= len(buf)
+                    # Read bytes into buffer, write to output file
+                    while sz:
+                        buf = self.ws.read(sz)
+                        if not buf:
+                            raise OSError()
+                        count += len(buf)
+                        output_file.write(buf)
+                        sz -= len(buf)
 
-                    # Overwrite previous progress report
-                    if not self.quiet:
-                        sys.stdout.write(f"Received {count} bytes\r")
-                        sys.stdout.flush()
+                        # Overwrite previous progress report
+                        if not self.quiet:
+                            sys.stdout.write(f"Received {count} bytes\r")
+                            sys.stdout.flush()
 
-        if not self.quiet:
-            print()
-        assert self._read_resp() == 0
+            if not self.quiet:
+                print()
+            assert self._read_resp() == 0
+
+        except ConnectionResetError as exc:
+            print(f"Error: Connection closed by {self.ip}")
+            raise OSError from exc
+        except TimeoutError as exc:
+            print("Error: Connection timed out")
+            raise OSError from exc
 
     def get_file_mem(self, remote_file):
         '''Downloads a file from ESP32 filesystem, returns as string.'''
@@ -249,40 +257,48 @@ class Webrepl():
         remote_file = (remote_file).encode("utf-8")
         request = struct.pack("<2sBBQLH64s", b"WA", 2, 0, 0, 0, len(remote_file), remote_file)
 
-        # Send request (no response = success)
-        self.ws.write(request)
-        assert self._read_resp() == 0
+        try:
+            # Send request (no response = success)
+            self.ws.write(request)
+            assert self._read_resp() == 0
 
-        # Create buffer for received file
-        output = io.BytesIO()
+            # Create buffer for received file
+            output = io.BytesIO()
 
-        count = 0
-        while True:
-            # Request chunk, parse size
-            self.ws.write(b"\0")
-            (sz,) = struct.unpack("<H", self.ws.read(2))
+            count = 0
+            while True:
+                # Request chunk, parse size
+                self.ws.write(b"\0")
+                (sz,) = struct.unpack("<H", self.ws.read(2))
 
-            # End of file reached
-            if sz == 0:
-                break
+                # End of file reached
+                if sz == 0:
+                    break
 
-            # Read bytes into buffer, write to output buffer
-            while sz:
-                buf = self.ws.read(sz)
-                if not buf:
-                    raise OSError()
-                count += len(buf)
-                output.write(buf)
-                sz -= len(buf)
+                # Read bytes into buffer, write to output buffer
+                while sz:
+                    buf = self.ws.read(sz)
+                    if not buf:
+                        raise OSError()
+                    count += len(buf)
+                    output.write(buf)
+                    sz -= len(buf)
 
-                # Overwrite previous progress report
-                if not self.quiet:
-                    sys.stdout.write(f"Received {count} bytes\r")
-                    sys.stdout.flush()
+                    # Overwrite previous progress report
+                    if not self.quiet:
+                        sys.stdout.write(f"Received {count} bytes\r")
+                        sys.stdout.flush()
 
-        if not self.quiet:
-            print()
-        assert self._read_resp() == 0
+            if not self.quiet:
+                print()
+            assert self._read_resp() == 0
+
+        except ConnectionResetError as exc:
+            print(f"Error: Connection closed by {self.ip}")
+            raise OSError from exc
+        except TimeoutError as exc:
+            print("Error: Connection timed out")
+            raise OSError from exc
 
         return output.getvalue()
 
@@ -303,33 +319,41 @@ class Webrepl():
         if not self.quiet:
             print(f"{local_file} -> {self.ip}:/{remote_file}")
 
-        # Send first 10 bytes of request, then all remaining bytes (no response = success)
-        self.ws.write(request[:10])
-        self.ws.write(request[10:])
-        assert self._read_resp() == 0
+        try:
+            # Send first 10 bytes of request, then all remaining bytes (no response = success)
+            self.ws.write(request[:10])
+            self.ws.write(request[10:])
+            assert self._read_resp() == 0
 
-        count = 0
-        with open(local_file, "rb") as source_file:
-            while True:
-                # Overwrite previous progress report
-                if not self.quiet:
-                    sys.stdout.write(f"Sent {count} of {sz} bytes\r")
-                    sys.stdout.flush()
+            count = 0
+            with open(local_file, "rb") as source_file:
+                while True:
+                    # Overwrite previous progress report
+                    if not self.quiet:
+                        sys.stdout.write(f"Sent {count} of {sz} bytes\r")
+                        sys.stdout.flush()
 
-                # Read next chunk
-                buf = source_file.read(1024)
+                    # Read next chunk
+                    buf = source_file.read(1024)
 
-                # End of file reached
-                if not buf:
-                    break
+                    # End of file reached
+                    if not buf:
+                        break
 
-                # Send chunk
-                self.ws.write(buf)
-                count += len(buf)
+                    # Send chunk
+                    self.ws.write(buf)
+                    count += len(buf)
 
-        if not self.quiet:
-            print('\n')
-        assert self._read_resp() == 0
+            if not self.quiet:
+                print('\n')
+            assert self._read_resp() == 0
+
+        except ConnectionResetError as exc:
+            print(f"Error: Connection closed by {self.ip}")
+            raise OSError from exc
+        except TimeoutError as exc:
+            print("Error: Connection timed out")
+            raise OSError from exc
 
     # Takes string instead of
     def put_file_mem(self, file_contents, remote_file):
@@ -359,30 +383,38 @@ class Webrepl():
         if not self.quiet:
             print(f"{sz} bytes -> {self.ip}:/{remote_file}")
 
-        # Send first 10 bytes of request, then all remaining bytes (no response = success)
-        self.ws.write(request[:10])
-        self.ws.write(request[10:])
-        assert self._read_resp() == 0
+        try:
+            # Send first 10 bytes of request, then all remaining bytes (no response = success)
+            self.ws.write(request[:10])
+            self.ws.write(request[10:])
+            assert self._read_resp() == 0
 
-        count = 0
-        with io.BytesIO(file_contents) as source_file:
-            while True:
-                # Overwrite previous progress report
-                if not self.quiet:
-                    sys.stdout.write(f"Sent {count} of {sz} bytes\r")
-                    sys.stdout.flush()
+            count = 0
+            with io.BytesIO(file_contents) as source_file:
+                while True:
+                    # Overwrite previous progress report
+                    if not self.quiet:
+                        sys.stdout.write(f"Sent {count} of {sz} bytes\r")
+                        sys.stdout.flush()
 
-                # Read next chunk
-                buf = source_file.read(1024)
+                    # Read next chunk
+                    buf = source_file.read(1024)
 
-                # End of file reached
-                if not buf:
-                    break
+                    # End of file reached
+                    if not buf:
+                        break
 
-                # Send chunk
-                self.ws.write(buf)
-                count += len(buf)
+                    # Send chunk
+                    self.ws.write(buf)
+                    count += len(buf)
 
-        if not self.quiet:
-            print('\n')
-        assert self._read_resp() == 0
+            if not self.quiet:
+                print('\n')
+            assert self._read_resp() == 0
+
+        except ConnectionResetError as exc:
+            print(f"Error: Connection closed by {self.ip}")
+            raise OSError from exc
+        except TimeoutError as exc:
+            print("Error: Connection timed out")
+            raise OSError from exc

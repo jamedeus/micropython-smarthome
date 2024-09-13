@@ -407,6 +407,70 @@ class WebreplTests(TestCase):
             node._read_resp()
             self.assertEqual(mock_read.call_count, 1)
 
+    def test_connection_reset_error(self):
+        node = Webrepl('123.45.67.89', 'password')
+
+        # Mock methods to simulate successfully opening connection
+        # Mock Websocket.read to simulate node closing connection early
+        with patch.object(socket, 'socket', return_value=MagicMock()), \
+             patch.object(Websocket, 'client_handshake', return_value=True), \
+             patch.object(Websocket, 'read', side_effect=ConnectionResetError), \
+             patch.object(Webrepl, '_login', return_value=True):
+
+            # Confirm all methods print error message and raise OSError when
+            # node closes connection
+            with self.assertRaises(OSError), \
+                 patch('builtins.print') as mock_print:
+                node.get_file("test.json", "/path/to/remote")
+                mock_print.assert_called_with("Error: Connection closed by 123.45.67.89")
+
+            with self.assertRaises(OSError), \
+                 patch('builtins.print') as mock_print:
+                node.get_file_mem("/path/to/remote")
+                mock_print.assert_called_with("Error: Connection closed by 123.45.67.89")
+
+            with self.assertRaises(OSError), \
+                 patch('builtins.print') as mock_print:
+                node.put_file(test_config_path, 'config.json')
+                mock_print.assert_called_with("Error: Connection closed by 123.45.67.89")
+
+            with self.assertRaises(OSError), \
+                 patch('builtins.print') as mock_print:
+                node.put_file_mem({'mock': 'config'}, 'config.json')
+                mock_print.assert_called_with("Error: Connection closed by 123.45.67.89")
+
+    def test_connection_timed_out_error(self):
+        node = Webrepl('123.45.67.89', 'password')
+
+        # Mock methods to simulate successfully opening connection
+        # Mock Websocket.read to simulate connection timing out
+        with patch.object(socket, 'socket', return_value=MagicMock()), \
+             patch.object(Websocket, 'client_handshake', return_value=True), \
+             patch.object(Websocket, 'read', side_effect=TimeoutError), \
+             patch.object(Webrepl, '_login', return_value=True):
+
+            # Confirm all methods print error message and raise OSError when
+            # connection times out
+            with self.assertRaises(OSError), \
+                 patch('builtins.print') as mock_print:
+                node.get_file("test.json", "/path/to/remote")
+                mock_print.assert_called_with("Connection timed out")
+
+            with self.assertRaises(OSError), \
+                 patch('builtins.print') as mock_print:
+                node.get_file_mem("/path/to/remote")
+                mock_print.assert_called_with("Connection timed out")
+
+            with self.assertRaises(OSError), \
+                 patch('builtins.print') as mock_print:
+                node.put_file(test_config_path, 'config.json')
+                mock_print.assert_called_with("Connection timed out")
+
+            with self.assertRaises(OSError), \
+                 patch('builtins.print') as mock_print:
+                node.put_file_mem({'mock': 'config'}, 'config.json')
+                mock_print.assert_called_with("Connection timed out")
+
     def test_quiet_arg_false(self):
         # Instantiate with quiet arg set to False
         node = Webrepl('123.45.67.89', 'password', False)
