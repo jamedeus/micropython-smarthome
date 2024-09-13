@@ -6,6 +6,8 @@ util and CLI modules to be importable without relative paths).
 Not necessary in development (pipenv adds util to path).
 '''
 
+# pylint: disable=import-outside-toplevel,import-error,no-name-in-module
+
 import os
 import sys
 

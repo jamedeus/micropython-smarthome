@@ -70,7 +70,7 @@ def build_rule_prompt_maps():
             _rule_prompt_map[_type] = int_rule_prompt
         elif prompt == "int_or_fade":
             _rule_prompt_map[_type] = int_or_fade_rule_prompt
-        elif prompt == "float_range" or prompt == "thermostat":
+        elif prompt in ("float_range", "thermostat"):
             _rule_prompt_map[_type] = float_rule_prompt
         elif prompt == "on_off":
             _rule_prompt_map[_type] = on_off_rule_prompt

@@ -413,6 +413,7 @@ def main_prompt():
     if not os.path.exists(get_cli_config_path()):
         setup_prompt()
 
+    # pylint: disable-next=duplicate-code
     choice = None
     while choice != 'Done':
         choice = questionary.select(
