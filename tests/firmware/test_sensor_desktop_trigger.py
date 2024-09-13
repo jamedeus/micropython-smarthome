@@ -18,8 +18,7 @@ port = config["mock_receiver"]["port"]
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
-    'ip': config['mock_receiver']['ip'],
-    'port': config['mock_receiver']['port'],
+    'uri': f'{ip}:{port}',
     'nickname': 'sensor1',
     'current': None,
     'desktop_target': 'device1',
@@ -65,8 +64,7 @@ class TestDesktopTrigger(unittest.TestCase):
     def setUp(self):
         # Enable instance, set normal IP and port (not error), reset group refresh_called
         self.instance.enable()
-        self.instance.ip = config["mock_receiver"]["ip"]
-        self.instance.port = config["mock_receiver"]["port"]
+        self.instance.uri = f'{ip}:{port}'
         self.group.refresh_called = False
 
     @classmethod
@@ -78,8 +76,7 @@ class TestDesktopTrigger(unittest.TestCase):
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, DesktopTrigger)
         self.assertTrue(self.instance.enabled)
-        self.assertEqual(self.instance.ip, config["mock_receiver"]["ip"])
-        self.assertEqual(self.instance.port, config["mock_receiver"]["port"])
+        self.assertEqual(self.instance.uri, f'{ip}:{port}')
         self.assertEqual(self.instance.current, None)
         self.assertEqual(self.instance.desktop_target, self.target)
 
@@ -116,7 +113,7 @@ class TestDesktopTrigger(unittest.TestCase):
 
     def test_06_network_errors(self):
         # Change port to error port (mock receiver returns error for all requests on this port)
-        self.instance.port = config["mock_receiver"]["error_port"]
+        self.instance.uri = f'{ip}:{config["mock_receiver"]["error_port"]}'
 
         # Configure mock receiver to return 400 error
         url = f'{ip}:{config["mock_receiver"]["error_port"]}'
@@ -148,7 +145,7 @@ class TestDesktopTrigger(unittest.TestCase):
         self.instance.enable()
 
         # Change to invalid IP to simulate failed network request
-        self.instance.ip = "0.0.0."
+        self.instance.uri = f"0.0.0.:{port}"
 
         # Confirm both methods return False when network error encountered
         self.assertFalse(self.instance.get_monitor_state())
@@ -270,7 +267,7 @@ class TestDesktopTrigger(unittest.TestCase):
         self.assertTrue(self.group.refresh_called)
 
         # Change to error port to simulate failed request
-        self.instance.port = config["mock_receiver"]["error_port"]
+        self.instance.uri = f'{ip}:{config["mock_receiver"]["error_port"]}'
         # Call method, confirm returns False
         self.assertFalse(self.instance._get_current_activity_mode())
 

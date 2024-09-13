@@ -37,8 +37,7 @@ class DesktopTrigger(SensorWithLoop):
     def __init__(self, name, nickname, _type, default_rule, targets, mode, ip, port=5000):
         super().__init__(name, nickname, _type, True, default_rule, targets)
 
-        self.ip = ip
-        self.port = port
+        self.uri = f"{ip}:{port}"
 
         # Current monitor state
         self.current = None
@@ -52,7 +51,7 @@ class DesktopTrigger(SensorWithLoop):
         # Find desktop target so monitor loop (below) can update target's state
         # attribute when screen turns on/off
         for i in self.targets:
-            if i._type == "desktop" and i.uri == f"{self.ip}:{self.port}":
+            if i._type == "desktop" and i.uri == f"{self.uri}":
                 self.desktop_target = i
                 break
         else:
@@ -63,7 +62,7 @@ class DesktopTrigger(SensorWithLoop):
 
         log.info(
             "Instantiated Desktop named %s: ip = %s, port = %s, mode = %s",
-            self.name, self.ip, self.port, self.mode
+            self.name, ip, port, self.mode
         )
 
     def get_idle_time(self):
@@ -71,20 +70,21 @@ class DesktopTrigger(SensorWithLoop):
         returns response object (JSON).
         '''
         try:
-            response = requests.get(f'http://{self.ip}:{self.port}/idle_time', timeout=2)
+            response = requests.get(f'http://{self.uri}/idle_time', timeout=2)
             if response.status_code == 200:
                 return response.json()["idle_time"]
             raise OSError
         except OSError:
-            # Wifi interruption, return False - caller will try again in 1 second
+            # Wifi interruption, return False (caller will ignore and retry)
             log.error("%s: failed to get idle time (wifi error)", self.name)
             self.print(f"{self.name}: failed to get idle time (wifi error)")
             return False
         except (ValueError, IndexError):
-            # Response doesn't contain JSON (different service running on port 5000), disable
-            self.print("Fatal error (unexpected response from desktop), disabling")
+            # Response not JSON or contains unexpected keys (different service
+            # running on desktop port 5000), disable sensor
+            self.print("Fatal: unexpected response from desktop, disabling")
             log.critical(
-                "%s: Fatal error (unexpected response from desktop), disabling",
+                "%s: Fatal: unexpected response from desktop, disabling",
                 self.name
             )
             self.disable()
@@ -95,20 +95,21 @@ class DesktopTrigger(SensorWithLoop):
         response ("On" or "Off"). Returns False if request fails.
         '''
         try:
-            response = requests.get(f'http://{self.ip}:{self.port}/state', timeout=2)
+            response = requests.get(f'http://{self.uri}/state', timeout=2)
             if response.status_code == 200:
                 return response.json()["state"]
             raise OSError
         except OSError:
-            # Wifi interruption, return False - caller will try again in 1 second
+            # Wifi interruption, return False (caller will ignore and retry)
             log.error("%s: failed to get state (wifi error)", self.name)
             self.print(f"{self.name}: failed to get state (wifi error)")
             return False
         except (ValueError, IndexError):
-            # Response doesn't contain JSON (different service running on port 5000), disable
-            self.print("Fatal error (unexpected response from desktop), disabling")
+            # Response not JSON or contains unexpected keys (different service
+            # running on desktop port 5000), disable sensor
+            self.print("Fatal: unexpected response from desktop, disabling")
             log.critical(
-                "%s: Fatal error (unexpected response from desktop), disabling",
+                "%s: Fatal: unexpected response from desktop, disabling",
                 self.name
             )
             self.disable()
