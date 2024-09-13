@@ -949,7 +949,7 @@ class TestManageNodeFunctions(TestCase):
              patch('smarthome_cli.Webrepl', return_value=mock_connection) as mock_webrepl_class, \
              patch('smarthome_cli.pydoc.pager') as mock_pager, \
              patch('questionary.confirm', MagicMock()) as mock_confirm, \
-             patch("builtins.open", mock_open()) as mocked_open:
+             patch('builtins.open', mock_open()) as mocked_open:
 
             # Answer "No" to "Save log?" prompt
             mock_confirm.return_value.ask.return_value = False
@@ -968,6 +968,41 @@ class TestManageNodeFunctions(TestCase):
 
             # Confirm did not open file to write log to disk
             mocked_open.assert_not_called()
+
+    def test_view_log_prompt_connection_error(self):
+        # Mock user selecting name of existing node
+        self.mock_ask.unsafe_ask.side_effect = [
+            'node1'
+        ]
+
+        # Create mock Webrepl instance, simulate connection error while reading
+        mock_connection = MagicMock()
+        mock_connection.get_file_mem = MagicMock(side_effect=OSError)
+
+        # Mock select prompt to return mocked node selection
+        # Mock text prompt to return mocked log filename
+        # Mock Webrepl class to return mock instance
+        # Mock pydoc.pager (called to display log)
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('smarthome_cli.Webrepl', return_value=mock_connection) as mock_webrepl_class, \
+             patch('smarthome_cli.pydoc.pager') as mock_pager, \
+             patch('questionary.confirm', MagicMock()) as mock_confirm:
+
+            # Answer "No" to "Save log?" prompt
+            mock_confirm.return_value.ask.return_value = False
+
+            # Call function
+            view_log_prompt()
+
+            # Confirm Webrepl was instantiated with selected node IP + webrepl password
+            mock_webrepl_class.assert_called_once_with('192.168.1.123', 'password')
+
+            # Confirm get_file_mem was called with name of log file
+            mock_connection.get_file_mem.assert_called_once_with('app.log')
+
+            # Confirm pager was NOT called (exits when connection error occurs)
+            mock_pager.assert_not_called()
 
     def test_change_node_ip_prompt(self):
         # Mock user selecting node name then entering new IP address

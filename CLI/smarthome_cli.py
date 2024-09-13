@@ -274,8 +274,12 @@ def view_log_prompt():
     ip = cli_config.config['nodes'][node]
     connection = Webrepl(ip, cli_config.config['webrepl_password'])
     print('Downloading log, this may take a few minutes...')
-    log = connection.get_file_mem('app.log')
-    connection.close_connection()
+    try:
+        log = connection.get_file_mem('app.log')
+        connection.close_connection()
+    except OSError:
+        # Exit on connection error (Webrepl instance prints error message)
+        return
 
     # Display log in pager
     pydoc.pager(log.decode())
