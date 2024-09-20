@@ -292,8 +292,8 @@ class GenerateConfigFile:
         '''Called after deleting devices/sensors to ensure sequential index.'''
 
         # Back up devices and sensors
-        devices = [self.config[i] for i in self.config if is_device(i)]
-        sensors = [self.config[i] for i in self.config if is_sensor(i)]
+        devices = tuple(self.config[i] for i in self.config if is_device(i))
+        sensors = tuple(self.config[i] for i in self.config if is_sensor(i))
 
         # Delete all devices and sensors
         self.config = {key: value for key, value in self.config.items()
@@ -320,13 +320,13 @@ class GenerateConfigFile:
         '''
 
         # Get list of existing sensor types
-        sensor_types = [self.config[sensor]["_type"]
-                        for sensor in self.config if is_sensor(sensor)]
+        sensor_types = tuple(self.config[sensor]["_type"]
+                             for sensor in self.config if is_sensor(sensor))
 
         # Remove si7021 option if already configured (multiple not supported)
         if "si7021" in sensor_types:
-            options = [_type for _type in self.sensor_type_options
-                       if not _type.startswith("SI7021")]
+            options = tuple(_type for _type in self.sensor_type_options
+                            if not _type.startswith("SI7021"))
         else:
             options = self.sensor_type_options
 
@@ -341,14 +341,14 @@ class GenerateConfigFile:
         '''
 
         # Get list of existing nicknames for validators (prevent duplicates)
-        used_nicknames = [self.config[i]['nickname'] for i in self.config
-                          if 'nickname' in self.config[i].keys()]
+        used_nicknames = tuple(self.config[i]['nickname'] for i in self.config
+                               if 'nickname' in self.config[i].keys())
         return questionary.text(
             "Enter a memorable nickname:",
             validate=NicknameValidator(used_nicknames)
         ).unsafe_ask()
 
-    def __pin_prompt(self, valid_pins, prompt="Select pin", config={}):
+    def __pin_prompt(self, valid_pins, prompt="Select pin", config=None):
         '''Prompts user to select from a list of unused pins, returns selection.
         Takes a list of pin options as argument, removes pins that already
         exist in self.config to prevent user selecting duplicate pin.
@@ -371,7 +371,7 @@ class GenerateConfigFile:
                 [config[key] for key in config if key.startswith('pin')]
             )
         # Get list of available pins, run prompt
-        choices = [pin for pin in valid_pins if pin not in used_pins]
+        choices = tuple(pin for pin in valid_pins if pin not in used_pins)
         return questionary.select(prompt, choices=choices).unsafe_ask()
 
     def __ip_address_prompt(self):
@@ -405,10 +405,7 @@ class GenerateConfigFile:
         # Prompt user for device type, get config skeleton
         if config is None:
             config = config_templates['device'][self.__device_type()].copy()
-            _type = config['_type']
-        # Previously failed validation, repeat prompts for invalid params
-        else:
-            _type = config['_type']
+        _type = config['_type']
 
         # Prompt user for all parameters with missing value
         for i in [i for i in config if config[i] == "placeholder"]:
@@ -483,6 +480,7 @@ class GenerateConfigFile:
         # Prompt user for sensor type, get config skeleton
         if config is None:
             config = config_templates['sensor'][self.__sensor_type()].copy()
+        _type = config['_type']
 
         # Prompt user for all parameters with missing value
         for i in [i for i in config if config[i] == "placeholder"]:
@@ -506,7 +504,7 @@ class GenerateConfigFile:
                 config[i] = self.__ip_address_prompt()
 
             elif i == "mode":
-                options = metadata["sensors"][config["_type"]]["mode_options"]
+                options = metadata["sensors"][_type]["mode_options"]
                 config[i] = questionary.select(
                     "Select mode",
                     choices=options
@@ -576,8 +574,8 @@ class GenerateConfigFile:
         '''
 
         # Get lists of all sensor and device IDs
-        sensors = [key for key in self.config.keys() if is_sensor(key)]
-        devices = [key for key in self.config.keys() if is_device(key)]
+        sensors = tuple(key for key in self.config.keys() if is_sensor(key))
+        devices = tuple(key for key in self.config.keys() if is_device(key))
 
         # Skip step if no devices
         if len(devices) == 0:

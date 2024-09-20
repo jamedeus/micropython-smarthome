@@ -361,7 +361,7 @@ class TestGenerateConfigFile(TestCase):
 
             # Confirm validator received list of all existing nicknames
             mock_validator.assert_called_with(
-                ['Target1', 'Target2', 'Sensor']
+                ('Target1', 'Target2', 'Sensor')
             )
 
     def test_pin_prompt(self):
@@ -395,7 +395,7 @@ class TestGenerateConfigFile(TestCase):
             _, kwargs = mock_select.call_args
             self.assertEqual(
                 kwargs['choices'],
-                ['16', '17', '18', '21', '22', '23', '25', '26', '33']
+                ('16', '17', '18', '21', '22', '23', '25', '26', '33')
             )
 
     def test_add_devices_and_sensors_prompt(self):
