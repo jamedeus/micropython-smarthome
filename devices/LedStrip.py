@@ -3,9 +3,6 @@ import logging
 from machine import Pin, PWM
 from DimmableLight import DimmableLight
 
-# Set name for module's log lines
-log = logging.getLogger("LedStrip")
-
 
 class LedStrip(DimmableLight):
     '''Driver for PWM-driven MOSFET used to dim an LED strip or other device.
@@ -34,6 +31,9 @@ class LedStrip(DimmableLight):
     def __init__(self, name, nickname, _type, default_rule, min_rule, max_rule, pin):
         super().__init__(name, nickname, _type, True, default_rule, min_rule, max_rule)
 
+        # Set name for module's log lines
+        self.log = logging.getLogger("LedStrip")
+
         # TODO - Find optimal PWM freq. Default (5 KHz) causes coil whine in
         # downstairs bathroom at 128 duty cycle. Raising significantly reduces
         # max brightness (exceed MOSFET switching time), may need different power supply?
@@ -49,14 +49,14 @@ class LedStrip(DimmableLight):
         # Store current brightness, allows smooth transition when rule changes
         self.bright = 0
 
-        log.info("Instantiated LedStrip named %s on pin %s", self.name, pin)
+        self.log.info("Instantiated LedStrip named %s on pin %s", self.name, pin)
 
     def send(self, state=1):
         '''Sets PWM duty cycle to current_rule if argument is True.
         Sets PWM duty cycle to 0 if argument is False.
         Gradually fades to new brightness with 1 second transition.
         '''
-        log.debug(
+        self.log.debug(
             "%s: send method called, rule=%s, state=%s",
             self.name, self.current_rule, state
         )

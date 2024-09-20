@@ -5,9 +5,6 @@ import logging
 from machine import Pin
 from Sensor import Sensor
 
-# Set name for module's log lines
-log = logging.getLogger("Switch_Sensor")
-
 
 class Switch(Sensor):
     '''Driver for switch connected to ESP32 input pin, other side of switch
@@ -29,6 +26,9 @@ class Switch(Sensor):
     def __init__(self, name, nickname, _type, default_rule, targets, pin):
         super().__init__(name, nickname, _type, True, default_rule, targets)
 
+        # Set name for module's log lines
+        self.log = logging.getLogger("Switch_Sensor")
+
         self.switch = Pin(int(pin), Pin.IN, Pin.PULL_DOWN)
 
         # Create hardware interrupt, refresh group when switch changes state
@@ -37,14 +37,14 @@ class Switch(Sensor):
         # Track whether switch open or closed (allows checking state via API)
         self.switch_closed = bool(self.switch.value())
 
-        log.info("Instantiated switch sensor named %s", self.name)
+        self.log.info("Instantiated switch sensor named %s", self.name)
 
     def interrupt_handler(self, _=None):
         '''Interrupt handler called when switch is opened or closed, turns
         target devices on or off depending on switch state.
         '''
         self.switch_closed = bool(self.switch.value())
-        log.debug("%s: interrupt, switch_closed = %s", self.name, self.switch_closed)
+        self.log.debug("%s: interrupt, switch_closed = %s", self.name, self.switch_closed)
         self.refresh_group()
 
     def condition_met(self):

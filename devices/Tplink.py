@@ -3,9 +3,6 @@ import logging
 from struct import pack
 from DimmableLight import DimmableLight
 
-# Set name for module's log lines
-log = logging.getLogger("Tplink")
-
 
 class Tplink(DimmableLight):
     '''Driver for TP-Link Kasa dimmers and smart bulbs. Makes API calls to set
@@ -37,12 +34,15 @@ class Tplink(DimmableLight):
     def __init__(self, name, nickname, _type, default_rule, min_rule, max_rule, ip):
         super().__init__(name, nickname, _type, True, default_rule, min_rule, max_rule)
 
+        # Set name for module's log lines
+        self.log = logging.getLogger("Tplink")
+
         self.ip = ip
 
         # Stores parameters in dict when fade in progress
         self.fading = False
 
-        log.info(
+        self.log.info(
             "Instantiated Tplink device named %s: ip = %s, type = %s",
             self.name, self.ip, self._type
         )
@@ -74,7 +74,7 @@ class Tplink(DimmableLight):
         Makes API call to turn Tplink device OFF if argument is False.
         Sets Tplink device brightness to current_rule.
         '''
-        log.debug(
+        self.log.debug(
             "%s: send method called, rule=%s, state=%s",
             self.name, self.current_rule, state
         )
@@ -111,17 +111,17 @@ class Tplink(DimmableLight):
             sock_tcp.close()
 
             decrypted = self.decrypt(data[4:])
-            log.debug("%s: Response: %s", self.name, decrypted)
+            self.log.debug("%s: Response: %s", self.name, decrypted)
 
             self.print(f"brightness = {self.current_rule}, state = {state}")
-            log.debug("%s: Success", self.name)
+            self.log.debug("%s: Success", self.name)
 
             # Tell calling function that request succeeded
             return True
 
         except Exception as ex:
             self.print(f"Could not connect to host {self.ip}, exception: {ex}")
-            log.error("%s: Could not connect to host %s", self.name, self.ip)
+            self.log.error("%s: Could not connect to host %s", self.name, self.ip)
 
             # Tell calling function that request failed
             return False

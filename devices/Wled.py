@@ -2,9 +2,6 @@ import logging
 import requests
 from DimmableLight import DimmableLight
 
-# Set name for module's log lines
-log = logging.getLogger("WLED")
-
 
 class Wled(DimmableLight):
     '''Driver for WLED instances. Makes API calls to set power state and
@@ -34,9 +31,12 @@ class Wled(DimmableLight):
     def __init__(self, name, nickname, _type, default_rule, min_rule, max_rule, ip):
         super().__init__(name, nickname, _type, True, default_rule, min_rule, max_rule)
 
+        # Set name for module's log lines
+        self.log = logging.getLogger("WLED")
+
         self.ip = ip
 
-        log.info("Instantiated Wled named %s: ip = %s", self.name, self.ip)
+        self.log.info("Instantiated Wled named %s: ip = %s", self.name, self.ip)
 
     def get_payload(self, state=True):
         '''Returns WLED API payload (JSON) to set power state and brightness.
@@ -51,7 +51,7 @@ class Wled(DimmableLight):
         Makes API call to turn WLED instance OFF if argument is False.
         Sets WLED instance brightness to current_rule.
         '''
-        log.debug(
+        self.log.debug(
             "%s: send method called, rule=%s, state=%s",
             self.name, self.current_rule, state
         )
@@ -68,12 +68,12 @@ class Wled(DimmableLight):
                 json=self.get_payload(state),
                 timeout=2
             )
-            log.debug("%s: response status: %s", self.name, response.status_code)
+            self.log.debug("%s: response status: %s", self.name, response.status_code)
             self.print(f"brightness = {self.current_rule}, state = {state}")
         except OSError:
             # Wifi error, send failed
             self.print(f"{self.name}: send failed (wifi error)")
-            log.error("%s: send failed (wifi error)", self.name)
+            self.log.error("%s: send failed (wifi error)", self.name)
             return False
 
         # Request succeeded if status code is 200

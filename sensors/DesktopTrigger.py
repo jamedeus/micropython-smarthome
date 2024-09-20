@@ -3,9 +3,6 @@ import asyncio
 import requests
 from SensorWithLoop import SensorWithLoop
 
-# Set name for module's log lines
-log = logging.getLogger("DesktopTrigger")
-
 
 class DesktopTrigger(SensorWithLoop):
     '''Driver for Linux computers running desktop-integration daemon. Makes API
@@ -37,6 +34,9 @@ class DesktopTrigger(SensorWithLoop):
     def __init__(self, name, nickname, _type, default_rule, targets, mode, ip, port=5000):
         super().__init__(name, nickname, _type, True, default_rule, targets)
 
+        # Set name for module's log lines
+        self.log = logging.getLogger("DesktopTrigger")
+
         self.uri = f"{ip}:{port}"
 
         # Current monitor state
@@ -60,7 +60,7 @@ class DesktopTrigger(SensorWithLoop):
         # Run monitor loop
         self.monitor_task = asyncio.create_task(self.monitor())
 
-        log.info(
+        self.log.info(
             "Instantiated Desktop named %s: ip = %s, port = %s, mode = %s",
             self.name, ip, port, self.mode
         )
@@ -76,14 +76,14 @@ class DesktopTrigger(SensorWithLoop):
             raise OSError
         except OSError:
             # Wifi interruption, return False (caller will ignore and retry)
-            log.error("%s: failed to get idle time (wifi error)", self.name)
+            self.log.error("%s: failed to get idle time (wifi error)", self.name)
             self.print(f"{self.name}: failed to get idle time (wifi error)")
             return False
         except (ValueError, IndexError):
             # Response not JSON or contains unexpected keys (different service
             # running on desktop port 5000), disable sensor
             self.print("Fatal: unexpected response from desktop, disabling")
-            log.critical(
+            self.log.critical(
                 "%s: Fatal: unexpected response from desktop, disabling",
                 self.name
             )
@@ -101,14 +101,14 @@ class DesktopTrigger(SensorWithLoop):
             raise OSError
         except OSError:
             # Wifi interruption, return False (caller will ignore and retry)
-            log.error("%s: failed to get state (wifi error)", self.name)
+            self.log.error("%s: failed to get state (wifi error)", self.name)
             self.print(f"{self.name}: failed to get state (wifi error)")
             return False
         except (ValueError, IndexError):
             # Response not JSON or contains unexpected keys (different service
             # running on desktop port 5000), disable sensor
             self.print("Fatal: unexpected response from desktop, disabling")
-            log.critical(
+            self.log.critical(
                 "%s: Fatal: unexpected response from desktop, disabling",
                 self.name
             )
@@ -145,7 +145,7 @@ class DesktopTrigger(SensorWithLoop):
         met. If mode is "screen" sets current to "On" (simulate screen turned
         on), if mode is "activity" sets current to 0 (0ms since user active).
         '''
-        log.debug("%s: trigger method called", self.name)
+        self.log.debug("%s: trigger method called", self.name)
         if self.mode == "screen":
             self.current = "On"
         else:
@@ -165,7 +165,7 @@ class DesktopTrigger(SensorWithLoop):
 
         # Get new reading
         new = self.get_monitor_state()
-        log.debug("%s: monitor state: %s", self.name, new)
+        self.log.debug("%s: monitor state: %s", self.name, new)
 
         # At lock screen, or getting "Disabled" for a few seconds (NVIDIA Prime
         # quirk), return without updating self.current
@@ -174,7 +174,7 @@ class DesktopTrigger(SensorWithLoop):
 
         if new != self.current:
             self.print(f"Monitor state changed from {self.current} to {new}")
-            log.debug(
+            self.log.debug(
                 "%s: monitors changed from %s to %s",
                 self.name, self.current, new
             )
@@ -184,7 +184,7 @@ class DesktopTrigger(SensorWithLoop):
                 # Update desktop target's state (allows group to turn screen
                 # back on, will get stuck off if state remains True)
                 if self.desktop_target:
-                    log.debug(
+                    self.log.debug(
                         "%s: Set desktop target (%s) state to False",
                         self.name, self.desktop_target.name
                     )
@@ -197,7 +197,7 @@ class DesktopTrigger(SensorWithLoop):
             # If monitors just turned on, update target's state
             elif self.current == "On":
                 if self.desktop_target:
-                    log.debug(
+                    self.log.debug(
                         "%s: Set desktop target (%s) state to True",
                         self.name, self.desktop_target.name
                     )
@@ -217,13 +217,13 @@ class DesktopTrigger(SensorWithLoop):
         new = self.get_idle_time()
         if new is not False:
             self.current = int(new)
-            log.debug("%s: idle time: %s", self.name, self.current)
+            self.log.debug("%s: idle time: %s", self.name, self.current)
 
             if self.condition_met() != self.group.state:
                 self.refresh_group()
 
         else:
-            log.error("%s: failed to get idle time (backend error)", self.name)
+            self.log.error("%s: failed to get idle time (backend error)", self.name)
 
     async def monitor(self):
         '''Async coroutine that runs while sensor is enabled. Makes API call
@@ -236,7 +236,7 @@ class DesktopTrigger(SensorWithLoop):
         self.current, refresh group when time exceeds/no longer exceeds 60
         seconds.
         '''
-        log.debug("%s: Starting DesktopTrigger.monitor coro", self.name)
+        self.log.debug("%s: Starting DesktopTrigger.monitor coro", self.name)
         try:
             while True:
                 # Check correct condition for configured mode
@@ -250,7 +250,7 @@ class DesktopTrigger(SensorWithLoop):
 
         # Sensor disabled, exit loop
         except asyncio.CancelledError:
-            log.debug("%s: Exiting DesktopTrigger.monitor coro", self.name)
+            self.log.debug("%s: Exiting DesktopTrigger.monitor coro", self.name)
             return False
 
     def get_attributes(self):

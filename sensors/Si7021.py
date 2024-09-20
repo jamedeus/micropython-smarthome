@@ -3,9 +3,6 @@ import si7021
 from machine import Pin, SoftI2C
 from Thermostat import Thermostat
 
-# Set name for module's log lines
-log = logging.getLogger("Si7021")
-
 
 class Si7021(Thermostat):
     '''Driver for SI7021 temperature and humidity sensor used as a thermostat.
@@ -49,10 +46,13 @@ class Si7021(Thermostat):
 
         # Set mode, tolerance, units, current_rule, create monitor task
         super().__init__(name, nickname, _type, default_rule, mode, tolerance, units, targets)
-        log.info(
+        self.log.info(
             "Instantiated Si7021 named %s, units=%s, tolerance=%s",
             self.name, self.units, self.tolerance
         )
+
+        # Set name for module's log lines
+        self.log = logging.getLogger("Si7021")
 
     def get_raw_temperature(self):
         '''Returns raw temperature reading in Celsius. Called by parent class

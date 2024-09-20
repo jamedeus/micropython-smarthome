@@ -1,9 +1,6 @@
 import logging
 from Instance import Instance
 
-# Set name for module's log lines
-log = logging.getLogger("Device")
-
 
 class Device(Instance):
     '''Base class for all device drivers, inherits universal API methods and
@@ -26,6 +23,9 @@ class Device(Instance):
     def __init__(self, name, nickname, _type, enabled, default_rule):
         super().__init__(name, nickname, _type, enabled, default_rule)
 
+        # Set name for module's log lines
+        self.log = logging.getLogger("Device")
+
         # Record device's on/off state, prevent turning on/off when already on/off
         # Included in status object, used by API to display device state
         self.state = None
@@ -45,7 +45,7 @@ class Device(Instance):
         # If other devices in group are on, turn on to match state
         try:
             if self.group.state is True:
-                log.debug("%s: group state is True, turning on", self.name)
+                self.log.debug("%s: group state is True, turning on", self.name)
                 success = self.send(1)
                 if success:
                     self.state = True
@@ -68,7 +68,7 @@ class Device(Instance):
 
         # Turn off before disabling
         if self.state:
-            log.debug("%s: turning off", self.name)
+            self.log.debug("%s: turning off", self.name)
             self.send(0)
             self.state = False
         super().disable()

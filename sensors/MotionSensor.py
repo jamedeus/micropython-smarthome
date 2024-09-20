@@ -4,9 +4,6 @@ from machine import Pin
 import SoftwareTimer
 from Sensor import Sensor
 
-# Set name for module's log lines
-log = logging.getLogger("MotionSensor")
-
 
 class MotionSensor(Sensor):
     '''Driver for motion sensors (passive infrared, millimeter wave radar, etc).
@@ -33,9 +30,12 @@ class MotionSensor(Sensor):
     def __init__(self, name, nickname, _type, default_rule, targets, pin):
         super().__init__(name, nickname, _type, True, default_rule, targets)
 
+        # Set name for module's log lines
+        self.log = logging.getLogger("MotionSensor")
+
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            log.critical(
+            self.log.critical(
                 "%s: Received invalid default_rule: %s",
                 self.name, self.default_rule
             )
@@ -50,7 +50,7 @@ class MotionSensor(Sensor):
         # Create hardware interrupt
         self.enable()
 
-        log.info(
+        self.log.info(
             "Instantiated MotionSensor (type=%s) named %s on pin %s",
             self._type, self.name, pin
         )
@@ -65,7 +65,7 @@ class MotionSensor(Sensor):
         super().enable()
 
         # Create hardware interrupt (both rising and falling)
-        log.debug("%s: create hardware interrupt", self.name)
+        self.log.debug("%s: create hardware interrupt", self.name)
         self.sensor.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.pin_interrupt)
 
     def disable(self):
@@ -75,7 +75,7 @@ class MotionSensor(Sensor):
         '''
 
         # Disable hardware interrupt, ensure reset timer not running
-        log.debug("%s: remove hardware interrupt", self.name)
+        self.log.debug("%s: remove hardware interrupt", self.name)
         self.sensor.irq(handler=None)
         SoftwareTimer.timer.cancel(self.name)
 
@@ -144,13 +144,13 @@ class MotionSensor(Sensor):
 
         # Turn targets on and start reset timer if motion detected
         if self.sensor.value():
-            log.debug("%s: Motion detected", self.name)
+            self.log.debug("%s: Motion detected", self.name)
             self.motion_detected()
 
         # Turn off targets if motion not detected and reset timer is disabled
         # (otherwise leave targets on until reset timer expires)
         elif self.current_rule == 0:
-            log.debug("%s: Motion no longer detected", self.name)
+            self.log.debug("%s: Motion no longer detected", self.name)
             self.motion = False
             self.refresh_group()
 
@@ -176,7 +176,7 @@ class MotionSensor(Sensor):
         target devices) in <current_rule> minutes. Called when motion detected
         or current_rule changes.
         '''
-        log.debug(
+        self.log.debug(
             "%s: starting reset timer, current_rule = %s",
             self.name, self.current_rule
         )
@@ -189,7 +189,7 @@ class MotionSensor(Sensor):
                 SoftwareTimer.timer.create(off, self.reset_timer, self.name)
             except (ValueError, TypeError):
                 self.print(f"Failed to start reset timer, current_rule = {self.current_rule}")
-                log.error(
+                self.log.error(
                     "%s: Failed to start reset timer, current_rule = %s",
                     self.name,
                     self.current_rule
@@ -202,12 +202,12 @@ class MotionSensor(Sensor):
         '''Called when reset timer expires, resets motion attribute and turns
         off target devices.
         '''
-        log.debug("%s: reset_timer interrupt", self.name)
+        self.log.debug("%s: reset_timer interrupt", self.name)
 
         # Only reset if sensor not detecting motion
         if not self.sensor.value():
             # Reset motion, causes main loop to fade lights off
-            log.debug("%s: motion no longer detected", self.name)
+            self.log.debug("%s: motion no longer detected", self.name)
             self.motion = False
 
             # Check conditions of all sensors in group
@@ -217,14 +217,14 @@ class MotionSensor(Sensor):
         # motion continuously detected for whole timer duration - if it stopped
         # detecting and restarted the timer would have been reset before this).
         else:
-            log.debug("%s: motion still detected", self.name)
+            self.log.debug("%s: motion still detected", self.name)
             self.start_reset_timer()
 
     def trigger(self):
         '''Called by trigger_sensor API endpoint, simulates sensor detecting
         motion (sets motion attribute to True, starts reset timer).
         '''
-        log.debug("%s: trigger method called", self.name)
+        self.log.debug("%s: trigger method called", self.name)
         self.motion_detected()
         return True
 

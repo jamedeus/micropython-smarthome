@@ -2,9 +2,6 @@ import logging
 import requests
 from HttpGet import HttpGet
 
-# Set name for module's log lines
-log = logging.getLogger("TasmotaRelay")
-
 # Paths used by Tasmota to turn on, off
 ON_PATH = 'cm?cmnd=Power%20On'
 OFF_PATH = 'cm?cmnd=Power%20Off'
@@ -28,7 +25,10 @@ class TasmotaRelay(HttpGet):
     def __init__(self, name, nickname, _type, default_rule, ip):
         super().__init__(name, nickname, _type, default_rule, ip, ON_PATH, OFF_PATH)
 
-        log.info("Instantiated TasmotaRelay named %s: ip = %s", self.name, self.uri)
+        # Set name for module's log lines
+        self.log = logging.getLogger("TasmotaRelay")
+
+        self.log.info("Instantiated TasmotaRelay named %s: ip = %s", self.name, self.uri)
 
     def check_state(self):
         '''Makes API call to get Tasmota relay power state, return response'''
@@ -39,5 +39,5 @@ class TasmotaRelay(HttpGet):
                 timeout=2
             ).json()["POWER"]
         except OSError:
-            log.error("%s: network error while checking state", self.name)
+            self.log.error("%s: network error while checking state", self.name)
             return "Network Error"

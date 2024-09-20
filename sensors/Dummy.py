@@ -1,9 +1,6 @@
 import logging
 from Sensor import Sensor
 
-# Set name for module's log lines
-log = logging.getLogger("Dummy_Sensor")
-
 
 class Dummy(Sensor):
     '''Software-only sensor driver that keeps target devices turned on while
@@ -28,15 +25,18 @@ class Dummy(Sensor):
     def __init__(self, name, nickname, _type, default_rule, targets):
         super().__init__(name, nickname, _type, True, default_rule, targets)
 
+        # Set name for module's log lines
+        self.log = logging.getLogger("Dummy_Sensor")
+
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            log.critical(
+            self.log.critical(
                 "%s: Received invalid default_rule: %s",
                 self.name, self.default_rule
             )
             raise AttributeError
 
-        log.info("Instantiated dummy sensor named %s", self.name)
+        self.log.info("Instantiated dummy sensor named %s", self.name)
 
     def validator(self, rule):
         '''Accepts "on" and "off", rejects all other rules.'''
@@ -80,6 +80,6 @@ class Dummy(Sensor):
         (turns on target devices). Rule must be changed or sensor disabled to
         turn target devices off (will stay on forever while rule is "on").
         '''
-        log.debug("%s: trigger method called", self.name)
+        self.log.debug("%s: trigger method called", self.name)
         self.set_rule("on")
         return True

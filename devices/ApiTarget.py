@@ -6,9 +6,6 @@ from Api import app
 from Device import Device
 from util import is_device, is_sensor, is_device_or_sensor
 
-# Set name for module's log lines
-log = logging.getLogger("ApiTarget")
-
 
 class ApiTarget(Device):
     '''Software-only device driver that sends API calls to another node (or to
@@ -35,6 +32,9 @@ class ApiTarget(Device):
     def __init__(self, name, nickname, _type, default_rule, ip, port=8123):
         super().__init__(name, nickname, _type, True, default_rule)
 
+        # Set name for module's log lines
+        self.log = logging.getLogger("ApiTarget")
+
         # IP that API command is sent to
         self.ip = ip
 
@@ -47,7 +47,7 @@ class ApiTarget(Device):
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            log.critical(
+            self.log.critical(
                 "%s: Received invalid default_rule: %s",
                 self.name, self.default_rule
             )
@@ -153,7 +153,7 @@ class ApiTarget(Device):
         If new rule is "enabled" replaces with default_rule and calls enable.
         If device is already on calls send method so new rule takes effect.
         '''
-        log.debug(
+        self.log.debug(
             "%s: set_rule called with %s (scheduled=%s)",
             self.name, rule, scheduled
         )
@@ -170,7 +170,7 @@ class ApiTarget(Device):
             self.current_rule = valid_rule
             if scheduled:
                 self.scheduled_rule = valid_rule
-            log.info("%s: Rule changed to %s", self.name, self.current_rule)
+            self.log.info("%s: Rule changed to %s", self.name, self.current_rule)
             self.print(f"Rule changed to {self.current_rule}")
 
             # Update instance attributes to reflect new rule
@@ -178,7 +178,7 @@ class ApiTarget(Device):
 
             return True
 
-        log.error("%s: Failed to change rule to %s", self.name, rule)
+        self.log.error("%s: Failed to change rule to %s", self.name, rule)
         self.print(f"Failed to change rule to {rule}")
         return False
 
@@ -186,7 +186,7 @@ class ApiTarget(Device):
         '''Called when an API call receives an error response. Takes full
         payload and response, writes multiline log with indent for readability.
         '''
-        log.error("""%s: Request failed
+        self.log.error("""%s: Request failed
         Payload: %s
         Response: %s""", self.name, msg, err)
         self.print(f"Send method failed with payload {msg}")
@@ -204,7 +204,7 @@ class ApiTarget(Device):
             res = s.recv(1000).decode()
             res = json.loads(res)
         except (OSError, ValueError):
-            log.error("%s: exception during request", self.name)
+            self.log.error("%s: exception during request", self.name)
             res = False
         s.close()
 
@@ -224,7 +224,7 @@ class ApiTarget(Device):
         '''Sends API call in current_rule "on" key if argument is True.
         Sends API call in current_rule "off" key if argument is False.
         '''
-        log.debug(
+        self.log.debug(
             "%s: send method called, rule=%s, state=%s",
             self.name, self.current_rule, state
         )
@@ -268,7 +268,7 @@ class ApiTarget(Device):
         Passes current_rule directly to API backend without opening connection
         (request method is synchronous, blocks Api.run_client method).
         '''
-        log.debug("%s: send_to_self method called, command=%s", self.name, command)
+        self.log.debug("%s: send_to_self method called, command=%s", self.name, command)
         path = command[0]
         args = command[1:]
 

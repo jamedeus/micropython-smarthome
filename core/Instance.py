@@ -1,9 +1,6 @@
 import logging
 from util import print_with_timestamp
 
-# Set name for module's log lines
-log = logging.getLogger("Instance")
-
 
 class Instance():
     '''Base class for all device and sensor drivers, implements universal API
@@ -25,6 +22,9 @@ class Instance():
     '''
 
     def __init__(self, name, nickname, _type, enabled, default_rule):
+
+        # Set name for module's log lines
+        self.log = logging.getLogger("Instance")
 
         # Unique, sequential name (sensor1, sensor2, ...) used in backend
         self.name = name
@@ -68,7 +68,7 @@ class Instance():
         '''Sets enabled bool to True (allows sensors to be checked, devices to
         be turned on/off), and ensures current_rule contains a usable value.
         '''
-        log.debug("%s: enabled", self.name)
+        self.log.debug("%s: enabled", self.name)
         self.enabled = True
 
         # Replace "disabled" with usable rule
@@ -79,7 +79,7 @@ class Instance():
         '''Sets enabled bool to False (prevents sensor from being checked,
         prevents devices from being turned on).
         '''
-        log.debug("%s: disabled", self.name)
+        self.log.debug("%s: disabled", self.name)
         self.enabled = False
 
     def get_usable_rule(self):
@@ -109,7 +109,7 @@ class Instance():
           rule:      The new rule, will be set as current_rule if valid
           scheduled: Optional, if True also sets scheduled_rule if rule valid
         '''
-        log.debug(
+        self.log.debug(
             "%s: set_rule called with %s (scheduled=%s)",
             self.name, rule, scheduled
         )
@@ -121,7 +121,7 @@ class Instance():
             # If called by next_rule: set scheduled_rule
             if scheduled:
                 self.scheduled_rule = valid_rule
-            log.info("%s: Rule changed to %s", self.name, self.current_rule)
+            self.log.info("%s: Rule changed to %s", self.name, self.current_rule)
             self.print(f"Rule changed to {self.current_rule}")
 
             # Update instance attributes to reflect new rule
@@ -129,7 +129,7 @@ class Instance():
 
             return True
 
-        log.error("%s: Failed to change rule to %s", self.name, rule)
+        self.log.error("%s: Failed to change rule to %s", self.name, rule)
         self.print(f"Failed to change rule to {rule}")
         return False
 
@@ -175,7 +175,7 @@ class Instance():
         '''Called by SoftwareTimer interrupt at each scheduled rule change.
         Calls set_rule with first item in rule_queue (see Config.build_queue).
         '''
-        log.info("%s: Scheduled rule change", self.name)
+        self.log.info("%s: Scheduled rule change", self.name)
         self.print("Scheduled rule change")
         self.set_rule(self.rule_queue.pop(0), True)
 
@@ -184,6 +184,9 @@ class Instance():
         Called by API get_attributes endpoint, more verbose than status.
         '''
         attributes = self.__dict__.copy()
+
+        # Remove logger instance (not serializable)
+        del attributes["log"]
 
         # Replace group object with group name (JSON-compatibility)
         if self.group:

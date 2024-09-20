@@ -2,9 +2,6 @@ import logging
 import asyncio
 from Sensor import Sensor
 
-# Set name for module's log lines
-log = logging.getLogger("SensorWithLoop")
-
 
 class SensorWithLoop(Sensor):
     '''Base class for all sensor drivers which use a loop to detect when their
@@ -37,6 +34,9 @@ class SensorWithLoop(Sensor):
     def __init__(self, name, nickname, _type, enabled, default_rule, targets):
         super().__init__(name, nickname, _type, enabled, default_rule, targets)
 
+        # Set name for module's log lines
+        self.log = logging.getLogger("SensorWithLoop")
+
         # Stores monitor loop asyncio.Task object (subclass init method should
         # assign this to return value of asyncio.create_task(self.monitor()))
         self.monitor_task = None
@@ -49,7 +49,7 @@ class SensorWithLoop(Sensor):
 
         # Restart loop if stopped
         if self.monitor_task is None:
-            log.debug("%s: start monitor loop", self.name)
+            self.log.debug("%s: start monitor loop", self.name)
             self.monitor_task = asyncio.create_task(self.monitor())
         super().enable()
 
@@ -61,7 +61,7 @@ class SensorWithLoop(Sensor):
 
         # Stop loop if running
         if self.monitor_task is not None:
-            log.debug("%s: stop monitor loop", self.name)
+            self.log.debug("%s: stop monitor loop", self.name)
             self.monitor_task.cancel()
             # Allow enable method to restart loop
             self.monitor_task = None
