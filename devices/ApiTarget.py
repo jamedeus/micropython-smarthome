@@ -260,16 +260,6 @@ class ApiTarget(Device):
             if not self.send_to_self(command):
                 return False
 
-        # If targeted by motion sensor: reset motion attribute after successful on command
-        # Allows retriggering sensor to send again - otherwise motion only restarts reset timer
-        # TODO does group.refresh break this?
-        if state:
-            for sensor in self.triggered_by:
-                if sensor._type in ["pir", "ld2410"]:
-                    # BUG this is only appropriate when
-                    log.debug("%s: Reset %s motion attribute", self.name, sensor.name)
-                    sensor.motion = False
-
         # Tells group send succeeded
         return True
 

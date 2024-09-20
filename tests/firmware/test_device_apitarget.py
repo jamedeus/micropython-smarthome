@@ -3,9 +3,7 @@ import json
 import network
 import unittest
 from Api import app
-from Group import Group
 from ApiTarget import ApiTarget
-from MotionSensor import MotionSensor
 from cpython_only import cpython_only
 
 # Import dependencies for tests that only run in mocked environment
@@ -29,16 +27,13 @@ default_rule = {'on': ['enable', 'device1'], 'off': ['enable', 'device1']}
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
-    'triggered_by': [
-        'sensor1',
-        'sensor2'
-    ],
+    'triggered_by': [],
     'nickname': 'device1',
     'ip': config['mock_receiver']['ip'],
     'port': config['mock_receiver']['api_port'],
     'node_ip': wlan.ifconfig()[0],
     'enabled': True,
-    'group': 'group1',
+    'group': None,
     'rule_queue': [],
     'state': None,
     'default_rule': {
@@ -101,18 +96,6 @@ class TestApiTarget(unittest.TestCase):
         ip = config["mock_receiver"]["ip"]
         port = config['mock_receiver']['api_port']
         cls.instance = ApiTarget("device1", "device1", "api-target", default_rule, ip, port)
-
-        # Add mock MotionSensor (pir and ld2410) triggering test instance
-        cls.instance.triggered_by = [
-            MotionSensor('sensor1', 'sensor1', 'pir', '5', [], 4),
-            MotionSensor('sensor2', 'sensor2', 'ld2410', '5', [], 25)
-        ]
-        # Create mock group, add device and both sensors
-        cls.group = Group("group1", [
-            cls.instance.triggered_by[0],
-            cls.instance.triggered_by[1]
-        ])
-        cls.instance.group = cls.group
 
         # Create mock device and config for self-target tests
         cls.target = MockDevice()
@@ -270,23 +253,8 @@ class TestApiTarget(unittest.TestCase):
         # Confirm failure detected
         self.assertFalse(self.instance.send(1))
 
-    # When targeted by MotionSensor, ApiTarget should reset motion attribute after
-    # successful on command. This allows retriggering sensor to send command again
-    def test_12_send_retrigger_motion_sensor(self):
-        # Set both mock sensor motion attributes to True, set valid rule
-        self.instance.triggered_by[0].motion = True
-        self.instance.triggered_by[1].motion = True
-        self.instance.current_rule = {
-            'on': ['trigger_sensor', 'sensor1'],
-            'off': ['ignore']
-        }
-        # Send, confirm motion flips to False
-        self.assertTrue(self.instance.send(1))
-        self.assertFalse(self.instance.triggered_by[0].motion)
-        self.assertFalse(self.instance.triggered_by[1].motion)
-
     # Different send method used when targeting own IP
-    def test_13_send_to_self(self):
+    def test_12_send_to_self(self):
         # Set target IP to own IP
         self.instance.ip = wlan.ifconfig()[0]
 
@@ -327,7 +295,7 @@ class TestApiTarget(unittest.TestCase):
     # Original bug: ApiTarget class overwrites parent set_rule method and did not include conditional
     # that overwrites "enabled" with default_rule. This resulted in an unusable rule which caused
     # crash next time send method was called.
-    def test_14_regression_rule_change_to_enabled(self):
+    def test_13_regression_rule_change_to_enabled(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
         self.instance.set_rule('enabled')
@@ -340,7 +308,7 @@ class TestApiTarget(unittest.TestCase):
     # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
     # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
-    def test_15_regression_invalid_default_rule(self):
+    def test_14_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
             ApiTarget("device1", "device1", "api-target", "disabled", config["mock_receiver"]["ip"])
 
@@ -348,7 +316,7 @@ class TestApiTarget(unittest.TestCase):
             ApiTarget("device1", "device1", "api-target", "enabled", config["mock_receiver"]["ip"])
 
     # Original bug: Rejected turn_on, turn_off, reset_rule commands (all valid)
-    def test_16_regression_rejects_valid_rules(self):
+    def test_15_regression_rejects_valid_rules(self):
         # Should accept turn_on/turn_off targeting device
         self.assertTrue(self.instance.set_rule({'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']}))
         self.assertEqual(self.instance.current_rule, {'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']})
@@ -367,7 +335,7 @@ class TestApiTarget(unittest.TestCase):
     # regardless of state argument. This was not detected for 2 weeks because no
     # existing tests verified that on and off rules were used correctly.
     @cpython_only
-    def test_17_regression_send_ignores_state(self):
+    def test_16_regression_send_ignores_state(self):
         # Set different on and off rules
         self.instance.set_rule({'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']})
 
@@ -386,7 +354,7 @@ class TestApiTarget(unittest.TestCase):
     # current_rule was "disabled" this resulted in an uncaught exception when trying
     # to access sub-rule (using string key as index in a string). Fixed by returning
     # True immediately if rule is not dict.
-    def test_18_regression_turn_off_while_rule_is_disabled(self):
+    def test_17_regression_turn_off_while_rule_is_disabled(self):
         # Disable by setting rule to "Disabled"
         self.instance.set_rule("Disabled")
         self.assertFalse(self.instance.enabled)
@@ -397,7 +365,7 @@ class TestApiTarget(unittest.TestCase):
 
     # Original bug: If set_rule was called with "enabled" the apply_new_rule
     # method would set current_rule to default_rule instead of scheduled_rule.
-    def test_19_regression_enable_with_rule_change_ignores_scheduled_rule(self):
+    def test_18_regression_enable_with_rule_change_ignores_scheduled_rule(self):
         # Starting conditions
         self.instance.disable()
         self.instance.scheduled_rule = {'on': ['enable', 'device2'], 'off': ['enable', 'device2']}
