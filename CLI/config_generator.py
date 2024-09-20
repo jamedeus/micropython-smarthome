@@ -348,15 +348,28 @@ class GenerateConfigFile:
             validate=NicknameValidator(used_nicknames)
         ).unsafe_ask()
 
-    def __pin_prompt(self, valid_pins, prompt="Select pin"):
+    def __pin_prompt(self, valid_pins, prompt="Select pin", config={}):
         '''Prompts user to select from a list of unused pins, returns selection.
         Takes a list of pin options as argument, removes pins that already
         exist in self.config to prevent user selecting duplicate pin.
+
+        Optional prompt arg changes text shown at promt (used for device/sensor
+        types with multiple pins to identify which pin is being set).
+
+        Optional config arg takes config section of instance being edited (used
+        to prevent duplicates for device/sensor types with multiple pins - the
+        section is not added to self.config until complete, so first selected
+        pin would not be removed from options when second pin prompt appears).
         '''
 
         # Get list of pins used by existing devices and sensors
-        used_pins = [self.config[i]['pin'] for i in self.config
-                     if 'pin' in self.config[i].keys()]
+        used_pins = [self.config[i][key] for i in self.config
+                     for key in self.config[i] if key.startswith('pin')]
+        # Add pins from instance being edited if config arg passed
+        if config:
+            used_pins.extend(
+                [config[key] for key in config if key.startswith('pin')]
+            )
         # Get list of available pins, run prompt
         choices = [pin for pin in valid_pins if pin not in used_pins]
         return questionary.select(prompt, choices=choices).unsafe_ask()
@@ -408,7 +421,8 @@ class GenerateConfigFile:
             elif i.startswith("pin_"):
                 config[i] = self.__pin_prompt(
                     valid_device_pins,
-                    f"Select {i.split('_')[1]} pin"
+                    f"Select {i.split('_')[1]} pin",
+                    config=config
                 )
 
             elif i == "default_rule":
@@ -481,7 +495,8 @@ class GenerateConfigFile:
             elif i.startswith("pin_"):
                 config[i] = self.__pin_prompt(
                     valid_sensor_pins,
-                    f"Select {i.split('_')[1]} pin"
+                    f"Select {i.split('_')[1]} pin",
+                    config=config
                 )
 
             elif i == "default_rule":

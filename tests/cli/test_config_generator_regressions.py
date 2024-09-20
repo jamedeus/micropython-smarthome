@@ -8,6 +8,7 @@ from config_rule_prompts import (
     default_rule_prompt_router,
     schedule_rule_prompt_router,
 )
+from validation_constants import valid_sensor_pins
 from mock_cli_config import mock_cli_config
 
 
@@ -347,3 +348,70 @@ class TestRegressions(TestCase):
         )
         self.assertEqual(self.generator.config["device1"]["nickname"], "Target2")
         self.assertEqual(self.generator.config["sensor1"]["nickname"], "Sensor2")
+
+    # Original bug: __pin_prompt prevented duplicate pins by iterating config
+    # and adding all parameters named "pin" to a list of used pins. Load cell
+    # pin params are named "pin_data" and "pin_clock", so they were not added
+    # to used_pins and remained in the options list.
+    def test_prevent_duplicate_load_cell_pins(self):
+        # Start with existing load cell sensor
+        self.generator.config = {
+            "metadata": {
+                "id": "Target Test",
+                "floor": "1",
+                "location": "Test Environment"
+            },
+            "sensor1": {
+                "_type": "load-cell",
+                "nickname": "couch sensor",
+                "default_rule": 5000,
+                "pin_data": '14',
+                "pin_clock": '13',
+                "schedule": {},
+                "targets": []
+            }
+        }
+
+        # Simulate user selecting pin 22 at pin select prompt
+        self.mock_ask.unsafe_ask.side_effect = ['22']
+        with patch('questionary.select', return_value=self.mock_ask) as mock_select:
+            # Run pin select prompt
+            self.generator._GenerateConfigFile__pin_prompt(valid_sensor_pins)
+
+            # Confirm pins 13 and 14 were not available options
+            mock_select.assert_called_once()
+            options = mock_select.call_args_list[0][1]['choices']
+            self.assertNotIn('13', options)
+            self.assertNotIn('14', options)
+
+    # Original bug: __pin_prompt removed all pin attributes in self.config from
+    # options list, but self.config does not contain the instance being added
+    # until all params are set. Since load cell has 2 pin attributes (data and
+    # clock) it was possible to select the same pin for both.
+    def test_prevent_load_cell_with_same_data_and_clock_pin(self):
+        # Simulate half way through __configure_sensor prompt, already selected
+        # pin_data, have not selected pin_clock yet
+        partial_config = {
+            "_type": "load-cell",
+            "nickname": "couch sensor",
+            "default_rule": 5000,
+            "pin_data": '14',
+            "pin_clock": 'placeholder',
+            "schedule": {},
+            "targets": []
+        }
+
+        # Simulate user selecting pin_clock = 13, declining schedule rules
+        self.mock_ask.unsafe_ask.side_effect = [
+            '13',
+            'No'
+        ]
+        with patch('questionary.select', return_value=self.mock_ask) as mock_select:
+            # Resume __configure_sensor prompt at pin_clock
+            self.generator._GenerateConfigFile__configure_sensor(partial_config)
+
+            # Confirm pin 13 option was available, pin 14 was not
+            mock_select.assert_called()
+            options = mock_select.call_args_list[0][1]['choices']
+            self.assertIn('13', options)
+            self.assertNotIn('14', options)
