@@ -105,7 +105,9 @@ def clear_log():
 
     # Create new handler, set format
     h = logging.FileHandler('app.log')
-    h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
+    h.setFormatter(logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+    ))
 
     # Replace old handler with new
     logging.root.handlers.clear()

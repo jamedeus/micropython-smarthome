@@ -22,12 +22,12 @@ class Device(Instance):
     def __init__(self, name, nickname, _type, enabled, default_rule):
         super().__init__(name, nickname, _type, enabled, default_rule)
 
-        # Record device's on/off state, prevent turning on/off when already on/off
+        # Track device on/off state, prevent turning on/off when already on/off
         # Included in status object, used by API to display device state
         self.state = None
 
-        # List of Sensor instances which control the device, populated by Config
-        # when sensors are instantiated
+        # List of Sensor instances which control the device, populated by
+        # Config when sensors are instantiated
         self.triggered_by = []
 
     def enable(self):

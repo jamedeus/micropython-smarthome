@@ -57,10 +57,7 @@ class Thermostat(SensorWithLoop):
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            self.log.critical(
-                "Received invalid default_rule: %s",
-                self.default_rule
-            )
+            self.log.critical("Invalid default_rule: %s", self.default_rule)
             raise AttributeError
 
         # Set cooling or heating mode, determines when targets turn on/off
@@ -132,21 +129,18 @@ class Thermostat(SensorWithLoop):
         if self.mode == "cool":
             self.on_threshold = float(self.current_rule) + float(self.tolerance)
             self.off_threshold = float(self.current_rule) - float(self.tolerance)
-            self.log.debug(
-                "set_threshold: on_threshold=%s, off_threshold=%s",
-                self.on_threshold, self.off_threshold
-            )
 
         elif self.mode == "heat":
             self.on_threshold = float(self.current_rule) - float(self.tolerance)
             self.off_threshold = float(self.current_rule) + float(self.tolerance)
-            self.log.debug(
-                "set_threshold: on_threshold=%s, off_threshold=%s",
-                self.on_threshold, self.off_threshold
-            )
 
         else:
             raise ValueError('Unsupported mode (must be "cool" or "heat")')
+
+        self.log.debug(
+            "set_threshold: on_threshold=%s, off_threshold=%s",
+            self.on_threshold, self.off_threshold
+        )
 
     def set_rule(self, rule, scheduled=False):
         '''Takes new rule, validates, if valid sets as current_rule (and

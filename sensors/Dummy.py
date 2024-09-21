@@ -26,10 +26,7 @@ class Dummy(Sensor):
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            self.log.critical(
-                "Received invalid default_rule: %s",
-                self.default_rule
-            )
+            self.log.critical("Invalid default_rule: %s", self.default_rule)
             raise AttributeError
 
         self.log.info("Instantiated")

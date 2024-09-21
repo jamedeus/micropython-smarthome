@@ -34,10 +34,10 @@ class Relay(Device):
             self.current_rule, state
         )
 
-        # Refuse to turn disabled device on, but allow turning off
+        # Refuse to turn disabled device on, but allow turning off (returning
+        # True makes group set device state to True - allows turning off when
+        # condition changes, would be skipped if device state already False)
         if not self.enabled and state:
-            # Return True causes group to flip state to True, even though device is off
-            # This allows turning off (would be skipped if state already == False)
             return True
 
         self.output.value(state)

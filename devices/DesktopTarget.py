@@ -29,10 +29,10 @@ class DesktopTarget(HttpGet):
             self.current_rule, state
         )
 
-        # Refuse to turn disabled device on, but allow turning off
+        # Refuse to turn disabled device on, but allow turning off (returning
+        # True makes group set device state to True - allows turning off when
+        # condition changes, would be skipped if device state already False)
         if not self.enabled and state:
-            # Return True causes group to flip state to True, even though device is off
-            # This allows turning off (would be skipped if state already == False)
             return True
 
         try:
@@ -55,9 +55,11 @@ class DesktopTarget(HttpGet):
             self.log.error("send failed (wifi error)")
             return False
         except ValueError:
-            # Unexpected response (different service running on port 5000), disable
+            # Unexpected response (wrong service running on port 5000), disable
             if self.enabled:
-                self.print("Fatal error (unexpected response from desktop), disabling")
+                self.print(
+                    "Fatal error (unexpected response from desktop), disabling"
+                )
                 self.log.critical(
                     "Fatal error (unexpected response from desktop), disabling"
                 )

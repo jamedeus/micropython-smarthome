@@ -25,8 +25,8 @@ class Sensor(Instance):
     def __init__(self, name, nickname, _type, enabled, default_rule, targets):
         super().__init__(name, nickname, _type, enabled, default_rule)
 
-        # List of Device instances controlled by Sensor, used by Config.build_groups
-        # to determine which sensors belong in same Group instance
+        # List of Device instances controlled by Sensor (Config.build_groups
+        # adds sensors with identical targets attribute to same Group instance)
         self.targets = targets
 
     def refresh_group(self):

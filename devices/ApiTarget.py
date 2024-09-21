@@ -43,10 +43,7 @@ class ApiTarget(Device):
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            self.log.critical(
-                "Received invalid default_rule: %s",
-                self.default_rule
-            )
+            self.log.critical("Invalid default_rule: %s", self.default_rule)
             raise AttributeError
 
         self.log.info("Instantiated, ip=%s", self.ip)
@@ -99,40 +96,64 @@ class ApiTarget(Device):
         if not isinstance(rule, list):
             return False
 
-        # Endpoints that require no args
-        # "ignore" is not a valid command, it allows only using on/off and ignoring the other
+        # Endpoints that require no args ("ignore" is not an endpoint, it
+        # allows only using on/off and skipping the other)
         if rule[0] in ['reboot', 'clear_log', 'ignore'] and len(rule) == 1:
             return True
 
         # Endpoints that require a device or sensor arg
-        if rule[0] in ['enable', 'disable', 'reset_rule'] and len(rule) == 2 and is_device_or_sensor(rule[1]):
+        if (
+            rule[0] in ['enable', 'disable', 'reset_rule']
+            and len(rule) == 2
+            and is_device_or_sensor(rule[1])
+        ):
             return True
 
         # Endpoints that require a sensor arg
-        if rule[0] in ['condition_met', 'trigger_sensor'] and len(rule) == 2 and is_sensor(rule[1]):
+        if (
+            rule[0] in ['condition_met', 'trigger_sensor']
+            and len(rule) == 2
+            and is_sensor(rule[1])
+        ):
             return True
 
         # Endpoints that require a device arg
-        if rule[0] in ['turn_on', 'turn_off'] and len(rule) == 2 and is_device(rule[1]):
+        if (
+            rule[0] in ['turn_on', 'turn_off']
+            and len(rule) == 2
+            and is_device(rule[1])
+        ):
             return True
 
         # Endpoints that require a device/sensor arg and int/float arg
-        if rule[0] in ['enable_in', 'disable_in'] and len(rule) == 3 and is_device_or_sensor(rule[1]):
+        if (
+            rule[0] in ['enable_in', 'disable_in']
+            and len(rule) == 3
+            and is_device_or_sensor(rule[1])
+        ):
             try:
                 float(rule[2])
                 return True
             except ValueError:
                 return False
 
-        # Endpoint requires a device/sensor arg and rule arg
-        # Rule arg not validated (device/sensor type not known), client returns error if invalid
-        if rule[0] == 'set_rule' and len(rule) == 3 and is_device_or_sensor(rule[1]):
+        # Endpoint requires a device/sensor id and rule (can't validate rule,
+        # device/sensor type unknown - client returns error if invalid)
+        if (
+            rule[0] == 'set_rule'
+            and len(rule) == 3
+            and is_device_or_sensor(rule[1])
+        ):
             return True
 
-        # Endpoint requires IR target and IR key args
-        # Target and keys not validated (client codes not known), client returns error if invalid
+        # Endpoint requires IR target and IR key args (can't validate target or
+        # key, client codes not known - client returns error if invalid)
         if rule[0] == 'ir_key':
-            if len(rule) == 3 and isinstance(rule[1], str) and isinstance(rule[2], str):
+            if (
+                len(rule) == 3
+                and isinstance(rule[1], str)
+                and isinstance(rule[2], str)
+            ):
                 return True
             return False
 
@@ -156,7 +177,7 @@ class ApiTarget(Device):
             rule, scheduled
         )
 
-        # Check if rule is valid - may return a modified rule (ie cast str to int)
+        # Check if rule is valid (may return modified rule, eg cast str to int)
         valid_rule = self.rule_validator(rule)
 
         # Turn off target before changing rule to disabled
@@ -227,10 +248,10 @@ class ApiTarget(Device):
             self.current_rule, state
         )
 
-        # Refuse to turn disabled device on, but allow turning off
+        # Refuse to turn disabled device on, but allow turning off (returning
+        # True makes group set device state to True - allows turning off when
+        # condition changes, would be skipped if device state already False)
         if not self.enabled and state:
-            # Return True causes group to flip state to True, even though device is off
-            # This allows turning off (would be skipped if state already == False)
             return True
 
         # Prevent exception if current rule is string ("Disabled")

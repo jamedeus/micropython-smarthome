@@ -28,7 +28,10 @@ class Switch(Sensor):
         self.switch = Pin(int(pin), Pin.IN, Pin.PULL_DOWN)
 
         # Create hardware interrupt, refresh group when switch changes state
-        self.switch.irq(handler=self.interrupt_handler, trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING)
+        self.switch.irq(
+            handler=self.interrupt_handler,
+            trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING
+        )
 
         # Track whether switch open or closed (allows checking state via API)
         self.switch_closed = bool(self.switch.value())

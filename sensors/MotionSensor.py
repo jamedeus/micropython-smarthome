@@ -31,10 +31,7 @@ class MotionSensor(Sensor):
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            self.log.critical(
-                "Received invalid default_rule: %s",
-                self.default_rule
-            )
+            self.log.critical("Invalid default_rule: %s", self.default_rule)
             raise AttributeError
 
         # Pin setup
@@ -59,7 +56,10 @@ class MotionSensor(Sensor):
 
         # Create hardware interrupt (both rising and falling)
         self.log.debug("create hardware interrupt")
-        self.sensor.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.pin_interrupt)
+        self.sensor.irq(
+            handler=self.pin_interrupt,
+            trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING
+        )
 
     def disable(self):
         '''Sets enabled bool to False (prevents sensor from being checked),
@@ -181,7 +181,9 @@ class MotionSensor(Sensor):
                 off = float(self.current_rule) * 60000
                 SoftwareTimer.timer.create(off, self.reset_timer, self.name)
             except (ValueError, TypeError):
-                self.print(f"Failed to start reset timer, current_rule={self.current_rule}")
+                self.print(
+                    f"Failed to start reset timer, current_rule={self.current_rule}"
+                )
                 self.log.error(
                     "Failed to start reset timer, current_rule=%s",
                     self.current_rule

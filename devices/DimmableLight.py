@@ -42,10 +42,7 @@ class DimmableLight(Device):
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
-            self.log.critical(
-                "Received invalid default_rule: %s",
-                self.default_rule
-            )
+            self.log.critical("Invalid default_rule: %s", self.default_rule)
             raise AttributeError
         if int(self.default_rule) > self.max_rule or int(self.default_rule) < self.min_rule:
             raise AttributeError
@@ -263,7 +260,7 @@ class DimmableLight(Device):
             self.fading = False
             return True
 
-        # Fade complete if rule is no longer int (changed to enabled, disabled, etc)
+        # Fade complete if rule is no longer int (changed to enabled/disabled)
         if not isinstance(self.current_rule, int):
             self.log.debug("fade complete (rule no longer int)")
             self.fading = False
@@ -304,7 +301,9 @@ class DimmableLight(Device):
         if not self.fade_complete():
             # Use starting time, current time, period (time per step) to
             # determine how many steps should have been taken
-            steps = (SoftwareTimer.timer.epoch_now() - self.fading["started"]) // self.fading["period"]
+            steps = (
+                SoftwareTimer.timer.epoch_now() - self.fading["started"]
+            ) // self.fading["period"]
 
             # Fading up
             if not self.fading["down"]:
@@ -321,7 +320,10 @@ class DimmableLight(Device):
                 self.scheduled_rule = int(new_rule)
 
             # Don't override user-set brightness
-            if (self.fading["down"] and int(new_rule) < self.current_rule) or (not self.fading["down"] and int(new_rule) > self.current_rule):
+            if (
+                (self.fading["down"] and int(new_rule) < self.current_rule)
+                or (not self.fading["down"] and int(new_rule) > self.current_rule)
+            ):
                 # Set new rule without calling set_rule method (would abort fade)
                 self.current_rule = int(new_rule)
                 if self.state is True:
@@ -330,7 +332,9 @@ class DimmableLight(Device):
         # Start timer for next step (unless fade already complete)
         if not self.fade_complete():
             # Sleep until next step
-            next_step = int(self.fading["period"] - ((SoftwareTimer.timer.epoch_now() - self.fading["started"]) % self.fading["period"]))
+            next_step = int(self.fading["period"] - ((
+                SoftwareTimer.timer.epoch_now() - self.fading["started"]
+            ) % self.fading["period"]))
             SoftwareTimer.timer.create(next_step, self.fade, self.name + "_fade")
 
     def get_status(self):
