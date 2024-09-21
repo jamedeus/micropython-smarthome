@@ -31,6 +31,8 @@ class TestDimmableLight(unittest.TestCase):
         # AttributeError should be raised if default_rule is outside limits
         with self.assertRaises(AttributeError):
             DimmableLight("device1", "device1", "DimmableLight", True, 500, "1", "100")
+        with self.assertRaises(AttributeError):
+            DimmableLight("device1", "device1", "DimmableLight", True, 5, "10", "100")
 
     def test_03_rule_validation_valid(self):
         # Should accept int between min_rule and max_rule

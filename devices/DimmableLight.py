@@ -44,7 +44,17 @@ class DimmableLight(Device):
         if str(self.default_rule).lower() in ("enabled", "disabled"):
             self.log.critical("Invalid default_rule: %s", self.default_rule)
             raise AttributeError
-        if int(self.default_rule) > self.max_rule or int(self.default_rule) < self.min_rule:
+        if int(self.default_rule) > self.max_rule:
+            self.log.critical(
+                "default_rule (%s) cannot be greater than max_rule (%s)",
+                self.default_rule, self.max_rule
+            )
+            raise AttributeError
+        if int(self.default_rule) < self.min_rule:
+            self.log.critical(
+                "default_rule (%s) must be greater than min_rule (%s)",
+                self.default_rule, self.min_rule
+            )
             raise AttributeError
 
     def set_rule(self, rule, scheduled=False):
