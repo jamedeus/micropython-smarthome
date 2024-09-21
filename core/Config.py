@@ -104,6 +104,11 @@ class Config():
         # Create timers for all schedule rules expiring in next 24 hours
         self.build_queue()
 
+        # Map relationships between sensors ("triggers") and devices ("targets")
+        # Must run after build_queue to prevent sensors turning devices on/off
+        # before correct scheduled rule applied
+        self.build_groups()
+
         # Start timer to re-build schedule rule queue for next 24 hours around 3 am
         self.start_reload_schedule_rules_timer()
 
@@ -161,9 +166,6 @@ class Config():
         del self.device_configs
         del self.sensor_configs
         gc.collect()
-
-        # Map relationships between sensors ("triggers") and devices ("targets")
-        self.build_groups()
 
     # Takes config dict (devices only), instantiates each with appropriate class, adds to self.devices
     def instantiate_devices(self, conf):
