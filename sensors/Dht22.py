@@ -1,5 +1,4 @@
 import dht
-import logging
 from machine import Pin
 from Thermostat import Thermostat
 
@@ -45,13 +44,7 @@ class Dht22(Thermostat):
 
         # Set mode, tolerance, units, current_rule, create monitor task
         super().__init__(name, nickname, _type, default_rule, mode, tolerance, units, targets)
-        self.log.info(
-            "Instantiated Dht22 named %s, units=%s, tolerance=%s",
-            self.name, self.units, self.tolerance
-        )
-
-        # Set name for module's log lines
-        self.log = logging.getLogger("Dht22")
+        self.log.info("Instantiated, units=%s, tolerance=%s", units, tolerance)
 
     def get_raw_temperature(self):
         '''Returns raw temperature reading in Celsius. Called by parent class

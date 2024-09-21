@@ -1,5 +1,4 @@
 import time
-import logging
 from machine import Pin, PWM
 from DimmableLight import DimmableLight
 
@@ -31,9 +30,6 @@ class LedStrip(DimmableLight):
     def __init__(self, name, nickname, _type, default_rule, min_rule, max_rule, pin):
         super().__init__(name, nickname, _type, True, default_rule, min_rule, max_rule)
 
-        # Set name for module's log lines
-        self.log = logging.getLogger("LedStrip")
-
         # TODO - Find optimal PWM freq. Default (5 KHz) causes coil whine in
         # downstairs bathroom at 128 duty cycle. Raising significantly reduces
         # max brightness (exceed MOSFET switching time), may need different power supply?
@@ -49,7 +45,7 @@ class LedStrip(DimmableLight):
         # Store current brightness, allows smooth transition when rule changes
         self.bright = 0
 
-        self.log.info("Instantiated LedStrip named %s on pin %s", self.name, pin)
+        self.log.info("Instantiated, pin=%s", pin)
 
     def send(self, state=1):
         '''Sets PWM duty cycle to current_rule if argument is True.
@@ -57,8 +53,8 @@ class LedStrip(DimmableLight):
         Gradually fades to new brightness with 1 second transition.
         '''
         self.log.debug(
-            "%s: send method called, rule=%s, state=%s",
-            self.name, self.current_rule, state
+            "send method called, rule=%s, state=%s",
+            self.current_rule, state
         )
 
         # Refuse to turn disabled device on, but allow turning off

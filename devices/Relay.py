@@ -1,4 +1,3 @@
-import logging
 from machine import Pin
 from Device import Device
 
@@ -22,20 +21,17 @@ class Relay(Device):
     def __init__(self, name, nickname, _type, default_rule, pin):
         super().__init__(name, nickname, _type, True, default_rule)
 
-        # Set name for module's log lines
-        self.log = logging.getLogger("Relay")
-
         self.output = Pin(int(pin), Pin.OUT, Pin.PULL_DOWN)
 
-        self.log.info("Instantiated Relay named %s on pin %s", self.name, pin)
+        self.log.info("Instantiated, pin=%s", pin)
 
     def send(self, state=1):
         '''Sets pin level HIGH if arg is True.
         Sets pin level LOW if arg is False.
         '''
         self.log.debug(
-            "%s: send method called, rule=%s, state=%s",
-            self.name, self.current_rule, state
+            "send method called, rule=%s, state=%s",
+            self.current_rule, state
         )
 
         # Refuse to turn disabled device on, but allow turning off

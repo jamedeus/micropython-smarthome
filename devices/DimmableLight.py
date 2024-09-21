@@ -1,4 +1,3 @@
-import logging
 import SoftwareTimer
 from Device import Device
 
@@ -35,9 +34,6 @@ class DimmableLight(Device):
     def __init__(self, name, nickname, _type, enabled, default_rule, min_rule, max_rule):
         super().__init__(name, nickname, _type, enabled, default_rule)
 
-        # Set name for module's log lines
-        self.log = logging.getLogger("DimmableLight")
-
         self.min_rule = int(min_rule)
         self.max_rule = int(max_rule)
 
@@ -47,8 +43,8 @@ class DimmableLight(Device):
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
             self.log.critical(
-                "%s: Received invalid default_rule: %s",
-                self.name, self.default_rule
+                "Received invalid default_rule: %s",
+                self.default_rule
             )
             raise AttributeError
         if int(self.default_rule) > self.max_rule or int(self.default_rule) < self.min_rule:
@@ -70,14 +66,14 @@ class DimmableLight(Device):
         current_rule while fading down).
         '''
         self.log.debug(
-            "%s: set_rule called with %s (scheduled=%s)",
-            self.name, rule, scheduled
+            "set_rule called with %s (scheduled=%s)",
+            rule, scheduled
         )
 
         # Check if rule is valid (may return modified rule, eg cast str to int)
         valid_rule = self.rule_validator(rule)
         if valid_rule is False:
-            self.log.error("%s: Failed to change rule to %s", self.name, rule)
+            self.log.error("Failed to change rule to %s", rule)
             self.print(f"Failed to change rule to {rule}")
             return False
 
@@ -88,10 +84,10 @@ class DimmableLight(Device):
         # Abort fade if user changed brightness in opposite direction
         if isinstance(valid_rule, int) and self.fading:
             if self.fading["down"] and valid_rule > self.current_rule:
-                self.log.debug("%s: abort fade", self.name)
+                self.log.debug("abort fade")
                 self.fading = False
             elif not self.fading["down"] and valid_rule < self.current_rule:
-                self.log.debug("%s: abort fade", self.name)
+                self.log.debug("abort fade")
                 self.fading = False
 
         # If called by next_rule: set scheduled_rule
@@ -100,7 +96,7 @@ class DimmableLight(Device):
 
         self.current_rule = valid_rule
         self.print(f"Rule changed to {self.current_rule}")
-        self.log.info("%s: Rule changed to %s", self.name, self.current_rule)
+        self.log.info("Rule changed to %s", self.current_rule)
 
         # Abort fade if new rule exceeded target
         self.fade_complete()
@@ -114,13 +110,13 @@ class DimmableLight(Device):
         '''Takes positive or negative integer, adds to current_rule and calls
         set_rule method. Throws error if current_rule is not an integer.
         '''
-        self.log.debug("%s: increment_rule called with %s", self.name, amount)
+        self.log.debug("increment_rule called with %s", amount)
 
         # Throw error if arg is not int
         try:
             amount = int(amount)
         except (ValueError, TypeError):
-            self.log.error("%s: increment_rule: invalid argument: %s", self.name, amount)
+            self.log.error("increment_rule: invalid argument: %s", amount)
             return {"ERROR": f"Invalid argument {amount}"}
 
         # Add amount to current rule
@@ -128,8 +124,8 @@ class DimmableLight(Device):
             new = int(self.current_rule) + int(amount)
         except (ValueError, TypeError):
             self.log.error(
-                "%s: Unable to increment current rule (%s)",
-                self.name, self.current_rule
+                "Unable to increment current rule (%s)",
+                self.current_rule
             )
             return {"ERROR": f"Unable to increment current rule ({self.current_rule})"}
 
@@ -195,8 +191,8 @@ class DimmableLight(Device):
         scheduled_rule.
         '''
         self.log.debug(
-            "%s: start_fade called with %s (scheduled=%s)",
-            self.name, valid_rule, scheduled
+            "start_fade called with %s (scheduled=%s)",
+            valid_rule, scheduled
         )
 
         # Parse parameters from rule
@@ -208,12 +204,12 @@ class DimmableLight(Device):
             self.current_rule = int(target)
             self.scheduled_rule = int(target)
             self.print(f"Rule changed to {self.current_rule}")
-            self.log.info("%s: Rule changed to %s", self.name, self.current_rule)
+            self.log.info("Rule changed to %s", self.current_rule)
             return True
 
         # If rule changes to fade after boot, start fade
         self.print(f"fading to {target} in {period} seconds")
-        self.log.info("%s: fading to %s in %s seconds", self.name, target, period)
+        self.log.info("fading to %s in %s seconds", target, period)
 
         # Default to min_rule if device disabled when fade starts
         if self.current_rule == "disabled":
@@ -221,7 +217,7 @@ class DimmableLight(Device):
 
         if int(target) == self.current_rule:
             self.print("Already at target brightness, skipping fade")
-            self.log.info("%s: Already at target brightness, skipping fade", self.name)
+            self.log.info("Already at target brightness, skipping fade")
             return True
 
         # Find fade direction, get number of steps, period between steps
@@ -250,7 +246,7 @@ class DimmableLight(Device):
             "down": fade_down,
             "scheduled": scheduled
         }
-        self.log.debug("%s: fade parameters: %s", self.name, self.fading)
+        self.log.debug("fade parameters: %s", self.fading)
 
         return True
 
@@ -263,19 +259,19 @@ class DimmableLight(Device):
 
         # Fade complete if device disabled mid-fade, or called when not fading
         if not self.enabled or not self.fading:
-            self.log.debug("%s: fade complete (disabled or not fading)", self.name)
+            self.log.debug("fade complete (disabled or not fading)")
             self.fading = False
             return True
 
         # Fade complete if rule is no longer int (changed to enabled, disabled, etc)
         if not isinstance(self.current_rule, int):
-            self.log.debug("%s: fade complete (rule no longer int)", self.name)
+            self.log.debug("fade complete (rule no longer int)")
             self.fading = False
             return True
 
         # When fading down: complete if current_rule equal or less than target
         if self.fading["down"] and self.current_rule <= self.fading["target"]:
-            self.log.debug("%s: fade complete (target reached)", self.name)
+            self.log.debug("fade complete (target reached)")
             # If scheduled fade: set scheduled_rule to target
             if self.fading["scheduled"]:
                 self.scheduled_rule = self.fading["target"]
@@ -287,7 +283,7 @@ class DimmableLight(Device):
 
         # When fading up: complete if current_rule equal or greater than target
         if not self.fading["down"] and self.current_rule >= self.fading["target"]:
-            self.log.debug("%s: fade complete (target reached)", self.name)
+            self.log.debug("fade complete (target reached)")
             # If scheduled fade: set scheduled_rule to target
             if self.fading["scheduled"]:
                 self.scheduled_rule = self.fading["target"]

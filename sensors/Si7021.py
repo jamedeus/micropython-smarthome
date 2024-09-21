@@ -1,4 +1,3 @@
-import logging
 import si7021
 from machine import Pin, SoftI2C
 from Thermostat import Thermostat
@@ -46,13 +45,7 @@ class Si7021(Thermostat):
 
         # Set mode, tolerance, units, current_rule, create monitor task
         super().__init__(name, nickname, _type, default_rule, mode, tolerance, units, targets)
-        self.log.info(
-            "Instantiated Si7021 named %s, units=%s, tolerance=%s",
-            self.name, self.units, self.tolerance
-        )
-
-        # Set name for module's log lines
-        self.log = logging.getLogger("Si7021")
+        self.log.info("Instantiated, units=%s, tolerance=%s", units, tolerance)
 
     def get_raw_temperature(self):
         '''Returns raw temperature reading in Celsius. Called by parent class

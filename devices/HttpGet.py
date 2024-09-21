@@ -1,5 +1,4 @@
 import re
-import logging
 import requests
 from Device import Device
 
@@ -37,15 +36,12 @@ class HttpGet(Device):
     def __init__(self, name, nickname, _type, default_rule, uri, on_path, off_path):
         super().__init__(name, nickname, _type, True, default_rule)
 
-        # Set name for module's log lines
-        self.log = logging.getLogger("Http")
-
         # Can be IP or domain, remove protocol if present
         self.uri = str(uri).replace('http://', '').replace('https://', '')
 
         # Prevent instantiating with invalid URI
         if not re.match(uri_pattern, self.uri):
-            self.log.critical("%s: Received invalid URI: %s", self.name, self.uri)
+            self.log.critical("Received invalid URI: %s", self.uri)
             raise AttributeError
 
         # Paths added to URI for on, off respectively
@@ -58,7 +54,7 @@ class HttpGet(Device):
         if self.off_path.startswith('/'):
             self.off_path = self.off_path[1:]
 
-        self.log.info("Instantiated HttpGet named %s: URI = %s", self.name, self.uri)
+        self.log.info("Instantiated, uri=%s", self.uri)
 
     def get_url(self, state):
         '''Returns URL for ON action if argument is True.
@@ -78,8 +74,8 @@ class HttpGet(Device):
         Makes request to OFF action URL if argument is False.
         '''
         self.log.debug(
-            "%s: send method called, rule=%s, state=%s",
-            self.name, self.current_rule, state
+            "send method called, rule=%s, state=%s",
+            self.current_rule, state
         )
 
         # Refuse to turn disabled device on, but allow turning off
@@ -90,14 +86,14 @@ class HttpGet(Device):
 
         try:
             response = self.request(self.get_url(state))
-            self.log.debug("%s: response status: %s", self.name, response.status_code)
+            self.log.debug("response status: %s", response.status_code)
             if state:
                 self.print("Turned on")
             else:
                 self.print("Turned off")
         except OSError:
             # Wifi interruption, send failed
-            self.log.error("%s: send method failed (wifi error)", self.name)
+            self.log.error("send method failed (wifi error)")
             self.print(f"{self.name}: send failed (wifi error)")
             return False
 

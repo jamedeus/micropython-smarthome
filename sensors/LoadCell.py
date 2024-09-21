@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from math import isnan
 from machine import Pin
 from hx711 import HX711
@@ -30,9 +29,6 @@ class LoadCell(SensorWithLoop):
     def __init__(self, name, nickname, _type, default_rule, targets, pin_data, pin_clock):
         super().__init__(name, nickname, _type, True, default_rule, targets)
 
-        # Set name for module's log lines
-        self.log = logging.getLogger("Load_Cell")
-
         # Instantiate sensor, tare
         data = Pin(int(pin_data), Pin.IN, Pin.PULL_DOWN)
         clock = Pin(int(pin_clock), Pin.OUT)
@@ -45,7 +41,10 @@ class LoadCell(SensorWithLoop):
         # Start monitor loop (checks if threshold met every second)
         self.monitor_task = asyncio.create_task(self.monitor())
 
-        self.log.info("Instantiated load cell sensor named %s", self.name)
+        self.log.info(
+            "Instantiated, pin_data=%s, pin_clock=%s",
+            pin_data, pin_clock
+        )
 
     def validator(self, rule):
         '''Accepts any valid integer or float except NaN.'''
@@ -86,24 +85,24 @@ class LoadCell(SensorWithLoop):
         '''Tares the sensor (surface must not be occupied).
         Called by load_cell_tare API endpoint.
         '''
-        self.log.debug("%s: tare_sensor method called", self.name)
+        self.log.debug("tare_sensor method called")
         self.sensor.tare()
 
     async def monitor(self):
         '''Async coroutine, checks load cell condition every second. Turns
         target devices on or off when condition changes.
         '''
-        self.log.debug("%s: Starting LoadCell.monitor coro", self.name)
+        self.log.debug("Starting LoadCell.monitor coro")
         try:
             while True:
-                self.log.debug("%s: sensor value: %s", self.name, self.get_raw_reading())
+                self.log.debug("sensor value: %s", self.get_raw_reading())
                 new = self.condition_met()
 
                 # If condition changed, overwrite and refresh group
                 if new != self.current and new is not None:
                     self.log.debug(
-                        "%s: monitor: condition changed from %s to %s",
-                        self.name, self.current, new
+                        "monitor: condition changed from %s to %s",
+                        self.current, new
                     )
                     self.current = new
                     self.refresh_group()
@@ -113,7 +112,7 @@ class LoadCell(SensorWithLoop):
 
         # Sensor disabled, exit loop
         except asyncio.CancelledError:
-            self.log.debug("%s: Exiting LoadCell.monitor coro", self.name)
+            self.log.debug("Exiting LoadCell.monitor coro")
             return False
 
     def get_attributes(self):

@@ -1,4 +1,3 @@
-import logging
 from HttpGet import HttpGet
 
 
@@ -21,18 +20,13 @@ class DesktopTarget(HttpGet):
     def __init__(self, name, nickname, _type, default_rule, ip, port=5000):
         super().__init__(name, nickname, _type, default_rule, f"{ip}:{port}", "on", "off")
 
-        # Set name for module's log lines
-        self.log = logging.getLogger("DesktopTarget")
-
-        self.log.info("Instantiated Desktop named %s: uri = %s", self.name, self.uri)
-
     def send(self, state=1):
         '''Makes API call to turn screen ON if argument is True.
         Makes API call to turn screen OFF if argument is False.
         '''
         self.log.debug(
-            "%s: send method called, rule=%s, state=%s",
-            self.name, self.current_rule, state
+            "send method called, rule=%s, state=%s",
+            self.current_rule, state
         )
 
         # Refuse to turn disabled device on, but allow turning off
@@ -43,7 +37,7 @@ class DesktopTarget(HttpGet):
 
         try:
             response = self.request(self.get_url(state))
-            self.log.debug("%s: response status: %s", self.name, response.status_code)
+            self.log.debug("response status: %s", response.status_code)
             if response.status_code == 200:
                 if state:
                     self.print("Turned on")
@@ -58,15 +52,14 @@ class DesktopTarget(HttpGet):
             raise ValueError
         except OSError:
             # Wifi interruption, send failed
-            self.log.error("%s: send failed (wifi error)", self.name)
+            self.log.error("send failed (wifi error)")
             return False
         except ValueError:
             # Unexpected response (different service running on port 5000), disable
             if self.enabled:
                 self.print("Fatal error (unexpected response from desktop), disabling")
                 self.log.critical(
-                    "%s: Fatal error (unexpected response from desktop), disabling",
-                    self.name
+                    "Fatal error (unexpected response from desktop), disabling"
                 )
                 self.disable()
 

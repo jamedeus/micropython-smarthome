@@ -1,4 +1,3 @@
-import logging
 import asyncio
 from Sensor import Sensor
 
@@ -33,9 +32,6 @@ class SensorWithLoop(Sensor):
 
     def __init__(self, name, nickname, _type, enabled, default_rule, targets):
         super().__init__(name, nickname, _type, enabled, default_rule, targets)
-
-        # Set name for module's log lines
-        self.log = logging.getLogger("SensorWithLoop")
 
         # Stores monitor loop asyncio.Task object (subclass init method should
         # assign this to return value of asyncio.create_task(self.monitor()))

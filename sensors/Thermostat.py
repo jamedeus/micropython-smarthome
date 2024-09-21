@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from math import isnan
 import SoftwareTimer
 from SensorWithLoop import SensorWithLoop
@@ -56,14 +55,11 @@ class Thermostat(SensorWithLoop):
     def __init__(self, name, nickname, _type, default_rule, mode, tolerance, units, targets):
         super().__init__(name, nickname, _type, True, default_rule, targets)
 
-        # Set name for module's log lines
-        self.log = logging.getLogger("Thermostat")
-
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
             self.log.critical(
-                "%s: Received invalid default_rule: %s",
-                self.name, self.default_rule
+                "Received invalid default_rule: %s",
+                self.default_rule
             )
             raise AttributeError
 
@@ -137,16 +133,16 @@ class Thermostat(SensorWithLoop):
             self.on_threshold = float(self.current_rule) + float(self.tolerance)
             self.off_threshold = float(self.current_rule) - float(self.tolerance)
             self.log.debug(
-                "%s: set_threshold: on_threshold = %s, off_threshold = %s",
-                self.name, self.on_threshold, self.off_threshold
+                "set_threshold: on_threshold=%s, off_threshold=%s",
+                self.on_threshold, self.off_threshold
             )
 
         elif self.mode == "heat":
             self.on_threshold = float(self.current_rule) - float(self.tolerance)
             self.off_threshold = float(self.current_rule) + float(self.tolerance)
             self.log.debug(
-                "%s: set_threshold: on_threshold = %s, off_threshold = %s",
-                self.name, self.on_threshold, self.off_threshold
+                "set_threshold: on_threshold=%s, off_threshold=%s",
+                self.on_threshold, self.off_threshold
             )
 
         else:
@@ -171,7 +167,7 @@ class Thermostat(SensorWithLoop):
         '''Takes positive or negative float, adds to current_rule and calls
         set_rule method. Throws error if current_rule is not an int or float.
         '''
-        self.log.debug("%s: increment_rule called with %s", self.name, amount)
+        self.log.debug("increment_rule called with %s", amount)
 
         # Throw error if arg is not int or float
         try:
@@ -179,7 +175,7 @@ class Thermostat(SensorWithLoop):
             if isnan(amount):
                 raise ValueError
         except (ValueError, TypeError):
-            self.log.error("%s: increment_rule: invalid argument: %s", self.name, amount)
+            self.log.error("increment_rule: invalid argument: %s", amount)
             return {"ERROR": f"Invalid argument {amount}"}
 
         # Add amount to current rule
@@ -187,8 +183,8 @@ class Thermostat(SensorWithLoop):
             new = float(self.current_rule) + amount
         except (ValueError, TypeError):
             self.log.error(
-                "%s: Unable to increment current rule (%s)",
-                self.name, self.current_rule
+                "Unable to increment current rule (%s)",
+                self.current_rule
             )
             return {"ERROR": f"Unable to increment current rule ({self.current_rule})"}
 
@@ -220,17 +216,17 @@ class Thermostat(SensorWithLoop):
         '''Async coroutine, checks temperature every 5 seconds and turns target
         devices on or off if on_threshold or off_threshold exceeded.
         '''
-        self.log.debug("%s: Starting Thermostat.monitor coro", self.name)
+        self.log.debug("Starting Thermostat.monitor coro")
         try:
             while True:
-                self.log.debug("%s: temperature: %s", self.name, self.get_temperature())
+                self.log.debug("temperature: %s", self.get_temperature())
                 new = self.condition_met()
 
                 # If condition changed, overwrite and refresh group
                 if new != self.current and new is not None:
                     self.log.debug(
-                        "%s: monitor: condition changed from %s to %s",
-                        self.name, self.current, new
+                        "monitor: condition changed from %s to %s",
+                        self.current, new
                     )
                     self.current = new
                     self.refresh_group()
@@ -239,7 +235,7 @@ class Thermostat(SensorWithLoop):
 
         # Sensor disabled, exit loop
         except asyncio.CancelledError:
-            self.log.debug("%s: Exiting Thermostat.monitor coro", self.name)
+            self.log.debug("Exiting Thermostat.monitor coro")
             return False
 
     def validator(self, rule):
@@ -324,7 +320,7 @@ class Thermostat(SensorWithLoop):
             # group refresh method calls apply_action)
             if action is not None:
                 for i in self.targets:
-                    self.log.debug("%s: set %s state to %s", self.name, i.name, action)
+                    self.log.debug("set %s state to %s", i.name, action)
                     i.state = action
 
             # Force group to turn targets on/off again

@@ -1,4 +1,3 @@
-import logging
 from micropython import schedule
 from Instance import Instance
 
@@ -25,9 +24,6 @@ class Sensor(Instance):
 
     def __init__(self, name, nickname, _type, enabled, default_rule, targets):
         super().__init__(name, nickname, _type, enabled, default_rule)
-
-        # Set name for module's log lines
-        self.log = logging.getLogger("Sensor")
 
         # List of Device instances controlled by Sensor, used by Config.build_groups
         # to determine which sensors belong in same Group instance

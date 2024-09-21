@@ -1,5 +1,4 @@
 import socket
-import logging
 from struct import pack
 from DimmableLight import DimmableLight
 
@@ -34,18 +33,12 @@ class Tplink(DimmableLight):
     def __init__(self, name, nickname, _type, default_rule, min_rule, max_rule, ip):
         super().__init__(name, nickname, _type, True, default_rule, min_rule, max_rule)
 
-        # Set name for module's log lines
-        self.log = logging.getLogger("Tplink")
-
         self.ip = ip
 
         # Stores parameters in dict when fade in progress
         self.fading = False
 
-        self.log.info(
-            "Instantiated Tplink device named %s: ip = %s, type = %s",
-            self.name, self.ip, self._type
-        )
+        self.log.info("Instantiated, ip=%s", self.ip)
 
     def encrypt(self, string):
         '''Encrypts an API call using TP-Link's very weak algorithm.'''
@@ -75,8 +68,8 @@ class Tplink(DimmableLight):
         Sets Tplink device brightness to current_rule.
         '''
         self.log.debug(
-            "%s: send method called, rule=%s, state=%s",
-            self.name, self.current_rule, state
+            "send method called, rule=%s, state=%s",
+            self.current_rule, state
         )
 
         # Refuse to turn disabled device on, but allow turning off
@@ -111,17 +104,17 @@ class Tplink(DimmableLight):
             sock_tcp.close()
 
             decrypted = self.decrypt(data[4:])
-            self.log.debug("%s: Response: %s", self.name, decrypted)
+            self.log.debug("Response: %s", decrypted)
 
             self.print(f"brightness = {self.current_rule}, state = {state}")
-            self.log.debug("%s: Success", self.name)
+            self.log.debug("Success")
 
             # Tell calling function that request succeeded
             return True
 
         except Exception as ex:
             self.print(f"Could not connect to host {self.ip}, exception: {ex}")
-            self.log.error("%s: Could not connect to host %s", self.name, self.ip)
+            self.log.error("Could not connect to host %s", self.ip)
 
             # Tell calling function that request failed
             return False
