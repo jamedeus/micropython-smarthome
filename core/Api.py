@@ -29,20 +29,32 @@ lock = Lock()
 TIMESTAMP_REGEX = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
 
 
-# Ensure API call complete, connection closed before rebooting (reboot endpoint)
 async def reboot_task():
+    '''Ensure API call complete, connection closed before rebooting.
+    Avoids rebooting before client receives response (reboot endpoint).
+    '''
     async with lock:
         reboot()
 
 
-# Ensure API call complete, connection closed before running macro
-# Avoids connection timeout during long-running (>5 second) macros
 async def run_macro_task(blaster, macro_name):
+    '''Ensure API call complete, connection closed before running macro.
+    Avoids connection timeout during long-running (>5 second) macros.
+    '''
     async with lock:
         await blaster.run_macro_coro(macro_name)
 
 
 class Api:
+    '''API backend, listens for requests and calls correct handler function.
+
+    Starts listening on port 8123 when run coroutine is added to event loop.
+
+    After instantiating class the route factory is used to decorate handler
+    functions for each endpoint (takes endpoint name as decorator arg). The
+    required_args and get_target_instance factories can be used to add error
+    handling for invalid requests to handler functions.
+    '''
     def __init__(self, host='0.0.0.0', port=8123, backlog=5, timeout=20):
         self.host = host
         self.port = port
@@ -56,15 +68,18 @@ class Api:
         # Key = endpoint, value = function
         self.url_map = {}
 
-    # Decorator used to populate url_map
     def route(self, url):
+        '''Decorator factory used to populate url_map - takes endpoint name,
+        adds handler function to mapping dict used to match endpoints.
+        '''
         def _route(func):
             self.url_map[url] = func
         return _route
 
-    # Decorator factory - takes number of required args (int), returns function with wrapper
-    # that returns error if called with too few args
     def required_args(self, num):
+        '''Decorator factory - takes number of required args (int), returns
+        function with wrapper that returns error if called with too few args.
+        '''
         def decorator(func):
             @wraps(func)
             def wrapper(args):
@@ -74,10 +89,12 @@ class Api:
             return wrapper
         return decorator
 
-    # Decorator used to fetch device/sensor instance specified in first arg
-    # Passes instance to wrapped function as first arg (or returns error if not found)
-    # Should be placed after @required_args
     def get_target_instance(self, func):
+        '''Decorator factory used to look up target device/sensor instance.
+        Returns function with wrapper that expects device/sensor ID as first
+        arg. Passes matching instance to wrapped function as first arg, or
+        returns error if not found. Should be placed after @required_args.
+        '''
         @wraps(func)
         def wrapper(args):
             target = self.config.find(args[0])
@@ -87,6 +104,7 @@ class Api:
         return wrapper
 
     async def run(self):
+        '''Starts asyncio server listening for API requests.'''
         await asyncio.start_server(
             self.run_client,
             host=self.host,
@@ -97,6 +115,16 @@ class Api:
         log.info("API ready")
 
     async def run_client(self, sreader, swriter):
+        '''Handler for JSON and HTTP API requests.
+
+        JSON request: Expects serialized list with endpoint as first item, args
+                      passed to handler function as remaining items.
+        HTTP request: Expects GET request to /endpoint with args passed to
+                      handler in querystring.
+
+        Looks up endpoint in url_map dict, passes args to handling function if
+        found, returns error if endpoint does not exist.
+        '''
         try:
             # Read client request
             req = await asyncio.wait_for(sreader.readline(), self.timeout)
@@ -175,9 +203,11 @@ class Api:
         # Reduce memory fragmentation from repeated requests
         gc.collect()
 
-    # Takes HTTP request (ex: "GET /status HTTP/1.1")
-    # Returns requested endpoint and list of args
     async def parse_http_request(self, req):
+        '''    Takes HTTP request (ex: "GET /status HTTP/1.1").
+        Returns requested endpoint and list of args from querystring.
+        '''
+
         # Drop everything except path and querystring
         req = req.split()[1]
 
@@ -199,12 +229,14 @@ app = Api()
 
 @app.route("reboot")
 def index(args):
+    '''Reboots ESP32 (hard reset).'''
     asyncio.create_task(reboot_task())
     return "Rebooting"
 
 
 @app.route("status")
 def status(args):
+    '''Returns status JSON with current state of all devices and sensors.'''
     return app.config.get_status()
 
 
@@ -212,6 +244,7 @@ def status(args):
 @app.required_args(1)
 @app.get_target_instance
 def enable(target, args):
+    '''Takes device or sensor ID, calls enable method.'''
     target.enable()
     SoftwareTimer.timer.cancel(f"{target.name}_enable_in")
     return {"Enabled": target.name}
@@ -221,6 +254,9 @@ def enable(target, args):
 @app.required_args(2)
 @app.get_target_instance
 def enable_in(target, args):
+    '''Takes device or sensor ID and delay (minutes, int), creates timer to
+    call enable method after requested delay.
+    '''
     try:
         period = float(args[0]) * 60000
         if isnan(period):
@@ -235,6 +271,7 @@ def enable_in(target, args):
 @app.required_args(1)
 @app.get_target_instance
 def disable(target, args):
+    '''Takes device or sensor ID, calls disable method.'''
     target.disable()
     SoftwareTimer.timer.cancel(f"{target.name}_enable_in")
     return {"Disabled": target.name}
@@ -244,6 +281,9 @@ def disable(target, args):
 @app.required_args(2)
 @app.get_target_instance
 def disable_in(target, args):
+    '''Takes device or sensor ID and delay (minutes, int), creates timer to
+    call enable method after requested delay.
+    '''
     try:
         period = float(args[0]) * 60000
         if isnan(period):
@@ -258,6 +298,9 @@ def disable_in(target, args):
 @app.required_args(2)
 @app.get_target_instance
 def set_rule(target, args):
+    '''Takes device or sensor ID and new rule, passes rule to set_rule method.
+    Returns error if rule is not valid.
+    '''
     rule = args[0]
 
     # Replace url-encoded forward slashes (fade rules)
@@ -273,6 +316,10 @@ def set_rule(target, args):
 @app.required_args(2)
 @app.get_target_instance
 def increment_rule(target, args):
+    '''Takes device or sensor ID and amount (int) to increment current_rule.
+    Target instance must have int or float current_rule. Returns error if
+    unable to increment current_rule.
+    '''
     if "increment_rule" not in dir(target):
         return {"ERROR": "Unsupported target, must accept int or float rule"}
 
@@ -288,12 +335,14 @@ def increment_rule(target, args):
 @app.required_args(1)
 @app.get_target_instance
 def reset_rule(target, args):
+    '''Takes device or sensor ID, resets current_rule to scheduled_rule.'''
     target.set_rule(target.scheduled_rule)
     return {target.name: "Reverted to scheduled rule", "current_rule": target.current_rule}
 
 
 @app.route("reset_all_rules")
 def reset_all_rules(args):
+    '''Resets current_rule of all devices and sensors to scheduled_rule.'''
     response = {}
     response["New rules"] = {}
 
@@ -312,6 +361,7 @@ def reset_all_rules(args):
 @app.required_args(1)
 @app.get_target_instance
 def get_schedule_rules(target, args):
+    '''Takes device or sensor ID, returns dict of schedule rules.'''
     return app.config.schedule[target.name]
 
 
@@ -319,6 +369,10 @@ def get_schedule_rules(target, args):
 @app.required_args(3)
 @app.get_target_instance
 def add_schedule_rule(target, args):
+    '''Takes device or sensor ID, HH:MM timestamp or schedule keyword, and rule
+    to apply at requested timestamp. Creates schedule rule in memory (does not
+    persist after reboot).
+    '''
     rules = app.config.schedule[target.name]
 
     if re.match(TIMESTAMP_REGEX, args[0]):
@@ -347,6 +401,10 @@ def add_schedule_rule(target, args):
 @app.required_args(2)
 @app.get_target_instance
 def remove_rule(target, args):
+    '''Takes device or sensor ID, HH:MM timestamp or schedule keyword of
+    existing schedule rule. Removes rule from in-memory schedule (does not
+    remove from config file on disk, does not persist after reboot).
+    '''
     rules = app.config.schedule[target.name]
 
     if re.match(TIMESTAMP_REGEX, args[0]):
@@ -369,6 +427,9 @@ def remove_rule(target, args):
 
 @app.route("save_rules")
 def save_rules(args):
+    '''Writes current in-memory schedule rules of all devices and sensors to
+    config file on disk. Used to make new schedule rules persist after reboot.
+    '''
     config = read_config_from_disk()
 
     for i in config:
@@ -381,12 +442,16 @@ def save_rules(args):
 
 @app.route("get_schedule_keywords")
 def get_schedule_keywords(args):
+    '''Teturns dict of existing schedule keywords and matching timestamps.'''
     return app.config.schedule_keywords
 
 
 @app.route("add_schedule_keyword")
 @app.required_args(1)
 def add_schedule_keyword(args):
+    '''Takes new schedule keyword name and matching timestamp (HH:MM). Adds to
+    in-memory schedule keyword dict (does not persist after reboot).
+    '''
     if not isinstance(args[0], dict):
         return {"ERROR": "Requires dict with keyword and timestamp"}
 
@@ -403,6 +468,9 @@ def add_schedule_keyword(args):
 @app.route("remove_schedule_keyword")
 @app.required_args(1)
 def remove_schedule_keyword(args):
+    '''Takes existing schedule keyword name, removes from in-memory schedule
+    keyword dict (does not persist after reboot).
+    '''
     if args[0] in ['sunrise', 'sunset']:
         return {"ERROR": "Cannot delete sunrise or sunset"}
     if args[0] in app.config.schedule_keywords.keys():
@@ -423,6 +491,9 @@ def remove_schedule_keyword(args):
 
 @app.route("save_schedule_keywords")
 def save_schedule_keywords(args):
+    '''Writes in-memory schedule keyword dict to config file on disk.
+    Used to make new schedule keywords persist after reboot.
+    '''
     config = read_config_from_disk()
     config['metadata']['schedule_keywords'] = app.config.schedule_keywords
     write_config_to_disk(config)
@@ -433,6 +504,7 @@ def save_schedule_keywords(args):
 @app.required_args(1)
 @app.get_target_instance
 def get_attributes(target, args):
+    '''Takes device or sensor ID, returns dict with all instance attributes.'''
     return target.get_attributes()
 
 
@@ -440,6 +512,7 @@ def get_attributes(target, args):
 @app.required_args(1)
 @app.get_target_instance
 def condition_met(target, args):
+    '''Takes sensor ID, returns dict with current sensor condition.'''
     if not is_sensor(target.name):
         return {"ERROR": "Must specify sensor"}
     return {"Condition": target.condition_met()}
@@ -449,6 +522,9 @@ def condition_met(target, args):
 @app.required_args(1)
 @app.get_target_instance
 def trigger_sensor(target, args):
+    '''Takes sensor ID, calls trigger method to simulate sensor condition
+    being met (turns on target devices). Returns error if sensor not supported.
+    '''
     if not is_sensor(target.name):
         return {"ERROR": "Must specify sensor"}
 
@@ -461,6 +537,7 @@ def trigger_sensor(target, args):
 @app.required_args(1)
 @app.get_target_instance
 def turn_on(target, args):
+    '''Takes device ID, turns device on. Returns error if failed to turn on.'''
     if not is_device(target.name):
         return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
 
@@ -477,6 +554,7 @@ def turn_on(target, args):
 @app.required_args(1)
 @app.get_target_instance
 def turn_off(target, args):
+    '''Takes device ID, turns device off. Returns error if failed to turn off.'''
     if not is_device(target.name):
         return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
 
@@ -488,6 +566,9 @@ def turn_off(target, args):
 
 @app.route("get_temp")
 def get_temp(args):
+    '''Returns current temperature reading in configured units.
+    Returns error if no temperature sensor configured.
+    '''
     for sensor in app.config.sensors:
         if sensor._type in ["si7021", "dht22"]:
             return {"Temp": sensor.get_temperature()}
@@ -496,6 +577,9 @@ def get_temp(args):
 
 @app.route("get_humid")
 def get_humid(args):
+    '''Returns current relative humidity reading.
+    Returns error if no temperature/humidity sensor configured.
+    '''
     for sensor in app.config.sensors:
         if sensor._type in ["si7021", "dht22"]:
             return {"Humidity": sensor.get_humidity()}
@@ -504,6 +588,9 @@ def get_humid(args):
 
 @app.route("get_climate_data")
 def get_climate_data(args):
+    '''Returns current temperature and relative humidity readings.
+    Returns error if no temperature/humidity sensor configured.
+    '''
     for sensor in app.config.sensors:
         if sensor._type in ["si7021", "dht22"]:
             return {
@@ -515,6 +602,7 @@ def get_climate_data(args):
 
 @app.route("clear_log")
 def clear_log_file(args):
+    '''Clears app.log contents.'''
     try:
         clear_log()
         log.critical("Deleted old log (API request)")
@@ -526,12 +614,15 @@ def clear_log_file(args):
 @app.route("set_log_level")
 @app.required_args(1)
 def set_log_level(args):
+    '''Takes log level (CRITICAL, ERROR, WARNING, INFO, or DEBUG).
+    Writes new log level to disk (takes effect on next reboot).
+    '''
     if args[0] not in logging._nameToLevel:
         return {
             "ERROR": "Unsupported log level",
             "options": list(logging._nameToLevel.keys())
         }
-    with open("log_level.py", "w") as file:
+    with open("log_level.py", "w", encoding="utf-8") as file:
         file.write(f"LOG_LEVEL = '{args[0]}'")
     log.critical("Log level changed to %s", args[0])
     return {"Success": "Log level set (takes effect after reboot)"}
@@ -540,6 +631,9 @@ def set_log_level(args):
 @app.route("ir_key")
 @app.required_args(2)
 def ir_key(args):
+    '''Takes IR target device and key name, sends code with IR Blaster.
+    Returns error if target/key invalid or no IR Blaster configured.
+    '''
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
@@ -560,6 +654,9 @@ def ir_key(args):
 
 @app.route("ir_get_existing_macros")
 def ir_get_existing_macros(args):
+    '''Returns dict with existing IR Blaster macros.
+    Returns error if no IR Blaster configured.
+    '''
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
@@ -570,6 +667,9 @@ def ir_get_existing_macros(args):
 @app.route("ir_create_macro")
 @app.required_args(1)
 def ir_create_macro(args):
+    '''Takes name of new IR Blaster macro, adds to in-memory macros dict (does
+    not persist after reboot). Returns error if no IR Blaster configured.
+    '''
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
@@ -585,6 +685,10 @@ def ir_create_macro(args):
 @app.route("ir_delete_macro")
 @app.required_args(1)
 def ir_delete_macro(args):
+    '''Takes name of existing IR Blaster macro, removes from in-memory macros
+    dict (does not persist after reboot). Returns error if no IR Blaster
+    configured.
+    '''
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
@@ -599,6 +703,9 @@ def ir_delete_macro(args):
 
 @app.route("ir_save_macros")
 def ir_save_macros(args):
+    '''Writes in-memory IR Blaster macros dict to config file on disk.
+    Used to make new schedule rules persist after reboot.
+    '''
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
@@ -610,6 +717,10 @@ def ir_save_macros(args):
 @app.route("ir_add_macro_action")
 @app.required_args(3)
 def ir_add_macro_action(args):
+    '''Takes 3 required args (existing IR Blaster macro name, IR target name,
+    IR key name) and 2 optional args (ms delay after key, key repeat int).
+    Adds action to in-memory IR macros dict (does not persist after reboot).
+    '''
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
@@ -625,6 +736,9 @@ def ir_add_macro_action(args):
 @app.route("ir_run_macro")
 @app.required_args(1)
 def ir_run_macro(args):
+    '''Takes name of existing IR Blaster macro, runs all actions.
+    Returns error if no IR Blaster configured.
+    '''
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
@@ -640,6 +754,9 @@ def ir_run_macro(args):
 @app.route("set_gps_coords")
 @app.required_args(1)
 def set_gps_coords(args):
+    '''Takes dict with latitude and longitude keys containing coordinates used
+    to get sunrise and sunset times, writes to config file on disk.
+    '''
     if (
         not isinstance(args[0], dict)
         or 'latitude' not in args[0]
@@ -665,6 +782,7 @@ def set_gps_coords(args):
 @app.required_args(1)
 @app.get_target_instance
 def load_cell_tare(target, args):
+    '''Takes sensor ID of load cell sensor, calls tare_sensor method.'''
     if target._type != 'load-cell':
         return {"ERROR": "Must specify load cell sensor"}
     target.tare_sensor()
@@ -675,6 +793,7 @@ def load_cell_tare(target, args):
 @app.required_args(1)
 @app.get_target_instance
 def load_cell_read(target, args):
+    '''Takes sensor ID of load cell sensor, returns raw sensor reading.'''
     if target._type != 'load-cell':
         return {"ERROR": "Must specify load cell sensor"}
     return {"Raw": target.get_raw_reading()}
