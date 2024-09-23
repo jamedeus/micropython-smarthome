@@ -44,14 +44,14 @@ loaded_json = {
 }
 
 
-# Takes config, undoes instantiate_peripherals, returns
+# Takes config, undoes _instantiate_peripherals, returns
 # Used to instantiate various configs without repeating all steps
 def reset_test_config(config):
-    del config.devices
-    del config.sensors
-    del config.groups
-    config.sensor_configs = {}
-    config.device_configs = {}
+    config.devices = []
+    config.sensors = []
+    config.groups = []
+    config._sensor_configs = {}
+    config._device_configs = {}
     return config
 
 
@@ -65,24 +65,24 @@ class TestConfig(unittest.TestCase):
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation
         self.assertIsInstance(self.config, Config)
-        self.assertEqual(self.config.identifier, loaded_json["metadata"]["id"])
-        self.assertEqual(self.config.location, loaded_json["metadata"]["location"])
-        self.assertEqual(self.config.floor, loaded_json["metadata"]["floor"])
+        self.assertEqual(self.config._identifier, loaded_json["metadata"]["id"])
+        self.assertEqual(self.config._location, loaded_json["metadata"]["location"])
+        self.assertEqual(self.config._floor, loaded_json["metadata"]["floor"])
         self.assertEqual(self.config.schedule, {})
         self.assertEqual(self.config.schedule_keywords, {'sunrise': '00:00', 'sunset': '00:00'})
-        self.assertEqual(self.config.gps, "")
+        self.assertEqual(self.config._gps, "")
 
         # Confirm intermediate instance config attributes
-        self.assertEqual(len(self.config.sensor_configs), 1)
-        self.assertEqual(len(self.config.device_configs), 1)
-        self.assertEqual(self.config.sensor_configs['sensor1'], loaded_json['sensor1'])
-        self.assertEqual(self.config.device_configs['device1'], loaded_json['device1'])
+        self.assertEqual(len(self.config._sensor_configs), 1)
+        self.assertEqual(len(self.config._device_configs), 1)
+        self.assertEqual(self.config._sensor_configs['sensor1'], loaded_json['sensor1'])
+        self.assertEqual(self.config._device_configs['device1'], loaded_json['device1'])
 
-        # Confirm peripheral-related attributes not created (delay_setup)
-        self.assertFalse("devices" in self.config.__dict__)
-        self.assertFalse("sensors" in self.config.__dict__)
-        self.assertFalse("groups" in self.config.__dict__)
-        self.assertFalse("ir_blaster" in self.config.__dict__)
+        # Confirm peripheral not instantiated yet (delay_setup)
+        self.assertEqual(self.config.devices, [])
+        self.assertEqual(self.config.sensors, [])
+        self.assertEqual(self.config.groups, [])
+        self.assertEqual(self.config.ir_blaster, None)
 
     def test_02_api_calls(self):
         # Confirm network is not connected
@@ -93,7 +93,7 @@ class TestConfig(unittest.TestCase):
         self.assertFalse(network.WLAN().isconnected())
 
         # Run API calls, confirm connected successfully
-        self.config.api_calls()
+        self.config._api_calls()
         self.assertTrue(network.WLAN().isconnected())
 
         # Confirm sunrise + sunset times set
@@ -112,8 +112,8 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(first, second)
 
     def test_03_instantiate_peripherals(self):
-        # Run instantiate_peripherals method
-        self.config.instantiate_peripherals()
+        # Run _instantiate_peripherals method
+        self.config._instantiate_peripherals()
 
         # Confirm correct devices were instantiated
         self.assertEqual(len(self.config.devices), 1)
@@ -129,7 +129,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.config.sensors[0].targets[0], self.config.devices[0])
         self.assertEqual(self.config.sensors[0].default_rule, 5)
 
-        # Confirm current and scheduled rules are not set (determined by build_queue, hasn't run)
+        # Confirm current and scheduled rules are not set (determined by _build_queue, hasn't run)
         self.assertEqual(self.config.devices[0].current_rule, None)
         self.assertEqual(self.config.devices[0].current_rule, None)
         self.assertEqual(self.config.sensors[0].scheduled_rule, None)
@@ -138,13 +138,13 @@ class TestConfig(unittest.TestCase):
         # Confirm config.schedule populated
         self.assertEqual(self.config.schedule, {'device1': {'sunrise': 0, 'sunset': 32}, 'sensor1': {}})
 
-        # Should not be able to call instantiate_peripherals again
+        # Should not be able to call _instantiate_peripherals again
         with self.assertRaises(RuntimeError):
-            self.config.instantiate_peripherals()
+            self.config._instantiate_peripherals()
 
-    def test_04_build_queue(self):
-        # Run build_queue method
-        self.config.build_queue()
+    def test_04__build_queue(self):
+        # Run _build_queue method
+        self.config._build_queue()
 
         # Confirm current and scheduled rules set
         self.assertNotEqual(self.config.devices[0].current_rule, None)
@@ -156,15 +156,19 @@ class TestConfig(unittest.TestCase):
         self.assertGreaterEqual(len(self.config.devices[0].rule_queue), 1)
         self.assertEqual(len(self.config.sensors[0].rule_queue), 0)
 
-    def test_05_build_groups(self):
+    def test_05__build_groups(self):
         # Confirm no groups
-        self.assertFalse('groups' in self.config.__dict__)
+        self.assertEqual(self.config.groups, [])
 
         # Call method, confirm correct group created
-        self.config.build_groups()
+        self.config._build_groups()
         self.assertEqual(len(self.config.groups), 1)
         self.assertEqual(self.config.groups[0].targets[0], self.config.devices[0])
         self.assertEqual(self.config.groups[0].triggers[0], self.config.sensors[0])
+
+        # Should not be able to call _build_groups again
+        with self.assertRaises(RuntimeError):
+            self.config._build_groups()
 
     def test_06_start_reload_timer(self):
         # Confirm reload timer not in queue
@@ -172,7 +176,7 @@ class TestConfig(unittest.TestCase):
         self.assertTrue("reload_schedule_rules" not in str(SoftwareTimer.timer.schedule))
 
         # Call method to start config_timer, confirm timer running
-        self.config.start_reload_schedule_rules_timer()
+        self.config._start_reload_schedule_rules_timer()
         self.assertIn("reload_schedule_rules", str(SoftwareTimer.timer.schedule))
 
     def test_07_full_instantiation(self):
@@ -183,10 +187,10 @@ class TestConfig(unittest.TestCase):
 
         # Confirm expected attributes
         self.assertIsInstance(config, Config)
-        self.assertEqual(config.identifier, loaded_json["metadata"]["id"])
-        self.assertEqual(config.location, loaded_json["metadata"]["location"])
-        self.assertEqual(config.floor, loaded_json["metadata"]["floor"])
-        self.assertEqual(config.gps, {"lat": "1.15156", "lon": "174.70617"})
+        self.assertEqual(config._identifier, loaded_json["metadata"]["id"])
+        self.assertEqual(config._location, loaded_json["metadata"]["location"])
+        self.assertEqual(config._floor, loaded_json["metadata"]["floor"])
+        self.assertEqual(config._gps, {"lat": "1.15156", "lon": "174.70617"})
 
         # Confirm connected to wifi successfully, led turned off
         self.assertTrue(network.WLAN().isconnected())
@@ -240,7 +244,7 @@ class TestConfig(unittest.TestCase):
         device_before = self.config.devices[0].rule_queue
         sensor_before = self.config.sensors[0].rule_queue
 
-        self.config.build_queue()
+        self.config._build_queue()
 
         # Confirm duplicate rules were not added
         self.assertEqual(device_before, self.config.devices[0].rule_queue)
@@ -263,11 +267,11 @@ class TestConfig(unittest.TestCase):
             instantiate_hardware('ir_blaster')
 
     def test_13_invalid_types_in_config(self):
-        # Undo instantiate_peripherals
+        # Undo _instantiate_peripherals
         self.config = reset_test_config(self.config)
 
         # Add device and sensor configs with invalid _type
-        self.config.sensor_configs = {
+        self.config._sensor_configs = {
             "sensor1": {
                 "_type": "fake",
                 "nickname": "sensor1",
@@ -278,7 +282,7 @@ class TestConfig(unittest.TestCase):
                 ]
             }
         }
-        self.config.device_configs = {
+        self.config._device_configs = {
             "device1": {
                 "_type": "invalid",
                 "nickname": "device1",
@@ -286,9 +290,9 @@ class TestConfig(unittest.TestCase):
                 "schedule": {}
             }
         }
-        self.config.instantiate_peripherals()
-        self.config.build_queue()
-        self.config.build_groups()
+        self.config._instantiate_peripherals()
+        self.config._build_queue()
+        self.config._build_groups()
 
         # Confirm neither instance instantiated
         self.assertEqual(len(self.config.devices), 0)
@@ -296,11 +300,11 @@ class TestConfig(unittest.TestCase):
 
     # Confirm device current_rule is set to schedule_rule when valid
     def test_14_valid_scheduled_rule(self):
-        # Undo instantiate_peripherals
+        # Undo _instantiate_peripherals
         self.config = reset_test_config(self.config)
 
         # Add device with valid schedule rule, should be used as current_rule
-        self.config.device_configs = {
+        self.config._device_configs = {
             'device1': {
                 '_type': 'pwm',
                 'nickname': 'test',
@@ -313,9 +317,9 @@ class TestConfig(unittest.TestCase):
                 }
             }
         }
-        self.config.instantiate_peripherals()
-        self.config.build_queue()
-        self.config.build_groups()
+        self.config._instantiate_peripherals()
+        self.config._build_queue()
+        self.config._build_groups()
 
         # Confirm scheduled rule set for both current_rule and scheduled_rule
         self.assertEqual(self.config.devices[0].current_rule, 50)
@@ -324,14 +328,14 @@ class TestConfig(unittest.TestCase):
 
     # Confirm device current_rule falls back to default_rule when scheduled invalid
     def test_15_invalid_scheduled_rule_valid_default_rule(self):
-        # Undo instantiate_peripherals
+        # Undo _instantiate_peripherals
         self.config = reset_test_config(self.config)
 
         # Scheduled rule is NOT valid, default_rule should be set for current_rule and scheduled_rule instead
 
         # Add device with invalid schedule rule, valid default_rule
         # Should set default_rule for both current and scheduled rule
-        self.config.device_configs = {
+        self.config._device_configs = {
             'device1': {
                 '_type': 'pwm',
                 'nickname': 'test',
@@ -345,9 +349,9 @@ class TestConfig(unittest.TestCase):
                 }
             }
         }
-        self.config.instantiate_peripherals()
-        self.config.build_queue()
-        self.config.build_groups()
+        self.config._instantiate_peripherals()
+        self.config._build_queue()
+        self.config._build_groups()
 
         # Confirm current and schedule rules match default_rule
         self.assertEqual(self.config.devices[0].current_rule, 50)
@@ -357,12 +361,12 @@ class TestConfig(unittest.TestCase):
     # Confirm handles devices with all rules invalid by disabling and
     # setting "disabled" for current, scheduled, and default rule
     def test_16_all_invalid_rules(self):
-        # Undo instantiate_peripherals
+        # Undo _instantiate_peripherals
         self.config = reset_test_config(self.config)
 
         # Add device with invalid default and schedule rules
         # Should be disabled with all rule set to "disabled"
-        self.config.device_configs = {
+        self.config._device_configs = {
             'device1': {
                 '_type': 'relay',
                 'nickname': 'test',
@@ -373,9 +377,9 @@ class TestConfig(unittest.TestCase):
                 }
             }
         }
-        self.config.instantiate_peripherals()
-        self.config.build_queue()
-        self.config.build_groups()
+        self.config._instantiate_peripherals()
+        self.config._build_queue()
+        self.config._build_groups()
 
         # Confirm disabled, all rules disabled
         self.assertFalse(self.config.devices[0].enabled)
@@ -385,11 +389,11 @@ class TestConfig(unittest.TestCase):
 
     # Confirm devices with no schedule rules fall back to default_rule
     def test_17_no_schedule_rules(self):
-        # Undo instantiate_peripherals
+        # Undo _instantiate_peripherals
         self.config = reset_test_config(self.config)
 
         # Add device with no schedule rules, should fall back to default_rule
-        self.config.device_configs = {
+        self.config._device_configs = {
             'device1': {
                 '_type': 'pwm',
                 'nickname': 'test',
@@ -400,9 +404,9 @@ class TestConfig(unittest.TestCase):
                 'schedule': {}
             }
         }
-        self.config.instantiate_peripherals()
-        self.config.build_queue()
-        self.config.build_groups()
+        self.config._instantiate_peripherals()
+        self.config._build_queue()
+        self.config._build_groups()
 
         # Confirm current_rule and schedule_rule set to default_rule
         self.assertEqual(self.config.devices[0].current_rule, 50)
@@ -412,12 +416,12 @@ class TestConfig(unittest.TestCase):
     # Confirm handles sensor with no schedule rules and invalid default_rule by
     # disabling and setting "disabled" for current, schedule and default rules
     def test_18_no_schedule_rules_invalid_default_rule(self):
-        # Undo instantiate_peripherals
+        # Undo _instantiate_peripherals
         self.config = reset_test_config(self.config)
 
         # Add sensor with invalid default_rule and no schedule rules
         # Instance should be disabled with all rules set to "disabled"
-        self.config.sensor_configs = {
+        self.config._sensor_configs = {
             'sensor1': {
                 '_type': 'si7021',
                 'nickname': 'test',
@@ -429,9 +433,9 @@ class TestConfig(unittest.TestCase):
                 'targets': []
             }
         }
-        self.config.instantiate_peripherals()
-        self.config.build_queue()
-        self.config.build_groups()
+        self.config._instantiate_peripherals()
+        self.config._build_queue()
+        self.config._build_groups()
 
         # Confirm instance disabled, all rules disabled
         self.assertFalse(self.config.sensors[0].enabled)
@@ -443,12 +447,12 @@ class TestConfig(unittest.TestCase):
     # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
     def test_19_regression_instantiate_with_invalid_default_rule(self):
-        # Undo instantiate_peripherals
+        # Undo _instantiate_peripherals
         self.config = reset_test_config(self.config)
 
         # Add PWM device with invalid default rule, valid relay, valid motion sensor
         # PWM should fail to instantiate, others should instantiate
-        self.config.device_configs = {
+        self.config._device_configs = {
             "device1": {
                 "_type": "pwm",
                 "nickname": "Countertop LEDs",
@@ -469,7 +473,7 @@ class TestConfig(unittest.TestCase):
                 "schedule": {}
             }
         }
-        self.config.sensor_configs = {
+        self.config._sensor_configs = {
             "sensor1": {
                 "_type": "pir",
                 "nickname": "Motion Sensor",
@@ -482,9 +486,9 @@ class TestConfig(unittest.TestCase):
                 ]
             }
         }
-        self.config.instantiate_peripherals()
-        self.config.build_queue()
-        self.config.build_groups()
+        self.config._instantiate_peripherals()
+        self.config._build_queue()
+        self.config._build_groups()
 
         # Confirm only the relay sensor instantiated
         self.assertEqual(len(self.config.devices), 1)
@@ -497,11 +501,11 @@ class TestConfig(unittest.TestCase):
     # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
     def test_20_regression_instantiate_with_invalid_default_rule_sensor(self):
-        # Undo instantiate_peripherals
+        # Undo _instantiate_peripherals
         self.config = reset_test_config(self.config)
 
         # Add sensor with invalid default_rule, should fail to instantiate
-        self.config.sensor_configs = {
+        self.config._sensor_configs = {
             "sensor1": {
                 "_type": "pir",
                 "nickname": "Motion Sensor",
@@ -514,9 +518,9 @@ class TestConfig(unittest.TestCase):
                 "targets": []
             }
         }
-        self.config.instantiate_peripherals()
-        self.config.build_queue()
-        self.config.build_groups()
+        self.config._instantiate_peripherals()
+        self.config._build_queue()
+        self.config._build_groups()
 
         # Confirm no sensors (failed to instantiate)
         self.assertEqual(len(self.config.sensors), 0)
@@ -526,11 +530,11 @@ class TestConfig(unittest.TestCase):
     # device instances. DesktopTrigger __init__ expects targets list to contain device instances
     # and checks their _type, raising an exception when the list contained strings.
     def test_21_regression_instantiate_with_desktop_trigger(self):
-        # Undo instantiate_peripherals
+        # Undo _instantiate_peripherals
         self.config = reset_test_config(self.config)
 
         # Add desktop_trigger targeting desktop_target
-        self.config.sensor_configs = {
+        self.config._sensor_configs = {
             "sensor1": {
                 "_type": "desktop",
                 "nickname": "Computer Screen",
@@ -544,7 +548,7 @@ class TestConfig(unittest.TestCase):
                 ]
             }
         }
-        self.config.device_configs = {
+        self.config._device_configs = {
             "device1": {
                 "_type": "relay",
                 "nickname": "Countertop LEDs",
@@ -553,9 +557,9 @@ class TestConfig(unittest.TestCase):
                 "schedule": {}
             }
         }
-        self.config.instantiate_peripherals()
-        self.config.build_queue()
-        self.config.build_groups()
+        self.config._instantiate_peripherals()
+        self.config._build_queue()
+        self.config._build_groups()
 
         # Should have 1 sensor (instantiated successfully)
         self.assertEqual(len(self.config.sensors), 1)
@@ -566,23 +570,23 @@ class TestConfig(unittest.TestCase):
     def test_22_reload_schedule_rules(self):
         # Used to detect which mock methods called
         self.api_calls_called = False
-        self.build_queue_called = False
+        self._build_queue_called = False
 
         # Mock both methods called by reload_schedule_rules
         def mock_api_calls(arg=None):
             self.api_calls_called = True
 
-        def mock_build_queue(arg=None):
-            self.build_queue_called = True
+        def mock__build_queue(arg=None):
+            self._build_queue_called = True
 
         # Overwrite instance methods with mocks
-        self.config.api_calls = mock_api_calls
-        self.config.build_queue = mock_build_queue
+        self.config._api_calls = mock_api_calls
+        self.config._build_queue = mock__build_queue
 
         # Call reload_schedule_rules, confirm methods called
         self.config.reload_schedule_rules()
         self.assertTrue(self.api_calls_called)
-        self.assertTrue(self.build_queue_called)
+        self.assertTrue(self._build_queue_called)
 
     @cpython_only
     def test_23_failed_api_calls(self):
@@ -608,7 +612,7 @@ class TestConfig(unittest.TestCase):
 
         # Simulate network error in API call, confirm error triggers reboot
         with self.assertRaises(MockRebootCalled):
-            Config.api_calls(self.config)
+            Config._api_calls(self.config)
 
         # Create requests.get mock that raises OSError (failed connection)
         def mock_get(*args, **kwargs):
@@ -623,4 +627,4 @@ class TestConfig(unittest.TestCase):
 
         # Call method, confirm error triggers reboot
         with self.assertRaises(MockRebootCalled):
-            Config.api_calls(self.config)
+            Config._api_calls(self.config)

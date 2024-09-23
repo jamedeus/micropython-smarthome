@@ -88,9 +88,19 @@ class Config():
         log.debug("Config file: %s", conf)
 
         # Load metadata parameters (included in status object used by frontend)
-        self.identifier = conf["metadata"]["id"]
-        self.location = conf["metadata"]["location"]
-        self.floor = conf["metadata"]["floor"]
+        self._identifier = conf["metadata"]["id"]
+        self._location = conf["metadata"]["location"]
+        self._floor = conf["metadata"]["floor"]
+
+        # Device and sensor instances, populated by _instantiate_peripherals
+        self.devices = []
+        self.sensors = []
+
+        # Group instances, populated by _build_groups
+        self.groups = []
+
+        # Stores IrBlaster instance if configured
+        self.ir_blaster = None
 
         # Nested dict of schedule rules, 1 entry for each device and sensor
         # Keys are IDs (device1, sensor2, etc), values are dict of timestamp-rule pairs
@@ -101,50 +111,50 @@ class Config():
         self.schedule_keywords.update(conf["metadata"]["schedule_keywords"])
 
         # Stores timestamp of next schedule rule reload (between 3 and 4 am)
-        self.reload_time = ""
+        self._reload_time = ""
 
         # Load GPS coordinates (used for timezone + sunrise/sunset times, not shown in frontend)
         try:
-            self.gps = conf["metadata"]["gps"]
+            self._gps = conf["metadata"]["gps"]
         except KeyError:
-            self.gps = ""
+            self._gps = ""
 
         # Parse all device and sensor sections into dict attributes, removed
-        # after device and sensor lists populated by instantiate_peripherals
-        self.device_configs = {device: config for device, config in conf.items() if is_device(device)}
-        self.sensor_configs = {sensor: config for sensor, config in conf.items() if is_sensor(sensor)}
+        # after device and sensor lists populated by _instantiate_peripherals
+        self._device_configs = {device: config for device, config in conf.items() if is_device(device)}
+        self._sensor_configs = {sensor: config for sensor, config in conf.items() if is_sensor(sensor)}
         if "ir_blaster" in conf:
-            self.ir_blaster_config = conf["ir_blaster"]
+            self._ir_blaster_config = conf["ir_blaster"]
 
         if not delay_setup:
-            self.setup()
+            self._setup()
 
-    def setup(self):
+    def _setup(self):
         '''Entrypoint, calls methods to set up node at boot. Runs automatically
         when class instantiated unless delay_setup arg passed (unit tests).
         '''
 
         # Connect to wifi, hit APIs for current time, sunrise/sunset timestamps
-        self.api_calls()
+        self._api_calls()
 
-        # Instantiate each config in self.device_configs and self.sensor_configs as
+        # Instantiate each config in self._device_configs and self._sensor_configs as
         # appropriate class, add to self.devices and self.sensors respectively
-        self.instantiate_peripherals()
+        self._instantiate_peripherals()
 
         # Create timers for all schedule rules expiring in next 24 hours
-        self.build_queue()
+        self._build_queue()
 
         # Map relationships between sensors ("triggers") and devices ("targets")
-        # Must run after build_queue to prevent sensors turning devices on/off
+        # Must run after _build_queue to prevent sensors turning devices on/off
         # before correct scheduled rule applied
-        self.build_groups()
+        self._build_groups()
 
         # Start timer to re-build schedule rule queue for next 24 hours around 3 am
-        self.start_reload_schedule_rules_timer()
+        self._start_reload_schedule_rules_timer()
 
         log.info("Finished instantiating config")
 
-    def start_reload_schedule_rules_timer(self):
+    def _start_reload_schedule_rules_timer(self):
         '''Schedules callback timer for a random time between 3:00-4:00 am.
         Updates sunrise/sunset times, regenerates schedule rule epoch times for
         next day, and creates callback timer for each scheduled rule change.
@@ -164,48 +174,44 @@ class Config():
         ms_until_reload = (next_reload - epoch + adjust) * 1000
 
         # Get HH:MM timestamp of next reload, write to log
-        self.reload_time = f"{time.localtime(next_reload + adjust)[3]}:{time.localtime(next_reload + adjust)[4]}"
-        log.info("Reload_schedule_rules callback scheduled for %s am", self.reload_time)
+        self._reload_time = f"{time.localtime(next_reload + adjust)[3]}:{time.localtime(next_reload + adjust)[4]}"
+        log.info("Reload_schedule_rules callback scheduled for %s am", self._reload_time)
 
         # Add timer to queue
         SoftwareTimer.timer.create(ms_until_reload, self.reload_schedule_rules, "reload_schedule_rules")
 
-    def instantiate_peripherals(self):
+    def _instantiate_peripherals(self):
         '''Populates self.devices and self.sensors lists by instantiating
-        config sections from self.device_configs and self.sensor_configs.
+        config sections from self._device_configs and self._sensor_configs.
         Can only be called once on startup.
         '''
 
         # Prevent calling again after setup complete
-        if "devices" in self.__dict__ or "sensors" in self.__dict__:
+        if self.devices or self.sensors:
             raise RuntimeError("Peripherals already instantiated")
 
-        # Create lists for device, sensor instances
-        self.devices = []
-        self.sensors = []
+        # Pass all device configs to _instantiate_devices, populates self.devices
+        self._instantiate_devices(self._device_configs)
 
-        # Pass all device configs to instantiate_devices, populates self.devices
-        self.instantiate_devices(self.device_configs)
-
-        # Pass all sensors configs to instantiate_sensors, populates self.sensors
-        self.instantiate_sensors(self.sensor_configs)
+        # Pass all sensors configs to _instantiate_sensors, populates self.sensors
+        self._instantiate_sensors(self._sensor_configs)
 
         # Instantiate IR Blaster if configured (can only have 1, driver limitation)
         # IR Blaster is not a Device subclass, has no schedule rules, and is only triggered by API calls
-        if "ir_blaster_config" in self.__dict__:
+        if "_ir_blaster_config" in self.__dict__:
             from IrBlaster import IrBlaster
             self.ir_blaster = IrBlaster(
-                int(self.ir_blaster_config["pin"]),
-                self.ir_blaster_config["target"]
+                int(self._ir_blaster_config["pin"]),
+                self._ir_blaster_config["target"]
             )
-            del self.ir_blaster_config
+            del self._ir_blaster_config
 
         # Delete device and sensor config dicts
-        del self.device_configs
-        del self.sensor_configs
+        del self._device_configs
+        del self._sensor_configs
         gc.collect()
 
-    def instantiate_devices(self, conf):
+    def _instantiate_devices(self, conf):
         '''Takes dict with device IDs (device1, device2, etc) as keys, device
         config dicts as values. Instantiates appropriate hardware driver class
         with params for each device and adds instance to self.devices list.
@@ -237,7 +243,7 @@ class Config():
 
         log.debug("Finished instantiating device instances")
 
-    def instantiate_sensors(self, conf):
+    def _instantiate_sensors(self, conf):
         '''Takes dict with sensor IDs (sensor1, sensor2, etc) as keys, sensor
         config dicts as values. Instantiates appropriate hardware driver class
         with params for each sensor and adds instance to self.sensors list.
@@ -279,7 +285,7 @@ class Config():
 
         log.debug("Finished instantiating sensor instances")
 
-    def build_groups(self):
+    def _build_groups(self):
         '''Maps relationships between sensors (triggers) and devices (targets).
         Multiple sensors with identical targets are merged into a single Group
         instance (can also contain 1 sensor with 1 or more target). Groups will
@@ -288,8 +294,9 @@ class Config():
         '''
         log.debug("Building groups")
 
-        # Stores completed Group instances
-        self.groups = []
+        # Prevent calling again after setup complete
+        if self.groups:
+            raise RuntimeError("Peripherals already instantiated")
 
         sensor_list = self.sensors.copy()
 
@@ -334,19 +341,19 @@ class Config():
         # Populate template from class attributes
         status_dict = {
             "metadata": {
-                "id": self.identifier,
-                "floor": self.floor,
-                "location": self.location,
+                "id": self._identifier,
+                "floor": self._floor,
+                "location": self._location,
                 "schedule_keywords": self.schedule_keywords,
-                "next_reload": self.reload_time,
-                "ir_blaster": bool("ir_blaster" in self.__dict__)
+                "next_reload": self._reload_time,
+                "ir_blaster": bool(self.ir_blaster)
             },
             "devices": {},
             "sensors": {}
         }
 
         # Add IR targets if IR Blaster configured
-        if "ir_blaster" in self.__dict__:
+        if self.ir_blaster:
             status_dict["metadata"]["ir_targets"] = self.ir_blaster.target
 
         # Iterate devices, add get_status return value, add schedule rules
@@ -361,7 +368,7 @@ class Config():
 
         return status_dict
 
-    def api_calls(self):
+    def _api_calls(self):
         '''Connects to wifi (if not connected), sets system clock and
         sunrise/sunset times with values received from API.
         '''
@@ -401,9 +408,9 @@ class Config():
                 log.debug("Getting system time from ipgeolocation.io API...")
                 # Use GPS coordinates if present, otherwise rely on IP lookup
                 url = f"https://api.ipgeolocation.io/astronomy?apiKey={ipgeo_key}"
-                if self.gps:
+                if self._gps:
                     log.debug("Using GPS coordinates from config file")
-                    url += f"&lat={self.gps['lat']}&long={self.gps['lon']}"
+                    url += f"&lat={self._gps['lat']}&long={self._gps['lon']}"
 
                 response = requests.get(url, timeout=5)
 
@@ -455,7 +462,7 @@ class Config():
         # Turn off LED to confirm setup completed successfully
         led.value(0)
 
-    def convert_rules(self, rules):
+    def _convert_rules(self, rules):
         '''Takes dict of schedule rules with HH:MM timestamps, returns dict of
         same rules with unix epoch timestamps for next time rule should run.
         Called every day between 3-4 am (epoch times only work once).
@@ -520,7 +527,7 @@ class Config():
         # Return the finished dictionairy
         return result
 
-    def build_queue(self):
+    def _build_queue(self):
         '''Iterates all devices and sensors, converts schedule rule HH:MM times
         to unix epoch times, creates callback timers to change rules at correct
         times, and sets correct current scheduled_rule for each instance.
@@ -533,7 +540,7 @@ class Config():
         for i in self.schedule:
             # Convert HH:MM timestamps to unix epoch timestamp of next run
             # Use copy to avoid overwriting schedule keywords with HH:MM in original
-            rules = self.convert_rules(self.schedule[i].copy())
+            rules = self._convert_rules(self.schedule[i].copy())
 
             # Get target instance (skip if unable to find)
             instance = self.find(i)
@@ -628,10 +635,10 @@ class Config():
         print_with_timestamp("Reloading schedule rules...")
         log.info("Callback: Reloading schedule rules")
         # Get up-to-date sunrise/sunset, set system clock (in case of daylight savings)
-        self.api_calls()
+        self._api_calls()
 
         # Create timers for all schedule rules expiring in next 24 hours
-        self.build_queue()
+        self._build_queue()
 
         # Set timer to run again tomorrow between 3-4 am
-        self.start_reload_schedule_rules_timer()
+        self._start_reload_schedule_rules_timer()

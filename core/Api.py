@@ -393,7 +393,7 @@ def add_schedule_rule(target, args):
     rules[timestamp] = valid
     app.config.schedule[target.name] = rules
     # Schedule queue rebuild after connection closes (blocks for several seconds)
-    SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
+    SoftwareTimer.timer.create(1200, app.config._build_queue, "rebuild_queue")
     return {"Rule added": valid, "time": timestamp}
 
 
@@ -418,7 +418,7 @@ def remove_rule(target, args):
         del rules[timestamp]
         app.config.schedule[target.name] = rules
         # Schedule queue rebuild after connection closes (blocks for several seconds)
-        SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
+        SoftwareTimer.timer.create(1200, app.config._build_queue, "rebuild_queue")
     except KeyError:
         return {"ERROR": "No rule exists at that time"}
 
@@ -460,7 +460,7 @@ def add_schedule_keyword(args):
     if re.match(TIMESTAMP_REGEX, timestamp):
         app.config.schedule_keywords[keyword] = timestamp
         # Schedule queue rebuild after connection closes (blocks for several seconds)
-        SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
+        SoftwareTimer.timer.create(1200, app.config._build_queue, "rebuild_queue")
         return {"Keyword added": keyword, "time": timestamp}
     return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
 
@@ -485,7 +485,7 @@ def remove_schedule_keyword(args):
 
     del app.config.schedule_keywords[keyword]
     # Schedule queue rebuild after connection closes (blocks for several seconds)
-    SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
+    SoftwareTimer.timer.create(1200, app.config._build_queue, "rebuild_queue")
     return {"Keyword removed": args[0]}
 
 
@@ -634,21 +634,19 @@ def ir_key(args):
     '''Takes IR target device and key name, sends code with IR Blaster.
     Returns error if target/key invalid or no IR Blaster configured.
     '''
-    try:
-        blaster = app.config.ir_blaster
-    except AttributeError:
+    if not app.config.ir_blaster:
         return {"ERROR": "No IR blaster configured"}
 
     target = args[0]
     key = args[1]
 
-    if target not in blaster.codes:
+    if target not in app.config.ir_blaster.codes:
         return {"ERROR": f'No codes found for target "{target}"'}
 
-    if not key.lower() in blaster.codes[target]:
+    if not key.lower() in app.config.ir_blaster.codes[target]:
         return {"ERROR": f'Target "{target}" has no key "{key}"'}
 
-    blaster.send(target, key.lower())
+    app.config.ir_blaster.send(target, key.lower())
     return {target: key}
 
 
@@ -657,11 +655,9 @@ def ir_get_existing_macros(args):
     '''Returns dict with existing IR Blaster macros.
     Returns error if no IR Blaster configured.
     '''
-    try:
-        blaster = app.config.ir_blaster
-    except AttributeError:
+    if not app.config.ir_blaster:
         return {"ERROR": "No IR blaster configured"}
-    return blaster.get_existing_macros()
+    return app.config.ir_blaster.get_existing_macros()
 
 
 @app.route("ir_create_macro")
@@ -670,13 +666,10 @@ def ir_create_macro(args):
     '''Takes name of new IR Blaster macro, adds to in-memory macros dict (does
     not persist after reboot). Returns error if no IR Blaster configured.
     '''
-    try:
-        blaster = app.config.ir_blaster
-    except AttributeError:
+    if not app.config.ir_blaster:
         return {"ERROR": "No IR blaster configured"}
-
     try:
-        blaster.create_macro(args[0])
+        app.config.ir_blaster.create_macro(args[0])
         return {"Macro created": args[0]}
     except ValueError as error:
         return {"ERROR": str(error)}
@@ -689,13 +682,10 @@ def ir_delete_macro(args):
     dict (does not persist after reboot). Returns error if no IR Blaster
     configured.
     '''
-    try:
-        blaster = app.config.ir_blaster
-    except AttributeError:
+    if not app.config.ir_blaster:
         return {"ERROR": "No IR blaster configured"}
-
     try:
-        blaster.delete_macro(args[0])
+        app.config.ir_blaster.delete_macro(args[0])
         return {"Macro deleted": args[0]}
     except ValueError as error:
         return {"ERROR": str(error)}
@@ -706,11 +696,9 @@ def ir_save_macros(args):
     '''Writes in-memory IR Blaster macros dict to config file on disk.
     Used to make new schedule rules persist after reboot.
     '''
-    try:
-        blaster = app.config.ir_blaster
-    except AttributeError:
+    if not app.config.ir_blaster:
         return {"ERROR": "No IR blaster configured"}
-    blaster.save_macros()
+    app.config.ir_blaster.save_macros()
     return {"Success": "Macros written to disk"}
 
 
@@ -721,13 +709,10 @@ def ir_add_macro_action(args):
     IR key name) and 2 optional args (ms delay after key, key repeat int).
     Adds action to in-memory IR macros dict (does not persist after reboot).
     '''
-    try:
-        blaster = app.config.ir_blaster
-    except AttributeError:
+    if not app.config.ir_blaster:
         return {"ERROR": "No IR blaster configured"}
-
     try:
-        blaster.add_macro_action(*args)
+        app.config.ir_blaster.add_macro_action(*args)
         return {"Macro action added": args}
     except ValueError as error:
         return {"ERROR": str(error)}
@@ -739,15 +724,13 @@ def ir_run_macro(args):
     '''Takes name of existing IR Blaster macro, runs all actions.
     Returns error if no IR Blaster configured.
     '''
-    try:
-        blaster = app.config.ir_blaster
-    except AttributeError:
+    if not app.config.ir_blaster:
         return {"ERROR": "No IR blaster configured"}
-    if args[0] not in blaster.macros.keys():
+    if args[0] not in app.config.ir_blaster.macros.keys():
         return {"ERROR": f"Macro {args[0]} does not exist, use create_macro to add"}
 
     # Create task, return response immediately
-    asyncio.create_task(run_macro_task(blaster, args[0]))
+    asyncio.create_task(run_macro_task(app.config.ir_blaster, args[0]))
     return {"Ran macro": args[0]}
 
 

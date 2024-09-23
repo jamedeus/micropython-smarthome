@@ -95,9 +95,9 @@ config_file = {
 
 # Instantiate config object, pass to API
 config = Config(config_file, delay_setup=True)
-config.instantiate_peripherals()
-config.build_queue()
-config.build_groups()
+config._instantiate_peripherals()
+config._build_queue()
+config._build_groups()
 app.config = config
 
 
@@ -682,7 +682,7 @@ class TestApi(unittest.TestCase):
     def test_39_no_ir_blaster_configured_errors(self):
         # Remove IrBlaster from config to test error
         ir_blaster = app.config.ir_blaster
-        del app.config.ir_blaster
+        app.config.ir_blaster = None
 
         # Confirm correct error message for each IR endpoint
         response = self.send_command(['ir_key', 'whynter_ac', 'on'])

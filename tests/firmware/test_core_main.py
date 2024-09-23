@@ -26,9 +26,9 @@ class TestMain(unittest.TestCase):
     def setUpClass(cls):
         # Instantiate Config object, run all setup steps except API calls
         cls.config = Config(config_file, delay_setup=True)
-        cls.config.instantiate_peripherals()
-        cls.config.build_queue()
-        cls.config.build_groups()
+        cls.config._instantiate_peripherals()
+        cls.config._build_queue()
+        cls.config._build_groups()
 
     @cpython_only
     def test_01_start(self):
