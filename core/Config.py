@@ -22,7 +22,8 @@ from hardware_classes import hardware_classes
 # Set name for module's log lines
 log = logging.getLogger("Config")
 
-# Timer re-runs startup every day at 3:00 am (reload schedule rules, sunrise/sunset times, etc)
+# Timer re-runs startup every day at 3:00 am
+# (reload schedule rules, sunrise/sunset times, etc)
 config_timer = Timer(1)
 # Used to reboot if startup hangs for longer than 1 minute
 reboot_timer = Timer(2)
@@ -31,14 +32,18 @@ reboot_timer = Timer(2)
 led = Pin(2, Pin.OUT, value=1)
 
 
-# Takes name (device1 etc) and config entry, returns class instance
 def instantiate_hardware(name, **kwargs):
+    '''Takes name (device1, sensor2, etc) and dict of config params,
+    instantiates correct driver class and returns instance.
+    '''
     if is_device(name) and kwargs['_type'] not in hardware_classes['devices']:
         raise ValueError(f'Unsupported device type "{kwargs["_type"]}"')
     elif is_sensor(name) and kwargs['_type'] not in hardware_classes['sensors']:
         raise ValueError(f'Unsupported sensor type "{kwargs["_type"]}"')
     elif not is_device_or_sensor(name):
-        raise ValueError(f'Invalid name "{name}", must start with "device" or "sensor"')
+        raise ValueError(
+            f'Invalid name "{name}", must start with "device" or "sensor"'
+        )
 
     # Remove schedule rules (unexpected arg)
     del kwargs['schedule']
@@ -52,10 +57,31 @@ def instantiate_hardware(name, **kwargs):
     return cls(name, **kwargs)
 
 
-# Optional argument blocks expensive method calls that connect to wifi,
-# hit APIs, instantiate classes, and build schedule rule queue.
-# Primarily used in unit testing to run a subset of methods.
 class Config():
+    '''Takes dict parsed from config.json, sets up node, peripherals, and
+    scheduled rule changes based on config file settings.
+
+    Makes API calls to set system clock and get local sunrise/sunset times used
+    in schedule rules (uses GPS coordinates in config file if present).
+
+    Instantiates correct driver for all devices and sensors specified in config
+    file, creates callback timers for each scheduled rule change.
+
+    Public attributes:
+      devices:           List of device driver instances
+      sensors:           List of device sensor instances
+      schedule_keywords: Dict with keywords as keys, HH:MM timestamps as values
+
+    Public methods:
+      find:              Takes device or sensor ID, returns matching instance
+      get_status:        Generates status dict returned by status API endpoint
+      reload_schedule_rules: Updates sunrise/sunset times from API and creates
+                         scheduled rule change callback timers for next day
+
+    Optional delay_setup argument used in unit tests to prevent automatically
+    running all methods (allows checking state in between each method).
+    '''
+
     def __init__(self, conf, delay_setup=False):
         print_with_timestamp("Instantiating config object...")
         log.info("Instantiating config object...")
@@ -94,6 +120,10 @@ class Config():
             self.setup()
 
     def setup(self):
+        '''Entrypoint, calls methods to set up node at boot. Runs automatically
+        when class instantiated unless delay_setup arg passed (unit tests).
+        '''
+
         # Connect to wifi, hit APIs for current time, sunrise/sunset timestamps
         self.api_calls()
 
@@ -115,6 +145,11 @@ class Config():
         log.info("Finished instantiating config")
 
     def start_reload_schedule_rules_timer(self):
+        '''Schedules callback timer for a random time between 3:00-4:00 am.
+        Updates sunrise/sunset times, regenerates schedule rule epoch times for
+        next day, and creates callback timer for each scheduled rule change.
+        '''
+
         # Get current epoch time + time tuple
         epoch = time.mktime(time.localtime())
         now = time.localtime(epoch)
@@ -135,9 +170,12 @@ class Config():
         # Add timer to queue
         SoftwareTimer.timer.create(ms_until_reload, self.reload_schedule_rules, "reload_schedule_rules")
 
-    # Populates self.devices and self.sensors by instantiating configs from self.device_configs
-    # and self.sensor_configs, can only be called once
     def instantiate_peripherals(self):
+        '''Populates self.devices and self.sensors lists by instantiating
+        config sections from self.device_configs and self.sensor_configs.
+        Can only be called once on startup.
+        '''
+
         # Prevent calling again after setup complete
         if "devices" in self.__dict__ or "sensors" in self.__dict__:
             raise RuntimeError("Peripherals already instantiated")
@@ -167,8 +205,11 @@ class Config():
         del self.sensor_configs
         gc.collect()
 
-    # Takes config dict (devices only), instantiates each with appropriate class, adds to self.devices
     def instantiate_devices(self, conf):
+        '''Takes dict with device IDs (device1, device2, etc) as keys, device
+        config dicts as values. Instantiates appropriate hardware driver class
+        with params for each device and adds instance to self.devices list.
+        '''
         log.debug("Instantiating devices")
         for device in sorted(conf):
             # Add device's schedule rules to dict
@@ -196,8 +237,11 @@ class Config():
 
         log.debug("Finished instantiating device instances")
 
-    # Takes config dict (sensors only), instantiates each with appropriate class, adds to self.sensors
     def instantiate_sensors(self, conf):
+        '''Takes dict with sensor IDs (sensor1, sensor2, etc) as keys, sensor
+        config dicts as values. Instantiates appropriate hardware driver class
+        with params for each sensor and adds instance to self.sensors list.
+        '''
         log.debug("Instantiating sensors")
         for sensor in sorted(conf):
             # Add sensor's schedule rules to dict
@@ -235,10 +279,13 @@ class Config():
 
         log.debug("Finished instantiating sensor instances")
 
-    # Maps relationships between sensors ("triggers") and devices ("targets")
-    # Multiple sensors with identical targets are merged into groups (or 1 sensor per group if unique targets)
-    # Main loop iterates Groups, calls Group methods to check sensor conditions and apply device actions
     def build_groups(self):
+        '''Maps relationships between sensors (triggers) and devices (targets).
+        Multiple sensors with identical targets are merged into a single Group
+        instance (can also contain 1 sensor with 1 or more target). Groups will
+        check condition of all sensors when refresh method is called and turn
+        devices on or off when conditions change.
+        '''
         log.debug("Building groups")
 
         # Stores completed Group instances
@@ -278,9 +325,12 @@ class Config():
 
         log.debug("Finished building %s groups", len(self.groups))
 
-    # Called by status API endpoint, frontend polls every 5 seconds while viewing node
-    # Returns object with metadata + current status info for all devices and sensors
     def get_status(self):
+        '''Returns dict with metadata and current status of all devices and
+        sensors. Called by status API endpoint, frontend polls every 5 seconds
+        and uses response to update react state.
+        '''
+
         # Populate template from class attributes
         status_dict = {
             "metadata": {
@@ -311,9 +361,13 @@ class Config():
 
         return status_dict
 
-    # Connect to wifi (if not connected), set system time from API, get sunrise/sunset times from API
     def api_calls(self):
-        # Auto-reboot if startup doesn't complete in 1 min (prevents API calls hanging, canceled at bottom of function)
+        '''Connects to wifi (if not connected), sets system clock and
+        sunrise/sunset times with values received from API.
+        '''
+
+        # Auto-reboot if startup doesn't complete in 1 min (prevents API calls
+        # hanging, timer canceled at bottom of function once calls complete).
         reboot_timer.init(period=60000, mode=Timer.ONE_SHOT, callback=reboot)
 
         # Turn onboard LED on, indicates setup in progress
@@ -401,10 +455,12 @@ class Config():
         # Turn off LED to confirm setup completed successfully
         led.value(0)
 
-    # Receives a dictionairy of schedule rules with HH:MM timestamps
-    # Returns a dictionairy of the same rules with unix epoch timestamps (next run only)
-    # Called every day at 3:00 am since epoch times only work once
     def convert_rules(self, rules):
+        '''Takes dict of schedule rules with HH:MM timestamps, returns dict of
+        same rules with unix epoch timestamps for next time rule should run.
+        Called every day between 3-4 am (epoch times only work once).
+        '''
+
         # Create empty dict to store new schedule rules
         result = {}
 
@@ -464,8 +520,11 @@ class Config():
         # Return the finished dictionairy
         return result
 
-    # Add callbacks for all schedule rules to SoftwareTimer queue
     def build_queue(self):
+        '''Iterates all devices and sensors, converts schedule rule HH:MM times
+        to unix epoch times, creates callback timers to change rules at correct
+        times, and sets correct current scheduled_rule for each instance.
+        '''
         log.debug("Building schedule rule queue for all devices and sensors")
 
         # Delete all existing schedule rule timers to avoid conflicts
@@ -540,8 +599,8 @@ class Config():
         print_with_timestamp("Finished building schedule rule queue")
         log.debug("Finished building queue, total timers = %s", len(SoftwareTimer.timer.queue))
 
-    # Takes ID (device1, sensor2, etc), returns instance or False
     def find(self, target):
+        '''Takes ID (device1, sensor2, etc), returns instance or False.'''
         if is_device(target):
             for i in self.devices:
                 if i.name == target:
@@ -562,8 +621,10 @@ class Config():
             log.debug("Config.find: Unable to find %s", target)
             return False
 
-    # Called by timer every day at 3 am, regenerate timestamps for next day (epoch time)
     def reload_schedule_rules(self):
+        '''Called by timer between 3-4 am every day, updates sunrise/sunset
+        times and generates schedule rule epoch timestamps for next day.
+        '''
         print_with_timestamp("Reloading schedule rules...")
         log.info("Callback: Reloading schedule rules")
         # Get up-to-date sunrise/sunset, set system clock (in case of daylight savings)
