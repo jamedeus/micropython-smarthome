@@ -3,12 +3,13 @@ import gc
 import time
 import logging
 import network
-import requests
 from random import randrange
 from machine import Pin, Timer, RTC
+import requests
 import SoftwareTimer
 from Group import Group
 from api_keys import ipgeo_key
+from hardware_classes import hardware_classes
 from util import (
     is_device,
     is_sensor,
@@ -17,7 +18,6 @@ from util import (
     print_with_timestamp,
     read_wifi_credentials_from_disk
 )
-from hardware_classes import hardware_classes
 
 # Set name for module's log lines
 log = logging.getLogger("Config")
@@ -38,9 +38,9 @@ def instantiate_hardware(name, **kwargs):
     '''
     if is_device(name) and kwargs['_type'] not in hardware_classes['devices']:
         raise ValueError(f'Unsupported device type "{kwargs["_type"]}"')
-    elif is_sensor(name) and kwargs['_type'] not in hardware_classes['sensors']:
+    if is_sensor(name) and kwargs['_type'] not in hardware_classes['sensors']:
         raise ValueError(f'Unsupported sensor type "{kwargs["_type"]}"')
-    elif not is_device_or_sensor(name):
+    if not is_device_or_sensor(name):
         raise ValueError(
             f'Invalid name "{name}", must start with "device" or "sensor"'
         )
@@ -102,8 +102,8 @@ class Config():
         # Stores IrBlaster instance if configured
         self.ir_blaster = None
 
-        # Nested dict of schedule rules, 1 entry for each device and sensor
-        # Keys are IDs (device1, sensor2, etc), values are dict of timestamp-rule pairs
+        # Nested schedule rules dict with device and sensor IDs (device1,
+        # sensor2, etc) as keys, dict of timestamp-rule pairs as values
         self.schedule = {}
 
         # Dictionairy of keyword-timestamp pairs, used for schedule rules
@@ -113,7 +113,8 @@ class Config():
         # Stores timestamp of next schedule rule reload (between 3 and 4 am)
         self._reload_time = ""
 
-        # Load GPS coordinates (used for timezone + sunrise/sunset times, not shown in frontend)
+        # Store GPS coordinates used for timezone + sunrise/sunset times
+        # API returns estimated timezone based in IP address if not set
         try:
             self._gps = conf["metadata"]["gps"]
         except KeyError:
@@ -121,8 +122,10 @@ class Config():
 
         # Parse all device and sensor sections into dict attributes, removed
         # after device and sensor lists populated by _instantiate_peripherals
-        self._device_configs = {device: config for device, config in conf.items() if is_device(device)}
-        self._sensor_configs = {sensor: config for sensor, config in conf.items() if is_sensor(sensor)}
+        self._device_configs = {device: config for device, config in conf.items()
+                                if is_device(device)}
+        self._sensor_configs = {sensor: config for sensor, config in conf.items()
+                                if is_sensor(sensor)}
         if "ir_blaster" in conf:
             self._ir_blaster_config = conf["ir_blaster"]
 
@@ -137,8 +140,8 @@ class Config():
         # Connect to wifi, hit APIs for current time, sunrise/sunset timestamps
         self._api_calls()
 
-        # Instantiate each config in self._device_configs and self._sensor_configs as
-        # appropriate class, add to self.devices and self.sensors respectively
+        # Instantiate each config in self._device_configs and self._sensor_configs
+        # as appropriate class, add to self.devices and self.sensors respectively
         self._instantiate_peripherals()
 
         # Create timers for all schedule rules expiring in next 24 hours
@@ -149,7 +152,7 @@ class Config():
         # before correct scheduled rule applied
         self._build_groups()
 
-        # Start timer to re-build schedule rule queue for next 24 hours around 3 am
+        # Start timer to build schedule rule queue for next 24 hours around 3 am
         self._start_reload_schedule_rules_timer()
 
         log.info("Finished instantiating config")
@@ -165,20 +168,31 @@ class Config():
         now = time.localtime(epoch)
 
         # Get epoch time of 3:00 am tomorrow
-        # Only needed to increment day, other parameters roll over correctly in testing
-        # Timezone set to none (final arg), required for compatibility with cpython test environment
-        next_reload = time.mktime((now[0], now[1], now[2] + 1, 3, 0, 0, now[6], now[7], -1))
+        # Only need to increment day, weekday etc will roll over correctly
+        # Timezone (last arg) is none (required for cpython test environment)
+        next_reload = time.mktime(
+            (now[0], now[1], now[2] + 1, 3, 0, 0, now[6], now[7], -1)
+        )
 
-        # Calculate milliseconds until reload, add random 0-60 minute delay to stagger API calls
+        # Calculate milliseconds until reload, add random 0-60 minute delay to
+        # stagger API calls (prevent all nodes hitting endpoint simultaneously)
         adjust = randrange(3600)
         ms_until_reload = (next_reload - epoch + adjust) * 1000
 
         # Get HH:MM timestamp of next reload, write to log
-        self._reload_time = f"{time.localtime(next_reload + adjust)[3]}:{time.localtime(next_reload + adjust)[4]}"
-        log.info("Reload_schedule_rules callback scheduled for %s am", self._reload_time)
+        reload_time = time.localtime(next_reload + adjust)
+        self._reload_time = f"{reload_time[3]}:{reload_time[4]}"
+        log.info(
+            "Reload_schedule_rules callback scheduled for %s am",
+            self._reload_time
+        )
 
         # Add timer to queue
-        SoftwareTimer.timer.create(ms_until_reload, self.reload_schedule_rules, "reload_schedule_rules")
+        SoftwareTimer.timer.create(
+            ms_until_reload,
+            self.reload_schedule_rules,
+            "reload_schedule_rules"
+        )
 
     def _instantiate_peripherals(self):
         '''Populates self.devices and self.sensors lists by instantiating
@@ -190,14 +204,15 @@ class Config():
         if self.devices or self.sensors:
             raise RuntimeError("Peripherals already instantiated")
 
-        # Pass all device configs to _instantiate_devices, populates self.devices
+        # Instantiate all configs in _device_configs (populates self.devices)
         self._instantiate_devices(self._device_configs)
 
-        # Pass all sensors configs to _instantiate_sensors, populates self.sensors
+        # Instantiate all configs in _sensor_configs (populates self.sensors)
         self._instantiate_sensors(self._sensor_configs)
 
-        # Instantiate IR Blaster if configured (can only have 1, driver limitation)
-        # IR Blaster is not a Device subclass, has no schedule rules, and is only triggered by API calls
+        # Instantiate IR Blaster if configured (max 1 due to driver limitation)
+        # IR Blaster is not a Device subclass, has no schedule rules, and is
+        # only triggered by API calls (can use ApiTarget to add to Group)
         if "_ir_blaster_config" in self.__dict__:
             from IrBlaster import IrBlaster
             self.ir_blaster = IrBlaster(
@@ -232,14 +247,18 @@ class Config():
                     "Failed to instantiate %s (%s), params: %s",
                     device, conf[device]['_type'], conf[device]
                 )
-                print_with_timestamp(f"ERROR: Failed to instantiate {device} ({conf[device]['_type']}")
-                pass
+                print_with_timestamp(
+                    f"ERROR: Failed to instantiate {device} ({conf[device]['_type']}"
+                )
             except ValueError:
                 log.critical(
                     "Failed to instantiate %s, unsupported device type %s",
                     device, conf[device]['_type']
                 )
-                print_with_timestamp(f"ERROR: Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
+                print_with_timestamp(
+                    f"ERROR: Failed to instantiate {device}, "
+                    f"unsupported device type {conf[device]['_type']}"
+                )
 
         log.debug("Finished instantiating device instances")
 
@@ -255,7 +274,9 @@ class Config():
 
             try:
                 # Find device instances for each ID in targets list
-                targets = [t for t in (self.find(target) for target in conf[sensor]["targets"]) if t]
+                targets = [t for t in (
+                    self.find(target) for target in conf[sensor]["targets"]
+                ) if t]
 
                 # Replace targets list with list of instances
                 conf[sensor]['targets'] = targets
@@ -263,7 +284,7 @@ class Config():
                 # Instantiate sensor with appropriate class
                 instance = instantiate_hardware(sensor, **conf[sensor])
 
-                # Add the sensor instance to each of it's target's "triggered_by" list
+                # Add sensor instance to triggered_by list of each target
                 for t in targets:
                     t.triggered_by.append(instance)
 
@@ -274,14 +295,18 @@ class Config():
                     "Failed to instantiate %s (%s), params: %s",
                     sensor, conf[sensor]['_type'], conf[sensor]
                 )
-                print_with_timestamp(f"ERROR: Failed to instantiate {sensor} ({conf[sensor]['_type']}")
-                pass
+                print_with_timestamp(
+                    f"ERROR: Failed to instantiate {sensor} ({conf[sensor]['_type']}"
+                )
             except ValueError:
                 log.critical(
                     "Failed to instantiate %s, unsupported sensor type %s",
                     sensor, conf[sensor]['_type']
                 )
-                print_with_timestamp(f"ERROR: Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
+                print_with_timestamp(
+                    f"ERROR: Failed to instantiate {sensor}, "
+                    f"unsupported sensor type {conf[sensor]['_type']}"
+                )
 
         log.debug("Finished instantiating sensor instances")
 
@@ -321,10 +346,12 @@ class Config():
             instance = Group("group" + str(len(self.groups) + 1), group)
             self.groups.append(instance)
 
-            # Pass instance to all members' group attributes, allows group members to access group methods
+            # Pass instance to each member's group attributes, allows members
+            # to access group methods (sensors call refresh when triggered)
             for sensor in instance.triggers:
                 sensor.group = instance
-                # Add Sensor's post-action routines (if any), will run after group turns targets on/off
+                # Add Sensor's post-action routines (if any), each routine will
+                # run after group turns targets on/off
                 sensor.add_routines()
 
             for device in instance.targets:
@@ -378,7 +405,7 @@ class Config():
         reboot_timer.init(period=60000, mode=Timer.ONE_SHOT, callback=reboot)
 
         # Turn onboard LED on, indicates setup in progress
-        led = Pin(2, Pin.OUT, value=1)
+        led.value(1)
 
         # Connect to wifi
         wlan = network.WLAN(network.WLAN.IF_STA)
@@ -391,9 +418,8 @@ class Config():
             # Wait until finished connecting before proceeding
             while not wlan.isconnected():
                 continue
-            else:
-                print_with_timestamp(f"Successfully connected to {credentials['ssid']}")
-                log.debug("Successfully connected to %s", credentials['ssid'])
+            print_with_timestamp(f"Successfully connected to {credentials['ssid']}")
+            log.debug("Successfully connected to %s", credentials['ssid'])
 
         failed_attempts = 0
 
@@ -422,7 +448,9 @@ class Config():
                 year, month, day = map(int, response.json()["date"].split("-"))
 
                 # Set RTC (uses different parameter order than time.localtime)
-                RTC().datetime((year, month, day, 0, int(hour), int(minute), int(second), int(millisecond)))
+                RTC().datetime(
+                    (year, month, day, 0, int(hour), int(minute), int(second), int(millisecond))
+                )
                 log.debug("System clock set")
 
                 # Set sunrise/sunset times
@@ -438,8 +466,12 @@ class Config():
 
             # Issue with response object
             except KeyError:
-                print_with_timestamp(f'ERROR (ipgeolocation.io): {response.json()["message"]}')
-                log.error('ERROR (ipgeolocation.io): %s', response.json()["message"])
+                print_with_timestamp(
+                    f'ERROR (ipgeolocation.io): {response.json()["message"]}'
+                )
+                log.error(
+                    'ERROR (ipgeolocation.io): %s', response.json()["message"]
+                )
                 reboot()
 
             # Network issue
@@ -448,13 +480,16 @@ class Config():
                 log.error("Failed to set system time, retrying...")
                 failed_attempts += 1
                 if failed_attempts > 5:
-                    log.critical("Failed to set system time 5 times, reboot triggered")
+                    log.critical(
+                        "Failed to set system time 5 times, reboot triggered"
+                    )
                     reboot()
                 time.sleep_ms(1500)  # If failed, wait 1.5 seconds before retrying
                 gc.collect()  # Free up memory before retrying
-                pass
 
-        log.info("Finished API calls (timestamp may look weird due to system clock change)")
+        log.info(
+            "Finished API calls (timestamp may look weird due to system clock change)"
+        )
 
         # Stop timer once API calls finish
         reboot_timer.deinit()
@@ -472,10 +507,9 @@ class Config():
         result = {}
 
         # Replace keywords with timestamp from dict, timestamps convert to epoch below
-        for keyword in self.schedule_keywords:
+        for keyword, timestamp in self.schedule_keywords.items():
             if keyword in rules:
-                keyword_time = self.schedule_keywords[keyword]
-                rules[keyword_time] = rules[keyword]
+                rules[timestamp] = rules[keyword]
                 del rules[keyword]
 
         # Get rule start times, sort chronologically
@@ -492,16 +526,19 @@ class Config():
             if not re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", rule):
                 continue
 
-            # Get epoch time of rule using current date params, substitute hour + min from rule, substitute 0 for second
-            # Timezone set to none (final arg), required for compatibility with cpython test environment
-            params = (now[0], now[1], now[2], int(rule.split(":")[0]), int(rule.split(":")[1]), 0, now[6], now[7], -1)
+            # Get epoch time by substituting rule hour and minute into current date params
+            # Timezone (last arg) is none (required for cpython test environment)
+            hour, minute = rule.split(":")
+            params = (now[0], now[1], now[2], int(hour), int(minute), 0, now[6], now[7], -1)
             trigger_time = time.mktime(params)
 
-            # Add to results: Key = unix timestamp, value = value from original rules dict
+            # Add to results: Key = unix timestamp, value = rule from original dict
             result[trigger_time] = rules[rule]
-            # Add same rule with timestamp 24 hours earlier (ensure expired rules exist, used to find current_rule)
+            # Add same rule with timestamp 24 hours earlier (expired rules must
+            # exist, current_rule determined by finding first non-expired rule)
             result[trigger_time - 86400] = rules[rule]
-            # Add same rule with timestamp 24 hours later (moves rules that have already expired today to tomorrow)
+            # Add same rule with timestamp 24 hours later (moves rules that have
+            # already expired today to tomorrow, eg rules after midnight)
             result[trigger_time + 86400] = rules[rule]
 
         # Get chronological list of rule timestamps
@@ -510,10 +547,11 @@ class Config():
             schedule.append(rule)
         schedule.sort()
 
-        # Find the currently active rule (last rule with timestamp before current time)
+        # Find current scheduled rule (last rule with timestamp before current time)
         for rule in schedule:
             if epoch > rule:
                 current = rule
+            # Found
             else:
                 break
 
@@ -537,21 +575,21 @@ class Config():
         # Delete all existing schedule rule timers to avoid conflicts
         SoftwareTimer.timer.cancel("scheduler")
 
-        for i in self.schedule:
+        for instance, rules in self.schedule.items():
             # Convert HH:MM timestamps to unix epoch timestamp of next run
-            # Use copy to avoid overwriting schedule keywords with HH:MM in original
-            rules = self._convert_rules(self.schedule[i].copy())
+            # Copy avoids overwriting schedule keywords with HH:MM in original
+            epoch_rules = self._convert_rules(rules.copy())
 
             # Get target instance (skip if unable to find)
-            instance = self.find(i)
+            instance = self.find(instance)
             if not instance:
                 continue
 
             # No rules: set default_rule as scheduled_rule, skip to next instance
-            if len(rules) == 0:
+            if len(epoch_rules) == 0:
                 # Set current_rule and scheduled_rule (returns False if invalid)
                 if not instance.set_rule(instance.default_rule, True):
-                    # If default_rule invalid, disable instance to prevent unpredictable behavior
+                    # Disable instance if default invalid (prevent unpredictable behavior)
                     log.critical(
                         "%s invalid default rule (%s), disabling instance",
                         instance.name, instance.default_rule
@@ -565,19 +603,19 @@ class Config():
             # Get list of timestamps, sort chronologically
             # First item in queue is current scheduled rule
             queue = []
-            for j in rules:
+            for j in epoch_rules:
                 queue.append(j)
             queue.sort()
 
-            # Set first item as current_rule and scheduled_rule (returns False if invalid)
-            if not instance.set_rule(rules[queue.pop(0)], True):
+            # Set current_rule and scheduled_rule (returns False if invalid)
+            if not instance.set_rule(epoch_rules[queue.pop(0)], True):
                 # Fall back to default_rule if scheduled rule is invalid
                 log.error(
-                    "%s scheduled rule failed validation, falling back to default rule",
+                    "%s scheduled rule invalid, falling back to default rule",
                     instance.name
                 )
                 if not instance.set_rule(instance.default_rule, True):
-                    # If both  rules invalid, disable instance to prevent unpredictable behavior
+                    # Disable instance if default invalid (prevent unpredictable behavior)
                     log.critical(
                         "%s invalid default rule (%s), disabling instance",
                         instance.name, instance.default_rule
@@ -592,19 +630,26 @@ class Config():
 
             # Populate target's queue with chronological rule values
             for k in queue:
-                instance.rule_queue.append(rules[k])
+                instance.rule_queue.append(epoch_rules[k])
 
             # Get epoch time in current timezone
             epoch = time.mktime(time.localtime())
 
-            # Create timers for all rules
+            # Create timers for all epoch_rules
             for k in queue:
                 milliseconds = (k - epoch) * 1000
-                SoftwareTimer.timer.create(milliseconds, instance.next_rule, "scheduler")
+                SoftwareTimer.timer.create(
+                    milliseconds,
+                    instance.next_rule,
+                    "scheduler"
+                )
                 gc.collect()
 
         print_with_timestamp("Finished building schedule rule queue")
-        log.debug("Finished building queue, total timers = %s", len(SoftwareTimer.timer.queue))
+        log.debug(
+            "Finished building queue, total timers = %s",
+            len(SoftwareTimer.timer.queue)
+        )
 
     def find(self, target):
         '''Takes ID (device1, sensor2, etc), returns instance or False.'''
@@ -612,21 +657,18 @@ class Config():
             for i in self.devices:
                 if i.name == target:
                     return i
-            else:
-                log.debug("Config.find: Unable to find %s", target)
-                return False
+            log.debug("Config.find: Unable to find %s", target)
+            return False
 
-        elif is_sensor(target):
+        if is_sensor(target):
             for i in self.sensors:
                 if i.name == target:
                     return i
-            else:
-                log.debug("Config.find: Unable to find %s", target)
-                return False
-
-        else:
             log.debug("Config.find: Unable to find %s", target)
             return False
+
+        log.debug("Config.find: Unable to find %s", target)
+        return False
 
     def reload_schedule_rules(self):
         '''Called by timer between 3-4 am every day, updates sunrise/sunset
@@ -634,7 +676,7 @@ class Config():
         '''
         print_with_timestamp("Reloading schedule rules...")
         log.info("Callback: Reloading schedule rules")
-        # Get up-to-date sunrise/sunset, set system clock (in case of daylight savings)
+        # Updated sunrise/sunset times, set system clock (fix daylight savings)
         self._api_calls()
 
         # Create timers for all schedule rules expiring in next 24 hours
