@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form';
 import { EditConfigContext, filterObject } from 'root/EditConfigContext';
 
 const Page2 = () => {
-    // Get curent state + callback functions from context
+    // Get current state + callback functions from context
     const { config, handleSensorTargetSelect } = useContext(EditConfigContext);
 
     // Get objects containing only devices and sensors

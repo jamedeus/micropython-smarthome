@@ -48,7 +48,7 @@ describe('IrRemotes while recording macro', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resovle({
+            json: () => Promise.resolve({
                 status: 'success',
                 message: 'Done'
             })
@@ -78,7 +78,7 @@ describe('IrRemotes while recording macro', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resovle({
+            json: () => Promise.resolve({
                 status: 'success',
                 message: 'Done'
             })

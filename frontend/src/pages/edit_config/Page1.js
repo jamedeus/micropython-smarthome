@@ -9,10 +9,10 @@ import IrBlasterSection from './IrBlasterSection';
 import InstanceCard from './InstanceCard';
 
 const CardColumn = ({ category }) => {
-    const { config, deleteing, getKey, addInstance } = useContext(EditConfigContext);
+    const { config, deleting, getKey, addInstance } = useContext(EditConfigContext);
 
     // Slide add button up if card delete animation in progress
-    const buttonClass = deleteing.category === category ? 'slide-up' : '';
+    const buttonClass = deleting.category === category ? 'slide-up' : '';
 
     // Capitalize category for header and add button
     const capitalCategory = category.charAt(0).toUpperCase() + category.slice(1);

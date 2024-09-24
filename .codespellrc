@@ -1,0 +1,3 @@
+[codespell]
+skip = *node_modules*,*firmware/esp-idf*,*firmware/micropython*,*/coverage/*,*static*,package-lock.json,Pipfile.lock
+ignore-words-list = assertIn,afterAll

@@ -70,7 +70,7 @@ export const EditConfigProvider = ({ children }) => {
 
     // Create state to control card delete animations
     // Card matching ID fades out, cards in category with higher index slide up
-    const [deleteing, setDeleteing] = useState({id: '', category: '', index: ''});
+    const [deleting, setDeleteing] = useState({id: '', category: '', index: ''});
 
     // Create state for device and sensor UUIDs (used as react key)
     // Pre-populate with id-UUID pairs for existing instances (if editing)
@@ -393,7 +393,7 @@ export const EditConfigProvider = ({ children }) => {
             addIrBlasterSection,
             handleIrTargetSelect,
             getTargetNodeOptions,
-            deleteing
+            deleting
         }}>
             {children}
         </EditConfigContext.Provider>

@@ -5,7 +5,7 @@ import { EditConfigContext } from 'root/EditConfigContext';
 import InputWrapper from 'inputs/InputWrapper';
 
 const HttpGetPathInputs = ({ id }) => {
-    // Get curent state + callback functions from context
+    // Get current state + callback functions from context
     const {
         config,
         handleInputChange,

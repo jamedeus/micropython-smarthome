@@ -163,10 +163,10 @@ DefaultRuleInput.propTypes = {
 };
 
 const InstanceCard = ({ id }) => {
-    // Get curent state + callback functions from context
+    // Get current state + callback functions from context
     const {
         config,
-        deleteing,
+        deleting,
         deleteInstance,
         changeInstanceType,
         highlightInvalid
@@ -196,13 +196,13 @@ const InstanceCard = ({ id }) => {
     };
 
     // Returns fade out class if this card is being deleted, fade in otherwise
-    const fadeClass = deleteing.id === id ? 'fade-out-card' : 'fade-in-card';
+    const fadeClass = deleting.id === id ? 'fade-out-card' : 'fade-in-card';
 
     // Returns slide-up class if a card above this one is being deleted
     const slideUpClass = (() => {
-        if (deleteing.category === category) {
+        if (deleting.category === category) {
             // Card being deleted is above this card if it has lower index
-            if (parseInt(id.replace(/[a-z]/g, '')) > deleteing.index) {
+            if (parseInt(id.replace(/[a-z]/g, '')) > deleting.index) {
                 return 'slide-up';
             }
         }

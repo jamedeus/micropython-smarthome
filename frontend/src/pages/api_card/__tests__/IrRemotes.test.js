@@ -47,7 +47,7 @@ describe('IrRemotes', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resovle({
+            json: () => Promise.resolve({
                 status: 'success',
                 message: {
                     'samsung_tv': 'key_name'
@@ -230,7 +230,7 @@ describe('IrRemotes', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resovle({
+            json: () => Promise.resolve({
                 status: 'success',
                 message: {
                     'whynter_ac': 'key_name'
@@ -287,7 +287,7 @@ describe('IrRemotes', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resovle({
+            json: () => Promise.resolve({
                 status: 'success',
                 message: {
                     'Ran macro': 'backlight_on'
@@ -342,7 +342,7 @@ describe('IrRemotes', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resovle({
+            json: () => Promise.resolve({
                 status: 'success',
                 message: 'Done'
             })
@@ -392,7 +392,7 @@ describe('IrRemotes', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resovle({
+            json: () => Promise.resolve({
                 status: 'success',
                 message: 'Done'
             })
@@ -433,7 +433,7 @@ describe('IrRemotes', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resovle({
+            json: () => Promise.resolve({
                 status: 'success',
                 message: 'Done'
             })

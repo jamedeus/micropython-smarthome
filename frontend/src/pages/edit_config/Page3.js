@@ -9,7 +9,7 @@ import { RuleField } from 'inputs/RuleField';
 import ApiTargetRuleButton from 'inputs/ApiTargetRuleButton';
 
 const Page3 = () => {
-    // Get curent state + callback functions from context
+    // Get current state + callback functions from context
     const {
         config,
         handleInputChange,

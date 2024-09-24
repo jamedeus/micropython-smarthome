@@ -467,7 +467,7 @@ exports[`DefaultRuleApiTarget matches snapshot when existing rule targets device
 </div>
 `;
 
-exports[`DefaultRuleApiTarget matches snapshot when self targetting 1`] = `
+exports[`DefaultRuleApiTarget matches snapshot when self targeting 1`] = `
 <div
   class="modal-content"
 >

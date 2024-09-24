@@ -58,7 +58,7 @@ describe('DefaultRuleApiTarget', () => {
         expect(modal).toMatchSnapshot();
     });
 
-    it('matches snapshot when self targetting', async () => {
+    it('matches snapshot when self targeting', async () => {
         // Change target node to self
         await user.selectOptions(app.getByLabelText('Target Node:'), '127.0.0.1');
 

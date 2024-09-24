@@ -7,7 +7,7 @@ import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 export let showDesktopModal;
 
 const DesktopModal = () => {
-    // Create state object to set visiblity
+    // Create state object to set visibility
     const [visible, setVisible] = useState(false);
 
     // Parse client IP (displayed in modal instructions) and link to installer

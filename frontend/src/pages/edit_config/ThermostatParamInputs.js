@@ -7,7 +7,7 @@ import { convert_temperature } from 'util/thermostat_util';
 import Dropdown from 'inputs/Dropdown';
 
 const ThermostatParamInputs = ({ id }) => {
-    // Get curent state + callback functions from context
+    // Get current state + callback functions from context
     const {
         config,
         highlightInvalid,

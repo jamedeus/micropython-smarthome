@@ -7,7 +7,7 @@ import InputWrapper from 'inputs/InputWrapper';
 const URIInput = ({ id }) => {
     const input = useRef(null);
 
-    // Get curent state + callback functions from context
+    // Get current state + callback functions from context
     const {
         config,
         handleInputChange,

@@ -46,7 +46,7 @@ const GpsModal = () => {
         // Clear suggestions when field emptied
         if (search.length === 0) {
             setLocationResults([]);
-        // Make call and add suggestionse (debouced) when user types
+        // Make call and add suggestionse (debounced) when user types
         } else {
             setLocationResults([{
                 display_name: "Loading suggestions...",

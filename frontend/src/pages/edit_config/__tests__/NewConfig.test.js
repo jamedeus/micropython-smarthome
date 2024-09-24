@@ -441,7 +441,7 @@ describe('NewConfig', () => {
     });
 
     it('warns user before overwriting an existing config with the same name', async () => {
-        // Mock fetch function to return name available respnse (prevent next
+        // Mock fetch function to return name available response (prevent next
         // page button being disabled due to duplicate name)
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
@@ -546,7 +546,7 @@ describe('NewConfig', () => {
     });
 
     it('shows error modal if unable to overwrite duplicate config', async () => {
-        // Mock fetch function to return name available respnse (prevent next
+        // Mock fetch function to return name available response (prevent next
         // page button being disabled due to duplicate name)
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,

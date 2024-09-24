@@ -7,7 +7,7 @@ import { debounce } from 'util/helper_functions';
 import { send_post_request } from 'util/django_util';
 
 const MetadataSection = () => {
-    // Get curent state + callback functions from context
+    // Get current state + callback functions from context
     const {
         config,
         original_name,

@@ -6,7 +6,7 @@ import InputWrapper from 'inputs/InputWrapper';
 import { formatIp } from 'util/validation';
 
 const IPInput = ({ id }) => {
-    // Get curent state + callback functions from context
+    // Get current state + callback functions from context
     const {
         config,
         handleInputChange,

@@ -353,8 +353,8 @@ class GenerateConfigFile:
         Takes a list of pin options as argument, removes pins that already
         exist in self.config to prevent user selecting duplicate pin.
 
-        Optional prompt arg changes text shown at promt (used for device/sensor
-        types with multiple pins to identify which pin is being set).
+        Optional prompt arg changes text shown at prompt (used for device and
+        sensor types with multiple pins to identify which pin is being set).
 
         Optional config arg takes config section of instance being edited (used
         to prevent duplicates for device/sensor types with multiple pins - the

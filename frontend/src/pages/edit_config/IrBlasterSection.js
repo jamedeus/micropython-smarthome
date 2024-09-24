@@ -10,7 +10,7 @@ import { devicePins } from 'util/metadata';
 import { parse_dom_context } from 'util/django_util';
 
 const IrBlasterSection = () => {
-    // Get curent state + callbacks from context
+    // Get current state + callbacks from context
     const {
         config,
         addIrBlasterSection,
