@@ -256,8 +256,7 @@ class Config():
                     device, conf[device]['_type']
                 )
                 print_with_timestamp(
-                    f"ERROR: Failed to instantiate {device}, "
-                    f"unsupported device type {conf[device]['_type']}"
+                    f"ERROR: Failed to instantiate {device}, unsupported device type {conf[device]['_type']}"
                 )
 
         log.debug("Finished instantiating device instances")
@@ -304,8 +303,7 @@ class Config():
                     sensor, conf[sensor]['_type']
                 )
                 print_with_timestamp(
-                    f"ERROR: Failed to instantiate {sensor}, "
-                    f"unsupported sensor type {conf[sensor]['_type']}"
+                    f"ERROR: Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}"
                 )
 
         log.debug("Finished instantiating sensor instances")
