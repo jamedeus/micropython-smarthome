@@ -1,8 +1,40 @@
+import time
+import asyncio
 import unittest
 import SoftwareTimer
+from cpython_only import cpython_only
 
 
 class TestSoftwareTimer(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.loop = asyncio.get_event_loop()
+        cls.loop.create_task(SoftwareTimer.timer.loop())
+
+    def setUp(self):
+        # Create dict to track when callback functions ran
+        self.callbacks = {}
+        self.callbacks['test1'] = {'called': False, 'time': None}
+        self.callbacks['test2'] = {'called': False, 'time': None}
+
+        # Ensure no timers from previous test in queue
+        SoftwareTimer.timer.cancel('test1')
+        SoftwareTimer.timer.cancel('test2')
+
+    # Mock callback function, stores epoch time when called
+    def callback1(self):
+        self.callbacks['test1']['called'] = True
+        self.callbacks['test1']['time'] = time.time()
+
+    # Mock callback function, stores epoch time when called
+    def callback2(self):
+        self.callbacks['test2']['called'] = True
+        self.callbacks['test2']['time'] = time.time()
+
+    # Takes int (milliseconds)
+    async def wait(self, delay):
+        await asyncio.sleep_ms(delay)
 
     def test_create(self):
         # Create timer
@@ -71,3 +103,70 @@ class TestSoftwareTimer(unittest.TestCase):
 
         # Second timestamp should be 1 ms later than first
         self.assertEqual((test2_expiration - test1_expiration), 1)
+
+    def test_loop(self):
+        # Get start epoch time
+        start_time = time.time()
+
+        # Create 2 timers expiring in 1 second and 5 seconds respectively
+        SoftwareTimer.timer.create(1000, self.callback1, 'test1')
+        SoftwareTimer.timer.create(5000, self.callback2, 'test2')
+
+        # Run event loop for 1.1 seconds
+        self.loop.run_until_complete(self.wait(1100))
+
+        # Confirm callback1 ran
+        self.assertTrue(self.callbacks['test1']['called'])
+
+        # Confirm callback ran within 50ms of expected time
+        elapsed_time = self.callbacks['test1']['time'] - start_time
+        self.assertTrue(.95 <= elapsed_time <= 1.05)
+
+        # Confirm callback2 was NOT called
+        self.assertEqual(self.callbacks['test2']['called'], False)
+        self.assertEqual(self.callbacks['test2']['time'], None)
+
+    def test_loop_pauses_when_no_timer_due(self):
+        # Get start epoch time
+        start_time = time.time()
+
+        # Create timer expiring in 2 seconds
+        SoftwareTimer.timer.create(2000, self.callback1, 'test1')
+
+        # Confirm loop not paused
+        self.assertFalse(SoftwareTimer.timer.pause)
+
+        # Run event loop for 500ms
+        self.loop.run_until_complete(self.wait(500))
+
+        # Confirm callback1 did NOT run
+        self.assertFalse(self.callbacks['test1']['called'])
+
+        # Confirm loop is paused (no timer due in next 1000ms)
+        self.assertTrue(SoftwareTimer.timer.pause)
+
+        # Run event loop for another 1.6 seconds, confirm callback1 was called
+        self.loop.run_until_complete(self.wait(1600))
+        self.assertTrue(self.callbacks['test1']['called'])
+
+        # Confirm callback ran within 50ms of expected time
+        elapsed_time = self.callbacks['test1']['time'] - start_time
+        self.assertTrue(1.95 <= elapsed_time <= 2.05)
+
+    @cpython_only
+    def test_empty_loop(self):
+        # Clear queue and schedule
+        SoftwareTimer.timer.queue = []
+        SoftwareTimer.timer.schedule = {}
+
+        # Confirm loop not paused
+        self.assertFalse(SoftwareTimer.timer.pause)
+
+        # Run event loop for 100ms (branch coverage for iterating empty queue)
+        self.loop.run_until_complete(self.wait(100))
+
+        # Confirm loop paused, created hardware timer to unpause in 1 hour
+        self.assertTrue(SoftwareTimer.timer.pause)
+        from machine import Timer
+        timer = Timer(0)
+        self.assertEqual(timer.period, 3600)
