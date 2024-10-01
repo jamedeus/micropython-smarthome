@@ -21,12 +21,6 @@ class SoftwareTimer():
         # Allows loop to be paused while rebuilding queue to avoid conflicts
         self.pause = False
 
-        # Wakes up loop when new rule added
-        # Prevents issue where loop has already determined time until next rule when create is called. Create
-        # blocks loop mid-run, adds new rule expiring even sooner, then unblocks. Loop sleeps for the previously
-        # determined period, causing new rule to run late.
-        self.new_rule_added = False
-
     # Return epoch time in milliseconds
     def epoch_now(self):
         return (time.mktime(time.localtime()) * 1000)
@@ -64,8 +58,7 @@ class SoftwareTimer():
         self.queue.sort()
 
         # Resume loop
-        self.pause = False # TODO redundant, next line causes it to resume and flips pause - might be causing unpredictable execution flow (ie causes loop to run, loop then pauses, else condition sees new rule and unpauses only to immediately determine it doesn't expire soon (again) and pauses again.)
-        self.new_rule_added = True
+        self.pause = False
 
     # Allow a calling function to cancel all it's existing timers
     def cancel(self, name):
@@ -132,13 +125,8 @@ class SoftwareTimer():
                     self.timer.init(period=period, mode=Timer.ONE_SHOT, callback=self.resume)
 
             else:
-                if self.new_rule_added is True:
-                    # Unpause immediately if a new rule was added
-                    self.pause = False
-                    self.new_rule_added = False
-                else:
-                    # Wait for timer to unpause loop
-                    await asyncio.sleep_ms(50)
+                # Wait for timer to unpause loop
+                await asyncio.sleep_ms(50)
 
 
 timer = SoftwareTimer()
