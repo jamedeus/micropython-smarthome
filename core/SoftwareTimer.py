@@ -4,46 +4,60 @@ from machine import Timer
 
 
 class SoftwareTimer():
+    '''Wraps a single ESP32 hardware timer and provides methods to support an
+    arbitrary number of virtual timers. The physical hardware timer is used to
+    create an interrupt when the next virtual timer is due. This ensures that
+    callbacks run when scheduled, unlike asyncio tasks which may not run until
+    other tasks yield.
+    '''
+
     def __init__(self):
 
         # Real hardware timer
         self.timer = Timer(0)
 
-        # Store expiration time (epoch) as index, callback as value
+        # Keys are expiration times (epoch), values are lists with caller name
+        # as first member and callback function as second member.
         self.schedule = {}
 
-        # Sorted first to last, same keys as self.schedule
+        # Keys from self.schedule sorted chronologically, used to determine
+        # next due timer
         self.queue = []
 
-        # Stores expired timers so they can be removed from schedule after iterating
+        # Stores keys of expired timers after their callback is run, used to
+        # remove from self.schedule after running all due timers
         self.delete = []
 
         # Allows loop to be paused while rebuilding queue to avoid conflicts
         self.pause = False
 
-    # Return epoch time in milliseconds
     def epoch_now(self):
-        return (time.mktime(time.localtime()) * 1000)
+        '''Return current micropython epoch time in milliseconds.'''
+        return time.mktime(time.localtime()) * 1000
 
-    # Period in milliseconds
     def create(self, period, callback, name):
+        '''Takes period (milliseconds), callback function, and name of caller.
+        Creates timer to run callback after period expires. If a timer created
+        by name already exists it will be canceled to prevent conflicts (except
+        scheduler name used for schedule rule callbacks).
+        '''
+
         # Stop loop while adding timer (queue briefly empty)
         self.pause = True
 
-        now = self.epoch_now()
-
-        # In milliseconds
-        expiration = now + int(period)
+        # Milliseconds until timer due
+        expiration = self.epoch_now() + int(period)
 
         # Prevent overwriting existing item with same expiration time
         if expiration in self.schedule:
             while True:
-                expiration += 1  # Add 1 ms until expiration is unique
+                # Add 1 ms until expiration is unique
+                expiration += 1
                 if expiration not in self.schedule:
                     break
 
-        # Callers are only allowed 1 timer each - delete existing timers with same name before adding
-        # Exempt callers: scheduler
+        # Callers are only allowed 1 timer each (except schedule rule timers)
+        # Delete existing timers with same name before adding
         if not name == "scheduler":
             for i in list(self.schedule).copy():
                 if name in self.schedule[i]:
@@ -51,17 +65,14 @@ class SoftwareTimer():
 
         self.schedule[expiration] = [name, callback]
 
-        self.queue = []
-        for i in self.schedule:
-            self.queue.append(i)
-
-        self.queue.sort()
+        self._rebuild_queue()
 
         # Resume loop
         self.pause = False
 
-    # Allow a calling function to cancel all it's existing timers
     def cancel(self, name):
+        '''Takes caller name, cancels all timers with the same name.'''
+
         # Stop loop while canceling timer (queue briefly empty)
         self.pause = True
 
@@ -70,62 +81,83 @@ class SoftwareTimer():
             if name in self.schedule[i]:
                 del self.schedule[i]
 
-        # Rebuild queue
-        self.queue = []
-        for i in self.schedule:
-            self.queue.append(i)
-
-        self.queue.sort()
+        self._rebuild_queue()
 
         # Resume loop
         self.pause = False
 
-    def resume(self, timer):
+    def _rebuild_queue(self):
+        '''Clears queue, repopulates with keys of self.schedule and sorts
+        chronologically. Must be called after self.schedule is modified.
+        '''
+        self.queue = []
+        for i in self.schedule:
+            self.queue.append(i)
+        self.queue.sort()
+
+    def _resume(self, _=None):
+        '''Callback used to unpause loop right before next timer expires'''
         self.pause = False
 
     async def loop(self):
+        '''Coroutine checks for expired timers in queue, runs their callbacks,
+        and removes them from the queue. If no timers are due within the next
+        second loop pauses and creates interrupt to resume when next timer due.
+        '''
         while True:
             if not self.pause:
+                # Iterate chronological queue until first unexpired timer found
                 for i in self.queue:
                     try:
-                        # Run actions for all expired rules, add to list to be removed from queue
                         if self.epoch_now() >= i:
-                            self.schedule[i][1]()  # Run action
+                            # Run expired timer callback, add timestamp to list
+                            # of items to be removed from queue
+                            self.schedule[i][1]()
                             self.delete.append(i)
                         else:
-                            # First unexpired rule found
+                            # First unexpired timer found, store timestamp
                             next_rule = i
                             break
                     except KeyError:
-                        pass  # Prevent crash if rule was removed by self.cancel while loop running
+                        # Prevent crash if timer canceled while loop running
+                        pass
 
-                # Delete rules that were just run
+                # Delete timers that were just run
                 for i in self.delete:
                     try:
                         del self.schedule[i]
                         del self.queue[self.queue.index(i)]
                     except KeyError:
-                        pass  # Prevent crash if rule was removed by self.cancel while loop running
+                        # Prevent crash if timer canceled while loop running
+                        pass
 
+                # Clear list for next loop
                 self.delete = []
 
-                # Get time until next rule due
+                # Get time (milliseconds) until next timer due
                 try:
                     period = int(next_rule - self.epoch_now())
 
-                    # Prevent carrying over to next loop after running last queue item, resulting in negative period
+                    # Prevent carrying over to next loop when last queued item
+                    # runs (results in negative period for wakeup timer)
                     del next_rule
                 except NameError:
-                    # No tasks in queue - sleep for 1 hour (will be interrupted if task is added)
+                    # No timers in queue, sleep for 1 hour (will be interrupted
+                    # if timer is added)
                     period = 3600000
 
-                # If next rule >1 seconds away: pause loop, set hardware timer to unpause when rule due
+                # If next timer >1 second away: pause loop, set hardware timer
+                # to unpause when timer due
                 if period > 1000:
                     self.pause = True
-                    self.timer.init(period=period, mode=Timer.ONE_SHOT, callback=self.resume)
+                    self.timer.init(
+                        period=period,
+                        mode=Timer.ONE_SHOT,
+                        callback=self._resume
+                    )
 
             else:
-                # Wait for timer to unpause loop
+                # Yield until hardware interrupt unpauses loop
                 await asyncio.sleep_ms(50)
 
 
