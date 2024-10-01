@@ -1,11 +1,11 @@
 import os
 import sys
-import types
 import unittest
 from cpython_only import cpython_only
 
 # Import dependencies for tests that only run in mocked environment
 if sys.implementation.name == 'cpython':
+    import types
     from unittest.mock import patch, MagicMock
 
 
