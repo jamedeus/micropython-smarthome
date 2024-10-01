@@ -16,8 +16,8 @@ class SoftwareTimer():
         # Real hardware timer
         self.timer = Timer(0)
 
-        # Keys are expiration times (epoch), values are lists with caller name
-        # as first member and callback function as second member.
+        # Keys are expiration times (epoch), values are 2-tuples with caller
+        # name as first member and callback function as second member.
         self.schedule = {}
 
         # Keys from self.schedule sorted chronologically, used to determine
@@ -63,7 +63,7 @@ class SoftwareTimer():
                 if name in self.schedule[i]:
                     del self.schedule[i]
 
-        self.schedule[expiration] = [name, callback]
+        self.schedule[expiration] = (name, callback)
 
         self._rebuild_queue()
 
