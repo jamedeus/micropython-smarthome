@@ -72,6 +72,10 @@ def set_mocks():
     asyncio.sleep_ms = mock_asyncio.sleep_ms
     asyncio.sleep_us = mock_asyncio.sleep_us
 
+    # Patch time.time to return int epoch time (no subseconds)
+    import mock_time
+    time.time = mock_time.mock_time
+
     # Use unit_test_config.json as mock config, allows saving rules/keywords etc
     # Also contains IP and ports for mock_command_receiver container
     shutil.copy2(

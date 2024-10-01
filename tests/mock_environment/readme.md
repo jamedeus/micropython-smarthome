@@ -62,6 +62,7 @@ The mock receiver host's firewall **must not block these ports** or the tests wi
 - [x] ir_tx.Player
 - [x] time.sleep_ms
 - [x] time.sleep_us
+- [x] time.time
 - [x] requests
 - [x] asyncio
 - [x] si7021

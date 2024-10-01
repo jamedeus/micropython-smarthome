@@ -164,7 +164,7 @@ class Config():
         '''
 
         # Get current epoch time + time tuple
-        epoch = time.mktime(time.localtime())
+        epoch = time.time()
         now = time.localtime(epoch)
 
         # Get epoch time of 3:00 am tomorrow
@@ -515,7 +515,7 @@ class Config():
         schedule.sort()
 
         # Get epoch time in current timezone
-        epoch = time.mktime(time.localtime())
+        epoch = time.time()
         # Get time tuple in current timezone
         now = time.localtime(epoch)
 
@@ -631,7 +631,7 @@ class Config():
                 instance.rule_queue.append(epoch_rules[k])
 
             # Get epoch time in current timezone
-            epoch = time.mktime(time.localtime())
+            epoch = time.time()
 
             # Create timers for all epoch_rules
             for k in queue:
