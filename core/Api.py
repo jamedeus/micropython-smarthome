@@ -1,3 +1,5 @@
+# pylint: disable=protected-access
+
 import re
 import gc
 import json
@@ -55,6 +57,7 @@ class Api:
     required_args and get_target_instance factories can be used to add error
     handling for invalid requests to handler functions.
     '''
+
     def __init__(self, host='0.0.0.0', port=8123, backlog=5, timeout=20):
         self.host = host
         self.port = port
@@ -377,7 +380,7 @@ def add_schedule_rule(target, args):
 
     if re.match(TIMESTAMP_REGEX, args[0]):
         timestamp = args[0]
-    elif args[0] in app.config.schedule_keywords.keys():
+    elif args[0] in app.config.schedule_keywords:
         timestamp = args[0]
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"}
@@ -409,7 +412,7 @@ def remove_rule(target, args):
 
     if re.match(TIMESTAMP_REGEX, args[0]):
         timestamp = args[0]
-    elif args[0] in app.config.schedule_keywords.keys():
+    elif args[0] in app.config.schedule_keywords:
         timestamp = args[0]
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"}
@@ -473,15 +476,15 @@ def remove_schedule_keyword(args):
     '''
     if args[0] in ['sunrise', 'sunset']:
         return {"ERROR": "Cannot delete sunrise or sunset"}
-    if args[0] in app.config.schedule_keywords.keys():
+    if args[0] in app.config.schedule_keywords:
         keyword = args[0]
     else:
         return {"ERROR": "Keyword does not exist"}
 
     # Remove all existing rules using keyword
-    for i in app.config.schedule:
-        if keyword in app.config.schedule[i].keys():
-            del app.config.schedule[i][keyword]
+    for instance_rules in app.config.schedule.values():
+        if keyword in instance_rules:
+            del instance_rules[keyword]
 
     del app.config.schedule_keywords[keyword]
     # Schedule queue rebuild after connection closes (blocks for several seconds)
