@@ -31,6 +31,13 @@ class SoftwareTimer():
         # Allows loop to be paused while rebuilding queue to avoid conflicts
         self.pause = False
 
+        # Wakes up loop when set to True
+        # Fixes issue when loop calls a timer callback that creates a new timer
+        # while loop is iterating queue. The create method sets pause to False,
+        # but this is undone at the end of loop and can result in the new timer
+        # running late.
+        self.new_rule_added = False
+
     def epoch_now(self):
         '''Return current micropython epoch time in milliseconds.'''
         return time.time() * 1000
@@ -67,8 +74,13 @@ class SoftwareTimer():
 
         self._rebuild_queue()
 
-        # Resume loop
+        # Resume loop, set new_rule_added to prevent loop missing new timer (if
+        # create was called in a timer callback function while loop iterates
+        # queue the new timer will not be added to the copy being iterated, so
+        # loop will determine the next-due timer from the outdated copy and may
+        # pause until after the new timer is due)
         self.pause = False
+        self.new_rule_added = True
 
     def cancel(self, name):
         '''Takes caller name, cancels all timers with the same name.'''
@@ -157,8 +169,15 @@ class SoftwareTimer():
                     )
 
             else:
-                # Yield until hardware interrupt unpauses loop
-                await asyncio.sleep_ms(50)
+                if self.new_rule_added is True:
+                    # Unpause immediately if a new rule was added (fixes create
+                    # method called in loop setting pause to False, then end of
+                    # loop undoing change and setting back to True).
+                    self.pause = False
+                    self.new_rule_added = False
+                else:
+                    # Wait for timer to unpause loop
+                    await asyncio.sleep_ms(50)
 
 
 timer = SoftwareTimer()

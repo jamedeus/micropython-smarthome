@@ -170,3 +170,39 @@ class TestSoftwareTimer(unittest.TestCase):
         from machine import Timer
         timer = Timer(0)
         self.assertEqual(timer.period, 3600)
+
+    def test_regression_timer_created_in_callback_function_runs_late(self):
+        '''Original bug: If SoftwareTimer.create was called by a timer callback
+        function (eg DimmableLight.fade), and the new timer expired before all
+        existing timers, it would not run until the next timer expired or the
+        create/cancel methods were called again.
+
+        SoftwareTimer.loop iterates self.queue, runs callbacks for all expired
+        timers until the first non-expired timer is reached, then pauses and
+        creates an interrupt to resume when the non-expired timer is due. When
+        a callback function creates a new timer it is not added to the queue
+        loop is iterating, so the resume interrupt could be scheduled after the
+        newly created timer expires. The end of SoftwareTimer.loop also sets
+        self.pause to True, undoing the change by SoftwareTimer.create.
+
+        This was originally fixed in 47d0c2e7, but the bug was reintroduced 2
+        years later by e8ac9075 due to lack of a regression test or details to
+        reproduce the bug. This bug can be reliably reproduced by starting a
+        DimmableLight.fade with many steps and a short duration (to ensure new
+        timer is first in queue) - the fade will not run until SoftwareTimer is
+        unpaused by the resume interrupt (next timer) or the create/cancel
+        methods (eg MotionSensor detects motion and creates reset timer).
+        '''
+
+        # Create callback function that creates a timer due in 10 ms
+        def callback_that_creates_timer():
+            SoftwareTimer.timer.create(10, self.callback1, 'test1')
+
+        # Schedule the callback to run immediately
+        SoftwareTimer.timer.create(0, callback_that_creates_timer, 'test')
+
+        # Run event loop for 100ms to allow both timers to complete
+        self.loop.run_until_complete(self.wait(100))
+
+        # Confirm the timer created by callback ran
+        self.assertTrue(self.callbacks['test1']['called'])
