@@ -58,7 +58,7 @@ def get_dpms_state():
         current = str(current)[2:-3]
         return {'state': current}, 200
     except Exception as ex:
-        return {'Error': ex}, 500
+        return {'Error': str(ex)}, 500
 
 
 @app.get("/idle_time")
@@ -68,7 +68,7 @@ def get_idle_time():
         idle = re.sub("[^0-9]", "", str(get_idle_ms()))
         return {'idle_time': idle}, 200
     except Exception as ex:
-        return {'Error': ex}, 500
+        return {'Error': str(ex)}, 500
 
 
 @app.get("/on")
@@ -78,7 +78,7 @@ def monitor_on():
         os.system('xset dpms force on')
         return {'state': 'on'}, 200
     except Exception as ex:
-        return {'Error': ex}, 500
+        return {'Error': str(ex)}, 500
 
 
 @app.get("/off")
@@ -94,7 +94,7 @@ def monitor_off():
             return {'state': 'off'}, 200
         return {'state': 'user not idle'}, 503
     except Exception as ex:
-        return {'Error': ex}, 500
+        return {'Error': str(ex)}, 500
 
 
 if __name__ == '__main__':
