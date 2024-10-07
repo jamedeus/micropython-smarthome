@@ -210,9 +210,6 @@ class DesktopTrigger(SensorWithLoop):
             if self.condition_met() != self.group.state:
                 self.refresh_group()
 
-        else:
-            self.log.error("failed to get idle time (backend error)")
-
     async def monitor(self):
         '''Async coroutine that runs while sensor is enabled. Makes API call
         to desktop daemon every second, refreshes group when condition changes.
