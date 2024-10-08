@@ -403,3 +403,20 @@ class TestDesktopTrigger(unittest.TestCase):
 
         # Confirm monitor_task is None
         self.assertIsNone(instance.monitor_task)
+
+    # Original bug: When the sensor was disabled self.current was not modified.
+    # If the desktop was in sleep mode when sensor re-enabled it would continue
+    # to use the outdated reading, which could cause condition_met to return
+    # True (user active) even though the computer was offline.
+    def test_18_regression_incorrect_condition_if_enabled_while_computer_asleep(self):
+        # Simulate very recent user activity
+        self.instance.mode = "activity"
+        self.instance.current = 10
+        self.assertTrue(self.instance.condition_met())
+
+        # Disable sensor, re-enable
+        self.instance.disable()
+        self.instance.enable()
+
+        # Confirm condition_met returns False until new idle time reading
+        self.assertFalse(self.instance.condition_met())

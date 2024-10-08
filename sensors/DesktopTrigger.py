@@ -58,6 +58,17 @@ class DesktopTrigger(SensorWithLoop):
 
         self.log.info("Instantiated, ip=%s, port=%s, mode=%s", ip, port, mode)
 
+    def disable(self):
+        '''Sets enabled bool to False (prevents sensor from being checked),
+        stops monitor loop, clears self.current, and refreshes group (turn
+        devices OFF if other sensor conditions not met).
+        '''
+
+        # Prevent using outdated reading if computer is in sleep mode when
+        # sensor re-enabled (if not in sleep mode loop will get new reading)
+        self.current = None
+        super().disable()
+
     def get_idle_time(self):
         '''Makes API call to get time (milliseconds) since last user activity,
         returns response object (JSON).
