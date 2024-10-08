@@ -1,6 +1,7 @@
 import sys
 import json
 import time
+import asyncio
 import network
 import unittest
 from machine import Pin, Timer
@@ -143,8 +144,19 @@ class TestConfig(unittest.TestCase):
             self.config._instantiate_peripherals()
 
     def test_04__build_queue(self):
+        # Confirm no schedule rule timers in SoftwareTimer queue
+        SoftwareTimer.timer.cancel('scheduler')
+        asyncio.run(asyncio.sleep_ms(10))
+        count = 0
+        for i in SoftwareTimer.timer.schedule:
+            if SoftwareTimer.timer.schedule[i][0] == "scheduler":
+                count += 1
+        self.assertEqual(count, 0)
+
         # Run _build_queue method
         self.config._build_queue()
+        # Yield to let SoftwareTimer coroutine create timers
+        asyncio.run(asyncio.sleep_ms(10))
 
         # Confirm current and scheduled rules set
         self.assertNotEqual(self.config.devices[0].current_rule, None)
@@ -155,6 +167,13 @@ class TestConfig(unittest.TestCase):
         # Device should have rules in queue, sensor should have none (no schedule rules)
         self.assertGreaterEqual(len(self.config.devices[0].rule_queue), 1)
         self.assertEqual(len(self.config.sensors[0].rule_queue), 0)
+
+        # Confirm schedule rule timers were added to SoftwareTimer queue
+        count = 0
+        for i in SoftwareTimer.timer.schedule:
+            if SoftwareTimer.timer.schedule[i][0] == "scheduler":
+                count += 1
+        self.assertGreaterEqual(count, 1)
 
     def test_05__build_groups(self):
         # Confirm no groups
@@ -173,10 +192,14 @@ class TestConfig(unittest.TestCase):
     def test_06_start_reload_timer(self):
         # Confirm reload timer not in queue
         SoftwareTimer.timer.cancel("reload_schedule_rules")
+        # Yield to let cancel coroutine run
+        asyncio.run(asyncio.sleep_ms(10))
         self.assertTrue("reload_schedule_rules" not in str(SoftwareTimer.timer.schedule))
 
-        # Call method to start config_timer, confirm timer running
+        # Call method to start config_timer, yield to let create coroutine run
         self.config._start_reload_schedule_rules_timer()
+        asyncio.run(asyncio.sleep_ms(10))
+        # Confirm timer running
         self.assertIn("reload_schedule_rules", str(SoftwareTimer.timer.schedule))
 
     def test_07_full_instantiation(self):

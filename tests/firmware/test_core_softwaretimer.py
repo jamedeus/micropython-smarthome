@@ -21,6 +21,8 @@ class TestSoftwareTimer(unittest.TestCase):
         # Ensure no timers from previous test in queue
         SoftwareTimer.timer.cancel('test1')
         SoftwareTimer.timer.cancel('test2')
+        # Yield to let cancel coroutine run
+        self.loop.run_until_complete(asyncio.sleep_ms(10))
 
     # Mock callback function, stores epoch time when called
     def callback1(self):
@@ -32,13 +34,10 @@ class TestSoftwareTimer(unittest.TestCase):
         self.callbacks['test2']['called'] = True
         self.callbacks['test2']['time'] = time.time()
 
-    # Takes int (milliseconds)
-    async def wait(self, delay):
-        await asyncio.sleep_ms(delay)
-
     def test_create(self):
-        # Create timer
+        # Create timer, yield to let create coroutine run
         SoftwareTimer.timer.create(10000, print, "unit_test")
+        self.loop.run_until_complete(asyncio.sleep_ms(10))
 
         # Confirm timer is now in schedule
         count = 0
@@ -63,6 +62,8 @@ class TestSoftwareTimer(unittest.TestCase):
         # Attempt to create 2 tasks - second should overwrite the first
         SoftwareTimer.timer.create(10000, print, "unit_test")
         SoftwareTimer.timer.create(20000, print, "unit_test")
+        # Yield to let create coroutine run
+        self.loop.run_until_complete(asyncio.sleep_ms(10))
 
         # Confirm task is now in queue
         count = 0
@@ -74,11 +75,13 @@ class TestSoftwareTimer(unittest.TestCase):
         self.assertEqual(count, 1)
 
     def test_cancel(self):
-        # Create task to cancel
+        # Create task to cancel, yield to let create coroutine run
         SoftwareTimer.timer.create(10000, print, "unit_test")
+        self.loop.run_until_complete(asyncio.sleep_ms(10))
 
-        # Cancel task
+        # Cancel task, yield to let cancel coroutine run
         SoftwareTimer.timer.cancel("unit_test")
+        self.loop.run_until_complete(asyncio.sleep_ms(10))
 
         # Confirm task is NOT in queue
         count = 0
@@ -90,9 +93,12 @@ class TestSoftwareTimer(unittest.TestCase):
         self.assertEqual(count, 0)
 
     def test_create_at_same_time(self):
-        # Create 2 tasks at same time (different names so they aren't considered duplicates and canceled)
+        # Create 2 tasks at same time (different names so they aren't
+        # considered duplicates and canceled)
         SoftwareTimer.timer.create(10000, print, "test1")
         SoftwareTimer.timer.create(10000, print, "test2")
+        # Yield to let create coroutine run
+        self.loop.run_until_complete(asyncio.sleep_ms(10))
 
         # Find both expiration timestamps
         for i in SoftwareTimer.timer.schedule:
@@ -113,7 +119,7 @@ class TestSoftwareTimer(unittest.TestCase):
         SoftwareTimer.timer.create(5000, self.callback2, 'test2')
 
         # Run event loop for 1.1 seconds
-        self.loop.run_until_complete(self.wait(1100))
+        self.loop.run_until_complete(asyncio.sleep_ms(1100))
 
         # Confirm callback1 ran
         self.assertTrue(self.callbacks['test1']['called'])
@@ -130,14 +136,13 @@ class TestSoftwareTimer(unittest.TestCase):
         # Get start epoch time
         start_time = time.time()
 
-        # Create timer expiring in 2 seconds
-        SoftwareTimer.timer.create(2000, self.callback1, 'test1')
-
         # Confirm loop not paused
+        SoftwareTimer.timer.pause = False
         self.assertFalse(SoftwareTimer.timer.pause)
 
-        # Run event loop for 500ms
-        self.loop.run_until_complete(self.wait(500))
+        # Create timer expiring in 2 seconds, run event loop for 500ms
+        SoftwareTimer.timer.create(2000, self.callback1, 'test1')
+        self.loop.run_until_complete(asyncio.sleep_ms(500))
 
         # Confirm callback1 did NOT run
         self.assertFalse(self.callbacks['test1']['called'])
@@ -146,7 +151,7 @@ class TestSoftwareTimer(unittest.TestCase):
         self.assertTrue(SoftwareTimer.timer.pause)
 
         # Run event loop for another 1.6 seconds, confirm callback1 was called
-        self.loop.run_until_complete(self.wait(1600))
+        self.loop.run_until_complete(asyncio.sleep_ms(1600))
         self.assertTrue(self.callbacks['test1']['called'])
 
         # Confirm callback ran within 50ms of expected time
@@ -160,16 +165,15 @@ class TestSoftwareTimer(unittest.TestCase):
         SoftwareTimer.timer.schedule = {}
 
         # Confirm loop not paused
+        SoftwareTimer.timer.pause = False
         self.assertFalse(SoftwareTimer.timer.pause)
 
         # Run event loop for 100ms (branch coverage for iterating empty queue)
-        self.loop.run_until_complete(self.wait(100))
+        self.loop.run_until_complete(asyncio.sleep_ms(100))
 
-        # Confirm loop paused, created hardware timer to unpause in 1 hour
+        # Confirm loop paused, hardware timer deinitialized
         self.assertTrue(SoftwareTimer.timer.pause)
-        from machine import Timer
-        timer = Timer(0)
-        self.assertEqual(timer.period, 3600)
+        self.assertIsNone(SoftwareTimer.timer.timer.start_time)
 
     def test_regression_timer_created_in_callback_function_runs_late(self):
         '''Original bug: If SoftwareTimer.create was called by a timer callback
@@ -202,7 +206,7 @@ class TestSoftwareTimer(unittest.TestCase):
         SoftwareTimer.timer.create(0, callback_that_creates_timer, 'test')
 
         # Run event loop for 100ms to allow both timers to complete
-        self.loop.run_until_complete(self.wait(100))
+        self.loop.run_until_complete(asyncio.sleep_ms(100))
 
         # Confirm the timer created by callback ran
         self.assertTrue(self.callbacks['test1']['called'])

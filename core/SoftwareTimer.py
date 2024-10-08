@@ -12,7 +12,6 @@ class SoftwareTimer():
     '''
 
     def __init__(self):
-
         # Real hardware timer
         self.timer = Timer(0)
 
@@ -28,15 +27,11 @@ class SoftwareTimer():
         # remove from self.schedule after running all due timers
         self.delete = []
 
-        # Allows loop to be paused while rebuilding queue to avoid conflicts
+        # Allows loop to be paused when no timers are expiring soon
         self.pause = False
 
-        # Wakes up loop when set to True
-        # Fixes issue when loop calls a timer callback that creates a new timer
-        # while loop is iterating queue. The create method sets pause to False,
-        # but this is undone at the end of loop and can result in the new timer
-        # running late.
-        self.new_rule_added = False
+        # Used to prevent modifying queue while loop is iterating queue
+        self.lock = asyncio.Lock()
 
     def epoch_now(self):
         '''Return current micropython epoch time in milliseconds.'''
@@ -48,55 +43,55 @@ class SoftwareTimer():
         by name already exists it will be canceled to prevent conflicts (except
         scheduler name used for schedule rule callbacks).
         '''
+        asyncio.create_task(self._create(period, callback, name))
 
-        # Stop loop while adding timer (queue briefly empty)
-        self.pause = True
+    async def _create(self, period, callback, name):
+        '''Coroutine started by create method, uses lock to avoid conflict.'''
 
-        # Milliseconds until timer due
-        expiration = self.epoch_now() + int(period)
+        # Wait for loop to finish iterating queue before modifying, prevent
+        # loop from running next iteration until done modifying
+        async with self.lock:
+            # Milliseconds until timer due
+            expiration = self.epoch_now() + int(period)
 
-        # Prevent overwriting existing item with same expiration time
-        if expiration in self.schedule:
-            while True:
-                # Add 1 ms until expiration is unique
-                expiration += 1
-                if expiration not in self.schedule:
-                    break
+            # Prevent overwriting existing item with same expiration time
+            if expiration in self.schedule:
+                while True:
+                    # Add 1 ms until expiration is unique
+                    expiration += 1
+                    if expiration not in self.schedule:
+                        break
 
-        # Callers are only allowed 1 timer each (except schedule rule timers)
-        # Delete existing timers with same name before adding
-        if not name == "scheduler":
+            # Callers are only allowed 1 timer each (except schedule rule timers)
+            # Delete existing timers with same name before adding
+            if not name == "scheduler":
+                for i in list(self.schedule).copy():
+                    if name in self.schedule[i]:
+                        del self.schedule[i]
+
+            self.schedule[expiration] = (name, callback)
+
+            self._rebuild_queue()
+
+            # Resume loop if paused
+            self.pause = False
+
+    def cancel(self, name):
+        '''Takes caller name, cancels all timers with the same name.'''
+        asyncio.create_task(self._cancel(name))
+
+    async def _cancel(self, name):
+        '''Coroutine started by cancel method, uses lock to avoid conflict.'''
+
+        # Wait for loop to finish iterating queue before modifying, prevent
+        # loop from running next iteration until done modifying
+        async with self.lock:
+            # Delete any items with same name
             for i in list(self.schedule).copy():
                 if name in self.schedule[i]:
                     del self.schedule[i]
 
-        self.schedule[expiration] = (name, callback)
-
-        self._rebuild_queue()
-
-        # Resume loop, set new_rule_added to prevent loop missing new timer (if
-        # create was called in a timer callback function while loop iterates
-        # queue the new timer will not be added to the copy being iterated, so
-        # loop will determine the next-due timer from the outdated copy and may
-        # pause until after the new timer is due)
-        self.pause = False
-        self.new_rule_added = True
-
-    def cancel(self, name):
-        '''Takes caller name, cancels all timers with the same name.'''
-
-        # Stop loop while canceling timer (queue briefly empty)
-        self.pause = True
-
-        # Delete any items with same name
-        for i in list(self.schedule).copy():
-            if name in self.schedule[i]:
-                del self.schedule[i]
-
-        self._rebuild_queue()
-
-        # Resume loop
-        self.pause = False
+            self._rebuild_queue()
 
     def _rebuild_queue(self):
         '''Clears queue, repopulates with keys of self.schedule and sorts
@@ -118,66 +113,46 @@ class SoftwareTimer():
         '''
         while True:
             if not self.pause:
-                # Iterate chronological queue until first unexpired timer found
-                for i in self.queue:
-                    try:
+                # Acquire lock to prevent modifying queue while iterating
+                async with self.lock:
+                    # Iterate chronological queue until first unexpired timer found
+                    for i in self.queue:
                         if self.epoch_now() >= i:
                             # Run expired timer callback, add timestamp to list
                             # of items to be removed from queue
                             self.schedule[i][1]()
                             self.delete.append(i)
                         else:
-                            # First unexpired timer found, store timestamp
-                            next_rule = i
+                            # First unexpired timer found
+                            # If not due for >1 second: pause loop, create
+                            # interrupt to resume when timer due
+                            period = int(i - self.epoch_now())
+                            if period > 1000:
+                                self.pause = True
+                                self.timer.init(
+                                    period=period,
+                                    mode=Timer.ONE_SHOT,
+                                    callback=self._resume
+                                )
                             break
-                    except KeyError:
-                        # Prevent crash if timer canceled while loop running
-                        pass
 
-                # Delete timers that were just run
-                for i in self.delete:
-                    try:
+                    else:
+                        # Pause loop indefinitely if no unexpired timer found
+                        # (ran all timers, will unpause when new timer created)
+                        self.pause = True
+                        self.timer.deinit()
+
+                    # Delete timers that were just run
+                    for i in self.delete:
                         del self.schedule[i]
                         del self.queue[self.queue.index(i)]
-                    except KeyError:
-                        # Prevent crash if timer canceled while loop running
-                        pass
 
-                # Clear list for next loop
-                self.delete = []
-
-                # Get time (milliseconds) until next timer due
-                try:
-                    period = int(next_rule - self.epoch_now())
-
-                    # Prevent carrying over to next loop when last queued item
-                    # runs (results in negative period for wakeup timer)
-                    del next_rule
-                except NameError:
-                    # No timers in queue, sleep for 1 hour (will be interrupted
-                    # if timer is added)
-                    period = 3600000
-
-                # If next timer >1 second away: pause loop, set hardware timer
-                # to unpause when timer due
-                if period > 1000:
-                    self.pause = True
-                    self.timer.init(
-                        period=period,
-                        mode=Timer.ONE_SHOT,
-                        callback=self._resume
-                    )
+                    # Clear list for next loop
+                    self.delete = []
 
             else:
-                if self.new_rule_added is True:
-                    # Unpause immediately if a new rule was added (fixes create
-                    # method called in loop setting pause to False, then end of
-                    # loop undoing change and setting back to True).
-                    self.pause = False
-                    self.new_rule_added = False
-                else:
-                    # Wait for timer to unpause loop
-                    await asyncio.sleep_ms(50)
+                # Wait for hardware interrupt to unpause loop
+                await asyncio.sleep_ms(50)
 
 
 timer = SoftwareTimer()

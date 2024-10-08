@@ -201,6 +201,9 @@ class TestApi(unittest.TestCase):
 
         # Simulate SoftwareTimer from previous disable_in call with same target
         SoftwareTimer.timer.create(9999, self.device1.disable, "device1_enable_in")
+        asyncio.run(asyncio.sleep_ms(10))
+        self.assertTrue("device1_enable_in" in str(SoftwareTimer.timer.schedule))
+
         # Call enable endpoint, should cancel disable_in callback timer
         self.send_command(['enable', 'device1'])
         self.assertTrue("device1_enable_in" not in str(SoftwareTimer.timer.schedule))
@@ -215,6 +218,9 @@ class TestApi(unittest.TestCase):
 
         # Simulate SoftwareTimer from previous enable_in call with same target
         SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
+        asyncio.run(asyncio.sleep_ms(10))
+        self.assertTrue("device1_enable_in" in str(SoftwareTimer.timer.schedule))
+
         # Call enable endpoint, should cancel enable_in callback timer
         self.send_command(['enable', 'device1'])
         self.assertTrue("device1_enable_in" not in str(SoftwareTimer.timer.schedule))
@@ -222,6 +228,9 @@ class TestApi(unittest.TestCase):
     def test_05_enable_in(self):
         # Cancel all SoftwareTimers created by enable_in/disable_in for device1
         SoftwareTimer.timer.cancel("device1_enable_in")
+        asyncio.run(asyncio.sleep_ms(10))
+        self.assertTrue("device1_enable_in" not in str(SoftwareTimer.timer.schedule))
+
         # Disable target device (might succeed incorrectly if it's already enabled)
         self.device1.disable()
         # Send API command to enable in 5 minutes
@@ -234,6 +243,7 @@ class TestApi(unittest.TestCase):
 
         # Simulate SoftwareTimer from previous enable_in call with same target
         SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
+        asyncio.run(asyncio.sleep_ms(10))
         # Get timer expiration timestamp
         for i in SoftwareTimer.timer.schedule:
             if SoftwareTimer.timer.schedule[i][0] == "device1_enable_in":
@@ -247,6 +257,9 @@ class TestApi(unittest.TestCase):
     def test_06_disable_in(self):
         # Cancel all SoftwareTimers created by enable_in/disable_in for device1
         SoftwareTimer.timer.cancel("device1_enable_in")
+        asyncio.run(asyncio.sleep_ms(10))
+        self.assertTrue("device1_enable_in" not in str(SoftwareTimer.timer.schedule))
+
         # Enable target device (might succeed incorrectly if it's already disabled)
         self.device1.enable()
         # Send API command to disable in 5 minutes
@@ -259,6 +272,7 @@ class TestApi(unittest.TestCase):
 
         # Simulate SoftwareTimer from previous disable_in call with same target
         SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
+        asyncio.run(asyncio.sleep_ms(10))
         # Get timer expiration timestamp
         for i in SoftwareTimer.timer.schedule:
             if SoftwareTimer.timer.schedule[i][0] == "device1_enable_in":
@@ -286,6 +300,7 @@ class TestApi(unittest.TestCase):
         # Confirm timer added to queue, cancel to prevent actually fading
         self.assertIn('device1_fade', str(SoftwareTimer.timer.schedule))
         SoftwareTimer.timer.cancel('device1_fade')
+        asyncio.run(asyncio.sleep_ms(10))
 
     def test_08_increment_rule(self):
         # Set known starting values
