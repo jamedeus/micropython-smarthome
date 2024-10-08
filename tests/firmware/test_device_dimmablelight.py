@@ -97,11 +97,18 @@ class TestDimmableLight(unittest.TestCase):
         self.assertEqual(self.instance.current_rule, 1)
 
     def test_07_set_rule(self):
+        # Confirm no fade timer in SoftwareTimer queue
+        self.assertTrue("device1_fade" not in str(SoftwareTimer.timer.schedule))
+
         # Should accept fade rules
         self.assertTrue(self.instance.set_rule('fade/30/1800'))
         self.assertTrue(self.instance.fading)
         self.assertEqual(self.instance.fading['target'], 30)
         self.assertFalse(self.instance.fading['scheduled'])
+
+        # Confirm setting rule created fade timer
+        asyncio.run(asyncio.sleep_ms(10))
+        self.assertIn("device1_fade", str(SoftwareTimer.timer.schedule))
 
         # Should accept scheduled fade rule, set scheduled param to True
         self.assertTrue(self.instance.set_rule('fade/30/1800', True))
@@ -159,7 +166,6 @@ class TestDimmableLight(unittest.TestCase):
         # Decrease brightness - fade should abort despite being between start and target
         self.instance.set_rule(70)
         self.assertFalse(self.instance.fading)
-        SoftwareTimer.timer.cancel(f'{self.instance.name}_fade')
 
     def test_12_fade_rule_on_boot(self):
         # Set rule to None, simulate first rule on boot
@@ -172,7 +178,7 @@ class TestDimmableLight(unittest.TestCase):
         self.assertEqual(self.instance.current_rule, 100)
         # Confirm not fading, no timer created
         self.assertFalse(self.instance.fading)
-        self.assertTrue(f'{self.instance.name}_fade' not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("device1_fade" not in str(SoftwareTimer.timer.schedule))
 
     def test_13_start_fade_already_at_target(self):
         # Attempt to fade to current_rule, should return immediately
@@ -183,7 +189,7 @@ class TestDimmableLight(unittest.TestCase):
         asyncio.run(asyncio.sleep_ms(10))
         # Confirm not fading, no timer created
         self.assertFalse(self.instance.fading)
-        self.assertTrue(f'{self.instance.name}_fade' not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("device1_fade" not in str(SoftwareTimer.timer.schedule))
 
     def test_14_start_fade_while_disabled(self):
         # Attempt to fade to 100 while disabled
@@ -193,8 +199,7 @@ class TestDimmableLight(unittest.TestCase):
         asyncio.run(asyncio.sleep_ms(10))
         # Confirm timer created, starting brightness = min_rule
         self.assertEqual(self.instance.fading['starting_brightness'], self.instance.min_rule)
-        self.assertIn(f'{self.instance.name}_fade', str(SoftwareTimer.timer.schedule))
-        SoftwareTimer.timer.cancel(f'{self.instance.name}_fade')
+        self.assertIn("device1_fade", str(SoftwareTimer.timer.schedule))
 
     def test_15_fade_complete(self):
         # Simulate fade up in progress (not scheduled)
@@ -343,10 +348,10 @@ class TestDimmableLight(unittest.TestCase):
         }
 
         # Confirm no fade timer in queue
-        SoftwareTimer.timer.cancel(f'{self.instance.name}_fade')
+        SoftwareTimer.timer.cancel("device1_fade")
         # Yield to let SoftwareTimer.cancel coro run
         asyncio.run(asyncio.sleep_ms(10))
-        self.assertTrue(f'{self.instance.name}_fade' not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("device1_fade" not in str(SoftwareTimer.timer.schedule))
 
         # Wait for 1 step, call method, confirm correct rule
         time.sleep_ms(1000)
@@ -358,7 +363,7 @@ class TestDimmableLight(unittest.TestCase):
 
         # Confirm timer exists in queue
         asyncio.run(asyncio.sleep_ms(10))
-        self.assertIn(f'{self.instance.name}_fade', str(SoftwareTimer.timer.schedule))
+        self.assertIn("device1_fade", str(SoftwareTimer.timer.schedule))
 
         # Simulate scheduled fade rule
         self.instance.fading = {
