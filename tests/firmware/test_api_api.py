@@ -234,9 +234,15 @@ class TestApi(unittest.TestCase):
 
         # Simulate SoftwareTimer from previous enable_in call with same target
         SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
-        # Call enable_in endpoint, confirm old timer expiring at 9999 was canceled
+        # Get timer expiration timestamp
+        for i in SoftwareTimer.timer.schedule:
+            if SoftwareTimer.timer.schedule[i][0] == "device1_enable_in":
+                old_timer = i
+                break
+
+        # Call enable_in endpoint, confirm old timer expiring in 9999 was canceled
         response = self.send_command(['enable_in', 'device1', '5'])
-        self.assertTrue(9999 not in SoftwareTimer.timer.schedule)
+        self.assertTrue(old_timer not in SoftwareTimer.timer.schedule)
 
     def test_06_disable_in(self):
         # Cancel all SoftwareTimers created by enable_in/disable_in for device1
@@ -253,9 +259,15 @@ class TestApi(unittest.TestCase):
 
         # Simulate SoftwareTimer from previous disable_in call with same target
         SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
-        # Call disable_in endpoint, confirm old timer expiring at 9999 was canceled
+        # Get timer expiration timestamp
+        for i in SoftwareTimer.timer.schedule:
+            if SoftwareTimer.timer.schedule[i][0] == "device1_enable_in":
+                old_timer = i
+                break
+
+        # Call disable_in endpoint, confirm old timer expiring in 9999 was canceled
         response = self.send_command(['disable_in', 'device1', '5'])
-        self.assertTrue(9999 not in SoftwareTimer.timer.schedule)
+        self.assertTrue(old_timer not in SoftwareTimer.timer.schedule)
 
     def test_07_set_rule(self):
         # Set to valid rule 5
