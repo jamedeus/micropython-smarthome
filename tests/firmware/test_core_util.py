@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 import unittest
 from machine import reset
 from util import (
@@ -12,6 +13,7 @@ from util import (
     clear_log,
     check_log_size
 )
+import SoftwareTimer
 from cpython_only import cpython_only
 
 # Read config file from disk
@@ -89,6 +91,14 @@ class TestUtil(unittest.TestCase):
             f.write(os.urandom(100001))
         self.assertEqual(os.stat('app.log')[6], 100001)
 
+        # Confirm no check_log_size timer in SoftwareTimer queue
+        self.assertTrue("check_log_size" not in str(SoftwareTimer.timer.schedule))
+
         # Run function, confirm log deleted and re-created
         check_log_size()
         self.assertLessEqual(os.stat('app.log')[6], 100)
+
+        # Confirm created check_log_size timer (runs every 60 seconds)
+        asyncio.run(asyncio.sleep_ms(10))
+        self.assertTrue("check_log_size" in str(SoftwareTimer.timer.schedule))
+        SoftwareTimer.timer.cancel("check_log_size")

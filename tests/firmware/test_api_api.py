@@ -138,6 +138,13 @@ class TestApi(unittest.TestCase):
         except OSError:
             pass
 
+    def tearDown(self):
+        # Cancel timers started by endpoints after each test
+        SoftwareTimer.timer.cancel('rebuild_queue')
+        SoftwareTimer.timer.cancel('device1_enable_in')
+        SoftwareTimer.timer.cancel('device1_fade')
+        asyncio.run(asyncio.sleep_ms(10))
+
     async def request(self, msg):
         reader, writer = await asyncio.open_connection(ip, 8123)
         try:
@@ -227,8 +234,6 @@ class TestApi(unittest.TestCase):
 
     def test_05_enable_in(self):
         # Cancel all SoftwareTimers created by enable_in/disable_in for device1
-        SoftwareTimer.timer.cancel("device1_enable_in")
-        asyncio.run(asyncio.sleep_ms(10))
         self.assertTrue("device1_enable_in" not in str(SoftwareTimer.timer.schedule))
 
         # Disable target device (might succeed incorrectly if it's already enabled)
@@ -256,8 +261,6 @@ class TestApi(unittest.TestCase):
 
     def test_06_disable_in(self):
         # Cancel all SoftwareTimers created by enable_in/disable_in for device1
-        SoftwareTimer.timer.cancel("device1_enable_in")
-        asyncio.run(asyncio.sleep_ms(10))
         self.assertTrue("device1_enable_in" not in str(SoftwareTimer.timer.schedule))
 
         # Enable target device (might succeed incorrectly if it's already disabled)
@@ -297,10 +300,8 @@ class TestApi(unittest.TestCase):
         # Set url-encoded fade rule
         response = self.send_command(['set_rule', 'device1', 'fade%2F50%2F3600'])
         self.assertEqual(response, {'device1': 'fade/50/3600'})
-        # Confirm timer added to queue, cancel to prevent actually fading
+        # Confirm timer added to queue
         self.assertIn('device1_fade', str(SoftwareTimer.timer.schedule))
-        SoftwareTimer.timer.cancel('device1_fade')
-        asyncio.run(asyncio.sleep_ms(10))
 
     def test_08_increment_rule(self):
         # Set known starting values
@@ -373,6 +374,9 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'20:00': 90, '09:00': 75, '11:00': 35})
 
     def test_12_add_schedule_rule(self):
+        # Confirm no rebuild_queue timer in queue
+        self.assertTrue("rebuild_queue" not in str(SoftwareTimer.timer.schedule))
+
         # Add a rule at a time where no rule exists
         response = self.send_command(['add_schedule_rule', 'device1', '05:37', '64'])
         self.assertEqual(response, {'time': '05:37', 'Rule added': 64})
@@ -405,7 +409,13 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['add_schedule_rule', 'device1', '15:57', '9999'])
         self.assertEqual(response, {"ERROR": "Invalid rule"})
 
+        # Confirm created timer to rebuild queue with new schedule rule(s)
+        self.assertIn("rebuild_queue", str(SoftwareTimer.timer.schedule))
+
     def test_13_remove_rule(self):
+        # Confirm no rebuild_queue timer in queue
+        self.assertTrue("rebuild_queue" not in str(SoftwareTimer.timer.schedule))
+
         # Get starting rules
         before = self.send_command(['get_schedule_rules', 'device1'])
         del before["20:00"]
@@ -429,6 +439,9 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['remove_rule', 'device1', '42:99'])
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
 
+        # Confirm created timer to rebuild queue without removed rules
+        self.assertIn("rebuild_queue", str(SoftwareTimer.timer.schedule))
+
     # Note: will fail if config.json missing or contains fewer devices/sensors than test config
     def test_14_save_schedule_rules(self):
         # Save rules, confirm response
@@ -443,6 +456,9 @@ class TestApi(unittest.TestCase):
         self.assertIn('sunset', response.keys())
 
     def test_16_add_schedule_keyword(self):
+        # Confirm no rebuild_queue timer in queue
+        self.assertTrue("rebuild_queue" not in str(SoftwareTimer.timer.schedule))
+
         # Add keyword, confirm added
         response = self.send_command(['add_schedule_keyword', {'sleep': '23:00'}])
         self.assertEqual(response, {"Keyword added": 'sleep', "time": '23:00'})
@@ -451,7 +467,13 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['add_schedule_keyword', {'invalid': '3:00'}])
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
 
+        # Confirm created timer to rebuild queue with new keyword timestamp
+        self.assertIn("rebuild_queue", str(SoftwareTimer.timer.schedule))
+
     def test_17_remove_schedule_keyword(self):
+        # Confirm no rebuild_queue timer in queue
+        self.assertTrue("rebuild_queue" not in str(SoftwareTimer.timer.schedule))
+
         # Add schedule rule using keyword, should be deleted when keyword deleted
         app.config.schedule['device1']['sleep'] = 50
 
@@ -467,6 +489,9 @@ class TestApi(unittest.TestCase):
         # Confirm correct error when attempting to non-existing keyword
         response = self.send_command(['remove_schedule_keyword', 'fake'])
         self.assertEqual(response, {"ERROR": "Keyword does not exist"})
+
+        # Confirm created timer to rebuild queue without deleted keyword
+        self.assertIn("rebuild_queue", str(SoftwareTimer.timer.schedule))
 
     def test_18_save_schedule_keywords(self):
         response = self.send_command(['save_schedule_keywords'])
