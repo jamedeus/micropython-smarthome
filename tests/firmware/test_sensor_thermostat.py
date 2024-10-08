@@ -1,6 +1,7 @@
 import asyncio
 import unittest
 from machine import SoftI2C
+import SoftwareTimer
 from Group import Group
 from Device import Device
 from Si7021 import Si7021
@@ -239,6 +240,11 @@ class TestThermostat(unittest.TestCase):
         # Ensure Group.refresh not called
         self.group.refresh_called = False
 
+        # Confirm no audit timer in SoftwareTimer queue
+        SoftwareTimer.timer.cancel(self.instance.name)
+        asyncio.run(asyncio.sleep_ms(10))
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+
         # Get actual temperature to mock recent changes
         current = self.instance.get_temperature()
 
@@ -250,6 +256,10 @@ class TestThermostat(unittest.TestCase):
         self.instance.audit()
         self.assertTrue(self.target.state)
         self.assertTrue(self.group.refresh_called)
+
+        # Confirm audit method added timer to run audit again in 30 seconds
+        asyncio.run(asyncio.sleep_ms(10))
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
 
         # Mock temp increasing when air conditioner SHOULD be running
         self.instance.mode = 'cool'
@@ -311,9 +321,18 @@ class TestThermostat(unittest.TestCase):
         self.instance.add_routines()
         self.assertEqual(len(self.instance.group.post_action_routines), 1)
 
+        # Confirm no audit timer in SoftwareTimer queue
+        SoftwareTimer.timer.cancel(self.instance.name)
+        asyncio.run(asyncio.sleep_ms(10))
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+
         # Run routine, confirm recent temps cleared
         self.instance.group.post_action_routines[0]()
         self.assertEqual(len(self.instance.recent_temps), 0)
+
+        # Confirm routine added audit timer to SoftwareTimer queue
+        asyncio.run(asyncio.sleep_ms(10))
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
 
     def test_16_instantiate_with_all_modes(self):
         # Instantiate in heat mode
