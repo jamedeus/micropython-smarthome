@@ -213,7 +213,7 @@ class TestDimmableLight(unittest.TestCase):
         }
         # Simulate target rule reached
         self.instance.current_rule = 50
-        self.assertTrue(self.instance.fade_complete())
+        self.assertTrue(self.instance._fade_complete())
         # Confirm fade dict removed
         self.assertFalse(self.instance.fading)
         # Confirm scheduled_rule not changed
@@ -231,7 +231,7 @@ class TestDimmableLight(unittest.TestCase):
         self.instance.state = True
         # Simulate target rule reached
         self.instance.current_rule = 0
-        self.assertTrue(self.instance.fade_complete())
+        self.assertTrue(self.instance._fade_complete())
         # Confirm fade dict removed
         self.assertFalse(self.instance.fading)
         self.assertFalse(self.instance.state)
@@ -249,7 +249,7 @@ class TestDimmableLight(unittest.TestCase):
         }
         # Simulate target rule reached
         self.instance.current_rule = 50
-        self.assertTrue(self.instance.fade_complete())
+        self.assertTrue(self.instance._fade_complete())
         # Confirm fade dict removed
         self.assertFalse(self.instance.fading)
         # Confirm scheduled_rule changed to target
@@ -267,7 +267,7 @@ class TestDimmableLight(unittest.TestCase):
         self.instance.state = True
         # Simulate target rule reached
         self.instance.current_rule = 0
-        self.assertTrue(self.instance.fade_complete())
+        self.assertTrue(self.instance._fade_complete())
         # Confirm fade dict removed
         self.assertFalse(self.instance.fading)
         self.assertFalse(self.instance.state)
@@ -286,7 +286,7 @@ class TestDimmableLight(unittest.TestCase):
         }
         # Disable, confirm fade completes
         self.instance.enabled = False
-        self.assertTrue(self.instance.fade_complete())
+        self.assertTrue(self.instance._fade_complete())
         self.assertFalse(self.instance.fading)
         self.instance.enable()
 

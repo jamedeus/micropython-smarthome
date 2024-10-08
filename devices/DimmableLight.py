@@ -66,7 +66,7 @@ class DimmableLight(Device):
           scheduled: Optional, if True also sets scheduled_rule if rule valid
 
         If fade rule received (syntax: fade/target_rule/duration_seconds) calls
-        start_fade method (creates interrupts that run when each step is due).
+        _start_fade method (creates interrupts that run when each step is due).
 
         Aborts in-progress fade if it receives an integer rule that causes rule
         to move in opposite direction of fade (eg if new rule is greater than
@@ -86,7 +86,7 @@ class DimmableLight(Device):
 
         if str(valid_rule).startswith("fade"):
             # Parse fade parameters, start fade
-            return self.start_fade(valid_rule, scheduled)
+            return self._start_fade(valid_rule, scheduled)
 
         # Abort fade if user changed brightness in opposite direction
         if isinstance(valid_rule, int) and self.fading:
@@ -106,7 +106,7 @@ class DimmableLight(Device):
         self.log.info("Rule changed to %s", self.current_rule)
 
         # Abort fade if new rule exceeded target
-        self.fade_complete()
+        self._fade_complete()
 
         # Update instance attributes to reflect new rule
         self.apply_new_rule()
@@ -190,7 +190,7 @@ class DimmableLight(Device):
         except (ValueError, TypeError):
             return False
 
-    def start_fade(self, valid_rule, scheduled=False):
+    def _start_fade(self, valid_rule, scheduled=False):
         '''Called by set_rule when it receives a fade rule. Calculates number
         of steps to reach target brightness and delay between each step, saves
         in self.fading attribute (dict), and creates interrupt to update rule
@@ -198,7 +198,7 @@ class DimmableLight(Device):
         scheduled_rule.
         '''
         self.log.debug(
-            "start_fade called with %s (scheduled=%s)",
+            "_start_fade called with %s (scheduled=%s)",
             valid_rule, scheduled
         )
 
@@ -257,7 +257,7 @@ class DimmableLight(Device):
 
         return True
 
-    def fade_complete(self):
+    def _fade_complete(self):
         '''Cleanup and return True if fade is complete, return False if not.
         Fade is complete when current_rule matches or exceeds fade target.
         If called when a scheduled fade is aborted sets scheduled_rule to fade
@@ -302,13 +302,13 @@ class DimmableLight(Device):
 
     def fade(self):
         '''Called by SoftwareTimer when each step of ongoing fade is due.
-        Updates current_rule (and scheduled_rule if start_fade was called with
+        Updates current_rule (and scheduled_rule if _start_fade was called with
         scheduled arg), calls send method so new brightness takes effect, and
         checks if fade is complete (creates next interrupt if not complete).
         '''
 
         # Fade to next step (unless fade already complete)
-        if not self.fade_complete():
+        if not self._fade_complete():
             # Use starting time, current time, period (time per step) to
             # determine how many steps should have been taken
             steps = (
@@ -340,7 +340,7 @@ class DimmableLight(Device):
                     self.send(1)
 
         # Start timer for next step (unless fade already complete)
-        if not self.fade_complete():
+        if not self._fade_complete():
             # Sleep until next step
             next_step = int(self.fading["period"] - ((
                 SoftwareTimer.timer.epoch_now() - self.fading["started"]
