@@ -147,11 +147,9 @@ class TestConfig(unittest.TestCase):
         # Confirm no schedule rule timers in SoftwareTimer queue
         SoftwareTimer.timer.cancel('scheduler')
         asyncio.run(asyncio.sleep_ms(10))
-        count = 0
-        for i in SoftwareTimer.timer.schedule:
-            if SoftwareTimer.timer.schedule[i][0] == "scheduler":
-                count += 1
-        self.assertEqual(count, 0)
+        rules = [time for time, rule in SoftwareTimer.timer.schedule.items()
+                 if rule[0] == "scheduler"]
+        self.assertEqual(len(rules), 0)
 
         # Run _build_queue method
         self.config._build_queue()
@@ -169,11 +167,9 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(len(self.config.sensors[0].rule_queue), 0)
 
         # Confirm schedule rule timers were added to SoftwareTimer queue
-        count = 0
-        for i in SoftwareTimer.timer.schedule:
-            if SoftwareTimer.timer.schedule[i][0] == "scheduler":
-                count += 1
-        self.assertGreaterEqual(count, 1)
+        rules = [time for time, rule in SoftwareTimer.timer.schedule.items()
+                 if rule[0] == "scheduler"]
+        self.assertGreaterEqual(len(rules), 1)
 
     def test_05__build_groups(self):
         # Confirm no groups

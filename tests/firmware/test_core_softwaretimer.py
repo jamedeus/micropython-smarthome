@@ -65,14 +65,10 @@ class TestSoftwareTimer(unittest.TestCase):
         # Yield to let create coroutine run
         self.loop.run_until_complete(asyncio.sleep_ms(10))
 
-        # Confirm task is now in queue
-        count = 0
-        for i in SoftwareTimer.timer.schedule:
-            if SoftwareTimer.timer.schedule[i][0] == "unit_test":
-                count += 1
-
-        # Should only have 1 task
-        self.assertEqual(count, 1)
+        # Confirm only 1 task in queue
+        rules = [time for time, rule in SoftwareTimer.timer.schedule.items()
+                 if rule[0] == "unit_test"]
+        self.assertEqual(len(rules), 1)
 
     def test_cancel(self):
         # Create task to cancel, yield to let create coroutine run
@@ -84,13 +80,9 @@ class TestSoftwareTimer(unittest.TestCase):
         self.loop.run_until_complete(asyncio.sleep_ms(10))
 
         # Confirm task is NOT in queue
-        count = 0
-        for i in SoftwareTimer.timer.schedule:
-            if SoftwareTimer.timer.schedule[i][0] == "unit_test":
-                count += 1
-
-        # Should not have found a match
-        self.assertEqual(count, 0)
+        rules = [time for time, rule in SoftwareTimer.timer.schedule.items()
+                 if rule[0] == "unit_test"]
+        self.assertEqual(len(rules), 0)
 
     def test_create_at_same_time(self):
         # Create 2 tasks at same time (different names so they aren't
