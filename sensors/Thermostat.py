@@ -338,7 +338,6 @@ class Thermostat(SensorWithLoop):
             # Cancel and re-create callback (ensure 30 seconds pass before first reading)
             # Reduces chance of false positives (more likely if reading taken immediately
             # when target turns on, temp hasn't changed yet so only 2 readings meaningful)
-            SoftwareTimer.timer.cancel(self.name)
             SoftwareTimer.timer.create(30000, self.audit, self.name)
 
     def get_status(self):
