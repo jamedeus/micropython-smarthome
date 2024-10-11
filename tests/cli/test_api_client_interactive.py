@@ -1254,6 +1254,7 @@ class GetEndpointOptionsTests(TestCase):
                 'clear_log',
                 'set_log_level',
                 'set_gps_coords',
+                'mem_info',
                 'Done'
             ]
         )
@@ -1300,6 +1301,7 @@ class GetEndpointOptionsTests(TestCase):
                 'condition_met',
                 'trigger_sensor',
                 'set_gps_coords',
+                'mem_info',
                 'Done'
             ]
         )
@@ -1346,6 +1348,7 @@ class GetEndpointOptionsTests(TestCase):
                 'turn_on',
                 'turn_off',
                 'set_gps_coords',
+                'mem_info',
                 'Done'
             ]
         )
@@ -1380,6 +1383,7 @@ class GetEndpointOptionsTests(TestCase):
                 'clear_log',
                 'set_log_level',
                 'set_gps_coords',
+                'mem_info',
                 'Done'
             ]
         )
@@ -1429,6 +1433,7 @@ class GetEndpointOptionsTests(TestCase):
                 'condition_met',
                 'trigger_sensor',
                 'set_gps_coords',
+                'mem_info',
                 'Done'
             ]
         )
@@ -1477,6 +1482,7 @@ class GetEndpointOptionsTests(TestCase):
                 'set_gps_coords',
                 'load_cell_tare',
                 'load_cell_read',
+                'mem_info',
                 'Done'
             ]
         )

@@ -529,3 +529,9 @@ def load_cell_get_raw_reading(ip, target, _):
     Requires load cell sensor ID argument.
     '''
     return asyncio.run(request(ip, ['load_cell_read', target]))
+
+
+@add_endpoint("mem_info")
+def get_mem_info(ip, _):
+    '''Makes /mem_info API call to requested IP, returns response.'''
+    return asyncio.run(request(ip, ['mem_info']))

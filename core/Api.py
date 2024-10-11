@@ -1,5 +1,7 @@
 # pylint: disable=protected-access
 
+import os
+import io
 import re
 import gc
 import json
@@ -8,6 +10,7 @@ import logging
 from math import isnan
 from asyncio import Lock
 from functools import wraps
+from micropython import mem_info
 import SoftwareTimer
 from util import (
     is_device,
@@ -783,3 +786,82 @@ def load_cell_read(target, args):
     if target._type != 'load-cell':
         return {"ERROR": "Must specify load cell sensor"}
     return {"Raw": target.get_raw_reading()}
+
+
+class MemInfoParser(io.IOBase):
+    '''Custom stream-like object used to parse micropython.mem_info output for
+    mem_info endpoint. Parses free memory, max new split, and max free size and
+    exposes results as class attributes.
+    '''
+
+    def __init__(self):
+        self.free = None
+        self.max_new_split = None
+        self.max_free_sz = None
+        # Receives bytes passed to write method, need to buffer because write
+        # doesn't always receive a complete line ending with \n
+        self._buffer = b''
+
+    def write(self, data):
+        '''Receives byte chunks written to stream.'''
+
+        self._buffer += data
+        # Process lines ending with \n until none left in _buffer
+        while True:
+            newline_index = self._buffer.find(b'\n')
+            if newline_index == -1:
+                # No newlines left
+                break
+            # Pass full line to _process_line, remove from _buffer
+            self._process_line(self._buffer[:newline_index])
+            self._buffer = self._buffer[newline_index + 1:]
+        gc.collect()
+
+    def _process_line(self, line):
+        '''Takes full line (ending with newline char), detects target params
+        (free, max new split, max free sz), parses value, saves in attributes.
+        '''
+
+        # Convert bytes to string to use find method
+        if b'GC:' in line:
+            self.free = self._extract_value(line, b'free: ')
+            self.max_new_split = self._extract_value(line, b'max new split: ')
+        elif b'max free sz: ' in line:
+            self.max_free_sz = self._extract_value(line, b'max free sz: ')
+
+    def _extract_value(self, line, key):
+        '''Takes line and name of parameter to extract, returns value.
+        Name must include colon and trailing space (find correct index).
+        '''
+
+        idx = line.find(key)
+        if idx != -1:
+            # Find index of first digit of value
+            start = idx + len(key)
+            end = start
+            # Iterate until first non-digit char (ascii codes, iterating bytes)
+            while end < len(line) and 48 <= line[end] <= 57:
+                end += 1
+            try:
+                return int(line[start:end])
+            except ValueError:
+                return None
+        return None
+
+
+@app.route("mem_info")
+def get_mem_info(args):
+    '''Returns dict with parameters from micropython.mem_info output.'''
+
+    # Duplicate terminal output to custom stream parser
+    parser = MemInfoParser()
+    os.dupterm(parser)
+    # Print mem_info to terminal (parser extracts params)
+    mem_info()
+    # Reset terminal output, return parsed parameters
+    os.dupterm(None)
+    return {
+        'free': parser.free,
+        'max_new_split': parser.max_new_split,
+        'max_free_sz': parser.max_free_sz
+    }
