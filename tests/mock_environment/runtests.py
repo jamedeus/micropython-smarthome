@@ -76,6 +76,10 @@ def set_mocks():
     import mock_time
     time.time = mock_time.mock_time
 
+    # Patch os to add mock dupterm method (only exists in micropython)
+    import mock_os
+    os.dupterm = mock_os.dupterm
+
     # Use unit_test_config.json as mock config, allows saving rules/keywords etc
     # Also contains IP and ports for mock_command_receiver container
     shutil.copy2(

@@ -844,9 +844,9 @@ class MemInfoParser(io.IOBase):
                 end += 1
             try:
                 return int(line[start:end])
-            except ValueError:
+            except ValueError:  # pragma: no cover
                 return None
-        return None
+        return None  # pragma: no cover
 
 
 @app.route("mem_info")

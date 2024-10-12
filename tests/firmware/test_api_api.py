@@ -797,16 +797,23 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['load_cell_read', 'sensor1'])
         self.assertEqual(response, {"ERROR": "Must specify load cell sensor"})
 
-    def test_43_invalid_command(self):
+    def test_43_mem_info(self):
+        response = self.send_command(['mem_info'])
+        self.assertEqual(list(response.keys()), ['free', 'max_new_split', 'max_free_sz'])
+        self.assertEqual(type(response['free']), int)
+        self.assertEqual(type(response['max_new_split']), int)
+        self.assertEqual(type(response['max_free_sz']), int)
+
+    def test_44_invalid_command(self):
         response = self.send_command(['notacommand'])
         self.assertEqual(response, {"ERROR": "Invalid command"})
 
     @cpython_only
-    def test_44_invalid_http_endpoint(self):
+    def test_45_invalid_http_endpoint(self):
         response = self.send_http_command('GET /notacommand HTTP/1.1\r\n')
         self.assertTrue(response.startswith('HTTP/1.0 404 NA\r\nContent-Type: application/json'))
 
-    def test_45_missing_arguments(self):
+    def test_46_missing_arguments(self):
         response = self.send_command(['enable'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -889,7 +896,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
     @cpython_only
-    def test_46_missing_querystring(self):
+    def test_47_missing_querystring(self):
         # HTTP request with missing querystring arg
         response = self.send_http_command('GET /set_rule?device1 HTTP/1.1\r\n')
         self.assertEqual(
@@ -897,7 +904,7 @@ class TestApi(unittest.TestCase):
             'HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n{"ERROR": "Invalid syntax"}'
         )
 
-    def test_47_invalid_instance(self):
+    def test_48_invalid_instance(self):
         response = self.send_command(['enable', 'device99'])
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
 
@@ -943,19 +950,19 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['turn_off', 'device99'])
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
 
-    def test_48_broken_connection(self):
+    def test_49_broken_connection(self):
         # Simulate broken connection, confirm no response sent
         response = asyncio.run(self.broken_connection())
         self.assertEqual(response, None)
 
     @cpython_only
-    def test_49_connection_timeout(self):
+    def test_50_connection_timeout(self):
         from unittest.mock import patch
         # Simulate connection timeout while waiting for response, confirm correct error
         with patch('Api.asyncio.wait_for', side_effect=asyncio.TimeoutError):
             self.assertEqual(self.send_command(['status']), "Error: Timed out waiting for response")
 
-    def test_50_set_log_level(self):
+    def test_51_set_log_level(self):
         # Confirm module does not exist
         self.assertFalse('log_level.py' in os.listdir())
 
@@ -986,7 +993,7 @@ class TestApi(unittest.TestCase):
     # cannot be json-serialized. These are supposed to be deleted or replaced with string
     # representations when building get_attributes response. Earlier versions of API failed to do
     # this for some classes, breaking get_attributes and resulting in an "unable to decode" error.
-    def test_51_regression_get_attributes(self):
+    def test_52_regression_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor3'])
         self.assertEqual(
             response,
@@ -1008,7 +1015,7 @@ class TestApi(unittest.TestCase):
     # Original bug: enable_in and disable_in cast delay argument to float with no error handling,
     # leading to exceptions when invalid arguments were received. In production this could only
     # occur when argument was NaN, other types were rejected by client-side validation.
-    def test_52_regression_enable_in_disable_in_invalid_arguments(self):
+    def test_53_regression_enable_in_disable_in_invalid_arguments(self):
         # Confirm correct error for string argument
         response = self.send_command(['enable_in', 'sensor1', 'foo'])
         self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
@@ -1026,7 +1033,7 @@ class TestApi(unittest.TestCase):
     # api_client, which parses it to float before encoding as JSON. NaN is supported in JSON
     # on cpython but not micropython. This lead to crash when micropython attempted to parse
     # JSON containing NaN (rather than "NaN" string). Should now catch and return error.
-    def test_53_regression_received_invalid_json(self):
+    def test_54_regression_received_invalid_json(self):
         # Micropython's json module cannot parse NaN
         response = self.send_command(['enable_in', 'sensor1', float('NaN')])
         self.assertEqual(response, {"ERROR": "Syntax error in received JSON"})
@@ -1035,7 +1042,7 @@ class TestApi(unittest.TestCase):
     # value of increment_rule method in bare conditional, assuming the method only returned
     # True and False. Method can also return error JSON, which was interpreted as success
     # resulting in success message instead of error.
-    def test_54_regression_increment_rule_wrong_error(self):
+    def test_55_regression_increment_rule_wrong_error(self):
         # Call with invalid argument, confirm correct error
         response = self.send_command(['increment_rule', 'sensor1', 'string'])
         self.assertEqual(response, {'ERROR': 'Invalid argument string'})
@@ -1048,7 +1055,7 @@ class TestApi(unittest.TestCase):
     # before releasing lock. The server continued listening for API calls but would hang
     # while waiting to acquire lock resulting in client-side timeout. Lock is now acquired
     # with context manager and automatically released if an exception occurs.
-    def test_55_regression_fails_to_release_lock(self):
+    def test_56_regression_fails_to_release_lock(self):
         # Call endpoint that raises uncaught exception, should time out
         response = self.send_command(['uncaught_exception'])
         self.assertEqual(response, "Error: Timed out waiting for response")
@@ -1060,7 +1067,7 @@ class TestApi(unittest.TestCase):
     # Original bug: The set_rule endpoint used "if ... in" to check if the new rule contained
     # url-encoded forward slashes (detect fade rule) without casting the rule to string. This
     # resulted in "TypeError: 'int' object isn't iterable" if the new rule was an integer.
-    def test_56_regression_set_rule_fails_if_rule_is_int(self):
+    def test_57_regression_set_rule_fails_if_rule_is_int(self):
         response = self.send_command(['set_rule', 'device1', 100])
         self.assertEqual(self.device1.current_rule, 100)
         self.assertEqual(response, {'device1': 100})

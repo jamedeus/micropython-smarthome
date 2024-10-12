@@ -74,6 +74,10 @@ The enable_irq and disable_irq methods are mocked to do nothing, this is require
 
 The `schedule` method requires 2 arguments: a function to call and its argument. In micropython this is used to call a function during an interrupt with execution delayed until immediately after the heap is locked. The mock simply calls the function immediately.
 
+### micropython.mem_info
+
+The `mem_info` method prints current memory usage information to console without returning anything. The mock prints a hardcoded string with the same format.
+
 ## Network module
 
 ### network.WLAN
@@ -93,6 +97,12 @@ The `disconnect` method sets the `connected` attribute to `False`. When called f
 The `isconnected` method returns the `connected` attribute.
 
 The `ifconfig` method called with no argument returns the `_ifconfig` attribute, which contains a tuple set in the `connect` and `disconnect` methods. It can also be called with a 4-tuple as argument to set the `_ifconfig` attribute.
+
+## os module
+
+### os.dupterm
+
+The `dupterm` method takes a stream-like object that will receive a copy of everything written to stdout. Only 1 stream is supported on ESP32. When called a second time it returns the previous stream object. This behavior is simulated with the `mock_os.StdoutDuplicator` class.
 
 ## SI7021 module
 
