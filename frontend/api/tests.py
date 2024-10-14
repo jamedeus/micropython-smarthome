@@ -247,6 +247,26 @@ class ApiCardTests(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()['message'], 'Node named Fake_Name not found')
 
+    def test_get_log(self):
+        # Create mock app.log contents
+        mock_log = '2000-01-01 00:00:00 - CRITICAL - Boot - Booted, log level: ERROR'
+
+        # Mock Webrepl.get_file_mem to return the mock log
+        with patch.object(Webrepl, 'get_file_mem', return_value=mock_log.encode()) as mock_get_file:
+            # Confirm endpoint returns mock log contents
+            response = self.client.get('/get_log/Test1')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['message'], mock_log)
+            # Confirm correct file downloaded from node
+            self.assertTrue(mock_get_file.called_with('app.log'))
+
+    def test_get_log_connection_error(self):
+        # Mock Webrepl.get_file_mem to simulate connection error
+        with patch.object(Webrepl, 'get_file_mem', side_effect=OSError):
+            response = self.client.get('/get_log/Test1')
+            self.assertEqual(response.status_code, 502)
+            self.assertEqual(response.json()['message'], "Failed to download log")
+
     def test_api_frontend(self):
         # Mock request to return the expected status object
         with patch('api_endpoints.request', return_value=config1_status):

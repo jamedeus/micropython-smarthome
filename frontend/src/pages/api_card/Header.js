@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { showLogModal } from './LogModal';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { ApiCardContext } from 'root/ApiCardContext';
@@ -43,6 +44,9 @@ const Header = () => {
                     </Dropdown.Item>
                     <Dropdown.Item onClick={clearLog}>
                         Clear Log
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => showLogModal()}>
+                        View Log
                     </Dropdown.Item>
                     <Dropdown.Item onClick={resetAllRules}>
                         Reset all rules

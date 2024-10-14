@@ -6,6 +6,7 @@ import ScheduleToggleModal from './ScheduleToggleModal';
 import Header from './Header';
 import Layout from './Layout';
 import LayoutEmpty from './LayoutEmpty';
+import LogModal from './LogModal';
 import FadeModal from './FadeModal';
 import ErrorToast from 'util/ErrorToast';
 import SaveRulesToast from './SaveRulesToast';
@@ -42,6 +43,7 @@ const App = () => {
             {recording ? null : <UpdateStatus /> }
 
             {/* Modals (hidden) */}
+            <LogModal />
             <FadeModal />
             <ErrorModal />
             <DebugModal />

@@ -81,6 +81,19 @@ def get_status(request, node):
     return error_response(message=status, status=502)
 
 
+@get_target_node
+def get_log(request, node):
+    '''Downloads requested node log file with webrepl and returns to client.'''
+
+    try:
+        webrepl = Webrepl(node.ip)
+        log_file = webrepl.get_file_mem('app.log')
+        webrepl.close_connection()
+        return standard_response(message=log_file.decode())
+    except OSError:
+        return error_response(message="Failed to download log", status=502)
+
+
 @ensure_csrf_cookie
 def api_overview(request, recording=False):
     '''Renders the API overview page'''

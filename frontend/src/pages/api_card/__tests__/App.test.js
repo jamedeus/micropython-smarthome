@@ -1102,4 +1102,85 @@ describe('App', () => {
             headers: postHeaders
         });
     });
+
+    it('shows modal and makes request when view log option is clicked', async () => {
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: '2000-01-01 00:00:00 - CRITICAL - Boot - Booted, log level: ERROR'
+            })
+        }));
+
+        // Click dropdown, click view log option
+        await user.click(app.getAllByRole('button')[1]);
+        await user.click(app.getByText('View Log'));
+
+        // Confirm correct request was made
+        expect(global.fetch).toHaveBeenCalledWith('/get_log/Test Node');
+
+        // Confirm log modal appeared with loading animation
+        await waitFor(() => {
+            expect(app.queryByText(/Node Log/)).not.toBeNull();
+            expect(app.queryByText(/Downloading log/)).not.toBeNull();
+            // Confirm log is not visible yet
+            expect(app.queryByText(/Booted, log level: ERROR/)).toBeNull();
+        });
+
+        // Confirm log contents replace loading animation when request complete
+        await waitFor(() => {
+            expect(app.queryByText(/Downloading log/)).toBeNull();
+            expect(app.queryByText(/Booted, log level: ERROR/)).not.toBeNull();
+        });
+
+        // Click modal close button, confirm closed
+        await user.click(app.getByText('Node Log').parentElement.children[2]);
+        await waitFor(() => {
+            expect(app.queryByText(/Booted, log level: ERROR/)).toBeNull();
+        });
+
+        // Show modal again, click backdrop, confirm closed
+        await user.click(app.getByText('View Log'));
+        await user.click(document.querySelector('.modal-backdrop'));
+        await waitFor(() => {
+            expect(app.queryByText(/Booted, log level: ERROR/)).toBeNull();
+        });
+    });
+
+    it('clears log modal and requests new log when refresh button is clicked', async () => {
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: '2000-01-01 00:00:00 - CRITICAL - Boot - Booted, log level: ERROR'
+            })
+        }));
+
+        // Click dropdown, click view log option
+        await user.click(app.getAllByRole('button')[1]);
+        await user.click(app.getByText('View Log'));
+
+        // Wait for log contents to appear
+        await waitFor(() => {
+            expect(app.queryByText(/Downloading log/)).toBeNull();
+            expect(app.queryByText(/Booted, log level: ERROR/)).not.toBeNull();
+        });
+
+        // Click refresh button
+        await user.click(app.getByText('Refresh'));
+
+        // Confirm log contents disappeared, loading animation reappeared
+        await waitFor(() => {
+            expect(app.queryByText(/Downloading log/)).not.toBeNull();
+            expect(app.queryByText(/Booted, log level: ERROR/)).toBeNull();
+        });
+
+        // Confirm log contents appear when request completes
+        await waitFor(() => {
+            expect(app.queryByText(/Downloading log/)).toBeNull();
+            expect(app.queryByText(/Booted, log level: ERROR/)).not.toBeNull();
+        });
+    });
 });

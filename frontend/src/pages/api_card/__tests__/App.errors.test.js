@@ -360,4 +360,45 @@ describe('App', () => {
             'Failed to save rules'
         );
     });
+
+    it('shows error in log modal when unable to download log from node', async () => {
+        // Mock fetch function to simulate failed webrepl
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: false,
+                    status: 502,
+                    json: () => Promise.resolve({
+                        status: 'error',
+                        message: 'Failed to download log'
+                    })
+                });
+            }, 100);
+        }));
+        // Mock console.error
+        console.error = jest.fn();
+
+        // Click dropdown, click view log option
+        await user.click(app.getAllByRole('button')[1]);
+        await user.click(app.getByText('View Log'));
+
+        // Confirm modal with loading animation appeared
+        await waitFor(() => {
+            expect(app.queryByText(/Downloading log/)).not.toBeNull();
+            expect(app.queryByText(/Failed to download log/)).toBeNull();
+            expect(app.queryByText(/Booted, log level: ERROR/)).toBeNull();
+        });
+
+        // Wait for request to fail, confirm loading animation replaced with error
+        await waitFor(() => {
+            expect(app.queryByText(/Downloading log/)).toBeNull();
+            expect(app.queryByText(/Failed to download log/)).not.toBeNull();
+            expect(app.queryByText(/Booted, log level: ERROR/)).toBeNull();
+        });
+
+        // Confirm console.error was called
+        expect(console.error).toHaveBeenCalledWith(
+            'Failed to download log (status 502)'
+        );
+    });
 });

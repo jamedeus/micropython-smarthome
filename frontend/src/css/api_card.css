@@ -62,3 +62,7 @@ body {
         --bs-table-bg: transparent;
     }
 }
+
+.log-modal > .modal-dialog {
+    max-width: max-content !important;
+}
