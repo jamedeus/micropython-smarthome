@@ -282,7 +282,6 @@ def sync_schedule_rules(data):
     if isinstance(response, dict):
         # Open webrepl connection, download config.json
         webrepl = Webrepl(node.ip)
-        webrepl.open_connection()
         config_file = webrepl.get_file_mem('config.json')
         webrepl.close_connection()
 

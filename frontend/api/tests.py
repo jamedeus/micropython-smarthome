@@ -615,15 +615,13 @@ class SyncScheduleRulesTests(TestCase):
 
         # Mock Webrepl.get_file_mem to return the modified config
         # Mock parse_command to return expected response for save_rules endpoint
-        with patch.object(Webrepl, 'open_connection', return_value=True) as mock_open_connection, \
-             patch.object(Webrepl, 'get_file_mem', return_value=encoded_mock_config) as mock_get_file, \
+        with patch.object(Webrepl, 'get_file_mem', return_value=encoded_mock_config) as mock_get_file, \
              patch('api.views.parse_command', return_value={"Success": "Rules written to disk"}):
 
             # Send request, verify response + function calls
             response = self.client.post('/sync_schedule_rules', {"ip": '192.168.1.123'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], "Done syncing schedule rules")
-            self.assertTrue(mock_open_connection.called)
             self.assertTrue(mock_get_file.called_with('config.json'))
 
             # Verify that node config was replaced with the modified config
