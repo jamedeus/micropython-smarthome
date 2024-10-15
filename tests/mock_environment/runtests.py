@@ -106,6 +106,10 @@ def set_mocks():
 
 
 async def run_tests():
+    # Import SoftwareTimer instance, add to async loop
+    from SoftwareTimer import timer
+    asyncio.create_task(timer.loop())
+
     # Add API backend to loop (receives commands from tests)
     from Api import app
     asyncio.create_task(app.run())
