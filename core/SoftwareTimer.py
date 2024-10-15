@@ -35,7 +35,7 @@ class SoftwareTimer():
 
     def epoch_now(self):
         '''Return current micropython epoch time in milliseconds.'''
-        return time.time() * 1000
+        return time.time_ns() // 1000000
 
     def create(self, period, callback, name):
         '''Takes period (milliseconds), callback function, and name of caller.
