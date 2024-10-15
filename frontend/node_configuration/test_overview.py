@@ -732,6 +732,15 @@ class ReuploadAllTests(TestCase):
             'status': 404
         }
 
+        # Mock ThreadPoolExecutor to run tasks serially (avoid multiple threads
+        # trying to read simultaneously, django unit tests add database locks)
+        self.mock_executor = patch('node_configuration.views.ThreadPoolExecutor')
+        mock_executor = self.mock_executor.start()
+        mock_executor.return_value.__enter__.return_value.map = map
+
+    def tearDown(self):
+        self.mock_executor.stop()
+
     def test_reupload_all(self):
         # Mock provision to return success message without doing anything
         with patch('node_configuration.views.provision') as mock_provision:

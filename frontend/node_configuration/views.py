@@ -105,33 +105,51 @@ def upload(data, reupload=False):
     return error_response(message=response['message'], status=response['status'])
 
 
+def reupload_node(node):
+    '''Takes Node model entry, reuploads config file and dependencies.
+    Returns 2-tuple with node name and result ('Success' or failure reason).
+    Called in multiple threads simultaneously by /reupload_all endpoint.
+    '''
+    modules = get_modules(node.config.config, REPO_DIR)
+    response = provision(
+        node.ip,
+        NODE_PASSWD,
+        node.config.config,
+        modules,
+        quiet=True
+    )
+
+    # Return tuple with node friendly name and result
+    if response['status'] == 200:
+        return (node.friendly_name, 'Success')
+    elif response['status'] == 404:
+        return (node.friendly_name, 'Offline')
+    elif response['status'] == 408:
+        return (node.friendly_name, 'Connection timed out')
+    elif response['status'] == 409:
+        return (node.friendly_name, 'Filesystem error')
+    else:
+        return (node.friendly_name, 'Unknown error')
+
+
 def reupload_all(request):
-    '''Iterates Node model, reuploads config file associated with each entry.
+    '''Reuploads config files to each Node model entry in parallel.
     Called when "Re-upload all" dropdown option on overview is clicked.
     '''
     print("Reuploading all configs...")
-    nodes = Node.objects.all()
 
     # Track success/failure of each upload
     report = {'success': [], 'failed': {}}
 
-    for node in nodes:
-        modules = get_modules(node.config.config, REPO_DIR)
-
-        print(f"\nReuploading {node.friendly_name}...")
-        response = provision(node.ip, NODE_PASSWD, node.config.config, modules, quiet=True)
-
-        # Add result to report
-        if response['status'] == 200:
-            report['success'].append(node.friendly_name)
-        elif response['status'] == 404:
-            report['failed'][node.friendly_name] = 'Offline'
-        elif response['status'] == 408:
-            report['failed'][node.friendly_name] = 'Connection timed out'
-        elif response['status'] == 409:
-            report['failed'][node.friendly_name] = 'Filesystem error'
-        else:
-            report['failed'][node.friendly_name] = 'Unknown error'
+    # Reupload all nodes in parallel
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        for result in executor.map(reupload_node, Node.objects.all()):
+            if result[1] == 'Success':
+                print(f"Finished reuploading {result[0]}")
+                report['success'].append(result[0])
+            else:
+                print(f"Failed to reupload {result[0]} ({result[1]})")
+                report['failed'][result[0]] = result[1]
 
     print('\nreupload_all results:')
     print(json.dumps(report, indent=4))
