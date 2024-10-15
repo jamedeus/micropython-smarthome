@@ -117,7 +117,6 @@ class TestGlobalCommands(TestCase):
             'current_rule': 'disabled'
         }
         with patch('api_endpoints.request', return_value=expected_response):
-            # Create 3 test nodes
             response = self.client.get('/reset_all')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], "Done")
@@ -125,7 +124,6 @@ class TestGlobalCommands(TestCase):
     def test_reset_all_offline(self):
         # Mock request to simulate offline nodes
         with patch('api_endpoints.asyncio.open_connection', side_effect=OSError):
-            # Create 3 test nodes
             response = self.client.get('/reset_all')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], "Done")
@@ -133,7 +131,6 @@ class TestGlobalCommands(TestCase):
     def test_reboot_all(self):
         # Mock request to return expected response for each node
         with patch('api_endpoints.request', return_value='Rebooting'):
-            # Create 3 test nodes
             response = self.client.get('/reboot_all')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], "Done")
@@ -141,7 +138,6 @@ class TestGlobalCommands(TestCase):
     def test_reboot_all_offline(self):
         # Mock request to simulate offline nodes
         with patch('api_endpoints.asyncio.open_connection', side_effect=OSError):
-            # Create 3 test nodes
             response = self.client.get('/reboot_all')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], "Done")

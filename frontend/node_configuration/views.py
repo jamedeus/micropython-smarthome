@@ -86,7 +86,13 @@ def upload(data, reupload=False):
     # Get dependencies, upload
     modules = get_modules(config.config, REPO_DIR)
     print(f'Uploading {data["config"]} to {data["ip"]}...')
-    response = provision(data["ip"], NODE_PASSWD, config.config, modules, quiet=True)
+    response = provision(
+        ip=data["ip"],
+        password=NODE_PASSWD,
+        config=config.config,
+        modules=modules,
+        quiet=True
+    )
 
     # If uploaded for the first time, update models
     if response['status'] == 200 and not reupload:
@@ -112,24 +118,23 @@ def reupload_node(node):
     '''
     modules = get_modules(node.config.config, REPO_DIR)
     response = provision(
-        node.ip,
-        NODE_PASSWD,
-        node.config.config,
-        modules,
+        ip=node.ip,
+        password=NODE_PASSWD,
+        config=node.config.config,
+        modules=modules,
         quiet=True
     )
 
     # Return tuple with node friendly name and result
     if response['status'] == 200:
         return (node.friendly_name, 'Success')
-    elif response['status'] == 404:
+    if response['status'] == 404:
         return (node.friendly_name, 'Offline')
-    elif response['status'] == 408:
+    if response['status'] == 408:
         return (node.friendly_name, 'Connection timed out')
-    elif response['status'] == 409:
+    if response['status'] == 409:
         return (node.friendly_name, 'Filesystem error')
-    else:
-        return (node.friendly_name, 'Unknown error')
+    return (node.friendly_name, 'Unknown error')
 
 
 def reupload_all(request):
@@ -230,7 +235,13 @@ def change_node_ip(data):
         # Get dependencies, upload to new IP
         modules = get_modules(node.config.config, REPO_DIR)
         print(f'Uploading {data["friendly_name"]} config to {data["new_ip"]}...')
-        response = provision(data["new_ip"], NODE_PASSWD, node.config.config, modules, quiet=True)
+        response = provision(
+            ip=data["new_ip"],
+            password=NODE_PASSWD,
+            config=node.config.config,
+            modules=modules,
+            quiet=True
+        )
 
         if response['status'] == 200:
             # Update model if successful
