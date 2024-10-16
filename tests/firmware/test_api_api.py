@@ -108,6 +108,11 @@ def uncaught_exception(args):
 
 
 class TestApi(unittest.TestCase):
+
+    # Used to yield so SoftwareTimer create/cancel tasks can run
+    async def sleep(self, ms):
+        await asyncio.sleep_ms(ms)
+
     @classmethod
     def setUpClass(cls):
         cls.device1 = config.find("device1")
@@ -143,7 +148,7 @@ class TestApi(unittest.TestCase):
         SoftwareTimer.timer.cancel('rebuild_queue')
         SoftwareTimer.timer.cancel('device1_enable_in')
         SoftwareTimer.timer.cancel('device1_fade')
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
 
     async def request(self, msg):
         reader, writer = await asyncio.open_connection(ip, 8123)
@@ -208,7 +213,7 @@ class TestApi(unittest.TestCase):
 
         # Simulate SoftwareTimer from previous disable_in call with same target
         SoftwareTimer.timer.create(9999, self.device1.disable, "device1_enable_in")
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertTrue("device1_enable_in" in str(SoftwareTimer.timer.schedule))
 
         # Call enable endpoint, should cancel disable_in callback timer
@@ -225,7 +230,7 @@ class TestApi(unittest.TestCase):
 
         # Simulate SoftwareTimer from previous enable_in call with same target
         SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertTrue("device1_enable_in" in str(SoftwareTimer.timer.schedule))
 
         # Call enable endpoint, should cancel enable_in callback timer
@@ -248,7 +253,7 @@ class TestApi(unittest.TestCase):
 
         # Simulate SoftwareTimer from previous enable_in call with same target
         SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         # Get timer expiration timestamp
         for i in SoftwareTimer.timer.schedule:
             if SoftwareTimer.timer.schedule[i][0] == "device1_enable_in":
@@ -275,7 +280,7 @@ class TestApi(unittest.TestCase):
 
         # Simulate SoftwareTimer from previous disable_in call with same target
         SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         # Get timer expiration timestamp
         for i in SoftwareTimer.timer.schedule:
             if SoftwareTimer.timer.schedule[i][0] == "device1_enable_in":

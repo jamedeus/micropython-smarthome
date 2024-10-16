@@ -36,6 +36,10 @@ class MockGroup(Group):
 
 class TestMotionSensorSensor(unittest.TestCase):
 
+    # Used to yield so SoftwareTimer create/cancel tasks can run
+    async def sleep(self, ms):
+        await asyncio.sleep_ms(ms)
+
     @classmethod
     def setUpClass(cls):
         cls.instance = MotionSensor("sensor1", "sensor1", "pir", None, [], 15)
@@ -45,7 +49,7 @@ class TestMotionSensorSensor(unittest.TestCase):
     def setUp(self):
         # Ensure no reset timer from previous test in queue
         SoftwareTimer.timer.cancel('sensor1')
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
 
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation
@@ -80,7 +84,7 @@ class TestMotionSensorSensor(unittest.TestCase):
     def test_05_enable_disable(self):
         # Simulate active reset timer
         SoftwareTimer.timer.create(1000, self.instance.reset_timer, self.instance.name)
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertTrue(self.instance.name in str(SoftwareTimer.timer.schedule))
 
         # Disable, confirm disabled
@@ -88,7 +92,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.assertFalse(self.instance.enabled)
 
         # Confirm reset timer was removed from SoftwareTimer queue
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
         # Set motion to True, enable, confirm flips to False
@@ -108,7 +112,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         # Simulate sensor triggered by hware interrupt
         self.instance.trigger()
         # Yield to let SoftwareTimer coroutine create reset timer
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
 
         # SoftwareTimer queue should now contain entry containing sensor's name attribute
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
@@ -122,7 +126,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.instance.reset_timer()
         # Yield to let SoftwareTimer coroutine create reset timer (reset_timer
         # method may call start_reset_timer if motion still detected)
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertFalse(self.instance.motion)
         # Group.refresh should be called again
         self.assertTrue(self.group.refresh_called)
@@ -135,7 +139,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.instance.trigger()
         # Yield to let SoftwareTimer coroutines cancel old reset timer, create
         # new reset timer (should not create new since rule is 0)
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         # Queue should NOT contain entry for motion sensor (rule is 0)
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
@@ -180,14 +184,14 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.assertTrue(self.instance.motion)
         self.assertEqual(self.instance.current_rule, 5)
         # Yield to let SoftwareTimer coroutine create reset timer
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
         SoftwareTimer.timer.cancel(self.instance.name)
 
         # Set to disabled, confirm rule set, confirm no timer created
         self.instance.next_rule()
         # Yield to let SoftwareTimer coroutine create reset timer
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertEqual(self.instance.current_rule, 'disabled')
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
@@ -198,13 +202,13 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.instance.motion = False
         self.group.refresh_called = False
         SoftwareTimer.timer.cancel(self.instance.name)
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
 
         # Simulate interrupt triggered by rising pin
         self.instance.sensor.pin_state = 1
         self.instance.pin_interrupt()
         # Yield to let SoftwareTimer coroutine create reset timer
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
 
         # Confirm motion detected, targets turned on, reset timer running
         self.assertTrue(self.instance.motion)
@@ -214,7 +218,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         # Simulate interrupt triggered by falling pin
         self.instance.sensor.pin_state = 0
         self.instance.pin_interrupt()
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
 
         # Confirm nothing changed (targets stay on until reset timer expires)
         self.assertTrue(self.instance.motion)
@@ -230,13 +234,13 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.group.refresh_called = False
         SoftwareTimer.timer.cancel(self.instance.name)
         # Yield to let SoftwareTimer coroutine cancel reset timer
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
 
         # Simulate interrupt triggered by rising pin
         self.instance.sensor.pin_state = 1
         self.instance.pin_interrupt()
         # Yield to let SoftwareTimer coroutine create reset timer
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
 
         # Confirm motion detected, targets turned on, reset timer NOT running
         self.assertTrue(self.instance.motion)
@@ -247,7 +251,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.group.refresh_called = False
         self.instance.sensor.pin_state = 0
         self.instance.pin_interrupt()
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
 
         # Confirm motion not detected, targets turned off
         self.assertFalse(self.instance.motion)
@@ -268,7 +272,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         # motion stops and restarts and reset_timer is never called)
         self.instance.reset_timer()
         # Yield to let SoftwareTimer coroutine create reset timer
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
 
         # Confirm reset timer was restarted when old timer expired (prevent
         # getting stuck ON if timer expires before motion stops)
@@ -313,16 +317,16 @@ class TestMotionSensorSensor(unittest.TestCase):
         # Simulate motion detected, confirm timer started
         self.instance.motion_detected()
         # Yield to let SoftwareTimer coroutine create reset timer
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
 
         # Manually cancel timer, confirm not running
         SoftwareTimer.timer.cancel(self.instance.name)
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
         # Change rule, confirm timer recreated
         self.instance.set_rule(5)
         # Yield to let SoftwareTimer coroutine create reset timer
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))

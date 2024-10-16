@@ -43,6 +43,10 @@ class MockGroup(Group):
 
 class TestThermostat(unittest.TestCase):
 
+    # Used to yield so SoftwareTimer create/cancel tasks can run
+    async def sleep(self, ms):
+        await asyncio.sleep_ms(ms)
+
     @classmethod
     def setUpClass(cls):
         # Create test instance, mock device, mock group
@@ -242,7 +246,7 @@ class TestThermostat(unittest.TestCase):
 
         # Confirm no audit timer in SoftwareTimer queue
         SoftwareTimer.timer.cancel(self.instance.name)
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
         # Get actual temperature to mock recent changes
@@ -258,7 +262,7 @@ class TestThermostat(unittest.TestCase):
         self.assertTrue(self.group.refresh_called)
 
         # Confirm audit method added timer to run audit again in 30 seconds
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
 
         # Mock temp increasing when air conditioner SHOULD be running
@@ -323,7 +327,7 @@ class TestThermostat(unittest.TestCase):
 
         # Confirm no audit timer in SoftwareTimer queue
         SoftwareTimer.timer.cancel(self.instance.name)
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
         # Run routine, confirm recent temps cleared
@@ -331,7 +335,7 @@ class TestThermostat(unittest.TestCase):
         self.assertEqual(len(self.instance.recent_temps), 0)
 
         # Confirm routine added audit timer to SoftwareTimer queue
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
 
     def test_16_instantiate_with_all_modes(self):

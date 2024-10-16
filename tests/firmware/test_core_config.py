@@ -58,6 +58,10 @@ def reset_test_config(config):
 
 class TestConfig(unittest.TestCase):
 
+    # Used to yield so SoftwareTimer create/cancel tasks can run
+    async def sleep(self, ms):
+        await asyncio.sleep_ms(ms)
+
     @classmethod
     def setUpClass(cls):
         # Instantiate class, skip setup to allow testing each step
@@ -146,7 +150,7 @@ class TestConfig(unittest.TestCase):
     def test_04__build_queue(self):
         # Confirm no schedule rule timers in SoftwareTimer queue
         SoftwareTimer.timer.cancel('scheduler')
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         rules = [time for time, rule in SoftwareTimer.timer.schedule.items()
                  if rule[0] == "scheduler"]
         self.assertEqual(len(rules), 0)
@@ -154,7 +158,7 @@ class TestConfig(unittest.TestCase):
         # Run _build_queue method
         self.config._build_queue()
         # Yield to let SoftwareTimer coroutine create timers
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
 
         # Confirm current and scheduled rules set
         self.assertNotEqual(self.config.devices[0].current_rule, None)
@@ -189,12 +193,12 @@ class TestConfig(unittest.TestCase):
         # Confirm reload timer not in queue
         SoftwareTimer.timer.cancel("reload_schedule_rules")
         # Yield to let cancel coroutine run
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         self.assertTrue("reload_schedule_rules" not in str(SoftwareTimer.timer.schedule))
 
         # Call method to start config_timer, yield to let create coroutine run
         self.config._start_reload_schedule_rules_timer()
-        asyncio.run(asyncio.sleep_ms(10))
+        asyncio.run(self.sleep(10))
         # Confirm timer running
         self.assertIn("reload_schedule_rules", str(SoftwareTimer.timer.schedule))
 
