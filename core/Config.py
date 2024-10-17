@@ -22,9 +22,6 @@ from util import (
 # Set name for module's log lines
 log = logging.getLogger("Config")
 
-# Timer re-runs startup every day at 3:00 am
-# (reload schedule rules, sunrise/sunset times, etc)
-config_timer = Timer(1)
 # Used to reboot if startup hangs for longer than 1 minute
 reboot_timer = Timer(2)
 
