@@ -222,6 +222,8 @@ If your django backend uses self-signed SSL certificates syncing will fail. This
 }
 ```
 
+To skip the automatic sync when the script starts pass the `--no-sync` argument. This can be useful to reduce latency in aliases and scripts where syncing is not necessary. This can be combined with other arguments, the order does not matter.
+
 ## Command line arguments
 
 The `smarthome_cli` script supports command line arguments as a shortcut instead of going through the interactive prompt. This can be useful for power users or for scripting.
