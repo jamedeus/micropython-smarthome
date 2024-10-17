@@ -139,6 +139,7 @@ class Config():
 
         # Connect to wifi, hit APIs for current time, sunrise/sunset timestamps
         self._api_calls()
+        gc.collect()
 
         # Instantiate each config in self._device_configs and self._sensor_configs
         # as appropriate class, add to self.devices and self.sensors respectively
@@ -676,6 +677,7 @@ class Config():
         log.info("Callback: Reloading schedule rules")
         # Updated sunrise/sunset times, set system clock (fix daylight savings)
         self._api_calls()
+        gc.collect()
 
         # Create timers for all schedule rules expiring in next 24 hours
         self._build_queue()
