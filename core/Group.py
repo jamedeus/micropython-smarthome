@@ -1,8 +1,5 @@
 import logging
 
-# Set name for module's log lines
-log = logging.getLogger("Group")
-
 
 class Group():
     '''Class used to group one or more sensors with identical targets.
@@ -23,6 +20,10 @@ class Group():
     '''
 
     def __init__(self, name, sensors):
+
+        # Set name for module's log lines
+        self.log = logging.getLogger(f"{name}")
+
         self.name = name
 
         # List of instances for all sensors in group
@@ -46,13 +47,13 @@ class Group():
         # https://docs.micropython.org/en/latest/reference/isr_rules.html#creation-of-python-objects
         self._refresh = self.refresh
 
-        log.info("Instantiated Group named %s", self.name)
+        self.log.info("Instantiated Group")
 
     def reset_state(self):
         '''Changes group.state to None (used to bypass check in apply_action
         that skips send methods if group.state matches action arg).
         '''
-        log.debug("%s: reset state to None", self.name)
+        self.log.debug("reset state to None")
         self.state = None
 
     def add_post_action_routine(self):
@@ -77,7 +78,7 @@ class Group():
             if sensor.enabled:
                 conditions.append(sensor.condition_met())
 
-        log.debug("%s: Sensor conditions: %s", self.name, conditions)
+        self.log.debug("Sensor conditions: %s", conditions)
         return conditions
 
     def determine_correct_action(self, conditions):
@@ -104,7 +105,7 @@ class Group():
 
         # No action needed if group state already matches desired state
         if self.state == action:
-            log.debug("%s: current state already matches action", self.name)
+            self.log.debug("current state already matches action")
             return
 
         failed = False
@@ -112,7 +113,7 @@ class Group():
         for device in self.targets:
             # Do not turn device on/off if already on/off
             if not action == device.state:
-                log.debug("%s: applying action to %s", self.name, device.name)
+                self.log.debug("applying action to %s", device.name)
                 # int converts True to 1, False to 0
                 success = device.send(int(action))
 
@@ -123,14 +124,14 @@ class Group():
                 else:
                     failed = True
             else:
-                log.debug(
+                self.log.debug(
                     "%s: skipping %s (state already matches action)",
                     self.name, device.name
                 )
 
         # If all succeeded, change group state to prevent re-sending
         if not failed:
-            log.debug("%s: finished applying action, no errors", self.name)
+            self.log.debug("finished applying action, no errors")
             self.state = action
 
             # Run post-action routines (if any) for all sensors in group
@@ -142,7 +143,7 @@ class Group():
         # action changes to False it will match current state and send will not
         # be called. Changing to None allows any action to be applied).
         else:
-            log.debug("%s: encountered errors while applying action", self.name)
+            self.log.debug("encountered errors while applying action")
             self.reset_state()
 
     def refresh(self, *args):
@@ -150,9 +151,9 @@ class Group():
         Called by all sensors when condition changes.
         Args not used (required for micropython schedule).
         '''
-        log.debug("%s: refresh group", self.name)
+        self.log.debug("refresh group")
         action = self.determine_correct_action(self.check_sensor_conditions())
-        log.debug("%s: correct action: %s", self.name, action)
+        self.log.debug("correct action: %s", action)
         if action is not None:
-            log.info("%s: applying action: %s", self.name, action)
+            self.log.info("applying action: %s", action)
             self.apply_action(action)
