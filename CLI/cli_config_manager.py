@@ -86,6 +86,11 @@ class CliConfigManager:
     and creates a new node the CliConfigManager instance in provision.py will
     call add_node, the smarthome_cli instance. Without singleton the new node
     would not appear in smarthome_cli menu until the script was restarted).
+
+    If cli_config.json contains the django_backend key instantiating this class
+    will automatically download a list of nodes and schedule keywords from the
+    configured address and add them to cli_config.json. This can be skipped by
+    using the optional no_sync argument.
     '''
 
     _instance = None
@@ -93,11 +98,11 @@ class CliConfigManager:
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            cls._instance = super(CliConfigManager, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super(CliConfigManager, cls).__new__(cls)
             cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, no_sync=False):
         if self._initialized:
             return
         # Load cli_config.json from disk
@@ -108,7 +113,8 @@ class CliConfigManager:
         self._csrf_token = None
 
         # If django server configured sync nodes and keywords
-        if 'django_backend' in self.config:
+        # Skip if optional no_sync arg was passed
+        if 'django_backend' in self.config and not no_sync:
             self.sync_from_django()
 
         self._initialized = True

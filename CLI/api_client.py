@@ -94,7 +94,7 @@ example_usage = {
 
 
 # Read cli_config.json from disk (contains existing nodes and schedule keywords)
-cli_config = CliConfigManager()
+cli_config = CliConfigManager(no_sync='--no-sync' in sys.argv)
 nodes = cli_config.config['nodes']
 
 
@@ -604,6 +604,10 @@ def api_prompt():
 
 def main():
     '''Parses CLI arguments and makes API call, or prints help message'''
+
+    # Remove --no-sync flag if present (already processed)
+    if '--no-sync' in sys.argv:
+        sys.argv.remove('--no-sync')
 
     # Remove name of application from args
     sys.argv.pop(0)

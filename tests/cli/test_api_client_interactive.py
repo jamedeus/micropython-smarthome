@@ -150,6 +150,14 @@ class InteractiveMenuTests(TestCase):
             main()
             mock_interactive_prompt.assert_called()
 
+        # Mock sys.argv with --no-sync flag (should handle the same as empty)
+        with patch('sys.argv', ['api_client.py', '--no-sync']), \
+             patch('api_client.api_prompt') as mock_interactive_prompt:
+
+            # Call main, confirm interactive prompt started
+            main()
+            mock_interactive_prompt.assert_called()
+
     def test_enter_node_ip_address(self):
         # Simulate user selecting "Enter node IP" instead of node name, typing
         # IP address, then selecting clear_log endpoint

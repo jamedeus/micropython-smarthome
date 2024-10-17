@@ -13,6 +13,7 @@ correct prompt based on _type parameter.
   - rule_limits_map: Mapping dict, maps range rule _type to minimum and maximum
 '''
 
+import sys
 import json
 import questionary
 from colorama import Fore
@@ -33,7 +34,7 @@ from config_prompt_validators import IntRange, FloatRange
 from cli_config_manager import CliConfigManager
 
 # Read cli_config.json from disk (contains existing nodes)
-cli_config = CliConfigManager()
+cli_config = CliConfigManager(no_sync='--no-sync' in sys.argv)
 
 
 def build_rule_prompt_maps():

@@ -1422,10 +1422,48 @@ class TestCliUsage(TestCase):
             mock_instance.run_prompt.assert_called_once()
             mock_instance.write_to_disk.assert_called_once()
 
+        # Mock --no-sync flag (should handle the same as empty args)
+        # Mock GenerateConfigFile class to confirm correct methods called
+        with patch('sys.argv', ['./config_generator.py', '--no-sync']), \
+             patch(
+                 'config_generator.GenerateConfigFile',
+                 new=MagicMock(spec=GenerateConfigFile)
+             ) as mock_class:  # noqa: E122
+
+            # Simulate calling from command line
+            main()
+
+            # Confirm class was instantiated with no argument
+            mock_class.assert_called_once_with()
+
+            # Get instance created by main, confirm expected methods were called
+            mock_instance = mock_class.return_value
+            mock_instance.run_prompt.assert_called_once()
+            mock_instance.write_to_disk.assert_called_once()
+
     def test_call_with_arg(self):
         # Mock sys.argv with path to config file (should show edit prompt)
         # Mock GenerateConfigFile class to confirm correct methods called
         with patch('sys.argv', ['./config_generator.py', 'config.json']), \
+             patch(
+                 'config_generator.GenerateConfigFile',
+                 new=MagicMock(spec=GenerateConfigFile)
+             ) as mock_class:  # noqa: E122
+
+            # Simulate calling from command line
+            main()
+
+            # Confirm class was instantiated with config path arg
+            mock_class.assert_called_once_with('config.json')
+
+            # Get instance created by main, confirm expected methods were called
+            mock_instance = mock_class.return_value
+            mock_instance.run_prompt.assert_called_once()
+            mock_instance.write_to_disk.assert_called_once()
+
+        # Mock --no-sync flag before path to config file (should handle the same)
+        # Mock GenerateConfigFile class to confirm correct methods called
+        with patch('sys.argv', ['./config_generator.py', '--no-sync', 'config.json']), \
              patch(
                  'config_generator.GenerateConfigFile',
                  new=MagicMock(spec=GenerateConfigFile)

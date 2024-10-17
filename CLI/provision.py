@@ -18,6 +18,7 @@ Reupload config files to all nodes in cli_config.json
 '''
 
 import os
+import sys
 import json
 import argparse
 from helper_functions import valid_ip
@@ -29,7 +30,7 @@ cli = os.path.dirname(os.path.realpath(__file__))
 repo = os.path.split(cli)[0]
 
 # Read cli_config.json from disk
-cli_config = CliConfigManager()
+cli_config = CliConfigManager(no_sync='--no-sync' in sys.argv)
 
 
 def validate_ip(ip):

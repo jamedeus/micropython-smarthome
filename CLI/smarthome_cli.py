@@ -21,7 +21,7 @@ from cli_config_manager import CliConfigManager, get_cli_config_path
 
 
 # Read cli_config.json from disk
-cli_config = CliConfigManager()
+cli_config = CliConfigManager(no_sync='--no-sync' in sys.argv)
 
 
 def settings_prompt():
@@ -446,6 +446,10 @@ def main():
     arguments. Forwards remaining arguments to requested script when first arg
     is --api, --provision, or --config.
     '''
+
+    # Remove --no-sync flag if present (already processed)
+    if '--no-sync' in sys.argv:
+        sys.argv.remove('--no-sync')
 
     # Show interactive prompt if no args
     if len(sys.argv) == 1:

@@ -33,9 +33,25 @@ class TestCommandLineArguments(TestCase):
             main()
             mock_main_prompt.assert_called_once()
 
+        # Mock --no-sync flag (should handle the same as empty args)
+        with patch('sys.argv', ['smarthome_cli', '--no-sync']), \
+             patch('smarthome_cli.main_prompt') as mock_main_prompt:
+
+            # Simulate calling from command line, confirm shows main prompt
+            main()
+            mock_main_prompt.assert_called_once()
+
     def test_api_arg(self):
         # Mock --api arg (should call api_client.main to parse remaining args)
         with patch('sys.argv', ['smarthome_cli', '--api']), \
+             patch('smarthome_cli.api_client_main') as mock_api_main:
+
+            # Simulate calling from command line, confirm calls api_client.main
+            main()
+            mock_api_main.assert_called_once()
+
+        # Mock --no-sync flag before --api arg (should handle the same)
+        with patch('sys.argv', ['smarthome_cli', '--no-sync', '--api']), \
              patch('smarthome_cli.api_client_main') as mock_api_main:
 
             # Simulate calling from command line, confirm calls api_client.main
@@ -51,9 +67,25 @@ class TestCommandLineArguments(TestCase):
             main()
             mock_provision_main.assert_called_once()
 
+        # Mock --no-sync flag before --provision arg (should handle the same)
+        with patch('sys.argv', ['smarthome_cli', '--no-sync', '--provision']), \
+             patch('smarthome_cli.provision_main') as mock_provision_main:
+
+            # Simulate calling from command line, confirm calls provision.main
+            main()
+            mock_provision_main.assert_called_once()
+
     def test_config_arg(self):
         # Mock --config arg (should call config_generator.main to show prompt)
         with patch('sys.argv', ['smarthome_cli', '--config']), \
+             patch('smarthome_cli.config_generator_main') as mock_config_main:
+
+            # Simulate calling from command line, confirm calls config_generator.main
+            main()
+            mock_config_main.assert_called_once()
+
+        # Mock --no-sync flag before --config arg (should handle the same)
+        with patch('sys.argv', ['smarthome_cli', '--no-sync', '--config']), \
              patch('smarthome_cli.config_generator_main') as mock_config_main:
 
             # Simulate calling from command line, confirm calls config_generator.main

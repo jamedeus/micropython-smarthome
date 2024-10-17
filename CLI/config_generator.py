@@ -49,7 +49,7 @@ from config_rule_prompts import (
 from cli_config_manager import CliConfigManager
 
 # Read cli_config.json from disk (contains existing nodes and schedule keywords)
-cli_config = CliConfigManager()
+cli_config = CliConfigManager(no_sync='--no-sync' in sys.argv)
 
 # Get dict with "devices" and "sensors" keys containing metadata for each
 # supported peripheral type (used to populate config prompts)
@@ -648,6 +648,10 @@ class GenerateConfigFile:
 
 def main():
     '''Command line entrypoint, handles args and shows prompt'''
+
+    # Remove --no-sync flag if present (already processed)
+    if '--no-sync' in sys.argv:
+        sys.argv.remove('--no-sync')
 
     if len(sys.argv) > 1:
         # Instantiate in edit mode with path to existing config
