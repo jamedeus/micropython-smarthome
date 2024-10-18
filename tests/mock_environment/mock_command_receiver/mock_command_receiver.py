@@ -137,7 +137,8 @@ def monitor_Disabled():
 
 # Class to simulate TpLink Kasa device, runs in separate thread
 class MockTpLink:
-    dimmer_response = """{"smartlife.iot.dimmer":{"set_brightness":{"err_code":0}}}"""
+    dimmer_state_response = """{"system":{"set_relay_state":{"err_code":0}}}"""
+    dimmer_brightness_response = """{"smartlife.iot.dimmer":{"set_brightness":{"err_code":0}}}"""
     bulb_response = """{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"err_code":0}}}"""
 
     # Listen for connections on port used by Tplink Kasa
@@ -169,14 +170,16 @@ class MockTpLink:
         # Dimmer uses 2 separate API calls for brightness and power state
         else:
             # Send response for first API call
-            client_socket.send(self.encrypt({}))
+            print(f"Received: {request}")
+            print(f"Response: {self.dimmer_brightness_response}\n")
+            client_socket.send(self.encrypt(self.dimmer_state_response))
 
             # Wait for second API call, send response
             request = client_socket.recv(1024)
             request = self.decrypt(request[4:])
             print(f"Received: {request}")
-            print(f"Response: {self.dimmer_response}\n")
-            client_socket.send(self.encrypt(self.dimmer_response))
+            print(f"Response: {self.dimmer_brightness_response}\n")
+            client_socket.send(self.encrypt(self.dimmer_brightness_response))
 
         client_socket.close()
 
