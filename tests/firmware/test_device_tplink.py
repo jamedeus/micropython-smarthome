@@ -1,6 +1,7 @@
 import json
 import unittest
 from Tplink import Tplink
+from cpython_only import cpython_only
 
 # Read mock API receiver address
 with open('config.json', 'r') as file:
@@ -41,3 +42,37 @@ class TestTplink(unittest.TestCase):
         # Instantiate with invalid IP, confirm send method returns False
         test = Tplink("device1", "device1", "dimmer", 42, 1, 100, "0.0.0.")
         self.assertFalse(test.send())
+
+    def test_06_parse_response(self):
+        # Should return True if response does not contain error
+        self.assertTrue(self.instance._parse_response(
+            '{"smartlife.iot.dimmer":{"set_brightness":{"err_code":0}}}'
+        ))
+        self.assertTrue(self.instance._parse_response(
+            '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"err_code":0}}}'
+        ))
+
+        # Should return False if response contains error
+        self.assertFalse(self.instance._parse_response(
+            '{"smartlife.iot.dimmer":{"set_brightness":{"err_code":-3,"err_msg":"invalid argument"}}}'
+        ))
+
+        # Should return False if response is empty
+        self.assertFalse(self.instance._parse_response('{}'))
+
+    @cpython_only
+    def test_07_send_detects_errors(self):
+        from unittest.mock import patch
+
+        # Simulate error response from dimmer, confirm send returns False
+        with patch.object(self.instance, '_send_payload', return_value=False):
+            self.assertFalse(self.instance.send(1))
+
+        # Simulate error response on second dimmer request, confirm send returns False
+        with patch.object(self.instance, '_send_payload', side_effect=[True, False]):
+            self.assertFalse(self.instance.send(1))
+
+        # Simulate error response from bulb, confirm send returns False
+        self.instance._type = 'bulb'
+        with patch.object(self.instance, '_send_payload', return_value=False):
+            self.assertFalse(self.instance.send(1))

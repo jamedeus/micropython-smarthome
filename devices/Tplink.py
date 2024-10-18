@@ -63,8 +63,8 @@ class Tplink(DimmableLight):
         return result
 
     def _send_payload(self, payload):
-        '''Takes payload string, encrypts and sends to Tplink device IP,
-        decrypts response and returns. Returns False if exception occurs.
+        '''Takes payload string, encrypts and sends to Tplink device IP.
+        Returns True if request succeeded, False if response contains error.
         '''
         self.log.debug("Sending payload: %s", payload)
         try:
@@ -79,7 +79,7 @@ class Tplink(DimmableLight):
             response = self.decrypt(data[4:])
             self.log.debug("Response: %s", response)
 
-            return response
+            return self._parse_response(response)
 
         except Exception as ex:
             self.print(f"Could not connect to host {self.ip}, exception: {ex}")
@@ -87,6 +87,20 @@ class Tplink(DimmableLight):
 
             # Tell calling function that request failed
             return False
+
+    def _parse_response(self, response):
+        '''Takes decrypted response from Tplink device, returns False if the
+        response contains an error, return True if no error.
+        '''
+
+        # Empty object (returned when request syntax incorrect)
+        if len(response) == 2:
+            return False
+        # Slice right after "err_code":, if next character is 0 no error
+        if response[response.index('err_code') + 10:].startswith('0'):
+            return True
+        # If next character after "err_code": is not 0 an error occurred
+        return False
 
     def send(self, state=1):
         '''Makes API call to turn Tplink device ON if argument is True.
