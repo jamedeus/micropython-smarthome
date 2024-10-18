@@ -62,6 +62,32 @@ class Tplink(DimmableLight):
             result += chr(a)
         return result
 
+    def _send_payload(self, payload):
+        '''Takes payload string, encrypts and sends to Tplink device IP,
+        decrypts response and returns. Returns False if exception occurs.
+        '''
+        self.log.debug("Sending payload: %s", payload)
+        try:
+            sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock_tcp.settimeout(10)
+            sock_tcp.connect((self.ip, 9999))
+
+            sock_tcp.send(self.encrypt(payload))
+            data = sock_tcp.recv(2048)
+            sock_tcp.close()
+
+            response = self.decrypt(data[4:])
+            self.log.debug("Response: %s", response)
+
+            return response
+
+        except Exception as ex:
+            self.print(f"Could not connect to host {self.ip}, exception: {ex}")
+            self.log.error("Could not connect to host %s", self.ip)
+
+            # Tell calling function that request failed
+            return False
+
     def send(self, state=1):
         '''Makes API call to turn Tplink device ON if argument is True.
         Makes API call to turn Tplink device OFF if argument is False.
@@ -78,43 +104,34 @@ class Tplink(DimmableLight):
         if not self.enabled and state:
             return True
 
+        # Dimmer has separate brightness and on/off commands
         if self._type == "dimmer":
-            cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(self.current_rule) + '}}}'
+            if not self._send_payload(
+                '{"system":{"set_relay_state":{"state":'
+                + str(state)
+                + '}}}'
+            ):
+                return False
+            if not self._send_payload(
+                '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":'
+                + str(self.current_rule)
+                + '}}}'
+            ):
+                return False
+
+        # Bulb combines brightness and on/off into single command
         else:
-            cmd = '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"ignore_default":1,"on_off":' + str(state) + ',"transition_period":0,"brightness":' + str(self.current_rule) + '}}}'
+            if not self._send_payload(
+                '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"ignore_default":1,"on_off":'
+                + str(state)
+                + ',"transition_period":0,"brightness":'
+                + str(self.current_rule)
+                + '}}}'
+            ):
+                return False
 
-        # Send command and receive reply
-        try:
-            sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock_tcp.settimeout(10)
-            sock_tcp.connect((self.ip, 9999))
+        self.print(f"brightness = {self.current_rule}, state = {state}")
+        self.log.debug("Success")
 
-            # Dimmer has separate brightness and on/off commands, bulb combines into 1 command
-            if self._type == "dimmer":
-                # Set on/off state, read response (dimmer won't listen for next
-                # command until reply read)
-                sock_tcp.send(
-                    self.encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')
-                )
-                sock_tcp.recv(2048)
-
-            # Set brightness, read response
-            sock_tcp.send(self.encrypt(cmd))
-            data = sock_tcp.recv(2048)
-            sock_tcp.close()
-
-            decrypted = self.decrypt(data[4:])
-            self.log.debug("Response: %s", decrypted)
-
-            self.print(f"brightness = {self.current_rule}, state = {state}")
-            self.log.debug("Success")
-
-            # Tell calling function that request succeeded
-            return True
-
-        except Exception as ex:
-            self.print(f"Could not connect to host {self.ip}, exception: {ex}")
-            self.log.error("Could not connect to host %s", self.ip)
-
-            # Tell calling function that request failed
-            return False
+        # Tell calling function that request succeeded
+        return True
