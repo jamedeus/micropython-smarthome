@@ -83,7 +83,7 @@ class TestMotionSensorSensor(unittest.TestCase):
 
     def test_05_enable_disable(self):
         # Simulate active reset timer
-        SoftwareTimer.timer.create(1000, self.instance.reset_timer, self.instance.name)
+        SoftwareTimer.timer.create(10000, self.instance.reset_timer, self.instance.name)
         asyncio.run(self.sleep(10))
         self.assertTrue(self.instance.name in str(SoftwareTimer.timer.schedule))
 
