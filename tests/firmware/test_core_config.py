@@ -4,6 +4,7 @@ import time
 import asyncio
 import network
 import unittest
+from copy import deepcopy
 from machine import Pin, Timer
 import SoftwareTimer
 from cpython_only import cpython_only
@@ -65,17 +66,17 @@ class TestConfig(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Instantiate class, skip setup to allow testing each step
-        cls.config = Config(loaded_json, delay_setup=True)
+        cls.config = Config(deepcopy(loaded_json), delay_setup=True)
 
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation
         self.assertIsInstance(self.config, Config)
-        self.assertEqual(self.config._identifier, loaded_json["metadata"]["id"])
-        self.assertEqual(self.config._location, loaded_json["metadata"]["location"])
-        self.assertEqual(self.config._floor, loaded_json["metadata"]["floor"])
+        self.assertEqual(self.config._metadata["id"], loaded_json["metadata"]["id"])
+        self.assertEqual(self.config._metadata["location"], loaded_json["metadata"]["location"])
+        self.assertEqual(self.config._metadata["floor"], loaded_json["metadata"]["floor"])
         self.assertEqual(self.config.schedule, {})
         self.assertEqual(self.config.schedule_keywords, {'sunrise': '00:00', 'sunset': '00:00'})
-        self.assertEqual(self.config._gps, "")
+        self.assertTrue("gps" not in self.config._metadata)
 
         # Confirm intermediate instance config attributes
         self.assertEqual(len(self.config._sensor_configs), 1)
@@ -210,10 +211,10 @@ class TestConfig(unittest.TestCase):
 
         # Confirm expected attributes
         self.assertIsInstance(config, Config)
-        self.assertEqual(config._identifier, loaded_json["metadata"]["id"])
-        self.assertEqual(config._location, loaded_json["metadata"]["location"])
-        self.assertEqual(config._floor, loaded_json["metadata"]["floor"])
-        self.assertEqual(config._gps, {"lat": "1.15156", "lon": "174.70617"})
+        self.assertEqual(config._metadata["id"], loaded_json["metadata"]["id"])
+        self.assertEqual(config._metadata["location"], loaded_json["metadata"]["location"])
+        self.assertEqual(config._metadata["floor"], loaded_json["metadata"]["floor"])
+        self.assertEqual(config._metadata["gps"], {"lat": "1.15156", "lon": "174.70617"})
 
         # Confirm connected to wifi successfully, led turned off
         self.assertTrue(network.WLAN().isconnected())

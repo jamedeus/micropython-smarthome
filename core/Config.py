@@ -84,10 +84,10 @@ class Config():
         log.info("Instantiating config object...")
         log.debug("Config file: %s", conf)
 
-        # Load metadata parameters (included in status object used by frontend)
-        self._identifier = conf["metadata"]["id"]
-        self._location = conf["metadata"]["location"]
-        self._floor = conf["metadata"]["floor"]
+        # Save metadata parameters (included in status object used by frontend)
+        self._metadata = conf["metadata"]
+        # Add key for timestamp of next schedule rule reload (between 3-4 am)
+        self._metadata["_reload_time"] = ""
 
         # Device and sensor instances, populated by _instantiate_peripherals
         self.devices = []
@@ -105,17 +105,8 @@ class Config():
 
         # Dictionairy of keyword-timestamp pairs, used for schedule rules
         self.schedule_keywords = {'sunrise': '00:00', 'sunset': '00:00'}
-        self.schedule_keywords.update(conf["metadata"]["schedule_keywords"])
-
-        # Stores timestamp of next schedule rule reload (between 3 and 4 am)
-        self._reload_time = ""
-
-        # Store GPS coordinates used for timezone + sunrise/sunset times
-        # API returns estimated timezone based in IP address if not set
-        try:
-            self._gps = conf["metadata"]["gps"]
-        except KeyError:
-            self._gps = ""
+        self.schedule_keywords.update(self._metadata["schedule_keywords"].copy())
+        del self._metadata["schedule_keywords"]
 
         # Parse all device and sensor sections into dict attributes, removed
         # after device and sensor lists populated by _instantiate_peripherals
@@ -179,10 +170,10 @@ class Config():
 
         # Get HH:MM timestamp of next reload, write to log
         reload_time = time.localtime(next_reload + adjust)
-        self._reload_time = f"{reload_time[3]}:{reload_time[4]}"
+        self._metadata["_reload_time"] = f"{reload_time[3]}:{reload_time[4]}"
         log.info(
             "Reload_schedule_rules callback scheduled for %s am",
-            self._reload_time
+            self._metadata["_reload_time"]
         )
 
         # Add timer to queue
@@ -363,17 +354,16 @@ class Config():
 
         # Populate template from class attributes
         status_dict = {
-            "metadata": {
-                "id": self._identifier,
-                "floor": self._floor,
-                "location": self._location,
-                "schedule_keywords": self.schedule_keywords,
-                "next_reload": self._reload_time,
-                "ir_blaster": bool(self.ir_blaster)
-            },
+            "metadata": self._metadata,
             "devices": {},
             "sensors": {}
         }
+
+        # Add schedule keywords to metadata
+        status_dict["metadata"]["schedule_keywords"] = self.schedule_keywords
+
+        # Add bool that tells frontend if IR Blaster is configured
+        status_dict["metadata"]["ir_blaster"] = bool(self.ir_blaster)
 
         # Add IR targets if IR Blaster configured
         if self.ir_blaster:
@@ -430,9 +420,9 @@ class Config():
                 log.debug("Getting system time from ipgeolocation.io API...")
                 # Use GPS coordinates if present, otherwise rely on IP lookup
                 url = f"https://api.ipgeolocation.io/astronomy?apiKey={ipgeo_key}"
-                if self._gps:
+                if "gps" in self._metadata:
                     log.debug("Using GPS coordinates from config file")
-                    url += f"&lat={self._gps['lat']}&long={self._gps['lon']}"
+                    url += f"&lat={self._metadata['gps']['lat']}&long={self._metadata['gps']['lon']}"
 
                 response = requests.get(url, timeout=5)
 
