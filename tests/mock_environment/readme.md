@@ -74,6 +74,7 @@ The mock receiver host's firewall **must not block these ports** or the tests wi
 - [x] ubinascii
 - [x] dht
 - [x] tls
+- [x] vfs
 
 The following are not currently mocked, but may be added in the future if tests for `core/boot.py` are added:
 - [ ] os

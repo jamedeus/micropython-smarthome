@@ -118,6 +118,10 @@ The cpython `requests` module is used as-is in most cases.
 
 The `Response` class (returned by most requests methods) is replaced by a subclass that modifies the `json()` method. When the response contents are not valid JSON a `ValueError` is raised instead of `JSONDecodeError` to match the behavior of micropython's `urequests`. There are no other differences.
 
+## vfs module
+
+The micropython `vfs` module contains filesystem methods. Only the `mount` method is used (`core/boot.py`), this is mocked to do nothing in the mocked environment.
+
 ## Webrepl module
 
 The webrepl mock has no functionality, it simply contains a `start` method which creates a socket in the `listen_s` attribute. This allows tests to detect if webrepl has been started.

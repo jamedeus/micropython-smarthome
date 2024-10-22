@@ -1,5 +1,6 @@
 import os
 import gc
+import vfs
 import logging
 from flashbdev import bdev
 try:
@@ -12,10 +13,10 @@ print("--------Booted--------")
 # Mount filesystem (or format if first boot)
 try:
     if bdev:
-        os.mount(bdev, "/")
+        vfs.mount(bdev, "/")
 except OSError:
     import inisetup
-    vfs = inisetup.setup()
+    inisetup.setup()
 gc.collect()
 
 # Set log file and syntax
