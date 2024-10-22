@@ -40,7 +40,7 @@ class LedStrip(DimmableLight):
         # but for some reason calling pwm.duty() with no arg fixes issue. Works
         # whether called in print statement or conditional, tested 100+ times.
         if self.pwm.duty() != 0:
-            self.pwm.duty(0)
+            self.pwm.duty(0)  # pragma: no cover
 
         # Store current brightness, allows smooth transition when rule changes
         self.bright = 0

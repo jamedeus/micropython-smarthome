@@ -11,10 +11,10 @@ except ImportError:
 print("--------Booted--------")
 
 # Mount filesystem (or format if first boot)
-try:
+try:  # pragma: no cover
     if bdev:
         vfs.mount(bdev, "/")
-except OSError:
+except OSError:  # pragma: no cover
     import inisetup
     inisetup.setup()
 gc.collect()
