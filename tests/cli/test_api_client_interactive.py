@@ -18,14 +18,14 @@ mock_config = {
     "metadata": {
         "id": "Test1",
         "floor": "1",
-        "location": "Inside cabinet above microwave",
-        "schedule_keywords": {
-            "morning": "08:30",
-            "sleep": "22:30",
-            "sunrise": "06:00",
-            "sunset": "18:00",
-            "relax": "20:30"
-        }
+        "location": "Inside cabinet above microwave"
+    },
+    "schedule_keywords": {
+        "morning": "08:30",
+        "sleep": "22:30",
+        "sunrise": "06:00",
+        "sunset": "18:00",
+        "relax": "20:30"
     },
     "sensor1": {
         "_type": "pir",
@@ -71,14 +71,14 @@ mock_ir_config = {
     "metadata": {
         "id": "Mock IR Config",
         "floor": "1",
-        "location": "Behind TV",
-        "schedule_keywords": {
-            "morning": "08:30",
-            "sleep": "22:30",
-            "sunrise": "06:00",
-            "sunset": "18:00",
-            "relax": "20:30"
-        }
+        "location": "Behind TV"
+    },
+    "schedule_keywords": {
+        "morning": "08:30",
+        "sleep": "22:30",
+        "sunrise": "06:00",
+        "sunset": "18:00",
+        "relax": "20:30"
     },
     "ir_blaster": {
         "pin": "4",

@@ -71,9 +71,9 @@ class GenerateConfigFile:
                 'metadata': {
                     'id': '',
                     'floor': '',
-                    'location': '',
-                    'schedule_keywords': cli_config.config['schedule_keywords']
-                }
+                    'location': ''
+                },
+                'schedule_keywords': cli_config.config['schedule_keywords']
             }
 
             # Show default prompt when run_prompt called

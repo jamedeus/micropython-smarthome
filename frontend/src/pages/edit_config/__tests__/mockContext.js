@@ -6,14 +6,14 @@ export const newConfigContext = {
         "metadata": {
             "id": "",
             "floor": "",
-            "location": "",
-            "schedule_keywords": {
-                "morning": "08:00",
-                "sleep": "23:00",
-                "sunrise": "06:00",
-                "sunset": "18:00",
-                "relax": "20:00"
-            }
+            "location": ""
+        },
+        "schedule_keywords": {
+            "morning": "08:00",
+            "sleep": "23:00",
+            "sunrise": "06:00",
+            "sunset": "18:00",
+            "relax": "20:00"
         }
     },
     "edit_existing": false,
@@ -38,17 +38,17 @@ export const existingConfigContext = {
             "id": "All devices and sensors",
             "floor": 404,
             "location": "unit tests",
-            "schedule_keywords": {
-                "morning": "08:00",
-                "sleep": "23:00",
-                "sunrise": "06:00",
-                "sunset": "18:00",
-                "relax": "20:00"
-            },
             "gps": {
                 "lat": "-77.8401068",
                 "lon": "166.6425345"
             }
+        },
+        "schedule_keywords": {
+            "morning": "08:00",
+            "sleep": "23:00",
+            "sunrise": "06:00",
+            "sunset": "18:00",
+            "relax": "20:00"
         },
         "sensor1": {
             "_type": "switch",

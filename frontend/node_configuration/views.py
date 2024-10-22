@@ -321,9 +321,9 @@ def new_config(request):
             'metadata': {
                 'id': '',
                 'floor': '',
-                'location': '',
-                'schedule_keywords': get_schedule_keywords_dict()
-            }
+                'location': ''
+            },
+            'schedule_keywords': get_schedule_keywords_dict()
         },
         "api_target_options": get_api_target_menu_options(),
         "metadata": get_device_and_sensor_metadata(),
@@ -547,7 +547,7 @@ def restore_config(data):
         )
 
     # Overwrite schedule keywords with keywords from database
-    config['metadata']['schedule_keywords'] = get_schedule_keywords_dict()
+    config['schedule_keywords'] = get_schedule_keywords_dict()
 
     # Confirm received config is valid
     valid = validate_full_config(config)
@@ -603,7 +603,7 @@ def add_schedule_keyword(data):
     # Add new keyword to all configs in database
     all_keywords = get_schedule_keywords_dict()
     for node in Node.objects.all():
-        node.config.config['metadata']['schedule_keywords'] = all_keywords
+        node.config.config['schedule_keywords'] = all_keywords
         node.config.save()
 
     return standard_response(message='Keyword created')
@@ -641,7 +641,7 @@ def edit_schedule_keyword(data):
     # Update keywords for all configs in database
     all_keywords = get_schedule_keywords_dict()
     for node in Node.objects.all():
-        node.config.config['metadata']['schedule_keywords'] = all_keywords
+        node.config.config['schedule_keywords'] = all_keywords
         node.config.save()
 
     return standard_response(message='Keyword updated')
@@ -671,7 +671,7 @@ def delete_schedule_keyword(data):
     # Remove keyword from all configs in database
     all_keywords = get_schedule_keywords_dict()
     for node in Node.objects.all():
-        node.config.config['metadata']['schedule_keywords'] = all_keywords
+        node.config.config['schedule_keywords'] = all_keywords
         node.config.save()
 
     return standard_response(message='Keyword deleted')

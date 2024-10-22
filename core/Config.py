@@ -105,8 +105,7 @@ class Config():
 
         # Dictionairy of keyword-timestamp pairs, used for schedule rules
         self.schedule_keywords = {'sunrise': '00:00', 'sunset': '00:00'}
-        self.schedule_keywords.update(self._metadata["schedule_keywords"].copy())
-        del self._metadata["schedule_keywords"]
+        self.schedule_keywords.update(conf["schedule_keywords"])
 
         # Parse all device and sensor sections into dict attributes, removed
         # after device and sensor lists populated by _instantiate_peripherals

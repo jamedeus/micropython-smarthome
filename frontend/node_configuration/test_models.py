@@ -243,12 +243,12 @@ class ScheduleKeywordTests(TestCase):
         test_config = {
             'metadata': {
                 'id': 'Test1',
-                'floor': '2',
-                'schedule_keywords': {
-                    "sunrise": "06:00",
-                    "sunset": "18:00",
-                    "first": "00:00"
-                }
+                'floor': '2'
+            },
+            'schedule_keywords': {
+                "sunrise": "06:00",
+                "sunset": "18:00",
+                "first": "00:00"
             }
         }
 
@@ -273,11 +273,11 @@ class ScheduleKeywordTests(TestCase):
         # Confirm starting conditions
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
         self.assertEqual(
-            self.node1.config.config['metadata']['schedule_keywords'],
+            self.node1.config.config['schedule_keywords'],
             {'sunrise': '06:00', 'sunset': '18:00', 'first': '00:00'}
         )
         self.assertEqual(
-            self.config2.config['metadata']['schedule_keywords'],
+            self.config2.config['schedule_keywords'],
             {'sunrise': '06:00', 'sunset': '18:00', 'first': '00:00'}
         )
 
@@ -306,11 +306,11 @@ class ScheduleKeywordTests(TestCase):
         self.node1.refresh_from_db()
         self.config2.refresh_from_db()
         self.assertEqual(
-            self.node1.config.config['metadata']['schedule_keywords']['morning'],
+            self.node1.config.config['schedule_keywords']['morning'],
             '08:00'
         )
         self.assertEqual(
-            self.config2.config['metadata']['schedule_keywords']['morning'],
+            self.config2.config['schedule_keywords']['morning'],
             '08:00'
         )
 
@@ -344,11 +344,11 @@ class ScheduleKeywordTests(TestCase):
     def test_edit_schedule_keyword_timestamp(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
         self.assertEqual(
-            self.node1.config.config['metadata']['schedule_keywords'],
+            self.node1.config.config['schedule_keywords'],
             {'sunrise': '06:00', 'sunset': '18:00', 'first': '00:00'}
         )
         self.assertEqual(
-            self.config2.config['metadata']['schedule_keywords'],
+            self.config2.config['schedule_keywords'],
             {'sunrise': '06:00', 'sunset': '18:00', 'first': '00:00'}
         )
 
@@ -383,11 +383,11 @@ class ScheduleKeywordTests(TestCase):
         self.node1.refresh_from_db()
         self.config2.refresh_from_db()
         self.assertEqual(
-            self.node1.config.config['metadata']['schedule_keywords']['first'],
+            self.node1.config.config['schedule_keywords']['first'],
             '01:00'
         )
         self.assertEqual(
-            self.config2.config['metadata']['schedule_keywords']['first'],
+            self.config2.config['schedule_keywords']['first'],
             '01:00'
         )
 
@@ -424,14 +424,14 @@ class ScheduleKeywordTests(TestCase):
         # Keyword should update on all existing configs
         self.node1.refresh_from_db()
         self.config2.refresh_from_db()
-        self.assertNotIn('first', self.node1.config.config['metadata']['schedule_keywords'].keys())
-        self.assertNotIn('first', self.config2.config['metadata']['schedule_keywords'].keys())
+        self.assertNotIn('first', self.node1.config.config['schedule_keywords'].keys())
+        self.assertNotIn('first', self.config2.config['schedule_keywords'].keys())
         self.assertEqual(
-            self.node1.config.config['metadata']['schedule_keywords']['second'],
+            self.node1.config.config['schedule_keywords']['second'],
             '08:00'
         )
         self.assertEqual(
-            self.config2.config['metadata']['schedule_keywords']['second'],
+            self.config2.config['schedule_keywords']['second'],
             '08:00'
         )
 
@@ -492,8 +492,8 @@ class ScheduleKeywordTests(TestCase):
         # Should be removed from all existing configs
         self.node1.refresh_from_db()
         self.config2.refresh_from_db()
-        self.assertNotIn('first', self.node1.config.config['metadata']['schedule_keywords'].keys())
-        self.assertNotIn('first', self.config2.config['metadata']['schedule_keywords'].keys())
+        self.assertNotIn('first', self.node1.config.config['schedule_keywords'].keys())
+        self.assertNotIn('first', self.config2.config['schedule_keywords'].keys())
 
     def test_delete_schedule_keyword_no_sync(self):
         # Confirm starting conditions

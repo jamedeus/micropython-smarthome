@@ -4,7 +4,6 @@ import time
 import asyncio
 import network
 import unittest
-from copy import deepcopy
 from machine import Pin, Timer
 import SoftwareTimer
 from cpython_only import cpython_only
@@ -18,9 +17,9 @@ loaded_json = {
     'metadata': {
         'id': 'Upstairs bathroom',
         'location': 'Under counter',
-        'floor': '2',
-        'schedule_keywords': {}
+        'floor': '2'
     },
+    'schedule_keywords': {},
     'sensor1': {
         'nickname': 'sensor1',
         'schedule': {},
@@ -66,7 +65,7 @@ class TestConfig(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Instantiate class, skip setup to allow testing each step
-        cls.config = Config(deepcopy(loaded_json), delay_setup=True)
+        cls.config = Config(loaded_json, delay_setup=True)
 
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation

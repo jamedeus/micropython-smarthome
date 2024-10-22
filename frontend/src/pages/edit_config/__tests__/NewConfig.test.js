@@ -173,14 +173,14 @@ describe('NewConfig', () => {
                 "metadata": {
                     "id": "Basement",
                     "floor": "-1",
-                    "location": "Under staircase",
-                    "schedule_keywords": {
-                        "morning": "08:00",
-                        "sleep": "23:00",
-                        "sunrise": "06:00",
-                        "sunset": "18:00",
-                        "relax": "20:00"
-                    }
+                    "location": "Under staircase"
+                },
+                "schedule_keywords": {
+                    "morning": "08:00",
+                    "sleep": "23:00",
+                    "sunrise": "06:00",
+                    "sunset": "18:00",
+                    "relax": "20:00"
                 },
                 "ir_blaster": {
                     "pin": "16",
@@ -336,14 +336,14 @@ describe('NewConfig', () => {
                 "metadata": {
                     "id": "Den",
                     "floor": "1",
-                    "location": "Behind TV",
-                    "schedule_keywords": {
-                        "morning": "08:00",
-                        "sleep": "23:00",
-                        "sunrise": "06:00",
-                        "sunset": "18:00",
-                        "relax": "20:00"
-                    }
+                    "location": "Behind TV"
+                },
+                "schedule_keywords": {
+                    "morning": "08:00",
+                    "sleep": "23:00",
+                    "sunrise": "06:00",
+                    "sunset": "18:00",
+                    "relax": "20:00"
                 },
                 "device1": {
                     "_type": "wled",
@@ -414,14 +414,14 @@ describe('NewConfig', () => {
                 "metadata": {
                     "id": "Bedroom",
                     "floor": "2",
-                    "location": "Under bed",
-                    "schedule_keywords": {
-                        "morning": "08:00",
-                        "sleep": "23:00",
-                        "sunrise": "06:00",
-                        "sunset": "18:00",
-                        "relax": "20:00"
-                    }
+                    "location": "Under bed"
+                },
+                "schedule_keywords": {
+                    "morning": "08:00",
+                    "sleep": "23:00",
+                    "sunrise": "06:00",
+                    "sunset": "18:00",
+                    "relax": "20:00"
                 },
                 "sensor1": {
                     "_type": "load-cell",
@@ -487,14 +487,14 @@ describe('NewConfig', () => {
                 "metadata": {
                     "id": "Basement",
                     "floor": "-1",
-                    "location": "Under staircase",
-                    "schedule_keywords": {
-                        "morning": "08:00",
-                        "sleep": "23:00",
-                        "sunrise": "06:00",
-                        "sunset": "18:00",
-                        "relax": "20:00"
-                    }
+                    "location": "Under staircase"
+                },
+                "schedule_keywords": {
+                    "morning": "08:00",
+                    "sleep": "23:00",
+                    "sunrise": "06:00",
+                    "sunset": "18:00",
+                    "relax": "20:00"
                 }
             }),
             headers: postHeaders
@@ -530,14 +530,14 @@ describe('NewConfig', () => {
                 "metadata": {
                     "id": "Basement",
                     "floor": "-1",
-                    "location": "Under staircase",
-                    "schedule_keywords": {
-                        "morning": "08:00",
-                        "sleep": "23:00",
-                        "sunrise": "06:00",
-                        "sunset": "18:00",
-                        "relax": "20:00"
-                    }
+                    "location": "Under staircase"
+                },
+                "schedule_keywords": {
+                    "morning": "08:00",
+                    "sleep": "23:00",
+                    "sunrise": "06:00",
+                    "sunset": "18:00",
+                    "relax": "20:00"
                 }
             }),
             headers: postHeaders

@@ -95,7 +95,7 @@ const Page3 = () => {
                     <TimeField
                         timestamp={localTimestamp}
                         setTimestamp={setLocalTimestamp}
-                        schedule_keywords={config.metadata.schedule_keywords}
+                        schedule_keywords={config.schedule_keywords}
                         highlightInvalid={highlightInvalid}
                         handleClose={handleCloseTime}
                     />

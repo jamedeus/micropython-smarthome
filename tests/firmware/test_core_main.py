@@ -15,9 +15,9 @@ config_file = {
     "metadata": {
         "id": "unit-testing",
         "location": "test environment",
-        "floor": "0",
-        "schedule_keywords": {}
-    }
+        "floor": "0"
+    },
+    "schedule_keywords": {}
 }
 
 

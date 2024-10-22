@@ -501,7 +501,7 @@ def save_schedule_keywords(args):
     Used to make new schedule keywords persist after reboot.
     '''
     config = read_config_from_disk()
-    config['metadata']['schedule_keywords'] = app.config.schedule_keywords
+    config['schedule_keywords'] = app.config.schedule_keywords
     write_config_to_disk(config)
     return {"Success": "Keywords written to disk"}
 

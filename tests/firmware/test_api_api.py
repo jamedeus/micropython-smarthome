@@ -25,11 +25,11 @@ config_file = {
     "metadata": {
         "id": "unit-testing",
         "location": "test environment",
-        "floor": "0",
-        "schedule_keywords": {
-            'sunrise': '06:00',
-            'sunset': '18:00'
-        }
+        "floor": "0"
+    },
+    "schedule_keywords": {
+        'sunrise': '06:00',
+        'sunset': '18:00'
     },
     "sensor1": {
         "targets": [

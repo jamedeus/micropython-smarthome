@@ -54,9 +54,9 @@ valid_config_keys = {
     "metadata": {
         "id": "",
         "location": "",
-        "floor": 0,
-        "schedule_keywords": {}
-    }
+        "floor": 0
+    },
+    "schedule_keywords": {}
 }
 
 

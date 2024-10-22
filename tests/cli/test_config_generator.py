@@ -1303,14 +1303,14 @@ class TestGenerateConfigFile(TestCase):
             "metadata": {
                 "id": "Unit Test Existing Config",
                 "floor": "0",
-                "location": "Unit Test",
-                "schedule_keywords": {
-                    "morning": "11:30",
-                    "relax": "23:00",
-                    "sleep": "04:15",
-                    "sunrise": "06:00",
-                    "sunset": "18:00"
-                }
+                "location": "Unit Test"
+            },
+            "schedule_keywords": {
+                "morning": "11:30",
+                "relax": "23:00",
+                "sleep": "04:15",
+                "sunrise": "06:00",
+                "sunset": "18:00"
             },
             "device1": {
                 "_type": "relay",

@@ -20,9 +20,9 @@ class ValidateConfigTests(TestCase):
             "metadata": {
                 "id": "Test",
                 "location": "Unit tests",
-                "floor": 2,
-                "schedule_keywords": {}
-            }
+                "floor": 2
+            },
+            "schedule_keywords": {}
         }
         result = validate_full_config(minimal_config)
         self.assertIs(result, True)
@@ -202,9 +202,9 @@ class ValidateConfigTests(TestCase):
             "metadata": {
                 "id": "",
                 "location": "",
-                "floor": "",
-                "schedule_keywords": {}
-            }
+                "floor": ""
+            },
+            "schedule_keywords": {}
         }
         # Confirm correct error string
         result = validate_full_config(config)

@@ -60,7 +60,7 @@ class EditConfigTests(TestCase):
         )
         self.assertEqual(
             list(response.context['config'].keys()),
-            ['metadata', 'device1', 'device2', 'sensor1']
+            ['metadata', 'schedule_keywords', 'device1', 'device2', 'sensor1']
         )
         self.assertEqual(
             response.context['api_target_options'],
@@ -108,7 +108,7 @@ class EditConfigTests(TestCase):
         )
         self.assertEqual(
             list(response.context['config'].keys()),
-            ['metadata', 'device1', 'device2', 'device3', 'sensor1', 'sensor2']
+            ['metadata', 'schedule_keywords', 'device1', 'device2', 'device3', 'sensor1', 'sensor2']
         )
         self.assertEqual(
             response.context['api_target_options'],
@@ -139,11 +139,11 @@ class ConfigGeneratorTests(TestCase):
             'metadata': {
                 'floor': '',
                 'id': '',
-                'location': '',
-                'schedule_keywords': {
-                    'sunrise': '06:00',
-                    'sunset': '18:00'
-                }
+                'location': ''
+            },
+            'schedule_keywords': {
+                'sunrise': '06:00',
+                'sunset': '18:00'
             }
         }
 

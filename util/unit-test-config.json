@@ -3,14 +3,14 @@
         "id": "Unit Test Config",
         "location": "build pipeline",
         "floor": 0,
-        "schedule_keywords": {
-            "sunrise": "06:00",
-            "sunset": "18:00"
-        },
         "gps": {
             "lat": "45.68912",
             "lon": "-122.63675"
         }
+    },
+    "schedule_keywords": {
+        "sunrise": "06:00",
+        "sunset": "18:00"
     },
     "device1": {
         "nickname": "Overhead",

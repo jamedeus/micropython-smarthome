@@ -7,7 +7,7 @@ exports[`App matches snapshot when creating new config file 1`] = `
     <div
       id="config"
     >
-      {"metadata":{"id":"","floor":"","location":"","schedule_keywords":{"morning":"08:00","sleep":"23:00","sunrise":"06:00","sunset":"18:00","relax":"20:00"}}}
+      {"metadata":{"id":"","floor":"","location":""},"schedule_keywords":{"morning":"08:00","sleep":"23:00","sunrise":"06:00","sunset":"18:00","relax":"20:00"}}
     </div>
     <div
       id="api_target_options"

@@ -94,14 +94,14 @@ class TestRegressions(TestCase):
             "metadata": {
                 "id": "Unit Test Existing Config",
                 "floor": "0",
-                "location": "Unit Test",
-                "schedule_keywords": {
-                    "morning": "11:30",
-                    "relax": "23:00",
-                    "sleep": "04:15",
-                    "sunrise": "06:00",
-                    "sunset": "18:00"
-                }
+                "location": "Unit Test"
+            },
+            "schedule_keywords": {
+                "morning": "11:30",
+                "relax": "23:00",
+                "sleep": "04:15",
+                "sunrise": "06:00",
+                "sunset": "18:00"
             },
             "sensor1": {
                 "_type": "si7021",
@@ -147,14 +147,14 @@ class TestRegressions(TestCase):
             "metadata": {
                 "id": "Unit Test Existing Config",
                 "floor": "0",
-                "location": "Unit Test",
-                "schedule_keywords": {
-                    "morning": "11:30",
-                    "relax": "23:00",
-                    "sleep": "04:15",
-                    "sunrise": "06:00",
-                    "sunset": "18:00"
-                }
+                "location": "Unit Test"
+            },
+            "schedule_keywords": {
+                "morning": "11:30",
+                "relax": "23:00",
+                "sleep": "04:15",
+                "sunrise": "06:00",
+                "sunset": "18:00"
             },
             "sensor1": {
                 "_type": "si7021",
