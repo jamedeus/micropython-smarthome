@@ -9,6 +9,7 @@ from util import (
     is_device_or_sensor,
     read_config_from_disk,
     write_config_to_disk,
+    write_ir_macros_to_disk,
     reboot,
     clear_log,
     check_log_size
@@ -66,15 +67,31 @@ class TestUtil(unittest.TestCase):
         # Should refuse to write non-dict
         self.assertFalse(write_config_to_disk("string"))
 
+    def test_06_write_ir_macros_to_disk(self):
+        # Delete macros from disk, confirm removed
+        if 'ir_macros.json' in os.listdir():
+            os.remove('ir_macros.json')
+        self.assertFalse('ir_macros.json' in os.listdir())
+
+        # Write mock macros to disk, confirm written
+        self.assertTrue(write_ir_macros_to_disk(
+            {"macro_name": ["samsung_tv power 500 1"]}
+        ))
+        self.assertTrue('ir_macros.json' in os.listdir())
+        os.remove('ir_macros.json')
+
+        # Should refuse to write non-dict
+        self.assertFalse(write_ir_macros_to_disk("string"))
+
     @cpython_only
-    def test_06_reboot(self):
+    def test_07_reboot(self):
         # Function should call machine.reset
         reset.called = False
         self.assertFalse(reset.called)
         reboot()
         self.assertTrue(reset.called)
 
-    def test_07_clear_log(self):
+    def test_08_clear_log(self):
         # Ensure log file exists on disk, is not empty
         with open('app.log', 'w') as file:
             file.write('test')
@@ -85,7 +102,7 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(os.stat('app.log')[6], 0)
 
     @cpython_only
-    def test_08_check_log_size(self):
+    def test_09_check_log_size(self):
         # Create mock log file with size 100001 bytes
         with open('app.log', 'wb') as f:
             f.write(os.urandom(100001))
@@ -102,3 +119,11 @@ class TestUtil(unittest.TestCase):
         asyncio.run(asyncio.sleep_ms(10))
         self.assertTrue("check_log_size" in str(SoftwareTimer.timer.schedule))
         SoftwareTimer.timer.cancel("check_log_size")
+
+        # Simulate timer expiring while log size is 1kb
+        with open('app.log', 'wb') as f:
+            f.write(os.urandom(1000))
+        self.assertEqual(os.stat('app.log')[6], 1000)
+        check_log_size()
+        # Confirm did not clear log (has not reached limit)
+        self.assertEqual(os.stat('app.log')[6], 1000)
