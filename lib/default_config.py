@@ -3,7 +3,7 @@ default_config = {
     "metadata": {
         "id": "",
         "location": "",
-        "floor": "",
-        "schedule_keywords": {}
-    }
+        "floor": ""
+    },
+    "schedule_keywords": {}
 }
