@@ -1,15 +1,9 @@
-import json
 import webrepl
 import unittest
 from Api import app
 from Config import Config
 from main import start
 from cpython_only import cpython_only
-
-# Read wifi credentials from disk
-with open('config.json', 'r') as file:
-    test_config = json.load(file)
-
 
 config_file = {
     "metadata": {
