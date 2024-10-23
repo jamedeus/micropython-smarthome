@@ -42,6 +42,9 @@ class TestLedStrip(unittest.TestCase):
         self.assertTrue(self.instance.send(1))
         self.assertEqual(self.instance.pwm.duty(), 32)
 
+        # Turn on when already at target brightness (returns True immediately)
+        self.assertTrue(self.instance.send(1))
+
     def test_04_turn_off(self):
         self.instance.enable()
         self.assertTrue(self.instance.send(0))

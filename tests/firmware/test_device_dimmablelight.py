@@ -387,6 +387,12 @@ class TestDimmableLight(unittest.TestCase):
         # Confirm scheduled_rule matches current_rule
         self.assertEqual(self.instance.scheduled_rule, 3)
 
+        # Simulate rule changed to fade target
+        self.instance.set_rule(100)
+        # Call fade method, confirm stops fading
+        self.instance.fade()
+        self.assertFalse(self.instance.fading)
+
     # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
     # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.

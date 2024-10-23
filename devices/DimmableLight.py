@@ -222,11 +222,6 @@ class DimmableLight(Device):
         if self.current_rule == "disabled":
             self.set_rule(self.min_rule)
 
-        if int(target) == self.current_rule:
-            self.print("Already at target brightness, skipping fade")
-            self.log.info("Already at target brightness, skipping fade")
-            return True
-
         # Find fade direction, get number of steps, period between steps
         if int(target) > self.current_rule:
             steps = int(target) - self.current_rule
@@ -237,6 +232,11 @@ class DimmableLight(Device):
             steps = self.current_rule - int(target)
             fade_period = int(period) / steps * 1000
             fade_down = True
+
+        else:
+            self.print("Already at target brightness, skipping fade")
+            self.log.info("Already at target brightness, skipping fade")
+            return True
 
         # Ensure device is enabled
         self.enabled = True
@@ -315,15 +315,15 @@ class DimmableLight(Device):
                 SoftwareTimer.timer.epoch_now() - self.fading["started"]
             ) // self.fading["period"]
 
-            # Fading up
-            if not self.fading["down"]:
-                new_rule = self.fading["starting_brightness"] + steps
-                new_rule = min(new_rule, self.fading['target'])
-
             # Fading down
-            elif self.fading["down"]:
+            if self.fading["down"]:
                 new_rule = self.fading["starting_brightness"] + steps * -1
                 new_rule = max(new_rule, self.fading['target'])
+
+            # Fading up
+            else:
+                new_rule = self.fading["starting_brightness"] + steps
+                new_rule = min(new_rule, self.fading['target'])
 
             # If fade started by schedule rule: update scheduled_rule
             if self.fading["scheduled"]:

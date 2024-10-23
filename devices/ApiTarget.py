@@ -54,7 +54,7 @@ class ApiTarget(Device):
         '''
         if self.node_ip is None:
             wlan = network.WLAN(network.WLAN.IF_STA)
-            if wlan.isconnected():
+            if wlan.isconnected():  # pragma: no branch
                 self.node_ip = wlan.ifconfig()[0]
         return self.node_ip
 
