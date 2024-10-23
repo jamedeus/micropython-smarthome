@@ -36,16 +36,21 @@ expected_attributes = {
 }
 
 
-# Subclass Group to detect when refresh method called
+# Subclass Group to detect when refresh and reset_state methods called
 class MockGroup(Group):
     def __init__(self, name, sensors):
         super().__init__(name, sensors)
 
         self.refresh_called = False
+        self.reset_state_called = False
 
     def refresh(self, arg=None):
         self.refresh_called = True
         super().refresh()
+
+    def reset_state(self):
+        self.reset_state_called = True
+        super().reset_state()
 
 
 class TestDesktopTrigger(unittest.TestCase):
@@ -62,10 +67,17 @@ class TestDesktopTrigger(unittest.TestCase):
         cls.target.group = cls.group
 
     def setUp(self):
-        # Enable instance, set normal IP and port (not error), reset group refresh_called
+        # Enable instance, reset self.current, set mode to screen
         self.instance.enable()
+        self.instance.current = None
+        self.instance.mode = "screen"
+        # Set normal IP and port (not error)
         self.instance.uri = f'{ip}:{port}'
+        # Ensure sensor has desktop_target attribute (removed in some tests)
+        self.instance.desktop_target = self.target
+        # Reset group refresh_called and reset_state_called
         self.group.refresh_called = False
+        self.group.reset_state_called = False
 
     @classmethod
     def tearDownClass(cls):
@@ -199,11 +211,7 @@ class TestDesktopTrigger(unittest.TestCase):
         self.instance.current = "On"
         self.assertFalse(self.instance._condition_met_activity_mode())
 
-    def test_11_get_current_screen_mode(self):
-        # Reset instance.current, ensure screen mode
-        self.instance.current = None
-        self.instance.mode = "screen"
-
+    def test_11_get_current_screen_mode_on(self):
         # Configure mock receiver to return On for first reading
         requests.post(f'http://{ip}:{port}/set_screen_state', json={'state': 'On'})
 
@@ -213,9 +221,11 @@ class TestDesktopTrigger(unittest.TestCase):
         self.assertEqual(self.instance.current, "On")
         self.assertTrue(self.instance.condition_met())
         self.assertTrue(self.group.refresh_called)
+        # Confirm DesktopTarget state atribute matches
+        self.assertTrue(self.instance.desktop_target.state)
 
-        # Reset group, set next reading to Off
-        self.group.refresh_called = False
+    def test_12_get_current_screen_mode_off(self):
+        # Configure mock receiver to return Off for next reading
         requests.post(f'http://{ip}:{port}/set_screen_state', json={'state': 'Off'})
 
         # Call method
@@ -224,22 +234,38 @@ class TestDesktopTrigger(unittest.TestCase):
         self.assertEqual(self.instance.current, "Off")
         self.assertFalse(self.instance.condition_met())
         self.assertTrue(self.group.refresh_called)
+        # Confirm DesktopTarget state atribute matches
+        self.assertFalse(self.instance.desktop_target.state)
+        # Confirm group state was reset to None (allows turning screen back on)
+        self.assertTrue(self.group.reset_state_called)
 
-        # Reset group, set next reading to standby
+        # Simulate no DesktopTarget configured, reset group, set current to On
+        self.instance.desktop_target = None
         self.group.refresh_called = False
+        self.group.reset_state_called = False
+        self.instance.current = "On"
+
+        # Call method
+        self.instance._get_current_screen_mode()
+        # Confirm current is "Off", condition not met, Group.refresh called
+        self.assertEqual(self.instance.current, "Off")
+        self.assertFalse(self.instance.condition_met())
+        self.assertTrue(self.group.refresh_called)
+        # Confirm group state was NOT reset (only needed for DesktopTarget)
+        self.assertFalse(self.group.reset_state_called)
+
+    def test_13_get_current_screen_mode_standby(self):
+        # Configure mock receiver to return standby for next reading
         requests.post(f'http://{ip}:{port}/set_screen_state', json={'state': 'standby'})
 
         # Call method
         self.instance._get_current_screen_mode()
         # Confirm current did not change, condition not met, Group.refresh not called
-        self.assertEqual(self.instance.current, "Off")
+        self.assertEqual(self.instance.current, None)
         self.assertFalse(self.instance.condition_met())
         self.assertFalse(self.group.refresh_called)
 
-        # Reset
-        requests.post(f'http://{ip}:{port}/set_screen_state', json={'state': 'Off'})
-
-    def test_12_get_current_activity_mode(self):
+    def test_14_get_current_activity_mode(self):
         # Reset instance.current, ensure activity mode
         self.instance.current = None
         self.instance.mode = "activity"
@@ -271,12 +297,12 @@ class TestDesktopTrigger(unittest.TestCase):
         # Call method, confirm returns False
         self.assertFalse(self.instance._get_current_activity_mode())
 
-    def test_13_instantiate_with_invalid_mode(self):
+    def test_15_instantiate_with_invalid_mode(self):
         # Instantiate with unsupported mode
         with self.assertRaises(ValueError):
             DesktopTrigger("sensor1", "sensor1", "desktop", "enabled", [], "invalid", ip, port)
 
-    def test_14_monitor_screen(self):
+    def test_16_monitor_screen(self):
         # Configure mock receiver to return On for first reading
         requests.post(f'http://{ip}:{port}/set_screen_state', json={'state': 'On'})
 
@@ -317,7 +343,7 @@ class TestDesktopTrigger(unittest.TestCase):
         # Confirm refresh called
         self.assertTrue(self.group.refresh_called)
 
-    def test_15_monitor_activity(self):
+    def test_17_monitor_activity(self):
         # Configure mock receiver to return 42ms for first reading
         requests.post(f'http://{ip}:{port}/set_idle_time', json={'idle_time': 42})
 
@@ -368,7 +394,7 @@ class TestDesktopTrigger(unittest.TestCase):
     # reading did not achieve this. Instead, overwriting with 'On' caused monitor
     # to interpret next reading ('Off') as new, resulting in targets being turned
     # OFF by trigger instead of ON. Trigger method now calls refresh_group directly.
-    def test_16_regression_trigger_does_not_turn_on(self):
+    def test_18_regression_trigger_does_not_turn_on(self):
         # Ensure target enabled, target turned off
         self.target.enable()
         self.target.state = False
@@ -396,7 +422,7 @@ class TestDesktopTrigger(unittest.TestCase):
     # still contain the canceled Task, preventing the loop from being started.
     # This is now handled in the disable method to ensure monitor_task is None.
     @cpython_only
-    def test_17_regression_disabled_at_boot_breaks_monitor_loop(self):
+    def test_19_regression_disabled_at_boot_breaks_monitor_loop(self):
         # Simulate instantiating with current_rule = disabled
         instance = DesktopTrigger("sensor1", "sensor1", "desktop", "disabled", [], "screen", ip, port)
         instance.set_rule("disabled")
@@ -408,7 +434,7 @@ class TestDesktopTrigger(unittest.TestCase):
     # If the desktop was in sleep mode when sensor re-enabled it would continue
     # to use the outdated reading, which could cause condition_met to return
     # True (user active) even though the computer was offline.
-    def test_18_regression_incorrect_condition_if_enabled_while_computer_asleep(self):
+    def test_20_regression_incorrect_condition_if_enabled_while_computer_asleep(self):
         # Simulate very recent user activity
         self.instance.mode = "activity"
         self.instance.current = 10

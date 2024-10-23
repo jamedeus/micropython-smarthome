@@ -179,28 +179,21 @@ class DesktopTrigger(SensorWithLoop):
             self.log.debug("monitors changed from %s to %s", self.current, new)
             self.current = new
 
-            if self.current == "Off":
-                # Update desktop target's state (allows group to turn screen
-                # back on, will get stuck off if state remains True)
-                if self.desktop_target:
-                    self.log.debug(
-                        "Set desktop target (%s) state to False",
-                        self.desktop_target.name
-                    )
-                    self.desktop_target.state = False
+            # Keep desktop target state in sync with actual monitor state (does
+            # not update when screen enters sleep mode by itself, will not be
+            # able to turn screen back on if state remains True)
+            if self.desktop_target:
+                self.desktop_target.state = self.current == "On"
+                self.log.debug(
+                    "Set desktop target (%s) state to %s",
+                    self.desktop_target.name,
+                    self.desktop_target.state
+                )
 
-                # Allow group to turn screen back on if other sensors in group
-                # have condition met
-                self.group.reset_state()
-
-            # If monitors just turned on, update target's state
-            elif self.current == "On":
-                if self.desktop_target:
-                    self.log.debug(
-                        "Set desktop target (%s) state to True",
-                        self.desktop_target.name
-                    )
-                    self.desktop_target.state = True
+                # Reset group state when screen turns off (allows group to turn
+                # screen back on if other sensors in group have condition met)
+                if not self.desktop_target.state:
+                    self.group.reset_state()
 
             # Refresh group so new screen state can take effect
             self.refresh_group()
