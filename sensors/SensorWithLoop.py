@@ -56,7 +56,7 @@ class SensorWithLoop(Sensor):
         '''
 
         # Stop loop if running
-        if self.monitor_task is not None:
+        if self.monitor_task is not None:  # pragma: no branch
             self.log.debug("%s: stop monitor loop", self.name)
             self.monitor_task.cancel()
             # Allow enable method to restart loop

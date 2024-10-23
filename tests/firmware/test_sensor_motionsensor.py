@@ -143,12 +143,26 @@ class TestMotionSensorSensor(unittest.TestCase):
         # Queue should NOT contain entry for motion sensor (rule is 0)
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
+        # Simulate motion being detected right after interrupt created but
+        # before rule is set (rare but not impossible)
+        self.instance.current_rule = None
+        self.instance.start_reset_timer()
+        # Confirm no reset timer was created
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+
     def test_07_trigger(self):
         # Ensure not already triggered to avoid false positive
         self.instance.motion = False
         # Trigger, condition should now be met
         self.assertTrue(self.instance.trigger())
         self.assertTrue(self.instance.condition_met())
+        # Confirm refresh_group was called
+        self.assertTrue(self.group.refresh_called)
+
+        # Repeat, confirm group is still refreshed when motion already True
+        self.group.refresh_called = False
+        self.assertTrue(self.instance.trigger())
+        self.assertTrue(self.group.refresh_called)
 
     def test_08_condition_met(self):
         # Confirm condition_met returns self.motion
