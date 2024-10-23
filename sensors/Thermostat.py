@@ -197,7 +197,7 @@ class Thermostat(SensorWithLoop):
             if current < self.off_threshold:
                 return False
 
-        elif self.mode == "heat":
+        else:
             if current < self.on_threshold:
                 return True
             if current > self.off_threshold:
@@ -317,9 +317,9 @@ class Thermostat(SensorWithLoop):
                     self.log.debug("set %s state to %s", i.name, action)
                     i.state = action
 
-            # Force group to turn targets on/off again
-            self.group.reset_state()
-            self.refresh_group()
+                # Force group to turn targets on/off again
+                self.group.reset_state()
+                self.refresh_group()
 
         # Run again in 30 seconds
         SoftwareTimer.timer.create(30000, self.audit, self.name)

@@ -240,54 +240,197 @@ class TestThermostat(unittest.TestCase):
         # Should not be able to trigger this sensor type
         self.assertFalse(self.instance.trigger())
 
-    def test_12_audit(self):
-        # Ensure Group.refresh not called
-        self.group.refresh_called = False
-
+    def test_12_audit_method(self):
         # Confirm no audit timer in SoftwareTimer queue
         SoftwareTimer.timer.cancel(self.instance.name)
         asyncio.run(self.sleep(10))
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
-        # Get actual temperature to mock recent changes
-        current = self.instance.get_temperature()
+        # Mock empty history (just enabled or audit just cleared history)
+        self.instance.recent_temps = []
 
-        # Mock temp increasing when heater should NOT be running
-        self.instance.mode = 'heat'
-        self.instance.set_rule(current - 1)
-        self.instance.recent_temps = [current - 4, current - 3, current - 2]
-        # Confirm state flips to True (allow heater to turn off), Group.refresh called
+        # Call audit, confirm group NOT refreshed (requires 3 readings)
+        self.group.refresh_called = False
         self.instance.audit()
-        self.assertTrue(self.target.state)
-        self.assertTrue(self.group.refresh_called)
+        self.assertFalse(self.group.refresh_called)
 
         # Confirm audit method added timer to run audit again in 30 seconds
         asyncio.run(self.sleep(10))
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
 
-        # Mock temp increasing when air conditioner SHOULD be running
-        self.instance.mode = 'cool'
-        self.instance.recent_temps = [current - 4, current - 3, current - 2]
-        # Confirm state flips to False (allow AC to turn on), Group.refresh called
-        self.instance.audit()
-        self.assertFalse(self.target.state)
-        self.assertTrue(self.group.refresh_called)
+    def test_12_audit_method_no_trend_in_history(self):
+        # Get actual temperature to mock recent changes
+        current = self.instance.get_temperature()
 
-        # Mock temp decreasing when air conditioner should NOT be running
+        # Mock temp moving in multiple directions (air circulation while climate control off)
+        self.instance.recent_temps = [current, current - 0.5, current + 0.5]
+
+        # Call audit, confirm group NOT refreshed, target state not changed
+        self.group.refresh_called = False
+        self.target.state = None
+        self.instance.audit()
+        self.assertEqual(self.target.state, None)
+        self.assertFalse(self.group.refresh_called)
+
+    def test_12_audit_heat_mode_temp_increasing(self):
+        # Ensure mode set to heat
+        self.instance.mode = 'heat'
+
+        # Get actual temperature to mock recent changes
+        current = self.instance.get_temperature()
+
+        # Mock temp INCREASING when heater SHOULD be running (right direction)
+        self.instance.recent_temps = [current - 4, current - 3, current - 2]
         self.instance.set_rule(current + 1)
-        self.instance.recent_temps = [current + 4, current + 3, current + 2]
-        # Confirm state flips to True (allow AC to turn off), Group.refresh called
+        self.assertTrue(self.instance.condition_met())
+        # Call audit, confirm group NOT refreshed, target state not changed
+        self.group.refresh_called = False
+        self.target.state = None
+        self.instance.audit()
+        self.assertEqual(self.target.state, None)
+        self.assertFalse(self.group.refresh_called)
+
+        # Mock temp INCREASING when heater should NOT be running (wrong direction)
+        self.instance.recent_temps = [current - 4, current - 3, current - 2]
+        self.instance.set_rule(current - 1)
+        self.assertFalse(self.instance.condition_met())
+        # Call audit, confirm group refreshed, target state is True (allows turning off)
+        self.group.refresh_called = False
+        self.target.state = None
         self.instance.audit()
         self.assertTrue(self.target.state)
         self.assertTrue(self.group.refresh_called)
 
-        # Mock temp decreasing when heater SHOULD be running
+        # Mock temp INCREASING when already at target temp (condition = None)
+        self.instance.recent_temps = [current - 4, current - 3, current - 2]
+        self.instance.set_rule(current)
+        self.assertEqual(self.instance.condition_met(), None)
+        # Call audit, confirm group NOT refreshed, target state not changed
+        self.group.refresh_called = False
+        self.target.state = None
+        self.instance.audit()
+        self.assertEqual(self.target.state, None)
+        self.assertFalse(self.group.refresh_called)
+
+    def test_12_audit_heat_mode_temp_decreasing(self):
+        # Ensure mode set to heat
         self.instance.mode = 'heat'
+
+        # Get actual temperature to mock recent changes
+        current = self.instance.get_temperature()
+
+        # Mock temp DECREASING when heater SHOULD be running (wrong direction)
         self.instance.recent_temps = [current + 4, current + 3, current + 2]
-        # Confirm state flips to True (allow heater to turn on), Group.refresh called
+        self.instance.set_rule(current + 1)
+        self.assertTrue(self.instance.condition_met())
+        # Call audit, confirm group refreshed, target state is False (allows turning on)
+        self.group.refresh_called = False
+        self.target.state = None
         self.instance.audit()
         self.assertFalse(self.target.state)
         self.assertTrue(self.group.refresh_called)
+
+        # Mock temp DECREASING when heater should NOT be running (right direction)
+        self.instance.recent_temps = [current + 4, current + 3, current + 2]
+        self.instance.set_rule(current - 1)
+        self.assertFalse(self.instance.condition_met())
+        # Call audit, confirm group NOT refreshed, target state not changed
+        self.group.refresh_called = False
+        self.target.state = None
+        self.instance.audit()
+        self.assertEqual(self.target.state, None)
+        self.assertFalse(self.group.refresh_called)
+
+        # Mock temp DECREASING when already at target temp (condition = None)
+        self.instance.recent_temps = [current + 4, current + 3, current + 2]
+        self.instance.set_rule(current)
+        self.assertEqual(self.instance.condition_met(), None)
+        # Call audit, confirm group NOT refreshed, target state not changed
+        self.group.refresh_called = False
+        self.target.state = None
+        self.instance.audit()
+        self.assertEqual(self.target.state, None)
+        self.assertFalse(self.group.refresh_called)
+
+    def test_12_audit_cool_mode_temp_increasing(self):
+        # Ensure mode set to cool
+        self.instance.mode = 'cool'
+
+        # Get actual temperature to mock recent changes
+        current = self.instance.get_temperature()
+
+        # Mock temp INCREASING when air conditioner SHOULD be running (wrong direction)
+        self.instance.recent_temps = [current - 4, current - 3, current - 2]
+        self.instance.set_rule(current - 1)
+        self.assertTrue(self.instance.condition_met())
+        # Call audit, confirm group refreshed, target state is False (allows turning on)
+        self.group.refresh_called = False
+        self.target.state = None
+        self.instance.audit()
+        self.assertFalse(self.target.state)
+        self.assertTrue(self.group.refresh_called)
+
+        # Mock temp INCREASING when air conditioner should NOT be running (right direction)
+        self.instance.recent_temps = [current - 4, current - 3, current - 2]
+        self.instance.set_rule(current + 1)
+        self.assertFalse(self.instance.condition_met())
+        # Call audit, confirm group NOT refreshed, target state not changed
+        self.group.refresh_called = False
+        self.target.state = None
+        self.instance.audit()
+        self.assertEqual(self.target.state, None)
+        self.assertFalse(self.group.refresh_called)
+
+        # Mock temp INCREASING when already at target temp (condition = None)
+        self.instance.recent_temps = [current - 4, current - 3, current - 2]
+        self.instance.set_rule(current)
+        self.assertEqual(self.instance.condition_met(), None)
+        # Call audit, confirm group NOT refreshed, target state not changed
+        self.group.refresh_called = False
+        self.target.state = None
+        self.instance.audit()
+        self.assertEqual(self.target.state, None)
+        self.assertFalse(self.group.refresh_called)
+
+    def test_12_audit_cool_mode_temp_decreasing(self):
+        # Ensure mode set to cool
+        self.instance.mode = 'cool'
+
+        # Get actual temperature to mock recent changes
+        current = self.instance.get_temperature()
+
+        # Mock temp DECREASING when air conditioner SHOULD be running (right direction)
+        self.instance.recent_temps = [current + 4, current + 3, current + 2]
+        self.instance.set_rule(current - 1)
+        self.assertTrue(self.instance.condition_met())
+        # Call audit, confirm group NOT refreshed, target state not changed
+        self.group.refresh_called = False
+        self.target.state = None
+        self.instance.audit()
+        self.assertEqual(self.target.state, None)
+        self.assertFalse(self.group.refresh_called)
+
+        # Mock temp DECREASING when air conditioner should NOT be running (wrong direction)
+        self.instance.recent_temps = [current + 4, current + 3, current + 2]
+        self.instance.set_rule(current + 1)
+        self.assertFalse(self.instance.condition_met())
+        # Call audit, confirm group refreshed, target state is True (allows turning off)
+        self.group.refresh_called = False
+        self.target.state = None
+        self.instance.audit()
+        self.assertTrue(self.target.state)
+        self.assertTrue(self.group.refresh_called)
+
+        # Mock temp DECREASING when already at target temp (condition = None)
+        self.instance.recent_temps = [current + 4, current + 3, current + 2]
+        self.instance.set_rule(current)
+        self.assertEqual(self.instance.condition_met(), None)
+        # Call audit, confirm group NOT refreshed, target state not changed
+        self.group.refresh_called = False
+        self.target.state = None
+        self.instance.audit()
+        self.assertEqual(self.target.state, None)
+        self.assertFalse(self.group.refresh_called)
 
     def test_13_disable_stops_loop(self):
         # Confirm loop task exists
@@ -439,6 +582,7 @@ class TestThermostat(unittest.TestCase):
     def test_23_regression_fail_to_update_thresholds(self):
         # Confirm initial thresholds
         self.instance.tolerance = 1.0
+        self.instance.mode = 'heat'
         self.instance.set_rule(70)
         self.assertEqual(self.instance.on_threshold, 69.0)
         self.assertEqual(self.instance.off_threshold, 71.0)
