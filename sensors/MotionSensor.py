@@ -50,7 +50,12 @@ class MotionSensor(Sensor):
         current_rule contains a usable value, refreshes group (check sensor),
         creates hardware interrupt on motion sensor output pin.
         '''
-        self.motion = False
+
+        # Set motion to match sensor pin (may have changed while sensor was
+        # disabled, interrupt that sets motion only runs when sensor enabled)
+        self.motion = bool(self.sensor.value())
+        if self.motion:
+            self.start_reset_timer()
 
         super().enable()
 

@@ -344,3 +344,39 @@ class TestMotionSensorSensor(unittest.TestCase):
         # Yield to let SoftwareTimer coroutine create reset timer
         asyncio.run(self.sleep(10))
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+
+    # Original bug: The enable method set self.motion to False, regardless of
+    # the sensor pin state. If the pin was HIGH the motion attribute would be
+    # incorrect and could not be changed until the pin fell LOW and then went
+    # back to HIGH (interrupt runs when pin changes). This was a minor issue
+    # with PIR (pin changes constantly) but with LD2410 (pin can stay HIGH for
+    # a very long time) it could prevent the sensor from working until user(s)
+    # left the room and came back.
+    @cpython_only
+    def test_18_regression_motion_detected_before_sensor_enabled(self):
+        # Disable sensor, set motion to None, confirm no reset timer
+        self.instance.disable()
+        self.instance.motion = None
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+
+        # Simulate pin LOW
+        self.instance.sensor.pin_state = 0
+
+        # Enable sensor, confirm motion is False, reset timer is not running
+        self.instance.enable()
+        asyncio.run(self.sleep(10))
+        self.assertFalse(self.instance.motion)
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+
+        # Disable again, reset motion
+        self.instance.disable()
+        self.instance.motion = None
+
+        # Simulate pin HIGH
+        self.instance.sensor.pin_state = 1
+
+        # Enable sensor, confirm motion is True, reset timer is running
+        self.instance.enable()
+        asyncio.run(self.sleep(10))
+        self.assertTrue(self.instance.motion)
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
