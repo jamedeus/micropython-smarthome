@@ -50,11 +50,11 @@ class Dummy(Sensor):
           scheduled: Optional, if True also sets scheduled_rule if rule valid
         '''
 
-        result = super().set_rule(rule, scheduled)
         # Refresh group if rule changed successfully
-        if self.group:
+        if super().set_rule(rule, scheduled):
             self.refresh_group()
-        return result
+            return True
+        return False
 
     def condition_met(self):
         '''Returns True if current_rule is "on" (turn target devices on).

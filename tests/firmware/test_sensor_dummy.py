@@ -75,11 +75,16 @@ class TestDummySensor(unittest.TestCase):
         self.assertTrue(self.group.refresh_called)
         self.group.refresh_called = False
 
-        # Change rule to 'on', should accept, should call Group.refresh
+        # Change rule to 'off', should accept, should call Group.refresh
         self.assertTrue(self.instance.set_rule("off"))
         self.assertEqual(self.instance.current_rule, 'off')
         self.assertTrue(self.group.refresh_called)
         self.group.refresh_called = False
+
+        # Set invalid rule, should reject, should NOT call Group.refresh
+        self.assertFalse(self.instance.set_rule("invalid"))
+        self.assertEqual(self.instance.current_rule, 'off')
+        self.assertFalse(self.group.refresh_called)
 
     def test_06_condition_met(self):
         # Should always return True when rule is on
