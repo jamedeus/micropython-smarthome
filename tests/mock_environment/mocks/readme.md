@@ -6,6 +6,10 @@ This directory contains mocked versions of modules exclusive to Micropython. Thi
 
 This module mocks the [micropython DHT module](https://docs.micropython.org/en/latest/esp32/quickref.html#dht-driver). The `measure` method sets hardcoded temperature and humidity value which can be accessed with the `temperature` and `humidity` methods. Must be instantiated with a `machine.Pin` instance, otherwise `measure` raises the same error as the upstream driver.
 
+## flashbdev module
+
+The `flashbdev` module exposes the ESP32 filesystem as a block device (`flashbdev.bdev`). When the node boots `boot.py` checks if the block device exists and mounts it, this is the only time the module is used. In the mock environment `flashbdev.bdev` just contains `True` to make the conditional pass.
+
 ## Json module
 
 The `runtests.py` script replaces `json.loads` and `json.JSONDecoder` with mocks that handle invalid syntax by raising OSError (rather than JSONDecodeError). This matches the behavior of micropython's json module, which does not implement JSONDecodeError. The JSONDecoder mock also raises a ValueError if the encoded JSON contains NaN (not supported on micropython).
