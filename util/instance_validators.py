@@ -45,7 +45,10 @@ def validate_rules(instance):
         return f'Invalid type {instance["_type"]}'
 
     # Validate default rule
-    valid = default_validator(instance['default_rule'], **instance)
+    try:
+        valid = default_validator(instance['default_rule'], **instance)
+    except KeyError as ex:
+        return f'Instance missing required {ex} property'
     if valid is False:
         return f"{instance['nickname']}: Invalid default rule {instance['default_rule']}"
     # If validator returns own error, return as-is

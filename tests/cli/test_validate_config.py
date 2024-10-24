@@ -212,3 +212,20 @@ class ValidateConfigTests(TestCase):
             result,
             'Required metadata key id has no value'
         )
+
+    def test_regression_crashes_if_device_or_sensor_missing_required_key(self):
+        '''Original bug: The validate_rules function passed all keys of the
+        device/sensor section to the validator function as kwargs with no error
+        handling. If the validator function did not use try/except for kwarg
+        lookups an unhandled exception would occur if a kwarg was missing.
+        '''
+
+        # Delete si7021 units key
+        del self.valid_config['sensor5']['units']
+
+        # Function should return error instead of raising uncaught exception
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(
+            result,
+            "Instance missing required 'units' property"
+        )
