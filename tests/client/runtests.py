@@ -1,8 +1,9 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import os
 import sys
 import time
+import json
 import argparse
 import unittest
 from helper_functions import valid_ip
@@ -15,7 +16,8 @@ repo_dir = os.path.dirname(os.path.dirname(client_tests_dir))
 
 def run_tests(ip):
     # Write test node IP to disk (read by unit tests)
-    with open(os.path.join(client_tests_dir, 'CLIENT_TEST_TARGET_IP'), 'w') as file:
+    test_node_ip_file = os.path.join(client_tests_dir, 'CLIENT_TEST_TARGET_IP')
+    with open(test_node_ip_file, 'w', encoding='utf-8') as file:
         file.write(ip)
 
     # Discover tests
@@ -29,7 +31,7 @@ def run_tests(ip):
     result = runner.run(suite)
 
     # Remove target IP file
-    os.remove(os.path.join(client_tests_dir, 'CLIENT_TEST_TARGET_IP'))
+    os.remove(test_node_ip_file)
 
     # Exit non-zero if any tests failed
     if not result.wasSuccessful():
@@ -37,16 +39,24 @@ def run_tests(ip):
 
 
 def upload_test_config(ip):
-    # Import provisioner class, argparse.Namespace
     sys.path.insert(0, os.path.join(repo_dir, 'CLI'))
-    from provision import Provisioner
-    from argparse import Namespace
+    from provision_tools import get_modules, provision
 
-    # Instantiate with test config file + test node IP, wait 30 seconds for reboot to complete
-    # Provisioner class starts upload automatically when instantiated with valid args
-    config_file = open(os.path.join(client_tests_dir, 'client_test_config.json'), 'r')
-    args = Namespace(config=config_file, ip=ip, node=None, all=None, test=None, password='password')
-    Provisioner(args, '')
+    # Read test config from disk
+    config_path = os.path.join(client_tests_dir, 'client_test_config.json')
+    with open(config_path, 'r', encoding='utf-8') as file:
+        config = json.load(file)
+
+    # Upload test config to node IP, wait 30 seconds for reboot to complete
+    result = provision(
+        ip=ip,
+        password='password',
+        config=config,
+        modules=get_modules(config, repo_dir)
+    )
+    if result['status'] != 200:
+        print(result['message'])
+        raise SystemExit
     time.sleep(30)
 
 
