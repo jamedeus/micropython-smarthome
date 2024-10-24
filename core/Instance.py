@@ -165,7 +165,7 @@ class Instance():
             return str(rule).lower()
         return self.validator(rule)
 
-    def validator(self, *args):
+    def validator(self, _):
         '''Placeholder method called by rule_validator, intended to be replaced
         by subclasses that support additional rule types.
         '''

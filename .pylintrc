@@ -560,11 +560,11 @@ check-str-concat-over-line-jumps=no
 ignored-modules=network,machine,webrepl,micropython,flashbdev,inisetup,tls,uio,
                 setup_ssl_certs,setup_page,api_keys,hardware_classes,dht,ir_tx,
                 ir_code_classes,tls,flask,mock_json,mock_requests,mock_asyncio,
-                mock_logging,mock_cli_config
+                mock_logging,mock_cli_config,vfs
 
 # Silence no-member for methods that only exist in micropython
-generated-members=os.mount,time.sleep_us,time.sleep_ms,asyncio.sleep_ms,
-                  asyncio.sleep_us,sys.print_exception
+generated-members=os.mount,os.dupterm,time.sleep_us,time.sleep_ms,
+                  asyncio.sleep_ms,asyncio.sleep_us,sys.print_exception
 
 # List of decorators that produce context managers, such as
 # contextlib.contextmanager. Add to this list to register other decorators that
