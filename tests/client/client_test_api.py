@@ -16,13 +16,17 @@ with open(os.path.join(client_tests_dir, 'CLIENT_TEST_TARGET_IP'), 'r') as file:
 
 class TestParseCommand(unittest.TestCase):
 
-    # Test reboot first for predictable initial state (replace schedule rules deleted by last test etc)
-    def test_01(self):
+    @classmethod
+    def setUpClass(cls):
         # Re-upload config file (modified by save methods, breaks next test)
+        print("\nReuploading test config file...")
         node = Webrepl(target_ip)
         node.put_file(os.path.join(client_tests_dir, 'client_test_config.json'), 'config.json')
         node.close_connection()
+        print("Done\n")
 
+    # Test reboot first for predictable initial state
+    def test_01_reboot(self):
         response = asyncio.run(request(target_ip, ['reboot']))
         self.assertEqual(response, "Rebooting")
 

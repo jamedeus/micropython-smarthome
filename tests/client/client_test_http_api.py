@@ -15,16 +15,21 @@ with open(os.path.join(client_tests_dir, 'CLIENT_TEST_TARGET_IP'), 'r') as file:
 
 class TestEndpoint(unittest.TestCase):
 
-    # Test reboot first for predictable initial state (replace schedule rules deleted by last test etc)
-    def test_01(self):
+    @classmethod
+    def setUpClass(cls):
         # Re-upload config file (modified by save methods, breaks next test)
+        print("\nReuploading test config file...")
         node = Webrepl(target_ip)
         node.put_file(os.path.join(client_tests_dir, 'client_test_config.json'), 'config.json')
         node.close_connection()
+        print("Done\n")
 
-        # Reboot test node, wait 30 seconds before running next test
+    # Test reboot first for predictable initial state
+    def test_01_reboot(self):
         response = requests.get(f'http://{target_ip}:8123/reboot')
         self.assertEqual(response.json(), "Rebooting")
+
+        # Wait for node to finish booting before running next test
         time.sleep(30)
 
     def test_02_status(self):
