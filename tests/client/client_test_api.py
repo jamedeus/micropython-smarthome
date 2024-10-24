@@ -31,11 +31,10 @@ class TestParseCommand(unittest.TestCase):
 
     def test_02_status(self):
         response = asyncio.run(request(target_ip, ['status']))
-        keys = response.keys()
-        self.assertIn('metadata', keys)
-        self.assertIn('sensors', keys)
-        self.assertIn('devices', keys)
-        self.assertEqual(len(response.keys()), 3)
+        self.assertIn('metadata', response)
+        self.assertIn('sensors', response)
+        self.assertIn('devices', response)
+        self.assertEqual(len(response), 3)
 
     def test_03_disable(self):
         response = asyncio.run(request(target_ip, ['disable', 'device1']))
@@ -128,8 +127,8 @@ class TestParseCommand(unittest.TestCase):
         # Get keywords, should contain sunrise and sunset
         response = asyncio.run(request(target_ip, ['get_schedule_keywords']))
         self.assertEqual(len(response), 2)
-        self.assertIn('sunrise', response.keys())
-        self.assertIn('sunset', response.keys())
+        self.assertIn('sunrise', response)
+        self.assertIn('sunset', response)
 
     def test_16_add_schedule_keyword(self):
         # Add keyword, confirm added
@@ -147,19 +146,18 @@ class TestParseCommand(unittest.TestCase):
 
     def test_19_get_attributes(self):
         response = asyncio.run(request(target_ip, ['get_attributes', 'sensor1']))
-        keys = response.keys()
-        self.assertIn('_type', keys)
-        self.assertIn('rule_queue', keys)
-        self.assertIn('enabled', keys)
-        self.assertIn('targets', keys)
-        self.assertIn('name', keys)
-        self.assertIn('scheduled_rule', keys)
-        self.assertIn('current_rule', keys)
-        self.assertIn('default_rule', keys)
-        self.assertIn('motion', keys)
-        self.assertIn('nickname', keys)
-        self.assertIn('group', keys)
-        self.assertEqual(len(response.keys()), 11)
+        self.assertIn('_type', response)
+        self.assertIn('rule_queue', response)
+        self.assertIn('enabled', response)
+        self.assertIn('targets', response)
+        self.assertIn('name', response)
+        self.assertIn('scheduled_rule', response)
+        self.assertIn('current_rule', response)
+        self.assertIn('default_rule', response)
+        self.assertIn('motion', response)
+        self.assertIn('nickname', response)
+        self.assertIn('group', response)
+        self.assertEqual(len(response), 11)
         self.assertEqual(response['_type'], 'pir')
         self.assertEqual(response['default_rule'], 5)
         self.assertEqual(response['name'], 'sensor1')
@@ -259,7 +257,7 @@ class TestParseCommand(unittest.TestCase):
     def test_31_condition_met(self):
         response = asyncio.run(request(target_ip, ['condition_met', 'sensor1']))
         self.assertEqual(len(response), 1)
-        self.assertIn("Condition", response.keys())
+        self.assertIn("Condition", response)
 
     def test_32_trigger_sensor(self):
         response = asyncio.run(request(target_ip, ['trigger_sensor', 'sensor1']))
@@ -291,10 +289,18 @@ class TestParseCommand(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['set_gps_coords', {'latitude': '-90', 'longitude': '0.1'}]))
         self.assertEqual(response, {"Success": "GPS coordinates set"})
 
+    def test_36_mem_info(self):
+        # Send request, confirm response contains correct keys
+        response = asyncio.run(request(target_ip, ['mem_info']))
+        self.assertIn('free', response)
+        self.assertIn('max_free_sz', response)
+        self.assertIn('max_new_split', response)
+        self.assertEqual(len(response), 3)
+
     # Original bug: Enabling and turning on when both current and scheduled rules == "disabled"
     # resulted in comparison operator between int and string, causing crash.
     # After fix (see efd79c6f) this is handled by overwriting current_rule with default_rule.
-    def test_36_enable_regression_test(self):
+    def test_37_enable_regression_test(self):
         # Confirm correct starting conditions
         response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
         self.assertEqual(response['current_rule'], 'disabled')
@@ -312,7 +318,7 @@ class TestParseCommand(unittest.TestCase):
     # Original bug: LedStrip fade method made calls to set_rule method for each fade step.
     # Later, set_rule was modified to abort an in-progress fade when it received a brightness
     # rule. This caused fade to abort itself after the first step. Fixed in a29f5383.
-    def test_37_regression_fade_on(self):
+    def test_38_regression_fade_on(self):
         # Starting conditions
         asyncio.run(request(target_ip, ['set_rule', 'device3', '500']))
         response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
@@ -330,7 +336,7 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response['fading'], False)
 
     # Confirm that calling set_rule while a fade is in-progress correctly aborts
-    def test_38_abort_fade(self):
+    def test_39_abort_fade(self):
         # Starting conditions
         asyncio.run(request(target_ip, ['set_rule', 'device3', '500']))
         response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
