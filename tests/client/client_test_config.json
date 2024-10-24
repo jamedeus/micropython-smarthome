@@ -1,16 +1,12 @@
 {
     "metadata": {
         "id": "Client Test Config",
-        "floor": "0",
-        "location": "test environment",
-        "schedule_keywords": {
-            "sunset": "20:41",
-            "sunrise": "05:34"
-        }
+        "floor": 0,
+        "location": "test environment"
     },
-    "wifi": {
-        "ssid": "jamnet",
-        "password": "cjZY8PTa4ZQ6S83A"
+    "schedule_keywords": {
+        "sunset": "20:41",
+        "sunrise": "05:34"
     },
     "ir_blaster": {
         "pin": 32,
@@ -72,6 +68,7 @@
         "nickname": "sensor2",
         "default_rule": 72,
         "mode": "cool",
+        "units": "fahrenheit",
         "tolerance": 1,
         "schedule": {
             "04:59": 70,
