@@ -138,14 +138,14 @@ class IrBlaster():
             raise ValueError(f"Target {target} has no key {key}")
         try:
             delay = int(delay)
-        except ValueError as exc:
+        except ValueError:
             self.log.error("IrBlaster.add_macro_action: delay arg must be integer")
-            raise ValueError("Delay arg must be integer (milliseconds)") from exc
+            raise ValueError("Delay arg must be integer (milliseconds)")
         try:
             repeat = int(repeat)
-        except ValueError as exc:
+        except ValueError:
             self.log.error("IrBlaster.add_macro_action: repeat arg must be integer")
-            raise ValueError("Repeat arg must be integer (number of times to press key)") from exc
+            raise ValueError("Repeat arg must be integer (number of times to press key)")
 
         # Add action
         self.macros[name].append((target, key, delay, repeat))

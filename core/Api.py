@@ -163,11 +163,11 @@ class Api:
                     path = data[0]
                     args = data[1:]
                     log.debug('received async request, endpoint: %s, args: %s', path, args)
-                except ValueError as exc:
+                except ValueError:
                     # Return error if request JSON is invalid
                     swriter.write(json.dumps({"ERROR": "Syntax error in received JSON"}).encode())
                     await swriter.drain()
-                    raise OSError from exc
+                    raise OSError
 
             # Acquire lock, prevent multiple endpoints running simultaneously
             # Ensures response sent + connection closed before reboot task runs
