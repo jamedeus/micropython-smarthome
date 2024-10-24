@@ -176,6 +176,8 @@ class TestApi(unittest.TestCase):
         reader, writer = await asyncio.open_connection(ip, 8123)
         try:
             writer.write(msg.encode())
+            writer.write('Host: 10.0.0.10:8123\r\n'.encode())
+            writer.write('Accept-Language: en-US,en;q=0.5\r\n'.encode())
             writer.write('\r\n\r\n'.encode())
             await writer.drain()
             res = await reader.read(1500)

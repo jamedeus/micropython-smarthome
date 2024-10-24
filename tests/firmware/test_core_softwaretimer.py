@@ -20,6 +20,7 @@ class TestSoftwareTimer(unittest.TestCase):
         # Ensure no timers from previous test in queue
         SoftwareTimer.timer.cancel('test1')
         SoftwareTimer.timer.cancel('test2')
+        SoftwareTimer.timer.cancel('test3')
         SoftwareTimer.timer.cancel('unit_test')
         # Yield to let cancel coroutine run
         asyncio.run(self.sleep(10))
@@ -85,22 +86,26 @@ class TestSoftwareTimer(unittest.TestCase):
         self.assertEqual(len(rules), 0)
 
     def test_create_at_same_time(self):
-        # Create 2 tasks at same time (different names so they aren't
+        # Create 3 tasks at same time (different names so they aren't
         # considered duplicates and canceled)
         SoftwareTimer.timer.create(10000, print, "test1")
         SoftwareTimer.timer.create(10000, print, "test2")
+        SoftwareTimer.timer.create(10000, print, "test3")
         # Yield to let create coroutine run
         asyncio.run(self.sleep(10))
 
-        # Find both expiration timestamps
+        # Find expiration timestamps of each task
         for i in SoftwareTimer.timer.schedule:
             if SoftwareTimer.timer.schedule[i][0] == "test1":
                 test1_expiration = i
             elif SoftwareTimer.timer.schedule[i][0] == "test2":
                 test2_expiration = i
+            elif SoftwareTimer.timer.schedule[i][0] == "test3":
+                test3_expiration = i
 
-        # Second timestamp should be 1 ms later than first
+        # Each timestamp should be 1 ms later than the one before
         self.assertEqual((test2_expiration - test1_expiration), 1)
+        self.assertEqual((test3_expiration - test2_expiration), 1)
 
     def test_loop(self):
         # Get start epoch time
