@@ -166,11 +166,11 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response['nickname'], 'sensor1')
 
     def test_20_ir(self):
-        response = asyncio.run(request(target_ip, ['ir_key', 'tv', 'power']))
-        self.assertEqual(response, {'tv': 'power'})
+        response = asyncio.run(request(target_ip, ['ir_key', 'samsung_tv', 'power']))
+        self.assertEqual(response, {'samsung_tv': 'power'})
 
-        response = asyncio.run(request(target_ip, ['ir_key', 'ac', 'OFF']))
-        self.assertEqual(response, {'ac': 'OFF'})
+        response = asyncio.run(request(target_ip, ['ir_key', 'whynter_ac', 'OFF']))
+        self.assertEqual(response, {'whynter_ac': 'OFF'})
 
     def test_21_ir_create_macro(self):
         response = asyncio.run(request(target_ip, ['ir_create_macro', 'test1']))
@@ -181,15 +181,15 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response, {"ERROR": 'Macro named test1 already exists'})
 
     def test_22_ir_add_macro_action(self):
-        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'tv', 'power']))
-        self.assertEqual(response, {"Macro action added": ['test1', 'tv', 'power']})
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'samsung_tv', 'power']))
+        self.assertEqual(response, {"Macro action added": ['test1', 'samsung_tv', 'power']})
 
         # Add action with all required and optional args
-        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'tv', 'power', 50, 3]))
-        self.assertEqual(response, {"Macro action added": ['test1', 'tv', 'power', 50, 3]})
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'samsung_tv', 'power', 50, 3]))
+        self.assertEqual(response, {"Macro action added": ['test1', 'samsung_tv', 'power', 50, 3]})
 
         # Confirm error when attempting to add to non-existing macro
-        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test99', 'tv', 'power']))
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test99', 'samsung_tv', 'power']))
         self.assertEqual(response, {"ERROR": "Macro test99 does not exist, use create_macro to add"})
 
         # Confirm error when attempting to add action with non-existing target
@@ -197,19 +197,19 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response, {"ERROR": "No codes for refrigerator"})
 
         # Confirm error when attempting to add to non-existing key
-        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'tv', 'fake']))
-        self.assertEqual(response, {"ERROR": "Target tv has no key fake"})
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'samsung_tv', 'fake']))
+        self.assertEqual(response, {"ERROR": "Target samsung_tv has no key fake"})
 
         # Confirm error when delay arg is not integer
-        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'tv', 'power', 'short']))
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'samsung_tv', 'power', 'short']))
         self.assertEqual(response, {"ERROR": "Delay arg must be integer (milliseconds)"})
 
         # Confirm error when repeats arg is not integer
-        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'tv', 'power', '50', 'yes']))
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'samsung_tv', 'power', '50', 'yes']))
         self.assertEqual(response, {"ERROR": "Repeat arg must be integer (number of times to press key)"})
 
     def test_23_ir_run_macro(self):
-        response = asyncio.run(request(target_ip, ['ir_run_macro', 'test1', 'tv', 'power']))
+        response = asyncio.run(request(target_ip, ['ir_run_macro', 'test1', 'samsung_tv', 'power']))
         self.assertEqual(response, {"Ran macro": "test1"})
 
         # Attempt to run non-existing macro, confirm error
@@ -222,7 +222,7 @@ class TestParseCommand(unittest.TestCase):
 
     def test_25_ir_get_existing_macros(self):
         response = asyncio.run(request(target_ip, ['ir_get_existing_macros']))
-        self.assertEqual(response, {"test1": ["tv power 0 1", "tv power 50 3"]})
+        self.assertEqual(response, {"test1": ["samsung_tv power 0 1", "samsung_tv power 50 3"]})
 
     def test_26_ir_delete_macro(self):
         response = asyncio.run(request(target_ip, ['ir_delete_macro', 'test1']))
@@ -231,6 +231,10 @@ class TestParseCommand(unittest.TestCase):
         # Attempt to delete again, confirm error
         response = asyncio.run(request(target_ip, ['ir_delete_macro', 'test1']))
         self.assertEqual(response, {"ERROR": 'Macro named test1 does not exist'})
+
+        # Remove macro saved to disk (prevent failure on next run)
+        response = asyncio.run(request(target_ip, ['ir_save_macros']))
+        self.assertEqual(response, {"Success": "Macros written to disk"})
 
     def test_27_get_temp(self):
         response = asyncio.run(request(target_ip, ['get_temp']))
@@ -549,20 +553,20 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['ir_key', 'foo']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = asyncio.run(request(target_ip, ['ir_key', 'ac']))
+        response = asyncio.run(request(target_ip, ['ir_key', 'whynter_ac']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
         response = asyncio.run(request(target_ip, ['ir_key', 'foo', 'on']))
         self.assertEqual(response, {'ERROR': 'No codes found for target "foo"'})
 
-        response = asyncio.run(request(target_ip, ['ir_key', 'ac', 'power']))
-        self.assertEqual(response, {'ERROR': 'Target "ac" has no key "power"'})
+        response = asyncio.run(request(target_ip, ['ir_key', 'whynter_ac', 'power']))
+        self.assertEqual(response, {'ERROR': 'Target "whynter_ac" has no key "power"'})
 
-        response = asyncio.run(request(target_ip, ['ir_key', 'tv']))
+        response = asyncio.run(request(target_ip, ['ir_key', 'samsung_tv']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = asyncio.run(request(target_ip, ['ir_key', 'tv', 'START']))
-        self.assertEqual(response, {'ERROR': 'Target "tv" has no key "START"'})
+        response = asyncio.run(request(target_ip, ['ir_key', 'samsung_tv', 'START']))
+        self.assertEqual(response, {'ERROR': 'Target "samsung_tv" has no key "START"'})
 
     def test_46_ir_add_macro_action_missing_args(self):
         response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1']))

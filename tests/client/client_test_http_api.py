@@ -165,11 +165,11 @@ class TestEndpoint(unittest.TestCase):
         self.assertEqual(response.json()['nickname'], 'sensor1')
 
     def test_20_ir(self):
-        response = requests.get(f'http://{target_ip}:8123/ir_key?tv/power')
-        self.assertEqual(response.json(), {'tv': 'power'})
+        response = requests.get(f'http://{target_ip}:8123/ir_key?samsung_tv/power')
+        self.assertEqual(response.json(), {'samsung_tv': 'power'})
 
-        response = requests.get(f'http://{target_ip}:8123/ir_key?ac/OFF')
-        self.assertEqual(response.json(), {'ac': 'OFF'})
+        response = requests.get(f'http://{target_ip}:8123/ir_key?whynter_ac/OFF')
+        self.assertEqual(response.json(), {'whynter_ac': 'OFF'})
 
     def test_21_ir_create_macro(self):
         response = requests.get(f'http://{target_ip}:8123/ir_create_macro?test1')
@@ -180,15 +180,15 @@ class TestEndpoint(unittest.TestCase):
         self.assertEqual(response.json(), {"ERROR": 'Macro named test1 already exists'})
 
     def test_22_ir_add_macro_action(self):
-        response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test1/tv/power')
-        self.assertEqual(response.json(), {"Macro action added": ['test1', 'tv', 'power']})
+        response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test1/samsung_tv/power')
+        self.assertEqual(response.json(), {"Macro action added": ['test1', 'samsung_tv', 'power']})
 
         # Add action with all required and optional args
-        response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test1/tv/power/50/3')
-        self.assertEqual(response.json(), {"Macro action added": ['test1', 'tv', 'power', '50', '3']})
+        response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test1/samsung_tv/power/50/3')
+        self.assertEqual(response.json(), {"Macro action added": ['test1', 'samsung_tv', 'power', '50', '3']})
 
         # Confirm error when attempting to add to non-existing macro
-        response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test99/tv/power')
+        response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test99/samsung_tv/power')
         self.assertEqual(response.json(), {"ERROR": "Macro test99 does not exist, use create_macro to add"})
 
         # Confirm error when attempting to add action with non-existing target
@@ -196,23 +196,23 @@ class TestEndpoint(unittest.TestCase):
         self.assertEqual(response.json(), {"ERROR": "No codes for refrigerator"})
 
         # Confirm error when attempting to add to non-existing key
-        response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test1/tv/fake')
-        self.assertEqual(response.json(), {"ERROR": "Target tv has no key fake"})
+        response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test1/samsung_tv/fake')
+        self.assertEqual(response.json(), {"ERROR": "Target samsung_tv has no key fake"})
 
         # Confirm error when delay arg is not integer
-        response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test1/tv/power/short')
+        response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test1/samsung_tv/power/short')
         self.assertEqual(response.json(), {"ERROR": "Delay arg must be integer (milliseconds)"})
 
         # Confirm error when repeats arg is not integer
-        response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test1/tv/power/50/yes')
+        response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test1/samsung_tv/power/50/yes')
         self.assertEqual(response.json(), {"ERROR": "Repeat arg must be integer (number of times to press key)"})
 
     def test_23_ir_run_macro(self):
-        response = requests.get(f'http://{target_ip}:8123/ir_run_macro?test1/tv/power')
+        response = requests.get(f'http://{target_ip}:8123/ir_run_macro?test1/samsung_tv/power')
         self.assertEqual(response.json(), {"Ran macro": "test1"})
 
         # Attempt to run non-existing macro, confirm error
-        response = requests.get(f'http://{target_ip}:8123/ir_run_macro?test99/tv/power')
+        response = requests.get(f'http://{target_ip}:8123/ir_run_macro?test99/samsung_tv/power')
         self.assertEqual(response.json(), {"ERROR": "Macro test99 does not exist, use create_macro to add"})
 
     def test_24_ir_save_macros(self):
@@ -221,11 +221,15 @@ class TestEndpoint(unittest.TestCase):
 
     def test_25_ir_get_existing_macros(self):
         response = requests.get(f'http://{target_ip}:8123/ir_get_existing_macros')
-        self.assertEqual(response.json(), {"test1": ["tv power 0 1", "tv power 50 3"]})
+        self.assertEqual(response.json(), {"test1": ["samsung_tv power 0 1", "samsung_tv power 50 3"]})
 
     def test_26_ir_delete_macro(self):
         response = requests.get(f'http://{target_ip}:8123/ir_delete_macro?test1')
         self.assertEqual(response.json(), {"Macro deleted": 'test1'})
+
+        # Remove macro saved to disk (prevent failure on next run)
+        response = requests.get(f'http://{target_ip}:8123/ir_save_macros')
+        self.assertEqual(response.json(), {"Success": "Macros written to disk"})
 
     def test_27_get_temp(self):
         response = requests.get(f'http://{target_ip}:8123/get_temp')
@@ -515,20 +519,20 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/ir_key?foo')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
-        response = requests.get(f'http://{target_ip}:8123/ir_key?ac')
+        response = requests.get(f'http://{target_ip}:8123/ir_key?whynter_ac')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
         response = requests.get(f'http://{target_ip}:8123/ir_key?foo/on')
         self.assertEqual(response.json(), {'ERROR': 'No codes found for target "foo"'})
 
-        response = requests.get(f'http://{target_ip}:8123/ir_key?ac/power')
-        self.assertEqual(response.json(), {'ERROR': 'Target "ac" has no key "power"'})
+        response = requests.get(f'http://{target_ip}:8123/ir_key?whynter_ac/power')
+        self.assertEqual(response.json(), {'ERROR': 'Target "whynter_ac" has no key "power"'})
 
-        response = requests.get(f'http://{target_ip}:8123/ir_key?tv')
+        response = requests.get(f'http://{target_ip}:8123/ir_key?samsung_tv')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
-        response = requests.get(f'http://{target_ip}:8123/ir_key?tv/START')
-        self.assertEqual(response.json(), {'ERROR': 'Target "tv" has no key "START"'})
+        response = requests.get(f'http://{target_ip}:8123/ir_key?samsung_tv/START')
+        self.assertEqual(response.json(), {'ERROR': 'Target "samsung_tv" has no key "START"'})
 
     def test_45_ir_add_macro_action_missing_args(self):
         response = requests.get(f'http://{target_ip}:8123/ir_add_macro_action?test1')
