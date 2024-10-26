@@ -748,6 +748,18 @@ class TestEndpoints(TestCase):
             response = parse_command('192.168.1.123', ['load_cell_read', 'sensor1'])
             self.assertEqual(response, {"Raw": 12362.8})
 
+    def test_mem_info(self):
+        mem_info = {
+            "max_new_split": 26624,
+            "max_free_sz": 1669,
+            "free": 57392
+        }
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value=mem_info):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['mem_info'])
+            self.assertEqual(response, mem_info)
+
 
 # Confirm that correct errors are shown when endpoint arguments are omitted/incorrect
 class TestEndpointErrors(TestCase):

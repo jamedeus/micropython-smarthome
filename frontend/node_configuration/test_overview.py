@@ -487,6 +487,7 @@ class GetModulesTests(TestCase):
             os.path.join(settings.REPO_DIR, 'core', 'Config.py'): 'Config.py',
             os.path.join(settings.REPO_DIR, 'core', 'Group.py'): 'Group.py',
             os.path.join(settings.REPO_DIR, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(settings.REPO_DIR, 'core', 'app_context.py'): 'app_context.py',
             os.path.join(settings.REPO_DIR, 'core', 'Api.py'): 'Api.py',
             os.path.join(settings.REPO_DIR, 'core', 'util.py'): 'util.py',
             os.path.join(settings.REPO_DIR, 'core', 'main.py'): 'main.py'
@@ -500,6 +501,7 @@ class GetModulesTests(TestCase):
             os.path.join(settings.REPO_DIR, 'core', 'Config.py'): 'Config.py',
             os.path.join(settings.REPO_DIR, 'core', 'Group.py'): 'Group.py',
             os.path.join(settings.REPO_DIR, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(settings.REPO_DIR, 'core', 'app_context.py'): 'app_context.py',
             os.path.join(settings.REPO_DIR, 'core', 'Api.py'): 'Api.py',
             os.path.join(settings.REPO_DIR, 'core', 'util.py'): 'util.py',
             os.path.join(settings.REPO_DIR, 'core', 'main.py'): 'main.py'
@@ -535,6 +537,7 @@ class GetModulesTests(TestCase):
             os.path.join(settings.REPO_DIR, 'core', 'Config.py'): 'Config.py',
             os.path.join(settings.REPO_DIR, 'core', 'Group.py'): 'Group.py',
             os.path.join(settings.REPO_DIR, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(settings.REPO_DIR, 'core', 'app_context.py'): 'app_context.py',
             os.path.join(settings.REPO_DIR, 'core', 'Api.py'): 'Api.py',
             os.path.join(settings.REPO_DIR, 'core', 'util.py'): 'util.py',
             os.path.join(settings.REPO_DIR, 'core', 'main.py'): 'main.py'
@@ -568,6 +571,7 @@ class GetModulesTests(TestCase):
             os.path.join(settings.REPO_DIR, 'core', 'Config.py'): 'Config.py',
             os.path.join(settings.REPO_DIR, 'core', 'Group.py'): 'Group.py',
             os.path.join(settings.REPO_DIR, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(settings.REPO_DIR, 'core', 'app_context.py'): 'app_context.py',
             os.path.join(settings.REPO_DIR, 'core', 'Api.py'): 'Api.py',
             os.path.join(settings.REPO_DIR, 'core', 'util.py'): 'util.py',
             os.path.join(settings.REPO_DIR, 'core', 'main.py'): 'main.py'
@@ -600,6 +604,7 @@ class GetModulesTests(TestCase):
             os.path.join(settings.REPO_DIR, 'core', 'Config.py'): 'Config.py',
             os.path.join(settings.REPO_DIR, 'core', 'Group.py'): 'Group.py',
             os.path.join(settings.REPO_DIR, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(settings.REPO_DIR, 'core', 'app_context.py'): 'app_context.py',
             os.path.join(settings.REPO_DIR, 'core', 'Api.py'): 'Api.py',
             os.path.join(settings.REPO_DIR, 'core', 'util.py'): 'util.py',
             os.path.join(settings.REPO_DIR, 'core', 'main.py'): 'main.py'

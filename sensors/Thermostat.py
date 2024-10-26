@@ -1,6 +1,6 @@
 import asyncio
 from math import isnan
-import SoftwareTimer
+import app_context
 from SensorWithLoop import SensorWithLoop
 
 
@@ -322,7 +322,7 @@ class Thermostat(SensorWithLoop):
                 self.refresh_group()
 
         # Run again in 30 seconds
-        SoftwareTimer.timer.create(30000, self.audit, self.name)
+        app_context.timer_instance.create(30000, self.audit, self.name)
 
     def add_routines(self):
         '''Called by Config.build_groups after Sensor is added to Group, adds
@@ -338,7 +338,7 @@ class Thermostat(SensorWithLoop):
             # Cancel and re-create callback (ensure 30 seconds pass before first reading)
             # Reduces chance of false positives (more likely if reading taken immediately
             # when target turns on, temp hasn't changed yet so only 2 readings meaningful)
-            SoftwareTimer.timer.create(30000, self.audit, self.name)
+            app_context.timer_instance.create(30000, self.audit, self.name)
 
     def get_status(self):
         '''Return JSON-serializable dict containing status information.

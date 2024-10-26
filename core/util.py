@@ -2,7 +2,7 @@ import os
 import time
 import json
 import logging
-import SoftwareTimer
+import app_context
 
 log = logging.getLogger("Util")
 
@@ -124,7 +124,7 @@ def check_log_size():
         log.critical("Deleted old log (exceeded 100 KB size limit)")
 
     # Add back to queue
-    SoftwareTimer.timer.create(60000, check_log_size, "check_log_size")
+    app_context.timer_instance.create(60000, check_log_size, "check_log_size")
 
 
 def get_timestamp():

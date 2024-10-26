@@ -153,6 +153,3 @@ class SoftwareTimer():
             else:
                 # Wait for hardware interrupt to unpause loop
                 await asyncio.sleep_ms(50)
-
-
-timer = SoftwareTimer()

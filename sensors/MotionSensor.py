@@ -1,6 +1,6 @@
 from math import isnan
 from machine import Pin
-import SoftwareTimer
+import app_context
 from Sensor import Sensor
 
 
@@ -75,7 +75,7 @@ class MotionSensor(Sensor):
         # Disable hardware interrupt, ensure reset timer not running
         self.log.debug("remove hardware interrupt")
         self.sensor.irq(handler=None)
-        SoftwareTimer.timer.cancel(self.name)
+        app_context.timer_instance.cancel(self.name)
 
         super().disable()
 
@@ -184,7 +184,11 @@ class MotionSensor(Sensor):
             try:
                 # Convert delay (minutes) to milliseconds, start timer
                 off = float(self.current_rule) * 60000
-                SoftwareTimer.timer.create(off, self.reset_timer, self.name)
+                app_context.timer_instance.create(
+                    off,
+                    self.reset_timer,
+                    self.name
+                )
             except (ValueError, TypeError):
                 self.print(
                     f"Failed to start reset timer, current_rule={self.current_rule}"
@@ -195,7 +199,7 @@ class MotionSensor(Sensor):
                 )
         else:
             # Stop reset timer (may be running from before delay set to 0)
-            SoftwareTimer.timer.cancel(self.name)
+            app_context.timer_instance.cancel(self.name)
 
     def reset_timer(self, _=None):
         '''Called when reset timer expires, resets motion attribute and turns

@@ -1,4 +1,4 @@
-import SoftwareTimer
+import app_context
 from Device import Device
 
 
@@ -242,11 +242,15 @@ class DimmableLight(Device):
         self.enabled = True
 
         # Create fade timer
-        SoftwareTimer.timer.create(fade_period, self.fade, self.name + "_fade")
+        app_context.timer_instance.create(
+            fade_period,
+            self.fade,
+            self.name + "_fade"
+        )
 
         # Store fade parameters in dict, used by fade method below
         self.fading = {
-            "started": SoftwareTimer.timer.epoch_now(),
+            "started": app_context.timer_instance.epoch_now(),
             "starting_brightness": self.current_rule,
             "target": int(target),
             "period": fade_period,
@@ -312,7 +316,7 @@ class DimmableLight(Device):
             # Use starting time, current time, period (time per step) to
             # determine how many steps should have been taken
             steps = (
-                SoftwareTimer.timer.epoch_now() - self.fading["started"]
+                app_context.timer_instance.epoch_now() - self.fading["started"]
             ) // self.fading["period"]
 
             # Fading down
@@ -343,9 +347,13 @@ class DimmableLight(Device):
         if not self._fade_complete():
             # Sleep until next step
             next_step = int(self.fading["period"] - ((
-                SoftwareTimer.timer.epoch_now() - self.fading["started"]
+                app_context.timer_instance.epoch_now() - self.fading["started"]
             ) % self.fading["period"]))
-            SoftwareTimer.timer.create(next_step, self.fade, self.name + "_fade")
+            app_context.timer_instance.create(
+                next_step,
+                self.fade,
+                self.name + "_fade"
+            )
 
     def get_status(self):
         '''Return JSON-serializable dict containing status information.

@@ -2,9 +2,10 @@ import gc
 import asyncio
 import logging
 import webrepl
-from Api import app
+import app_context
+from Api import Api
 from Config import Config
-from SoftwareTimer import timer
+from SoftwareTimer import SoftwareTimer
 from util import read_config_from_disk, check_log_size
 
 log = logging.getLogger("Main")
@@ -21,21 +22,24 @@ def start():
     instantiate device/sensors, etc), starts webrepl, SoftwareTimer and Api.
     '''
 
+    # Instantiate SoftwareTimer, add to shared context
+    app_context.timer_instance = SoftwareTimer()
+
     # Instantiate config object (connects to wifi, sets up hardware, etc)
     try:
-        config = Config(read_config_from_disk())
+        app_context.config_instance = Config(read_config_from_disk())
     # Load blank config template if config.json does not exist (initial setup)
     except OSError:
         log.critical("config.json not found, loading blank template")
         from default_config import default_config
-        config = Config(default_config)
+        app_context.config_instance = Config(default_config)
     gc.collect()
 
     # Start webrepl (OTA updates)
     webrepl.start()
 
     # Check if log exceeded 100 KB every 60 seconds
-    timer.create(60000, check_log_size, "check_log_size")
+    app_context.timer_instance.create(60000, check_log_size, "check_log_size")
 
     # Get event loop, add custom exception handler that logs all uncaught
     # exceptions to disk before calling default exception handler
@@ -43,11 +47,13 @@ def start():
     loop.set_exception_handler(async_exception_handler)
 
     # Add SoftwareTimer loop (runs callbacks when timers expire)
-    loop.create_task(timer.loop())
+    loop.create_task(app_context.timer_instance.loop())
 
-    # Pass config object to API backend, start server and await requests
-    app.config = config
-    loop.create_task(app.run())
+    # Instantiate API backend
+    app_context.api_instance = Api()
+    gc.collect()
+    # Start server and await requests
+    loop.create_task(app_context.api_instance._run())
 
     # Run forever
     loop.run_forever()

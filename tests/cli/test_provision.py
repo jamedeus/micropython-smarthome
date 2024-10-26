@@ -267,6 +267,7 @@ class TestInstantiation(TestCase):
             os.path.join(repo, 'core', 'Config.py'): 'Config.py',
             os.path.join(repo, 'core', 'Group.py'): 'Group.py',
             os.path.join(repo, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(repo, 'core', 'app_context.py'): 'app_context.py',
             os.path.join(repo, 'core', 'Api.py'): 'Api.py',
             os.path.join(repo, 'core', 'util.py'): 'util.py',
             os.path.join(repo, 'tests', 'firmware', 'unit_test_main.py'): 'main.py'
@@ -450,6 +451,7 @@ class TestGetModules(TestCase):
             os.path.join(repo, 'core', 'Config.py'): 'Config.py',
             os.path.join(repo, 'core', 'Group.py'): 'Group.py',
             os.path.join(repo, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(repo, 'core', 'app_context.py'): 'app_context.py',
             os.path.join(repo, 'core', 'Api.py'): 'Api.py',
             os.path.join(repo, 'core', 'util.py'): 'util.py',
             os.path.join(repo, 'core', 'main.py'): 'main.py'
@@ -463,6 +465,7 @@ class TestGetModules(TestCase):
             os.path.join(repo, 'core', 'Config.py'): 'Config.py',
             os.path.join(repo, 'core', 'Group.py'): 'Group.py',
             os.path.join(repo, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(repo, 'core', 'app_context.py'): 'app_context.py',
             os.path.join(repo, 'core', 'Api.py'): 'Api.py',
             os.path.join(repo, 'core', 'util.py'): 'util.py',
             os.path.join(repo, 'core', 'main.py'): 'main.py'
@@ -498,6 +501,7 @@ class TestGetModules(TestCase):
             os.path.join(repo, 'core', 'Config.py'): 'Config.py',
             os.path.join(repo, 'core', 'Group.py'): 'Group.py',
             os.path.join(repo, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(repo, 'core', 'app_context.py'): 'app_context.py',
             os.path.join(repo, 'core', 'Api.py'): 'Api.py',
             os.path.join(repo, 'core', 'util.py'): 'util.py',
             os.path.join(repo, 'core', 'main.py'): 'main.py'
@@ -531,6 +535,7 @@ class TestGetModules(TestCase):
             os.path.join(repo, 'core', 'Config.py'): 'Config.py',
             os.path.join(repo, 'core', 'Group.py'): 'Group.py',
             os.path.join(repo, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(repo, 'core', 'app_context.py'): 'app_context.py',
             os.path.join(repo, 'core', 'Api.py'): 'Api.py',
             os.path.join(repo, 'core', 'util.py'): 'util.py',
             os.path.join(repo, 'core', 'main.py'): 'main.py'
@@ -563,6 +568,7 @@ class TestGetModules(TestCase):
             os.path.join(repo, 'core', 'Config.py'): 'Config.py',
             os.path.join(repo, 'core', 'Group.py'): 'Group.py',
             os.path.join(repo, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(repo, 'core', 'app_context.py'): 'app_context.py',
             os.path.join(repo, 'core', 'Api.py'): 'Api.py',
             os.path.join(repo, 'core', 'util.py'): 'util.py',
             os.path.join(repo, 'core', 'main.py'): 'main.py'

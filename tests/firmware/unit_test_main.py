@@ -6,6 +6,7 @@ import asyncio
 import network
 import logging
 import unittest
+import app_context
 
 # Set level to prevent logging from slowing down tests, using memory, etc
 logging.basicConfig(
@@ -185,13 +186,15 @@ def start():
     # Connect to wifi
     connect_wifi()
 
-    # Import SoftwareTimer instance, add to async loop
-    from SoftwareTimer import timer
-    asyncio.create_task(timer.loop())
+    # Import + initialize SoftwareTimer, add to shared context, add to async loop
+    from SoftwareTimer import SoftwareTimer
+    app_context.timer_instance = SoftwareTimer()
+    asyncio.create_task(app_context.timer_instance.loop())
 
-    # Import + initialize API
-    from Api import app
-    asyncio.create_task(app.run())
+    # Import + initialize API, add to shared context, add to async loop
+    from Api import Api
+    app_context.api_instance = Api()
+    asyncio.create_task(app_context.api_instance._run())
 
     gc.collect()
 
