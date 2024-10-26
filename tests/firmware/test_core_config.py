@@ -5,7 +5,7 @@ import asyncio
 import network
 import unittest
 from machine import Pin, Timer
-import SoftwareTimer
+import app_context
 from cpython_only import cpython_only
 from Config import Config, instantiate_hardware
 
@@ -149,9 +149,9 @@ class TestConfig(unittest.TestCase):
 
     def test_04__build_queue(self):
         # Confirm no schedule rule timers in SoftwareTimer queue
-        SoftwareTimer.timer.cancel('scheduler')
+        app_context.timer_instance.cancel('scheduler')
         asyncio.run(self.sleep(10))
-        rules = [time for time, rule in SoftwareTimer.timer.schedule.items()
+        rules = [time for time, rule in app_context.timer_instance.schedule.items()
                  if rule[0] == "scheduler"]
         self.assertEqual(len(rules), 0)
 
@@ -171,7 +171,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(len(self.config.sensors[0].rule_queue), 0)
 
         # Confirm schedule rule timers were added to SoftwareTimer queue
-        rules = [time for time, rule in SoftwareTimer.timer.schedule.items()
+        rules = [time for time, rule in app_context.timer_instance.schedule.items()
                  if rule[0] == "scheduler"]
         self.assertGreaterEqual(len(rules), 1)
 
@@ -191,16 +191,16 @@ class TestConfig(unittest.TestCase):
 
     def test_06_start_reload_timer(self):
         # Confirm reload timer not in queue
-        SoftwareTimer.timer.cancel("reload_schedule_rules")
+        app_context.timer_instance.cancel("reload_schedule_rules")
         # Yield to let cancel coroutine run
         asyncio.run(self.sleep(10))
-        self.assertTrue("reload_schedule_rules" not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("reload_schedule_rules" not in str(app_context.timer_instance.schedule))
 
         # Call method to start config_timer, yield to let create coroutine run
         self.config._start_reload_schedule_rules_timer()
         asyncio.run(self.sleep(10))
         # Confirm timer running
-        self.assertIn("reload_schedule_rules", str(SoftwareTimer.timer.schedule))
+        self.assertIn("reload_schedule_rules", str(app_context.timer_instance.schedule))
 
     def test_07_full_instantiation(self):
         # Add GPS coordinates to config

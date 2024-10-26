@@ -1,6 +1,9 @@
 #!/bin/sh
 
 # Pre-commit actions:
+# - Check if firmware source files in the commit use incorrect syntax
+#   to import the app_context module, print error and abort if they do
+#
 # - Check if JSX src files are part of the commit and automatically
 #   update static cache version (forces PWA clients to refresh
 #   cache and download new version)
@@ -8,6 +11,18 @@
 # - Check if desktop_integration files are part of commit, update
 #   micropython-smarthome-integration.zip (downloadable from
 #   overview page in django frontend)
+
+
+# Prevent committing firmware code with wrong app_context import syntax
+directories="core devices sensors lib tests/firmware"
+# shellcheck disable=2086
+if git diff --cached -- $directories | grep -q 'from app_context import'; then
+  printf "%s\nERROR: %s" "$(tput setaf 1)" "$(tput init)"
+  printf 'Commit contains dangerous %sfrom app_context import *%s syntax\n' "$(tput setaf 1)" "$(tput init)"
+  printf 'This creates a local variable that wont stay in sync with other modules\n'
+  printf 'Replace this with %simport app_context%s and try again\n\n' "$(tput setaf 2)" "$(tput init)"
+  exit 1
+fi
 
 
 # Skip if not on master branch

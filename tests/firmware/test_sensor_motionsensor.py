@@ -1,7 +1,7 @@
 import asyncio
 import unittest
 from machine import Pin
-import SoftwareTimer
+import app_context
 from Group import Group
 from MotionSensor import MotionSensor
 from cpython_only import cpython_only
@@ -48,7 +48,7 @@ class TestMotionSensorSensor(unittest.TestCase):
 
     def setUp(self):
         # Ensure no reset timer from previous test in queue
-        SoftwareTimer.timer.cancel('sensor1')
+        app_context.timer_instance.cancel('sensor1')
         asyncio.run(self.sleep(10))
 
     def test_01_initial_state(self):
@@ -83,9 +83,9 @@ class TestMotionSensorSensor(unittest.TestCase):
 
     def test_05_enable_disable(self):
         # Simulate active reset timer
-        SoftwareTimer.timer.create(10000, self.instance.reset_timer, self.instance.name)
+        app_context.timer_instance.create(10000, self.instance.reset_timer, self.instance.name)
         asyncio.run(self.sleep(10))
-        self.assertTrue(self.instance.name in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name in str(app_context.timer_instance.schedule))
 
         # Disable, confirm disabled
         self.instance.disable()
@@ -93,7 +93,7 @@ class TestMotionSensorSensor(unittest.TestCase):
 
         # Confirm reset timer was removed from SoftwareTimer queue
         asyncio.run(self.sleep(10))
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
         # Set motion to True, enable, confirm flips to False
         self.instance.motion = True
@@ -107,7 +107,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.group.refresh_called = False
 
         # Confirm no reset timer in SoftwareTimer queue
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
         # Simulate sensor triggered by hware interrupt
         self.instance.trigger()
@@ -115,7 +115,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         asyncio.run(self.sleep(10))
 
         # SoftwareTimer queue should now contain entry containing sensor's name attribute
-        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertIn(self.instance.name, str(app_context.timer_instance.schedule))
         # Motion attribute should be True
         self.assertTrue(self.instance.motion)
         # Group.refresh should have been called
@@ -134,21 +134,21 @@ class TestMotionSensorSensor(unittest.TestCase):
 
         # Set rule to 0, cancel previous timer to avoid false positive
         self.instance.set_rule(0)
-        SoftwareTimer.timer.cancel(self.instance.name)
+        app_context.timer_instance.cancel(self.instance.name)
         # Simulate sensor triggered by hware interrupt
         self.instance.trigger()
         # Yield to let SoftwareTimer coroutines cancel old reset timer, create
         # new reset timer (should not create new since rule is 0)
         asyncio.run(self.sleep(10))
         # Queue should NOT contain entry for motion sensor (rule is 0)
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
         # Simulate motion being detected right after interrupt created but
         # before rule is set (rare but not impossible)
         self.instance.current_rule = None
         self.instance.start_reset_timer()
         # Confirm no reset timer was created
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
     def test_07_trigger(self):
         # Ensure not already triggered to avoid false positive
@@ -188,7 +188,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         # Ensure enabled, set motion to True, confirm no reset timer in queue
         self.instance.enable()
         self.instance.motion = True
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
         # Add rules to queue, first should trigger reset timer, second should not
         self.instance.rule_queue = [5, 'disabled']
@@ -199,15 +199,15 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.assertEqual(self.instance.current_rule, 5)
         # Yield to let SoftwareTimer coroutine create reset timer
         asyncio.run(self.sleep(10))
-        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
-        SoftwareTimer.timer.cancel(self.instance.name)
+        self.assertIn(self.instance.name, str(app_context.timer_instance.schedule))
+        app_context.timer_instance.cancel(self.instance.name)
 
         # Set to disabled, confirm rule set, confirm no timer created
         self.instance.next_rule()
         # Yield to let SoftwareTimer coroutine create reset timer
         asyncio.run(self.sleep(10))
         self.assertEqual(self.instance.current_rule, 'disabled')
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
     @cpython_only
     def test_11_pin_interrupt_with_reset_timer(self):
@@ -215,7 +215,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.instance.current_rule = 5
         self.instance.motion = False
         self.group.refresh_called = False
-        SoftwareTimer.timer.cancel(self.instance.name)
+        app_context.timer_instance.cancel(self.instance.name)
         asyncio.run(self.sleep(10))
 
         # Simulate interrupt triggered by rising pin
@@ -227,7 +227,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         # Confirm motion detected, targets turned on, reset timer running
         self.assertTrue(self.instance.motion)
         self.assertTrue(self.group.refresh_called)
-        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertIn(self.instance.name, str(app_context.timer_instance.schedule))
 
         # Simulate interrupt triggered by falling pin
         self.instance.sensor.pin_state = 0
@@ -236,7 +236,7 @@ class TestMotionSensorSensor(unittest.TestCase):
 
         # Confirm nothing changed (targets stay on until reset timer expires)
         self.assertTrue(self.instance.motion)
-        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertIn(self.instance.name, str(app_context.timer_instance.schedule))
         self.assertTrue(self.group.refresh_called)
 
     @cpython_only
@@ -246,7 +246,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         # Set motion False, targets off, stop reset timer
         self.instance.motion = False
         self.group.refresh_called = False
-        SoftwareTimer.timer.cancel(self.instance.name)
+        app_context.timer_instance.cancel(self.instance.name)
         # Yield to let SoftwareTimer coroutine cancel reset timer
         asyncio.run(self.sleep(10))
 
@@ -259,7 +259,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         # Confirm motion detected, targets turned on, reset timer NOT running
         self.assertTrue(self.instance.motion)
         self.assertTrue(self.group.refresh_called)
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
         # Simulate interrupt triggered by falling pin
         self.group.refresh_called = False
@@ -275,7 +275,7 @@ class TestMotionSensorSensor(unittest.TestCase):
     def test_13_reset_timer_motion_still_detected(self):
         # Set rule to 5, confirm no reset timer running
         self.instance.current_rule = 5
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
         # Simulate sensor detecting motion
         self.instance.sensor.pin_state = 1
@@ -290,7 +290,7 @@ class TestMotionSensorSensor(unittest.TestCase):
 
         # Confirm reset timer was restarted when old timer expired (prevent
         # getting stuck ON if timer expires before motion stops)
-        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertIn(self.instance.name, str(app_context.timer_instance.schedule))
 
         # Confirm motion is still True
         self.assertTrue(self.instance.motion)
@@ -332,18 +332,18 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.instance.motion_detected()
         # Yield to let SoftwareTimer coroutine create reset timer
         asyncio.run(self.sleep(10))
-        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertIn(self.instance.name, str(app_context.timer_instance.schedule))
 
         # Manually cancel timer, confirm not running
-        SoftwareTimer.timer.cancel(self.instance.name)
+        app_context.timer_instance.cancel(self.instance.name)
         asyncio.run(self.sleep(10))
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
         # Change rule, confirm timer recreated
         self.instance.set_rule(5)
         # Yield to let SoftwareTimer coroutine create reset timer
         asyncio.run(self.sleep(10))
-        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertIn(self.instance.name, str(app_context.timer_instance.schedule))
 
     # Original bug: The enable method set self.motion to False, regardless of
     # the sensor pin state. If the pin was HIGH the motion attribute would be
@@ -357,7 +357,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         # Disable sensor, set motion to None, confirm no reset timer
         self.instance.disable()
         self.instance.motion = None
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
         # Simulate pin LOW
         self.instance.sensor.pin_state = 0
@@ -366,7 +366,7 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.instance.enable()
         asyncio.run(self.sleep(10))
         self.assertFalse(self.instance.motion)
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
         # Disable again, reset motion
         self.instance.disable()
@@ -379,4 +379,4 @@ class TestMotionSensorSensor(unittest.TestCase):
         self.instance.enable()
         asyncio.run(self.sleep(10))
         self.assertTrue(self.instance.motion)
-        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertIn(self.instance.name, str(app_context.timer_instance.schedule))

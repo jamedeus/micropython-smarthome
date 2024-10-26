@@ -217,7 +217,7 @@ def upload_tests(ip, webrepl_password):
     # Add unit tests + core modules, remove main.py
     modules.extend(tests)
     modules.extend(core_modules)
-    modules.pop()
+    modules.remove('core/main.py')
 
     # Remove duplicates without changing order
     modules = list(dict.fromkeys(modules))

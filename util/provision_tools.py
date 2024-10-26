@@ -43,6 +43,7 @@ core_modules = [
     "core/SoftwareTimer.py",
     "core/Api.py",
     "core/util.py",
+    "core/app_context.py",
     "core/main.py"
 ]
 

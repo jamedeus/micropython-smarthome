@@ -6,7 +6,7 @@ import network
 from random import randrange
 from machine import Pin, Timer, RTC
 import requests
-import SoftwareTimer
+import app_context
 from Group import Group
 from api_keys import ipgeo_key
 from hardware_classes import hardware_classes
@@ -176,7 +176,7 @@ class Config():
         )
 
         # Add timer to queue
-        SoftwareTimer.timer.create(
+        app_context.timer_instance.create(
             ms_until_reload,
             self.reload_schedule_rules,
             "reload_schedule_rules"
@@ -558,7 +558,7 @@ class Config():
         log.debug("Building schedule rule queue for all devices and sensors")
 
         # Delete all existing schedule rule timers to avoid conflicts
-        SoftwareTimer.timer.cancel("scheduler")
+        app_context.timer_instance.cancel("scheduler")
 
         for instance, rules in self.schedule.items():
             # Convert HH:MM timestamps to unix epoch timestamp of next run
@@ -623,7 +623,7 @@ class Config():
             # Create timers for all epoch_rules
             for k in queue:
                 milliseconds = (k - epoch) * 1000
-                SoftwareTimer.timer.create(
+                app_context.timer_instance.create(
                     milliseconds,
                     instance.next_rule,
                     "scheduler"
@@ -633,7 +633,7 @@ class Config():
         print_with_timestamp("Finished building schedule rule queue")
         log.debug(
             "Finished building queue, total timers = %s",
-            len(SoftwareTimer.timer.queue)
+            len(app_context.timer_instance.queue)
         )
 
     def find(self, target):

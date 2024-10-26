@@ -1,7 +1,7 @@
 import asyncio
 import unittest
 from machine import SoftI2C
-import SoftwareTimer
+import app_context
 from Group import Group
 from Device import Device
 from Si7021 import Si7021
@@ -242,9 +242,9 @@ class TestThermostat(unittest.TestCase):
 
     def test_12_audit_method(self):
         # Confirm no audit timer in SoftwareTimer queue
-        SoftwareTimer.timer.cancel(self.instance.name)
+        app_context.timer_instance.cancel(self.instance.name)
         asyncio.run(self.sleep(10))
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
         # Mock empty history (just enabled or audit just cleared history)
         self.instance.recent_temps = []
@@ -256,7 +256,7 @@ class TestThermostat(unittest.TestCase):
 
         # Confirm audit method added timer to run audit again in 30 seconds
         asyncio.run(self.sleep(10))
-        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertIn(self.instance.name, str(app_context.timer_instance.schedule))
 
     def test_12_audit_method_no_trend_in_history(self):
         # Get actual temperature to mock recent changes
@@ -469,9 +469,9 @@ class TestThermostat(unittest.TestCase):
         self.assertEqual(len(self.instance.group.post_action_routines), 1)
 
         # Confirm no audit timer in SoftwareTimer queue
-        SoftwareTimer.timer.cancel(self.instance.name)
+        app_context.timer_instance.cancel(self.instance.name)
         asyncio.run(self.sleep(10))
-        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(app_context.timer_instance.schedule))
 
         # Run routine, confirm recent temps cleared
         self.instance.group.post_action_routines[0]()
@@ -479,7 +479,7 @@ class TestThermostat(unittest.TestCase):
 
         # Confirm routine added audit timer to SoftwareTimer queue
         asyncio.run(self.sleep(10))
-        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertIn(self.instance.name, str(app_context.timer_instance.schedule))
 
     def test_16_instantiate_with_all_modes(self):
         # Instantiate in heat mode

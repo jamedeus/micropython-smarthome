@@ -14,7 +14,7 @@ from util import (
     clear_log,
     check_log_size
 )
-import SoftwareTimer
+import app_context
 from cpython_only import cpython_only
 
 # Read config file from disk
@@ -109,7 +109,7 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(os.stat('app.log')[6], 100001)
 
         # Confirm no check_log_size timer in SoftwareTimer queue
-        self.assertTrue("check_log_size" not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("check_log_size" not in str(app_context.timer_instance.schedule))
 
         # Run function, confirm log deleted and re-created
         check_log_size()
@@ -117,8 +117,8 @@ class TestUtil(unittest.TestCase):
 
         # Confirm created check_log_size timer (runs every 60 seconds)
         asyncio.run(asyncio.sleep_ms(10))
-        self.assertTrue("check_log_size" in str(SoftwareTimer.timer.schedule))
-        SoftwareTimer.timer.cancel("check_log_size")
+        self.assertTrue("check_log_size" in str(app_context.timer_instance.schedule))
+        app_context.timer_instance.cancel("check_log_size")
 
         # Simulate timer expiring while log size is 1kb
         with open('app.log', 'wb') as f:

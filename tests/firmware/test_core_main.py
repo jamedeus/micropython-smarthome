@@ -2,13 +2,13 @@ import sys
 import asyncio
 import webrepl
 import unittest
-from Api import app
+import app_context
 from Config import Config
 from cpython_only import cpython_only
 from default_config import default_config
-from main import start, async_exception_handler
 
 if sys.implementation.name == 'cpython':
+    from main import start, async_exception_handler
     from unittest.mock import patch, MagicMock
 
 config_file = {
@@ -36,8 +36,10 @@ class TestMain(unittest.TestCase):
         self.assertEqual(webrepl.listen_s, None)
 
         # Mock Config init to return existing Config object
+        # Mock SoftwareTimer init to return existing SoftwareTimer instance
         # Mock asyncio.get_event_loop to return mock with methods that return immediately
         with patch('main.Config', return_value=self.config), \
+             patch('main.SoftwareTimer', return_value=app_context.timer_instance), \
              patch('main.asyncio.get_event_loop', return_value=MagicMock()) as mock_loop:
             mock_loop.create_task = MagicMock()
             mock_loop.run_forever = MagicMock()
@@ -45,16 +47,19 @@ class TestMain(unittest.TestCase):
             # Run function
             start()
 
-        # Confirm API received correct config, webrepl started
-        self.assertEqual(app.config, self.config)
+        # Confirm shared context module contains correct config instance
+        self.assertEqual(app_context.config_instance, self.config)
+        # Confirm webrepl started
         self.assertIsNotNone(webrepl.listen_s)
 
     @cpython_only
     def test_02_start_default_config(self):
         # Mock Config init to return existing Config object
+        # Mock SoftwareTimer init to return existing SoftwareTimer instance
         # Mock read_config_from_disk to raise OSError (simulate no config.json)
         # Mock asyncio.get_event_loop to return mock with methods that return immediately
         with patch('main.Config', return_value=self.config) as mock_config_class, \
+             patch('main.SoftwareTimer', return_value=app_context.timer_instance), \
              patch('main.read_config_from_disk', side_effect=OSError), \
              patch('main.asyncio.get_event_loop', return_value=MagicMock()) as mock_loop:
             mock_loop.create_task = MagicMock()

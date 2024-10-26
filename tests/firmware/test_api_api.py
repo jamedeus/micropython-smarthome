@@ -1,13 +1,13 @@
 import os
+import sys
 import json
 import asyncio
 import network
 import logging
 import unittest
 from machine import reset, Pin
-import SoftwareTimer
+import app_context
 from Config import Config
-from Api import app
 from cpython_only import cpython_only
 
 # Read mock API receiver address
@@ -93,17 +93,9 @@ config_file = {
     }
 }
 
-# Instantiate config object, pass to API
-config = Config(config_file, delay_setup=True)
-config._instantiate_peripherals()
-config._build_queue()
-config._build_groups()
-app.config = config
 
-
-# Add endpoint that raises uncaught exception for testing
-@app.route("uncaught_exception")
-def uncaught_exception(args):
+# Mock endpoint that raises uncaught exception for testing
+def uncaught_exception(self, args):
     raise TypeError
 
 
@@ -115,11 +107,23 @@ class TestApi(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.device1 = config.find("device1")
-        cls.sensor1 = config.find("sensor1")
-        cls.sensor2 = config.find("sensor2")
-        cls.sensor3 = config.find("sensor3")
-        cls.sensor4 = config.find("sensor4")
+        # Instantiate config object, pass to global context
+        app_context.config_instance = Config(config_file, delay_setup=True)
+        app_context.config_instance._instantiate_peripherals()
+        app_context.config_instance._build_queue()
+        app_context.config_instance._build_groups()
+
+        cls.device1 = app_context.config_instance.find("device1")
+        cls.sensor1 = app_context.config_instance.find("sensor1")
+        cls.sensor2 = app_context.config_instance.find("sensor2")
+        cls.sensor3 = app_context.config_instance.find("sensor3")
+        cls.sensor4 = app_context.config_instance.find("sensor4")
+
+        # Patch API backend to add mock endpoint that raises exception
+        if sys.implementation.name == 'cpython':
+            app_context.api_instance.uncaught_exception = uncaught_exception.__get__(
+                app_context.api_instance
+            )
 
         try:
             os.remove('ir_macros.json')
@@ -145,9 +149,9 @@ class TestApi(unittest.TestCase):
 
     def tearDown(self):
         # Cancel timers started by endpoints after each test
-        SoftwareTimer.timer.cancel('rebuild_queue')
-        SoftwareTimer.timer.cancel('device1_enable_in')
-        SoftwareTimer.timer.cancel('device1_fade')
+        app_context.timer_instance.cancel('rebuild_queue')
+        app_context.timer_instance.cancel('device1_enable_in')
+        app_context.timer_instance.cancel('device1_fade')
         asyncio.run(self.sleep(10))
 
     async def request(self, msg):
@@ -214,13 +218,13 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'Enabled': 'device1'})
 
         # Simulate SoftwareTimer from previous disable_in call with same target
-        SoftwareTimer.timer.create(9999, self.device1.disable, "device1_enable_in")
+        app_context.timer_instance.create(9999, self.device1.disable, "device1_enable_in")
         asyncio.run(self.sleep(10))
-        self.assertTrue("device1_enable_in" in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("device1_enable_in" in str(app_context.timer_instance.schedule))
 
         # Call enable endpoint, should cancel disable_in callback timer
         self.send_command(['enable', 'device1'])
-        self.assertTrue("device1_enable_in" not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("device1_enable_in" not in str(app_context.timer_instance.schedule))
 
     def test_04_disable(self):
         # Enable target device (might succeed incorrectly if it's already disabled)
@@ -231,17 +235,17 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'Disabled': 'device1'})
 
         # Simulate SoftwareTimer from previous enable_in call with same target
-        SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
+        app_context.timer_instance.create(9999, self.device1.enable, "device1_enable_in")
         asyncio.run(self.sleep(10))
-        self.assertTrue("device1_enable_in" in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("device1_enable_in" in str(app_context.timer_instance.schedule))
 
         # Call enable endpoint, should cancel enable_in callback timer
         self.send_command(['enable', 'device1'])
-        self.assertTrue("device1_enable_in" not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("device1_enable_in" not in str(app_context.timer_instance.schedule))
 
     def test_05_enable_in(self):
         # Cancel all SoftwareTimers created by enable_in/disable_in for device1
-        self.assertTrue("device1_enable_in" not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("device1_enable_in" not in str(app_context.timer_instance.schedule))
 
         # Disable target device (might succeed incorrectly if it's already enabled)
         self.device1.disable()
@@ -249,26 +253,26 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['enable_in', 'device1', '5'])
         self.assertEqual(response, {'Enabled': 'device1', 'Enable_in_seconds': 300.0})
         # SoftwareTimer queue should now contain entry named "device1_enable_in"
-        self.assertIn("device1_enable_in", str(SoftwareTimer.timer.schedule))
+        self.assertIn("device1_enable_in", str(app_context.timer_instance.schedule))
         # Device should still be disabled since timer hasn't expired yet
         self.assertFalse(self.device1.enabled)
 
         # Simulate SoftwareTimer from previous enable_in call with same target
-        SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
+        app_context.timer_instance.create(9999, self.device1.enable, "device1_enable_in")
         asyncio.run(self.sleep(10))
         # Get timer expiration timestamp
-        for i in SoftwareTimer.timer.schedule:
-            if SoftwareTimer.timer.schedule[i][0] == "device1_enable_in":
+        for i in app_context.timer_instance.schedule:
+            if app_context.timer_instance.schedule[i][0] == "device1_enable_in":
                 old_timer = i
                 break
 
         # Call enable_in endpoint, confirm old timer expiring in 9999 was canceled
         response = self.send_command(['enable_in', 'device1', '5'])
-        self.assertTrue(old_timer not in SoftwareTimer.timer.schedule)
+        self.assertTrue(old_timer not in app_context.timer_instance.schedule)
 
     def test_06_disable_in(self):
         # Cancel all SoftwareTimers created by enable_in/disable_in for device1
-        self.assertTrue("device1_enable_in" not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("device1_enable_in" not in str(app_context.timer_instance.schedule))
 
         # Enable target device (might succeed incorrectly if it's already disabled)
         self.device1.enable()
@@ -276,22 +280,22 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['disable_in', 'device1', '5'])
         self.assertEqual(response, {'Disable_in_seconds': 300.0, 'Disabled': 'device1'})
         # SoftwareTimer queue should now contain entry named "device1_enable_in"
-        self.assertIn("device1_enable_in", str(SoftwareTimer.timer.schedule))
+        self.assertIn("device1_enable_in", str(app_context.timer_instance.schedule))
         # Device should still be enabled since timer hasn't expired yet
         self.assertTrue(self.device1.enabled)
 
         # Simulate SoftwareTimer from previous disable_in call with same target
-        SoftwareTimer.timer.create(9999, self.device1.enable, "device1_enable_in")
+        app_context.timer_instance.create(9999, self.device1.enable, "device1_enable_in")
         asyncio.run(self.sleep(10))
         # Get timer expiration timestamp
-        for i in SoftwareTimer.timer.schedule:
-            if SoftwareTimer.timer.schedule[i][0] == "device1_enable_in":
+        for i in app_context.timer_instance.schedule:
+            if app_context.timer_instance.schedule[i][0] == "device1_enable_in":
                 old_timer = i
                 break
 
         # Call disable_in endpoint, confirm old timer expiring in 9999 was canceled
         response = self.send_command(['disable_in', 'device1', '5'])
-        self.assertTrue(old_timer not in SoftwareTimer.timer.schedule)
+        self.assertTrue(old_timer not in app_context.timer_instance.schedule)
 
     def test_07_set_rule(self):
         # Set to valid rule 5
@@ -308,7 +312,7 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['set_rule', 'device1', 'fade%2F50%2F3600'])
         self.assertEqual(response, {'device1': 'fade/50/3600'})
         # Confirm timer added to queue
-        self.assertIn('device1_fade', str(SoftwareTimer.timer.schedule))
+        self.assertIn('device1_fade', str(app_context.timer_instance.schedule))
 
     def test_08_increment_rule(self):
         # Set known starting values
@@ -382,7 +386,7 @@ class TestApi(unittest.TestCase):
 
     def test_12_add_schedule_rule(self):
         # Confirm no rebuild_queue timer in queue
-        self.assertTrue("rebuild_queue" not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("rebuild_queue" not in str(app_context.timer_instance.schedule))
 
         # Add a rule at a time where no rule exists
         response = self.send_command(['add_schedule_rule', 'device1', '05:37', '64'])
@@ -417,11 +421,11 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {"ERROR": "Invalid rule"})
 
         # Confirm created timer to rebuild queue with new schedule rule(s)
-        self.assertIn("rebuild_queue", str(SoftwareTimer.timer.schedule))
+        self.assertIn("rebuild_queue", str(app_context.timer_instance.schedule))
 
     def test_13_remove_rule(self):
         # Confirm no rebuild_queue timer in queue
-        self.assertTrue("rebuild_queue" not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("rebuild_queue" not in str(app_context.timer_instance.schedule))
 
         # Get starting rules
         before = self.send_command(['get_schedule_rules', 'device1'])
@@ -447,7 +451,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
 
         # Confirm created timer to rebuild queue without removed rules
-        self.assertIn("rebuild_queue", str(SoftwareTimer.timer.schedule))
+        self.assertIn("rebuild_queue", str(app_context.timer_instance.schedule))
 
     # Note: will fail if config.json missing or contains fewer devices/sensors than test config
     def test_14_save_schedule_rules(self):
@@ -464,7 +468,7 @@ class TestApi(unittest.TestCase):
 
     def test_16_add_schedule_keyword(self):
         # Confirm no rebuild_queue timer in queue
-        self.assertTrue("rebuild_queue" not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("rebuild_queue" not in str(app_context.timer_instance.schedule))
 
         # Add keyword, confirm added
         response = self.send_command(['add_schedule_keyword', {'sleep': '23:00'}])
@@ -475,19 +479,19 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
 
         # Confirm created timer to rebuild queue with new keyword timestamp
-        self.assertIn("rebuild_queue", str(SoftwareTimer.timer.schedule))
+        self.assertIn("rebuild_queue", str(app_context.timer_instance.schedule))
 
     def test_17_remove_schedule_keyword(self):
         # Confirm no rebuild_queue timer in queue
-        self.assertTrue("rebuild_queue" not in str(SoftwareTimer.timer.schedule))
+        self.assertTrue("rebuild_queue" not in str(app_context.timer_instance.schedule))
 
         # Add schedule rule using keyword, should be deleted when keyword deleted
-        app.config.schedule['device1']['sleep'] = 50
+        app_context.config_instance.schedule['device1']['sleep'] = 50
 
         # Remove keyword, confirm removed, confirm rule using keyword removed
         response = self.send_command(['remove_schedule_keyword', 'sleep'])
         self.assertEqual(response, {"Keyword removed": 'sleep'})
-        self.assertTrue('sleep' not in app.config.schedule['device1'].keys())
+        self.assertTrue('sleep' not in app_context.config_instance.schedule['device1'].keys())
 
         # Confirm correct error when attempting to delete sunrise/sunset
         response = self.send_command(['remove_schedule_keyword', 'sunrise'])
@@ -498,7 +502,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {"ERROR": "Keyword does not exist"})
 
         # Confirm created timer to rebuild queue without deleted keyword
-        self.assertIn("rebuild_queue", str(SoftwareTimer.timer.schedule))
+        self.assertIn("rebuild_queue", str(app_context.timer_instance.schedule))
 
     def test_18_save_schedule_keywords(self):
         response = self.send_command(['save_schedule_keywords'])
@@ -660,31 +664,31 @@ class TestApi(unittest.TestCase):
 
     def test_33_ir_create_macro(self):
         # Confirm no macros
-        self.assertEqual(len(app.config.ir_blaster.macros), 0)
+        self.assertEqual(len(app_context.config_instance.ir_blaster.macros), 0)
 
         # Create macro, confirm response, confirm created
         response = self.send_command(['ir_create_macro', 'test1'])
         self.assertEqual(response, {"Macro created": 'test1'})
-        self.assertEqual(len(app.config.ir_blaster.macros), 1)
+        self.assertEqual(len(app_context.config_instance.ir_blaster.macros), 1)
 
         # Attempt to create duplicate, confirm error, confirm not created
         response = self.send_command(['ir_create_macro', 'test1'])
         self.assertEqual(response, {"ERROR": 'Macro named test1 already exists'})
-        self.assertEqual(len(app.config.ir_blaster.macros), 1)
+        self.assertEqual(len(app_context.config_instance.ir_blaster.macros), 1)
 
     def test_34_ir_add_macro_action(self):
         # Confirm macro created in last test has no actions
-        self.assertEqual(len(app.config.ir_blaster.macros['test1']), 0)
+        self.assertEqual(len(app_context.config_instance.ir_blaster.macros['test1']), 0)
 
         # Add action with all required args, confirm added
         response = self.send_command(['ir_add_macro_action', 'test1', 'samsung_tv', 'power'])
         self.assertEqual(response, {"Macro action added": ['test1', 'samsung_tv', 'power']})
-        self.assertEqual(len(app.config.ir_blaster.macros['test1']), 1)
+        self.assertEqual(len(app_context.config_instance.ir_blaster.macros['test1']), 1)
 
         # Add action with all required and optional args, confirm added
         response = self.send_command(['ir_add_macro_action', 'test1', 'samsung_tv', 'power', 50, 3])
         self.assertEqual(response, {"Macro action added": ['test1', 'samsung_tv', 'power', 50, 3]})
-        self.assertEqual(len(app.config.ir_blaster.macros['test1']), 2)
+        self.assertEqual(len(app_context.config_instance.ir_blaster.macros['test1']), 2)
 
         # Confirm error when attempting to add to non-existing macro
         response = self.send_command(['ir_add_macro_action', 'test99', 'samsung_tv', 'power'])
@@ -727,12 +731,12 @@ class TestApi(unittest.TestCase):
 
     def test_38_ir_delete_macro(self):
         # Confirm macro exists
-        self.assertEqual(len(app.config.ir_blaster.macros), 1)
+        self.assertEqual(len(app_context.config_instance.ir_blaster.macros), 1)
 
         # Delete macro, confirm response, confirm deleted
         response = self.send_command(['ir_delete_macro', 'test1'])
         self.assertEqual(response, {"Macro deleted": 'test1'})
-        self.assertEqual(len(app.config.ir_blaster.macros), 0)
+        self.assertEqual(len(app_context.config_instance.ir_blaster.macros), 0)
 
         # Attempt to delete again, confirm error
         response = self.send_command(['ir_delete_macro', 'test1'])
@@ -740,8 +744,8 @@ class TestApi(unittest.TestCase):
 
     def test_39_no_ir_blaster_configured_errors(self):
         # Remove IrBlaster from config to test error
-        ir_blaster = app.config.ir_blaster
-        app.config.ir_blaster = None
+        ir_blaster = app_context.config_instance.ir_blaster
+        app_context.config_instance.ir_blaster = None
 
         # Confirm correct error message for each IR endpoint
         response = self.send_command(['ir_key', 'whynter_ac', 'on'])
@@ -766,7 +770,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {"ERROR": "No IR blaster configured"})
 
         # Restore IrBlaster
-        app.config.ir_blaster = ir_blaster
+        app_context.config_instance.ir_blaster = ir_blaster
 
     def test_40_set_gps_coords(self):
         response = self.send_command(['set_gps_coords', {'latitude': -90, 'longitude': 0}])
@@ -815,9 +819,31 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['notacommand'])
         self.assertEqual(response, {"ERROR": "Invalid command"})
 
+        # Confirm can't run Api class internal methods (finds endpoint handlers
+        # with getattr, but there is a check to block calling internal methods)
+        response = self.send_command(['_run'])
+        self.assertEqual(response, {"ERROR": "Invalid command"})
+        response = self.send_command(['_run_client'])
+        self.assertEqual(response, {"ERROR": "Invalid command"})
+        response = self.send_command(['_parse_http_request'])
+        self.assertEqual(response, {"ERROR": "Invalid command"})
+        response = self.send_command(['_invalid_endpoint_error'])
+        self.assertEqual(response, {"ERROR": "Invalid command"})
+
     @cpython_only
     def test_45_invalid_http_endpoint(self):
         response = self.send_http_command('GET /notacommand HTTP/1.1\r\n')
+        self.assertTrue(response.startswith('HTTP/1.0 404 NA\r\nContent-Type: application/json'))
+
+        # Confirm can't run Api class internal methods (finds endpoint handlers
+        # with getattr, but there is a check to block calling internal methods)
+        response = self.send_http_command('GET /_run HTTP/1.1\r\n')
+        self.assertTrue(response.startswith('HTTP/1.0 404 NA\r\nContent-Type: application/json'))
+        response = self.send_http_command('GET /_run_client HTTP/1.1\r\n')
+        self.assertTrue(response.startswith('HTTP/1.0 404 NA\r\nContent-Type: application/json'))
+        response = self.send_http_command('GET /_parse_http_request HTTP/1.1\r\n')
+        self.assertTrue(response.startswith('HTTP/1.0 404 NA\r\nContent-Type: application/json'))
+        response = self.send_http_command('GET /_invalid_endpoint_error HTTP/1.1\r\n')
         self.assertTrue(response.startswith('HTTP/1.0 404 NA\r\nContent-Type: application/json'))
 
     def test_46_missing_arguments(self):
@@ -896,10 +922,34 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['turn_off'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
+        response = self.send_command(['set_log_level'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
         response = self.send_command(['ir_key'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
         response = self.send_command(['ir_key', 'samsung_tv'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['ir_create_macro'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['ir_delete_macro'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['ir_add_macro_action'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['ir_run_macro'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['set_gps_coords'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['load_cell_tare'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['load_cell_read'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
     @cpython_only
@@ -955,6 +1005,12 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
 
         response = self.send_command(['turn_off', 'device99'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['load_cell_tare', 'device99'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['load_cell_read', 'device99'])
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
 
     def test_49_broken_connection(self):
@@ -1062,6 +1118,7 @@ class TestApi(unittest.TestCase):
     # before releasing lock. The server continued listening for API calls but would hang
     # while waiting to acquire lock resulting in client-side timeout. Lock is now acquired
     # with context manager and automatically released if an exception occurs.
+    @cpython_only
     def test_56_regression_fails_to_release_lock(self):
         # Call endpoint that raises uncaught exception, should time out
         response = self.send_command(['uncaught_exception'])

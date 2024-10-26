@@ -106,13 +106,18 @@ def set_mocks():
 
 
 async def run_tests():
-    # Import SoftwareTimer instance, add to async loop
-    from SoftwareTimer import timer
-    asyncio.create_task(timer.loop())
+    import app_context
 
+    # Instantiate SoftwareTimer, add to shared context module and async loop
+    from SoftwareTimer import SoftwareTimer
+    app_context.timer_instance = SoftwareTimer()
+    asyncio.create_task(app_context.timer_instance.loop())
+
+    # Instantiate API backend, add to shared context module
+    from Api import Api
+    app_context.api_instance = Api()
     # Add API backend to loop (receives commands from tests)
-    from Api import app
-    asyncio.create_task(app.run())
+    asyncio.create_task(app_context.api_instance._run())
     asyncio.run(asyncio.sleep(0.5))
 
     # Add captive portal to loop (receives DNS queries from tests)

@@ -2,7 +2,7 @@ import sys
 import json
 import network
 import unittest
-from Api import app
+import app_context
 from ApiTarget import ApiTarget
 from cpython_only import cpython_only
 
@@ -97,9 +97,10 @@ class TestApiTarget(unittest.TestCase):
         port = config['mock_receiver']['api_port']
         cls.instance = ApiTarget("device1", "device1", "api-target", default_rule, ip, port)
 
-        # Create mock device and config for self-target tests
+        # Create mock device for self-target tests
         cls.target = MockDevice()
-        cls.config = MockConfig(cls.target)
+        # Create mock config containing mock device in shared context module
+        app_context.config_instance = MockConfig(cls.target)
 
     def tearDown(self):
         # Revert IP (prevent other tests failing if self-target fails)
@@ -258,8 +259,7 @@ class TestApiTarget(unittest.TestCase):
         # Set target IP to own IP
         self.instance.ip = wlan.ifconfig()[0]
 
-        # Pass mock Config to API, set rule to enable and disable mock device
-        app.config = self.config
+        # Set rule to enable and disable mock device
         self.assertTrue(self.instance.set_rule({
             'on': ['enable', 'device1'],
             'off': ['disable', 'device1']

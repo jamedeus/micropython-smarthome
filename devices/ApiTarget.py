@@ -1,7 +1,7 @@
 import json
 import socket
 import network
-from Api import app
+import app_context
 from Device import Device
 from util import is_device, is_sensor, is_device_or_sensor
 
@@ -292,8 +292,8 @@ class ApiTarget(Device):
         args = command[1:]
 
         try:
-            reply = app.url_map[path](args)
-        except KeyError:
+            reply = getattr(app_context.api_instance, path)(args)
+        except AttributeError:
             return False
 
         # Log payload + error and return False if response contains error
