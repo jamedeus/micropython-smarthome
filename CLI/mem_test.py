@@ -39,22 +39,33 @@ max_free_sz:
 Average:                1229
 '''
 
+from concurrent.futures import ThreadPoolExecutor
 from api_client import parse_ip
 from cli_config_manager import CliConfigManager
 
 cli_config = CliConfigManager(no_sync=True)
 
 
-def get_mem_info():
+def get_mem_info(node):
+    '''Takes name of node from cli_config.json, calls mem_info endpoint.
+    Returns dict with node name and API response.
+    '''
+    return {
+        'node': node,
+        'response': parse_ip([node, 'mem_info'])
+    }
+
+
+def get_all_mem_info():
     '''Calls the mem_info endpoint on all nodes in cli_config.json.
     Returns a dict with node names as keys and responses as values.
     '''
     nodes = {}
 
-    for node in cli_config.get_existing_node_names():
-        response = parse_ip([node, 'mem_info'])
-        if not str(response).startswith('Error'):
-            nodes[node] = response
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        for response in executor.map(get_mem_info, cli_config.get_existing_node_names()):
+            if not str(response['response']).startswith('Error'):
+                nodes[response['node']] = response['response']
 
     return nodes
 
@@ -95,7 +106,7 @@ def print_node_param(report, param):
 
 
 if __name__ == '__main__':
-    result = get_mem_info()
+    result = get_all_mem_info()
     print(f'\nTotal nodes: {len(result)}\n')
     print_node_param(result, 'free')
     print_node_param(result, 'max_new_split')
