@@ -14,7 +14,7 @@ class TestTasmotaRelay(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = TasmotaRelay("device1", "device1", "tasmota-relay", "enabled", mock_address)
+        cls.instance = TasmotaRelay("device1", "device1", "tasmota-relay", "enabled", {}, mock_address)
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, TasmotaRelay)

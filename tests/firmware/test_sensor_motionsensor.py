@@ -18,7 +18,8 @@ expected_attributes = {
     'default_rule': None,
     '_type': 'pir',
     'current_rule': None,
-    'scheduled_rule': None
+    'scheduled_rule': None,
+    'schedule': {}
 }
 
 
@@ -42,7 +43,7 @@ class TestMotionSensorSensor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = MotionSensor("sensor1", "sensor1", "pir", None, [], 15)
+        cls.instance = MotionSensor("sensor1", "sensor1", "pir", None, {}, [], 15)
         cls.group = MockGroup("group1", [cls.instance])
         cls.instance.group = cls.group
 
@@ -300,10 +301,10 @@ class TestMotionSensorSensor(unittest.TestCase):
     # this, should not be possible to instantiate with invalid default_rule.
     def test_14_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
-            MotionSensor("sensor1", "sensor1", "pir", "disabled", [], 15)
+            MotionSensor("sensor1", "sensor1", "pir", "disabled", {}, [], 15)
 
         with self.assertRaises(AttributeError):
-            MotionSensor("sensor1", "sensor1", "ld2410", "enabled", [], 15)
+            MotionSensor("sensor1", "sensor1", "ld2410", "enabled", {}, [], 15)
 
     # Original bug: increment_rule cast argument to float and relied on try/except
     # to detect invalid argument. Since NaN is a valid float no exception was

@@ -16,6 +16,7 @@ expected_attributes = {
     'current': None,
     'current_rule': 74.0,
     'scheduled_rule': None,
+    'schedule': {},
     'default_rule': 74,
     'enabled': True,
     'group': 'group1',
@@ -50,8 +51,8 @@ class TestThermostat(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Create test instance, mock device, mock group
-        cls.target = Device('device1', 'target', 'device', True, '70')
-        cls.instance = Si7021("sensor1", "sensor1", "si7021", 74, "cool", 1, "fahrenheit", [cls.target])
+        cls.target = Device('device1', 'target', 'device', True, '70', {})
+        cls.instance = Si7021("sensor1", "sensor1", "si7021", 74, {}, "cool", 1, "fahrenheit", [cls.target])
         cls.instance.set_rule(74)
         cls.group = MockGroup('group1', [cls.instance])
         cls.instance.group = cls.group
@@ -483,33 +484,33 @@ class TestThermostat(unittest.TestCase):
 
     def test_16_instantiate_with_all_modes(self):
         # Instantiate in heat mode
-        test = Thermostat("sensor1", "sensor1", "Thermostat", 74, "heat", 1, "fahrenheit", [])
+        test = Thermostat("sensor1", "sensor1", "Thermostat", 74, {}, "heat", 1, "fahrenheit", [])
         self.assertEqual(test.mode, "heat")
 
         # Instantiate in cool mode
-        test = Thermostat("sensor1", "sensor1", "Thermostat", 74, "cool", 1, "fahrenheit", [])
+        test = Thermostat("sensor1", "sensor1", "Thermostat", 74, {}, "cool", 1, "fahrenheit", [])
         self.assertEqual(test.mode, "cool")
 
         # Instantiate with unsupported mode
         with self.assertRaises(ValueError):
-            Thermostat("sensor1", "sensor1", "Thermostat", 74, "invalid", 1, "fahrenheit", [])
+            Thermostat("sensor1", "sensor1", "Thermostat", 74, {}, "invalid", 1, "fahrenheit", [])
 
     def test_17_instantiate_with_all_units(self):
         # Instantiate with celsius
-        test = Thermostat("sensor1", "sensor1", "Thermostat", 74, "cool", 1, "celsius", [])
+        test = Thermostat("sensor1", "sensor1", "Thermostat", 74, {}, "cool", 1, "celsius", [])
         self.assertEqual(test.units, "celsius")
 
         # Instantiate with fahrenheit
-        test = Thermostat("sensor1", "sensor1", "Thermostat", 74, "cool", 1, "fahrenheit", [])
+        test = Thermostat("sensor1", "sensor1", "Thermostat", 74, {}, "cool", 1, "fahrenheit", [])
         self.assertEqual(test.units, "fahrenheit")
 
         # Instantiate with kelvin
-        test = Thermostat("sensor1", "sensor1", "Thermostat", 74, "cool", 1, "kelvin", [])
+        test = Thermostat("sensor1", "sensor1", "Thermostat", 74, {}, "cool", 1, "kelvin", [])
         self.assertEqual(test.units, "kelvin")
 
         # Instantiate with unsupported units
         with self.assertRaises(ValueError):
-            Thermostat("sensor1", "sensor1", "Thermostat", 74, "cool", 1, "invalid", [])
+            Thermostat("sensor1", "sensor1", "Thermostat", 74, {}, "cool", 1, "invalid", [])
 
     def test_18_get_raw_temperature(self):
         # Base class, must be implemented in subclass
@@ -524,7 +525,7 @@ class TestThermostat(unittest.TestCase):
 
     def test_20_get_temperature_and_humidity(self):
         # Instantiate test instance
-        test = Thermostat("sensor1", "sensor1", "Thermostat", 74, "cool", 1, "celsius", [])
+        test = Thermostat("sensor1", "sensor1", "Thermostat", 74, {}, "cool", 1, "celsius", [])
 
         # Mock get_raw_temperature method to return 20 degrees celsius
         def mock_get_raw_temperature(arg=None):
@@ -558,10 +559,10 @@ class TestThermostat(unittest.TestCase):
     # method to prevent this. Should not be possible to instantiate with invalid default_rule.
     def test_21_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
-            Thermostat("sensor1", "sensor1", "Thermostat", "enabled", "cool", 1, "fahrenheit", [])
+            Thermostat("sensor1", "sensor1", "Thermostat", "enabled", {}, "cool", 1, "fahrenheit", [])
 
         with self.assertRaises(AttributeError):
-            Thermostat("sensor1", "sensor1", "Thermostat", "disabled", "cool", 1, "fahrenheit", [])
+            Thermostat("sensor1", "sensor1", "Thermostat", "disabled", {}, "cool", 1, "fahrenheit", [])
 
     # Original bug: increment_rule cast argument to float inside try/except, relying
     # on exception to detect invalid argument. Since NaN is a valid float no exception

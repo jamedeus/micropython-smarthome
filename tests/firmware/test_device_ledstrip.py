@@ -9,6 +9,7 @@ expected_attributes = {
     'max_rule': 1023,
     '_type': 'pwm',
     'scheduled_rule': None,
+    'schedule': {},
     'current_rule': None,
     'default_rule': 512,
     'enabled': True,
@@ -26,7 +27,7 @@ class TestLedStrip(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = LedStrip("device1", "device1", "pwm", 512, 0, 1023, 4)
+        cls.instance = LedStrip("device1", "device1", "pwm", 512, {}, 0, 1023, 4)
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, LedStrip)
@@ -109,7 +110,7 @@ class TestLedStrip(unittest.TestCase):
     # file contained a string pin. Fixed by casting to int in device init methods.
     def test_08_regression_string_pin_number(self):
         # Attempt to instantiate with a string pin number
-        self.instance = LedStrip("device1", "device1", "pwm", 512, 0, 1023, "4")
+        self.instance = LedStrip("device1", "device1", "pwm", 512, {}, 0, 1023, "4")
         self.assertIsInstance(self.instance, LedStrip)
         self.assertIsInstance(self.instance.pwm, PWM)
 

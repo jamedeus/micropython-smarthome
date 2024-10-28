@@ -21,7 +21,7 @@ class Instance():
     be supported by replacing the validator method in subclass.
     '''
 
-    def __init__(self, name, nickname, _type, enabled, default_rule):
+    def __init__(self, name, nickname, _type, enabled, default_rule, schedule):
 
         # Set name for module's log lines
         self.log = logging.getLogger(f"{name} ({_type})")
@@ -60,8 +60,13 @@ class Instance():
         # on when >=1 sensor condition is met, off when no conditions are met)
         self.group = None
 
-        # Stores sequential schedule rules, next_rule method applies the first rule in queue
-        # Config.build_queue populates list + adds callback timers for each rule change
+        # Dict with schedule rule timestamps/keywords as keysm, rules as values
+        # Used by Config._build_queue to create timers for each rule change
+        self.schedule = schedule
+
+        # List of sequential schedule rules, populated by Config._build_queue.
+        # All schedule rule timers call the next_rule method, which applies the
+        # next rule in queue.
         self.rule_queue = []
 
     def enable(self):
@@ -205,7 +210,8 @@ class Instance():
             'enabled': self.enabled,
             'current_rule': self.current_rule,
             'scheduled_rule': self.scheduled_rule,
-            'default_rule': self.default_rule
+            'default_rule': self.default_rule,
+            'schedule': self.schedule
         }
 
     def print(self, msg):

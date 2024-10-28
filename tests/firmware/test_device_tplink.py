@@ -12,7 +12,7 @@ class TestTplink(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = Tplink("device1", "device1", "dimmer", 42, 1, 100, config["mock_receiver"]["ip"])
+        cls.instance = Tplink("device1", "device1", "dimmer", 42, {}, 1, 100, config["mock_receiver"]["ip"])
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, Tplink)
@@ -40,7 +40,7 @@ class TestTplink(unittest.TestCase):
 
     def test_05_send_method_error(self):
         # Instantiate with invalid IP, confirm send method returns False
-        test = Tplink("device1", "device1", "dimmer", 42, 1, 100, "0.0.0.")
+        test = Tplink("device1", "device1", "dimmer", 42, {}, 1, 100, "0.0.0.")
         self.assertFalse(test.send())
 
     def test_06_parse_response(self):

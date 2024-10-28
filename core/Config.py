@@ -42,9 +42,6 @@ def instantiate_hardware(name, **kwargs):
             f'Invalid name "{name}", must start with "device" or "sensor"'
         )
 
-    # Remove schedule rules (unexpected arg)
-    del kwargs['schedule']
-
     # Import correct module, instantiate class
     if is_device(name):
         module = __import__(hardware_classes['devices'][kwargs['_type']])
@@ -99,10 +96,6 @@ class Config():
         # Stores IrBlaster instance if configured
         self.ir_blaster = None
 
-        # Nested schedule rules dict with device and sensor IDs (device1,
-        # sensor2, etc) as keys, dict of timestamp-rule pairs as values
-        self.schedule = {}
-
         # Dictionairy of keyword-timestamp pairs, used for schedule rules
         self.schedule_keywords = {'sunrise': '00:00', 'sunset': '00:00'}
         self.schedule_keywords.update(conf["schedule_keywords"])
@@ -131,14 +124,17 @@ class Config():
         # Instantiate each config in self._device_configs and self._sensor_configs
         # as appropriate class, add to self.devices and self.sensors respectively
         self._instantiate_peripherals()
+        gc.collect()
 
         # Create timers for all schedule rules expiring in next 24 hours
         self._build_queue()
+        gc.collect()
 
         # Map relationships between sensors ("triggers") and devices ("targets")
         # Must run after _build_queue to prevent sensors turning devices on/off
         # before correct scheduled rule applied
         self._build_groups()
+        gc.collect()
 
         # Start timer to build schedule rule queue for next 24 hours around 3 am
         self._start_reload_schedule_rules_timer()
@@ -194,9 +190,13 @@ class Config():
 
         # Instantiate all configs in _device_configs (populates self.devices)
         self._instantiate_devices(self._device_configs)
+        del self._device_configs
+        gc.collect()
 
         # Instantiate all configs in _sensor_configs (populates self.sensors)
         self._instantiate_sensors(self._sensor_configs)
+        del self._sensor_configs
+        gc.collect()
 
         # Instantiate IR Blaster if configured (max 1 due to driver limitation)
         # IR Blaster is not a Device subclass, has no schedule rules, and is
@@ -208,11 +208,7 @@ class Config():
                 self._ir_blaster_config["target"]
             )
             del self._ir_blaster_config
-
-        # Delete device and sensor config dicts
-        del self._device_configs
-        del self._sensor_configs
-        gc.collect()
+            gc.collect()
 
     def _instantiate_devices(self, conf):
         '''Takes dict with device IDs (device1, device2, etc) as keys, device
@@ -221,9 +217,6 @@ class Config():
         '''
         log.debug("Instantiating devices")
         for device in sorted(conf):
-            # Add device's schedule rules to dict
-            self.schedule[device] = conf[device]["schedule"]
-
             try:
                 # Instantiate device with appropriate class
                 instance = instantiate_hardware(device, **conf[device])
@@ -256,9 +249,6 @@ class Config():
         '''
         log.debug("Instantiating sensors")
         for sensor in sorted(conf):
-            # Add sensor's schedule rules to dict
-            self.schedule[sensor] = conf[sensor]["schedule"]
-
             try:
                 # Find device instances for each ID in targets list
                 targets = [t for t in (
@@ -371,12 +361,10 @@ class Config():
         # Iterate devices, add get_status return value, add schedule rules
         for i in self.devices:
             status_dict["devices"][i.name] = i.get_status()
-            status_dict["devices"][i.name]["schedule"] = self.schedule[i.name]
 
         # Iterate sensors, add get_status return value, add schedule rules
         for i in self.sensors:
             status_dict["sensors"][i.name] = i.get_status()
-            status_dict["sensors"][i.name]["schedule"] = self.schedule[i.name]
 
         return status_dict
 
@@ -560,81 +548,87 @@ class Config():
         # Delete all existing schedule rule timers to avoid conflicts
         app_context.timer_instance.cancel("scheduler")
 
-        for instance, rules in self.schedule.items():
-            # Convert HH:MM timestamps to unix epoch timestamp of next run
-            # Copy avoids overwriting schedule keywords with HH:MM in original
-            epoch_rules = self._convert_rules(rules.copy())
-
-            # Get target instance (skip if unable to find)
-            instance = self.find(instance)
-            if not instance:
-                continue
-
-            # No rules: set default_rule as scheduled_rule, skip to next instance
-            if len(epoch_rules) == 0:
-                # Set current_rule and scheduled_rule (returns False if invalid)
-                if not instance.set_rule(instance.default_rule, True):
-                    # Disable instance if default invalid (prevent unpredictable behavior)
-                    log.critical(
-                        "%s invalid default rule (%s), disabling instance",
-                        instance.name, instance.default_rule
-                    )
-                    instance.current_rule = "disabled"
-                    instance.scheduled_rule = "disabled"
-                    instance.default_rule = "disabled"
-                    instance.disable()
-                continue
-
-            # Get list of timestamps, sort chronologically
-            # First item in queue is current scheduled rule
-            queue = []
-            for j in epoch_rules:
-                queue.append(j)
-            queue.sort()
-
-            # Set current_rule and scheduled_rule (returns False if invalid)
-            if not instance.set_rule(epoch_rules[queue.pop(0)], True):
-                # Fall back to default_rule if scheduled rule is invalid
-                log.error(
-                    "%s scheduled rule invalid, falling back to default rule",
-                    instance.name
-                )
-                if not instance.set_rule(instance.default_rule, True):
-                    # Disable instance if default invalid (prevent unpredictable behavior)
-                    log.critical(
-                        "%s invalid default rule (%s), disabling instance",
-                        instance.name, instance.default_rule
-                    )
-                    instance.current_rule = "disabled"
-                    instance.scheduled_rule = "disabled"
-                    instance.default_rule = "disabled"
-                    instance.disable()
-
-            # Clear target's queue
-            instance.rule_queue = []
-
-            # Populate target's queue with chronological rule values
-            for k in queue:
-                instance.rule_queue.append(epoch_rules[k])
-
-            # Get epoch time in current timezone
-            epoch = time.time()
-
-            # Create timers for all epoch_rules
-            for k in queue:
-                milliseconds = (k - epoch) * 1000
-                app_context.timer_instance.create(
-                    milliseconds,
-                    instance.next_rule,
-                    "scheduler"
-                )
-                gc.collect()
+        # Iterate device and sensor instances, create timers for all rules
+        for instance in self.devices:
+            self._build_instance_queue(instance)
+        for instance in self.sensors:
+            self._build_instance_queue(instance)
 
         print_with_timestamp("Finished building schedule rule queue")
         log.debug(
             "Finished building queue, total timers = %s",
             len(app_context.timer_instance.queue)
         )
+
+    def _build_instance_queue(self, instance):
+        '''Takes device or sensor instance, converts HH:MM times in schedule
+        attribute (dict of time-rule pairs) to unix epoch times, creates timers
+        for each rule change, and sets correct current_rule and scheduled_rule.
+        '''
+
+        # Convert HH:MM timestamps to unix epoch timestamp of next run
+        # Copy avoids overwriting schedule keywords with HH:MM in original
+        epoch_rules = self._convert_rules(instance.schedule.copy().copy())
+
+        # No rules: set default_rule as scheduled_rule, skip to next instance
+        if len(epoch_rules) == 0:
+            # Set current_rule and scheduled_rule (returns False if invalid)
+            if not instance.set_rule(instance.default_rule, True):
+                # Disable instance if default invalid (prevent unpredictable behavior)
+                log.critical(
+                    "%s invalid default rule (%s), disabling instance",
+                    instance.name, instance.default_rule
+                )
+                instance.current_rule = "disabled"
+                instance.scheduled_rule = "disabled"
+                instance.default_rule = "disabled"
+                instance.disable()
+            return
+
+        # Get list of timestamps, sort chronologically
+        # First item in queue is current scheduled rule
+        queue = []
+        for j in epoch_rules:
+            queue.append(j)
+        queue.sort()
+
+        # Set current_rule and scheduled_rule (returns False if invalid)
+        if not instance.set_rule(epoch_rules[queue.pop(0)], True):
+            # Fall back to default_rule if scheduled rule is invalid
+            log.error(
+                "%s scheduled rule invalid, falling back to default rule",
+                instance.name
+            )
+            if not instance.set_rule(instance.default_rule, True):
+                # Disable instance if default invalid (prevent unpredictable behavior)
+                log.critical(
+                    "%s invalid default rule (%s), disabling instance",
+                    instance.name, instance.default_rule
+                )
+                instance.current_rule = "disabled"
+                instance.scheduled_rule = "disabled"
+                instance.default_rule = "disabled"
+                instance.disable()
+
+        # Clear target's queue
+        instance.rule_queue = []
+
+        # Populate target's queue with chronological rule values
+        for k in queue:
+            instance.rule_queue.append(epoch_rules[k])
+
+        # Get epoch time in current timezone
+        epoch = time.time()
+
+        # Create timers for all epoch_rules
+        for k in queue:
+            milliseconds = (k - epoch) * 1000
+            app_context.timer_instance.create(
+                milliseconds,
+                instance.next_rule,
+                "scheduler"
+            )
+            gc.collect()
 
     def find(self, target):
         '''Takes ID (device1, sensor2, etc), returns instance or False.'''

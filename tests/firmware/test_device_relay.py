@@ -7,6 +7,7 @@ expected_attributes = {
     'nickname': 'device1',
     '_type': 'relay',
     'scheduled_rule': 'enabled',
+    'schedule': {},
     'current_rule': None,
     'default_rule': 'enabled',
     'enabled': True,
@@ -22,7 +23,7 @@ class TestRelay(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = Relay("device1", "device1", "relay", "enabled", 4)
+        cls.instance = Relay("device1", "device1", "relay", "enabled", {}, 4)
         cls.instance.scheduled_rule = "enabled"
 
     def test_01_initial_state(self):
@@ -79,6 +80,6 @@ class TestRelay(unittest.TestCase):
     # file contained a string pin. Fixed by casting to int in device init methods.
     def test_07_regression_string_pin_number(self):
         # Attempt to instantiate with a string pin number
-        self.instance = Relay("device1", "device1", "relay", "enabled", "4")
+        self.instance = Relay("device1", "device1", "relay", "enabled", {}, "4")
         self.assertIsInstance(self.instance, Relay)
         self.assertIsInstance(self.instance.output, Pin)

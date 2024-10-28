@@ -22,8 +22,8 @@ class Sensor(Instance):
     be supported by replacing the validator method in subclass.
     '''
 
-    def __init__(self, name, nickname, _type, enabled, default_rule, targets):
-        super().__init__(name, nickname, _type, enabled, default_rule)
+    def __init__(self, name, nickname, _type, enabled, default_rule, schedule, targets):
+        super().__init__(name, nickname, _type, enabled, default_rule, schedule)
 
         # List of Device instances controlled by Sensor (Config.build_groups
         # adds sensors with identical targets attribute to same Group instance)

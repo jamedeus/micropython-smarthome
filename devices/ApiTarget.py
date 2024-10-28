@@ -28,8 +28,8 @@ class ApiTarget(Device):
     The default_rule must be a dict (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, ip, port=8123):
-        super().__init__(name, nickname, _type, True, default_rule)
+    def __init__(self, name, nickname, _type, default_rule, schedule, ip, port=8123):
+        super().__init__(name, nickname, _type, True, default_rule, schedule)
 
         # IP that API command is sent to
         self.ip = ip

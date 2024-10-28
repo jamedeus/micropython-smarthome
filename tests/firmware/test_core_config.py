@@ -73,7 +73,6 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.config._metadata["id"], loaded_json["metadata"]["id"])
         self.assertEqual(self.config._metadata["location"], loaded_json["metadata"]["location"])
         self.assertEqual(self.config._metadata["floor"], loaded_json["metadata"]["floor"])
-        self.assertEqual(self.config.schedule, {})
         self.assertEqual(self.config.schedule_keywords, {'sunrise': '00:00', 'sunset': '00:00'})
         self.assertTrue("gps" not in self.config._metadata)
 
@@ -139,9 +138,6 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.config.devices[0].current_rule, None)
         self.assertEqual(self.config.sensors[0].scheduled_rule, None)
         self.assertEqual(self.config.sensors[0].scheduled_rule, None)
-
-        # Confirm config.schedule populated
-        self.assertEqual(self.config.schedule, {'device1': {'sunrise': 0, 'sunset': 32}, 'sensor1': {}})
 
         # Should not be able to call _instantiate_peripherals again
         with self.assertRaises(RuntimeError):

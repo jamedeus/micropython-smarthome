@@ -16,7 +16,7 @@ class TestDesktopTarget(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = DesktopTarget("device1", "device1", "desktop", "enabled", ip, port)
+        cls.instance = DesktopTarget("device1", "device1", "desktop", "enabled", {}, ip, port)
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, DesktopTarget)

@@ -13,6 +13,7 @@ expected_attributes = {
     'nickname': 'sensor1',
     'current_rule': None,
     'scheduled_rule': None,
+    'schedule': {},
     'targets': []
 }
 
@@ -33,7 +34,7 @@ class TestDummySensor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = Dummy("sensor1", "sensor1", "dummy", "on", [])
+        cls.instance = Dummy("sensor1", "sensor1", "dummy", "on", {}, [])
         cls.group = MockGroup("group1", [cls.instance])
         cls.instance.group = cls.group
 
@@ -116,10 +117,10 @@ class TestDummySensor(unittest.TestCase):
     # It should no longer be possible to instantiate with invalid default_rule.
     def test_08_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
-            Dummy("sensor1", "sensor1", "dummy", "disabled", [])
+            Dummy("sensor1", "sensor1", "dummy", "disabled", {}, [])
 
         with self.assertRaises(AttributeError):
-            Dummy("sensor1", "sensor1", "dummy", "enabled", [])
+            Dummy("sensor1", "sensor1", "dummy", "enabled", {}, [])
 
     # Original bug: trigger method set Dummy current_rule to 'On', which caused
     # main loop to turn targets on. After main loop was removed in c6f5e1d2 Dummy

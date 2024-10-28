@@ -14,7 +14,7 @@ class TestWled(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = Wled("device1", "device1", "wled", 50, 1, 255, mock_address)
+        cls.instance = Wled("device1", "device1", "wled", 50, {}, 1, 255, mock_address)
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, Wled)
@@ -33,7 +33,7 @@ class TestWled(unittest.TestCase):
 
     def test_05_network_errors(self):
         # Instantiate with invalid IP, confirm send method returns False
-        test = Wled("device1", "device1", "wled", 50, 1, 255, "0.0.0.")
+        test = Wled("device1", "device1", "wled", 50, {}, 1, 255, "0.0.0.")
         self.assertFalse(test.send())
 
         # Set invalid rule to trigger 400 status code, confirm send returns False

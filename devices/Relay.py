@@ -18,8 +18,8 @@ class Relay(Device):
     Supports universal rules ("enabled" and "disabled").
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, pin):
-        super().__init__(name, nickname, _type, True, default_rule)
+    def __init__(self, name, nickname, _type, default_rule, schedule, pin):
+        super().__init__(name, nickname, _type, True, default_rule, schedule)
 
         self.output = Pin(int(pin), Pin.OUT, Pin.PULL_DOWN)
 

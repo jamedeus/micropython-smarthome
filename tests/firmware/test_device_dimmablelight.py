@@ -14,7 +14,7 @@ class TestDimmableLight(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Instantiate with default_rule 50, min_rule 1, max_rule 100
-        cls.instance = DimmableLight("device1", "device1", "DimmableLight", True, 50, "1", "100")
+        cls.instance = DimmableLight("device1", "device1", "DimmableLight", True, 50, {}, "1", "100")
 
         # Detect if mock send method was called
         cls.instance.send_method_called = False
@@ -40,9 +40,9 @@ class TestDimmableLight(unittest.TestCase):
     def test_02_instantiate_with_invalid_min_max(self):
         # AttributeError should be raised if default_rule is outside limits
         with self.assertRaises(AttributeError):
-            DimmableLight("device1", "device1", "DimmableLight", True, 500, "1", "100")
+            DimmableLight("device1", "device1", "DimmableLight", True, 500, {}, "1", "100")
         with self.assertRaises(AttributeError):
-            DimmableLight("device1", "device1", "DimmableLight", True, 5, "10", "100")
+            DimmableLight("device1", "device1", "DimmableLight", True, 5, {}, "10", "100")
 
     def test_03_rule_validation_valid(self):
         # Should accept int between min_rule and max_rule
@@ -398,10 +398,10 @@ class TestDimmableLight(unittest.TestCase):
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
     def test_18_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
-            DimmableLight("device1", "device1", "DimmableLight", True, "disabled", "1", "100")
+            DimmableLight("device1", "device1", "DimmableLight", True, "disabled", {}, "1", "100")
 
         with self.assertRaises(AttributeError):
-            DimmableLight("device1", "device1", "DimmableLight", True, "enabled", "1", "100")
+            DimmableLight("device1", "device1", "DimmableLight", True, "enabled", {}, "1", "100")
 
     # Original issue: DimmableLight.set_rule contains a conditional to abort an in-progress fade if
     # brightness is changed in the opposite direction. This is determined by checking if the new rule

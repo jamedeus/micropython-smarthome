@@ -31,6 +31,7 @@ expected_attributes = {
     '_type': 'desktop',
     'current_rule': None,
     'scheduled_rule': None,
+    'schedule': {},
     'targets': ['device1'],
     'monitor_task': True
 }
@@ -58,9 +59,9 @@ class TestDesktopTrigger(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Create test group with desktop_trigger and motion sensor targeting desktop_target
-        cls.target = DesktopTarget("device1", "device1", "desktop", "enabled", ip, port)
-        cls.instance = DesktopTrigger("sensor1", "sensor1", "desktop", "enabled", [cls.target], "screen", ip, port)
-        cls.pir = MotionSensor("sensor1", "sensor1", "pir", None, [cls.target], 15)
+        cls.target = DesktopTarget("device1", "device1", "desktop", "enabled", {}, ip, port)
+        cls.instance = DesktopTrigger("sensor1", "sensor1", "desktop", "enabled", {}, [cls.target], "screen", ip, port)
+        cls.pir = MotionSensor("sensor1", "sensor1", "pir", None, {}, [cls.target], 15)
         cls.group = MockGroup('group1', [cls.instance, cls.pir])
         cls.instance.group = cls.group
         cls.pir.group = cls.group
@@ -300,7 +301,7 @@ class TestDesktopTrigger(unittest.TestCase):
     def test_15_instantiate_with_invalid_mode(self):
         # Instantiate with unsupported mode
         with self.assertRaises(ValueError):
-            DesktopTrigger("sensor1", "sensor1", "desktop", "enabled", [], "invalid", ip, port)
+            DesktopTrigger("sensor1", "sensor1", "desktop", "enabled", {}, [], "invalid", ip, port)
 
     def test_16_monitor_screen(self):
         # Configure mock receiver to return On for first reading
@@ -424,7 +425,7 @@ class TestDesktopTrigger(unittest.TestCase):
     @cpython_only
     def test_19_regression_disabled_at_boot_breaks_monitor_loop(self):
         # Simulate instantiating with current_rule = disabled
-        instance = DesktopTrigger("sensor1", "sensor1", "desktop", "disabled", [], "screen", ip, port)
+        instance = DesktopTrigger("sensor1", "sensor1", "desktop", "disabled", {}, [], "screen", ip, port)
         instance.set_rule("disabled")
 
         # Confirm monitor_task is None

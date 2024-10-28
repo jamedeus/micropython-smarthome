@@ -430,7 +430,7 @@ class Api:
         if not target:
             return TARGET_MISSING_ERROR
 
-        return app_context.config_instance.schedule[target.name]
+        return target.schedule
 
     def add_schedule_rule(self, args):
         '''Takes device or sensor ID, HH:MM timestamp or schedule keyword, and rule
@@ -444,8 +444,6 @@ class Api:
         if not target:
             return TARGET_MISSING_ERROR
 
-        rules = app_context.config_instance.schedule[target.name]
-
         if re.match(TIMESTAMP_REGEX, args[0]):
             timestamp = args[0]
         elif args[0] in app_context.config_instance.schedule_keywords:
@@ -458,11 +456,10 @@ class Api:
         if valid is False:
             return {"ERROR": "Invalid rule"}
 
-        if timestamp in rules and (not len(args) >= 3 or not args[2] == "overwrite"):
+        if timestamp in target.schedule and (not len(args) >= 3 or not args[2] == "overwrite"):
             return {"ERROR": f"Rule already exists at {timestamp}, add 'overwrite' arg to replace"}
 
-        rules[timestamp] = valid
-        app_context.config_instance.schedule[target.name] = rules
+        target.schedule[timestamp] = valid
         # Schedule queue rebuild after connection closes (blocks for several seconds)
         app_context.timer_instance.create(
             1200,
@@ -483,8 +480,6 @@ class Api:
         if not target:
             return TARGET_MISSING_ERROR
 
-        rules = app_context.config_instance.schedule[target.name]
-
         if re.match(TIMESTAMP_REGEX, args[0]):
             timestamp = args[0]
         elif args[0] in app_context.config_instance.schedule_keywords:
@@ -493,8 +488,7 @@ class Api:
             return {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"}
 
         try:
-            del rules[timestamp]
-            app_context.config_instance.schedule[target.name] = rules
+            del target.schedule[timestamp]
             # Schedule queue rebuild after connection closes (blocks for several seconds)
             app_context.timer_instance.create(
                 1200,
@@ -513,8 +507,8 @@ class Api:
         config = read_config_from_disk()
 
         for i in config:
-            if is_device_or_sensor(i) and i in app_context.config_instance.schedule:
-                config[i]["schedule"] = app_context.config_instance.schedule[i]
+            if is_device_or_sensor(i):
+                config[i]["schedule"] = app_context.config_instance.find(i).schedule
 
         write_config_to_disk(config)
         return {"Success": "Rules written to disk"}
@@ -561,9 +555,12 @@ class Api:
             return {"ERROR": "Keyword does not exist"}
 
         # Remove all existing rules using keyword
-        for instance_rules in app_context.config_instance.schedule.values():
-            if keyword in instance_rules:
-                del instance_rules[keyword]
+        for device in app_context.config_instance.devices:
+            if keyword in device.schedule:
+                del device.schedule[keyword]
+        for sensor in app_context.config_instance.sensors:
+            if keyword in sensor.schedule:
+                del sensor.schedule[keyword]
 
         del app_context.config_instance.schedule_keywords[keyword]
         # Schedule queue rebuild after connection closes (blocks for several seconds)

@@ -30,8 +30,8 @@ class DesktopTrigger(SensorWithLoop):
     met when the screen is off, regardless of last user activity.
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, targets, mode, ip, port=5000):
-        super().__init__(name, nickname, _type, True, default_rule, targets)
+    def __init__(self, name, nickname, _type, default_rule, schedule, targets, mode, ip, port=5000):
+        super().__init__(name, nickname, _type, True, default_rule, schedule, targets)
 
         self.uri = f"{ip}:{port}"
 

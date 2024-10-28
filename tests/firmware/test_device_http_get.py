@@ -15,7 +15,7 @@ class TestHttpGet(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Instantiate with mock URI and on/off paths (send calls will be mocked)
-        cls.instance = HttpGet("device1", "device1", "HttpGet", "Enabled", "http://192.168.1.100", "on", "off")
+        cls.instance = HttpGet("device1", "device1", "HttpGet", "Enabled", {}, "http://192.168.1.100", "on", "off")
 
     def test_01_initial_state(self):
         # Confirm attributes, confirm http removed from URI
@@ -27,7 +27,7 @@ class TestHttpGet(unittest.TestCase):
     def test_02_instantiate_with_invalid_uri(self):
         # AttributeError should be raised if instantiated with an invalid URI
         with self.assertRaises(AttributeError):
-            HttpGet("device1", "device1", "HttpGet", "Enabled", "192.168.1.", "on", "off")
+            HttpGet("device1", "device1", "HttpGet", "Enabled", {}, "192.168.1.", "on", "off")
 
     def test_03_uri_pattern(self):
         # Should accept domain or IP with no port number
@@ -82,7 +82,7 @@ class TestHttpGet(unittest.TestCase):
     # target devices. Init method now removes leading forward slash.
     def test_06_regression_double_forward_slash(self):
         # Instantiate with forward slash on both paths
-        test = HttpGet("device1", "device1", "HttpGet", "Enabled", "http://192.168.1.100", "/on", "/off")
+        test = HttpGet("device1", "device1", "HttpGet", "Enabled", {}, "http://192.168.1.100", "/on", "/off")
         # Confirm forward slashes were removed
         self.assertEqual(test.on_path, 'on')
         self.assertEqual(test.off_path, 'off')

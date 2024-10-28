@@ -19,8 +19,8 @@ class Device(Instance):
     be supported by replacing the validator method in subclass.
     '''
 
-    def __init__(self, name, nickname, _type, enabled, default_rule):
-        super().__init__(name, nickname, _type, enabled, default_rule)
+    def __init__(self, name, nickname, _type, enabled, default_rule, schedule):
+        super().__init__(name, nickname, _type, enabled, default_rule, schedule)
 
         # Track device on/off state, prevent turning on/off when already on/off
         # Included in status object, used by API to display device state

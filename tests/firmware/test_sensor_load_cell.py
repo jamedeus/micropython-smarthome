@@ -15,6 +15,7 @@ expected_attributes = {
     'current': None,
     'current_rule': None,
     'scheduled_rule': None,
+    'schedule': {},
     "monitor_task": True,
     'targets': []
 }
@@ -36,7 +37,7 @@ class TestLoadCellSensor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = LoadCell("sensor1", "sensor1", "load-cell", "100000", [], 18, 19)
+        cls.instance = LoadCell("sensor1", "sensor1", "load-cell", "100000", {}, [], 18, 19)
         cls.group = MockGroup("group1", [cls.instance])
         cls.instance.group = cls.group
 

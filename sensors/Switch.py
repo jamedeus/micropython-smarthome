@@ -22,8 +22,8 @@ class Switch(Sensor):
     Supports universal rules ("enabled" and "disabled").
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, targets, pin):
-        super().__init__(name, nickname, _type, True, default_rule, targets)
+    def __init__(self, name, nickname, _type, default_rule, schedule, targets, pin):
+        super().__init__(name, nickname, _type, True, default_rule, schedule, targets)
 
         self.switch = Pin(int(pin), Pin.IN, Pin.PULL_DOWN)
 

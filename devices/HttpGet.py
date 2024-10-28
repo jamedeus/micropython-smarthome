@@ -33,8 +33,8 @@ class HttpGet(Device):
     Supports universal rules ("enabled" and "disabled").
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, uri, on_path, off_path):
-        super().__init__(name, nickname, _type, True, default_rule)
+    def __init__(self, name, nickname, _type, default_rule, schedule, uri, on_path, off_path):
+        super().__init__(name, nickname, _type, True, default_rule, schedule)
 
         # Can be IP or domain, remove protocol if present
         self.uri = str(uri).replace('http://', '').replace('https://', '')

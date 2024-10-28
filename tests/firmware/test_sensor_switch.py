@@ -15,6 +15,7 @@ expected_attributes = {
     'nickname': 'sensor1',
     'current_rule': None,
     'scheduled_rule': None,
+    'schedule': {},
     'targets': [],
     'switch_closed': bool(Pin(19, Pin.IN, Pin.PULL_DOWN).value())
 }
@@ -36,7 +37,7 @@ class TestSwitch(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = Switch("sensor1", "sensor1", "switch", "enabled", [], 19)
+        cls.instance = Switch("sensor1", "sensor1", "switch", "enabled", {}, [], 19)
         cls.group = MockGroup('group1', [cls.instance])
         cls.instance.group = cls.group
 

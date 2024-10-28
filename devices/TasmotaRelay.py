@@ -21,8 +21,8 @@ class TasmotaRelay(HttpGet):
     Supports universal rules ("enabled" and "disabled").
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, ip):
-        super().__init__(name, nickname, _type, default_rule, ip, ON_PATH, OFF_PATH)
+    def __init__(self, name, nickname, _type, default_rule, schedule, ip):
+        super().__init__(name, nickname, _type, default_rule, schedule, ip, ON_PATH, OFF_PATH)
 
         self.log.info("Instantiated, ip=%s", self.uri)
 

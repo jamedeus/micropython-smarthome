@@ -31,8 +31,8 @@ class DimmableLight(Device):
     The default_rule must be an integer or fade (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, enabled, default_rule, min_rule, max_rule):
-        super().__init__(name, nickname, _type, enabled, default_rule)
+    def __init__(self, name, nickname, _type, enabled, default_rule, schedule, min_rule, max_rule):
+        super().__init__(name, nickname, _type, enabled, default_rule, schedule)
 
         self.min_rule = int(min_rule)
         self.max_rule = int(max_rule)

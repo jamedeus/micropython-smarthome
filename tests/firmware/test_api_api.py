@@ -486,12 +486,12 @@ class TestApi(unittest.TestCase):
         self.assertTrue("rebuild_queue" not in str(app_context.timer_instance.schedule))
 
         # Add schedule rule using keyword, should be deleted when keyword deleted
-        app_context.config_instance.schedule['device1']['sleep'] = 50
+        app_context.config_instance.devices[0].schedule['sleep'] = 50
 
         # Remove keyword, confirm removed, confirm rule using keyword removed
         response = self.send_command(['remove_schedule_keyword', 'sleep'])
         self.assertEqual(response, {"Keyword removed": 'sleep'})
-        self.assertTrue('sleep' not in app_context.config_instance.schedule['device1'].keys())
+        self.assertTrue('sleep' not in app_context.config_instance.devices[0].schedule)
 
         # Confirm correct error when attempting to delete sunrise/sunset
         response = self.send_command(['remove_schedule_keyword', 'sunrise'])
@@ -1068,6 +1068,7 @@ class TestApi(unittest.TestCase):
                 'group': 'group2',
                 'name': 'sensor3',
                 'rule_queue': [],
+                'schedule': {},
                 'default_rule': 'enabled',
                 'scheduled_rule': 'enabled',
                 'current_rule': 'enabled',

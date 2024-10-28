@@ -17,8 +17,8 @@ class DesktopTarget(HttpGet):
     Supports universal rules ("enabled" and "disabled").
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, ip, port=5000):
-        super().__init__(name, nickname, _type, default_rule, f"{ip}:{port}", "on", "off")
+    def __init__(self, name, nickname, _type, default_rule, schedule, ip, port=5000):
+        super().__init__(name, nickname, _type, default_rule, schedule, f"{ip}:{port}", "on", "off")
 
     def send(self, state=1):
         '''Makes API call to turn screen ON if argument is True.

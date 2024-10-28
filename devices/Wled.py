@@ -27,8 +27,8 @@ class Wled(DimmableLight):
     The default_rule must be an integer or fade (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, min_rule, max_rule, ip):
-        super().__init__(name, nickname, _type, True, default_rule, min_rule, max_rule)
+    def __init__(self, name, nickname, _type, default_rule, schedule, min_rule, max_rule, ip):
+        super().__init__(name, nickname, _type, True, default_rule, schedule, min_rule, max_rule)
 
         self.ip = ip
 

@@ -49,6 +49,7 @@ expected_attributes = {
     'name': 'device1',
     '_type': 'api-target',
     'scheduled_rule': None,
+    'schedule': {},
     'current_rule': None
 }
 
@@ -95,7 +96,7 @@ class TestApiTarget(unittest.TestCase):
         # Create test instance with IP and port from config file
         ip = config["mock_receiver"]["ip"]
         port = config['mock_receiver']['api_port']
-        cls.instance = ApiTarget("device1", "device1", "api-target", default_rule, ip, port)
+        cls.instance = ApiTarget("device1", "device1", "api-target", default_rule, {}, ip, port)
 
         # Create mock device for self-target tests
         cls.target = MockDevice()
@@ -310,10 +311,10 @@ class TestApiTarget(unittest.TestCase):
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
     def test_14_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
-            ApiTarget("device1", "device1", "api-target", "disabled", config["mock_receiver"]["ip"])
+            ApiTarget("device1", "device1", "api-target", "disabled", {}, config["mock_receiver"]["ip"])
 
         with self.assertRaises(AttributeError):
-            ApiTarget("device1", "device1", "api-target", "enabled", config["mock_receiver"]["ip"])
+            ApiTarget("device1", "device1", "api-target", "enabled", {}, config["mock_receiver"]["ip"])
 
     # Original bug: Rejected turn_on, turn_off, reset_rule commands (all valid)
     def test_15_regression_rejects_valid_rules(self):

@@ -9,6 +9,7 @@ expected_attributes = {
     "current_rule": 74.0,
     "targets": [],
     "scheduled_rule": None,
+    'schedule': {},
     "recent_temps": [],
     "name": "sensor1",
     "enabled": True,
@@ -30,7 +31,7 @@ class TestDht22(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Create test instance, mock device, mock group
-        cls.instance = Dht22("sensor1", "sensor1", "dht22", 74, "cool", 1, "fahrenheit", [], 15)
+        cls.instance = Dht22("sensor1", "sensor1", "dht22", 74, {}, "cool", 1, "fahrenheit", [], 15)
         cls.instance.set_rule(74)
 
     def test_01_initial_state(self):
@@ -66,7 +67,7 @@ class TestDht22(unittest.TestCase):
     # method to prevent this. Should not be possible to instantiate with invalid default_rule.
     def test_05_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
-            Dht22("sensor1", "sensor1", "dht22", "enabled", "cool", 1, "fahrenheit", [], 15)
+            Dht22("sensor1", "sensor1", "dht22", "enabled", {}, "cool", 1, "fahrenheit", [], 15)
 
         with self.assertRaises(AttributeError):
-            Dht22("sensor1", "sensor1", "dht22", "disabled", "cool", 1, "fahrenheit", [], 15)
+            Dht22("sensor1", "sensor1", "dht22", "disabled", {}, "cool", 1, "fahrenheit", [], 15)

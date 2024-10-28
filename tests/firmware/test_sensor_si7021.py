@@ -10,6 +10,7 @@ expected_attributes = {
     "current_rule": 74.0,
     "targets": [],
     "scheduled_rule": None,
+    'schedule': {},
     "recent_temps": [],
     "name": "sensor1",
     "enabled": True,
@@ -31,7 +32,7 @@ class TestSi7021(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Create test instance
-        cls.instance = Si7021("sensor1", "sensor1", "si7021", 74, "cool", 1, "fahrenheit", [])
+        cls.instance = Si7021("sensor1", "sensor1", "si7021", 74, {}, "cool", 1, "fahrenheit", [])
         cls.instance.set_rule(74)
 
     def test_01_initial_state(self):
@@ -66,7 +67,7 @@ class TestSi7021(unittest.TestCase):
     # method to prevent this. Should not be possible to instantiate with invalid default_rule.
     def test_05_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
-            Si7021("sensor1", "sensor1", "si7021", "enabled", "cool", 1, "fahrenheit", [])
+            Si7021("sensor1", "sensor1", "si7021", "enabled", {}, "cool", 1, "fahrenheit", [])
 
         with self.assertRaises(AttributeError):
-            Si7021("sensor1", "sensor1", "si7021", "disabled", "cool", 1, "fahrenheit", [])
+            Si7021("sensor1", "sensor1", "si7021", "disabled", {}, "cool", 1, "fahrenheit", [])

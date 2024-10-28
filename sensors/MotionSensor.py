@@ -26,8 +26,8 @@ class MotionSensor(Sensor):
     The default_rule must be an integer or float (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, targets, pin):
-        super().__init__(name, nickname, _type, True, default_rule, targets)
+    def __init__(self, name, nickname, _type, default_rule, schedule, targets, pin):
+        super().__init__(name, nickname, _type, True, default_rule, schedule, targets)
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
