@@ -21,6 +21,7 @@ import os
 import sys
 import json
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 from helper_functions import valid_ip
 from provision_tools import get_modules, dependencies, core_modules, provision
 from cli_config_manager import CliConfigManager
@@ -145,18 +146,20 @@ The password flag is optional and works with all modes''',
 
 
 def upload_all(webrepl_password):
-    '''Iterate cli_config.json, reprovision all nodes'''
+    '''Calls upload_node for each node in cli_config.json in separate threads'''
 
-    # Iterate node names and IPs in config file
-    for name in cli_config.config['nodes']:
-        print(f"\n{name}\n")
-
-        upload_node(name, webrepl_password)
+    actions = [(node, webrepl_password, True) for node in cli_config.config['nodes']]
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        executor.map(upload_node, *zip(*actions))
 
 
-def upload_node(node, webrepl_password):
-    '''Reprovision an existing node, accepts friendly name as arg'''
+def upload_node(node, webrepl_password, quiet=False):
+    '''Reprovision an existing node from cli_config.json.
+    Takes node friendly name and webrepl password.
+    Optional quiet arg prevents printing name of each uploaded file.
+    '''
 
+    print(f'Uploading {node}...')
     try:
         # Load requested node config from disk
         config = cli_config.load_node_config_file(node)
@@ -166,9 +169,10 @@ def upload_node(node, webrepl_password):
             ip=cli_config.config['nodes'][node],
             password=webrepl_password,
             config=config,
-            modules=get_modules(config, repo)
+            modules=get_modules(config, repo),
+            quiet=quiet
         )
-        print(result['message'])
+        print(f"{node}: {result['message']}")
     except FileNotFoundError:
         print(f'ERROR: {node} config file missing from disk')
 
