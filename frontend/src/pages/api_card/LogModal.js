@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import { HeaderWithCloseButton } from 'modals/HeaderComponents';
+import Form from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
 import { LoadingSpinner } from 'util/animations';
+import { ApiCardContext } from 'root/ApiCardContext';
+import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
 export let showLogModal;
 
 const LogModal = () => {
+    // Get function to make API calls
+    const { send_command } = useContext(ApiCardContext);
+
     // Get node name from URL (status.metadata.id may contain a different name
     // than django database if new config was uploaded without updating django)
     const [nodeName] = useState(window.location.pathname.split('/')[2]);
@@ -14,6 +20,9 @@ const LogModal = () => {
     // Create visibility state
     const [visible, setVisible] = useState(false);
     const [log, setLog] = useState(null);
+
+    // Create log level state
+    const [logLevel, setLogLevel] = useState('ERROR')
 
     showLogModal = async () => {
         setVisible(true);
@@ -36,6 +45,20 @@ const LogModal = () => {
         await downloadLog();
     };
 
+    const changeLogLevel = async () => {
+        const payload = {
+            command: 'set_log_level',
+            log_level: logLevel
+        };
+        const response = await send_command(payload);
+        const data = await response.json();
+        console.log(data);
+        if (response.status === 200) {
+            await send_command({command: 'reboot'});
+            alert('Log level changed, rebooting node')
+        }
+    };
+
     return (
         <Modal
             show={visible}
@@ -54,9 +77,32 @@ const LogModal = () => {
                         <pre className='text-start section p-3 mb-2'>
                             {log}
                         </pre>
+
                         <Button className="mx-auto" onClick={refresh}>
                             Refresh
                         </Button>
+
+                        <div className="mx-auto mt-4">
+                            <span className="fs-5">
+                                Set Log Level
+                            </span>
+                            <InputGroup className="mx-auto">
+                                <Form.Select
+                                    value={logLevel}
+                                    onChange={(e) => setLogLevel(e.target.value)}
+                                    className="text-center"
+                                >
+                                    <option value="CRITICAL">Critical</option>
+                                    <option value="ERROR">Error</option>
+                                    <option value="WARNING">Warning</option>
+                                    <option value="INFO">Info</option>
+                                    <option value="DEBUG">Debug</option>
+                                </Form.Select>
+                                <Button onClick={changeLogLevel}>
+                                    Change
+                                </Button>
+                            </InputGroup>
+                        </div>
                     </>
                 ) : (
                     <>

@@ -1183,4 +1183,63 @@ describe('App', () => {
             expect(app.queryByText(/Booted, log level: ERROR/)).not.toBeNull();
         });
     });
+
+    it('sends correct payload when log level is changed', async () => {
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: '2000-01-01 00:00:00 - CRITICAL - Boot - Booted, log level: ERROR'
+            })
+        }));
+
+        // Click dropdown, click view log option
+        await user.click(app.getAllByRole('button')[1]);
+        await user.click(app.getByText('View Log'));
+
+        // Wait for log contents to appear
+        await waitFor(() => {
+            expect(app.queryByText(/Downloading log/)).toBeNull();
+            expect(app.queryByText(/Booted, log level: ERROR/)).not.toBeNull();
+        });
+
+        // Mock set_log_level API response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: {
+                    "Success": "Log level set (takes effect after reboot)"
+                }
+            })
+        }));
+
+        // Select Warning in the log level dropdown
+        const dropdown = app.getByText('Error').parentElement;
+        await user.selectOptions(dropdown, 'Warning');
+
+        // Click change button, confirm correct request was sent
+        await user.click(app.getByRole('button', { name: 'Change' }))
+        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "set_log_level",
+                "log_level": "WARNING",
+                "target": "192.168.1.100"
+            }),
+            headers: postHeaders
+        });
+
+        // Confirm a second request was sent to reboot the node
+        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "reboot",
+                "target": "192.168.1.100"
+            }),
+            headers: postHeaders
+        });
+    });
 });
