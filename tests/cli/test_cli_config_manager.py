@@ -1556,6 +1556,9 @@ class TestCliConfigManager(TestCase):
             config = json.load(file)
         self.assertEqual(config['django_backend'], 'http://10.0.0.1:9999')
 
+        # Simulate no open connection
+        self.manager._client = None
+
         # Call method again to change back
         self.manager.set_django_address('http://192.168.1.100')
 
