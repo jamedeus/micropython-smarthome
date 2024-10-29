@@ -65,4 +65,5 @@ body {
 
 .log-modal > .modal-dialog {
     max-width: max-content !important;
+    width: 95%;
 }
