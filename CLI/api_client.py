@@ -6,6 +6,7 @@ import sys
 import json
 import questionary
 from colorama import Fore, Style
+from concurrent.futures import ThreadPoolExecutor
 from api_endpoints import endpoint_map, ir_blaster_options
 from config_prompt_validators import IntRange, FloatRange, MinLength
 from config_rule_prompts import (
@@ -138,6 +139,17 @@ def missing_target_error():
     raise SystemExit
 
 
+def run_command_and_print_response(node, ip, cmd):
+    '''Takes node name, node ip, and command (list of args, endpoint first).
+    Sends command to target ip, prints node name and ip before response.
+    Called in ThreadPoolExecutor when the --all cli flag is used.
+    '''
+    response = parse_command(ip, cmd)
+    # Print both lines in a single statement to avoid lines printed by other
+    # workers appearing between node name and response
+    print(f"{node} ({ip})\n" + json.dumps(response, indent=4) + "\n")
+
+
 def parse_ip(args):
     '''Receives command line args, finds IP arg (or IP of node if node name
     given), passes IP and remaining args to parse_command (makes API call).
@@ -146,16 +158,12 @@ def parse_ip(args):
     # Parse target IP from args, pass IP + remaining args to parse_command
     for i, arg in enumerate(args):
 
-        # User passed --all flag, iterate existing nodes and pass args to each
+        # User passed --all flag, send command to all nodes in separate threads
         if arg == "--all":
             args.pop(i)
-            for i in nodes:
-                ip = nodes[i]
-                print(f"{i} ({ip})")
-                # Use copy to preserve args for next node (parse_command removes endpoint)
-                cmd = args.copy()
-                response = parse_command(ip, cmd)
-                print(json.dumps(response, indent=4) + "\n")
+            actions = [(node, nodes[node], args.copy()) for node in nodes]
+            with ThreadPoolExecutor(max_workers=20) as executor:
+                executor.map(run_command_and_print_response, *zip(*actions))
             print("Done\n")
             raise SystemExit
 
