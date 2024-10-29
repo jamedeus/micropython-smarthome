@@ -4,9 +4,9 @@
 
 import sys
 import json
+from concurrent.futures import ThreadPoolExecutor
 import questionary
 from colorama import Fore, Style
-from concurrent.futures import ThreadPoolExecutor
 from api_endpoints import endpoint_map, ir_blaster_options
 from config_prompt_validators import IntRange, FloatRange, MinLength
 from config_rule_prompts import (
@@ -102,14 +102,20 @@ nodes = cli_config.config['nodes']
 def endpoint_error():
     '''Prints all endpoints and descriptions then exits script'''
     print(
-        "\n" + Fore.RED +
-        "Error: please pass one of the following commands as argument:" +
-        Fore.RESET + "\n")
+        "\n",
+        Fore.RED,
+        "Error: please pass one of the following commands as argument:",
+        Fore.RESET,
+        "\n"
+    )
     for command, description in endpoint_descriptions.items():
         print(
-            "- " + Fore.YELLOW + Style.BRIGHT +
-            command.ljust(42) +
-            Style.RESET_ALL + description
+            "- ",
+            Fore.YELLOW,
+            Style.BRIGHT,
+            command.ljust(42),
+            Style.RESET_ALL,
+            description
         )
     print()
     raise SystemExit
@@ -130,8 +136,8 @@ def missing_target_error():
     Called when no target IP/node is given, or invalid node is given.
     '''
     print(
-        Fore.RED +
-        "Error: Must specify target ip, or one of the following names:" +
+        Fore.RED,
+        "Error: Must specify target ip, or one of the following names:",
         Fore.RESET
     )
     for name in nodes:
