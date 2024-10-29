@@ -556,7 +556,7 @@ class Api:
 
         # Remove all existing rules using keyword
         for device in app_context.config_instance.devices:
-            if keyword in device.schedule:
+            if keyword in device.schedule:  # pragma: no branch
                 del device.schedule[keyword]
         for sensor in app_context.config_instance.sensors:
             if keyword in sensor.schedule:
