@@ -26,17 +26,24 @@ const DebugModal = () => {
     };
 
     return (
-        <Modal show={visible} onHide={() => setVisible(false)} centered>
+        <Modal
+            show={visible}
+            onHide={() => setVisible(false)}
+            centered
+            className={'overflow-x-scroll'}
+        >
             <HeaderWithCloseButton
                 title="Debug"
                 onClose={() => setVisible(false)}
             />
 
-            <Modal.Body className="d-flex flex-column mx-auto text-center">
+            <Modal.Body className="d-flex flex-column text-center">
                 {attributes ? (
-                    <pre className='d-inline-block text-start section p-3 mb-2'>
-                        {JSON.stringify(attributes, null, 4)}
-                    </pre>
+                    <div className="mw-100 mx-auto">
+                        <pre className='text-start section p-3 mb-2'>
+                            {JSON.stringify(attributes, null, 4)}
+                        </pre>
+                    </div>
                 ) : (
                     <LoadingSpinner size="medium" classes={['my-3']} />
                 )}
