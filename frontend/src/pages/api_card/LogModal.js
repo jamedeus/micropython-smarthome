@@ -56,6 +56,8 @@ const LogModal = () => {
         if (response.status === 200) {
             await send_command({command: 'reboot'});
             alert('Log level changed, rebooting node')
+        } else {
+            alert('Failed to change log level')
         }
     };
 

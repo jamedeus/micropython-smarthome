@@ -5,6 +5,7 @@ import { MetadataContextProvider } from 'root/MetadataContext';
 import createMockContext from 'src/testUtils/createMockContext';
 import { mockContext } from './mockContext';
 import { api_card_metadata } from 'src/testUtils/mockMetadataContext';
+import { postHeaders } from 'src/testUtils/headers';
 
 describe('App', () => {
     let app, user;
@@ -400,5 +401,52 @@ describe('App', () => {
         expect(console.error).toHaveBeenCalledWith(
             'Failed to download log (status 502)'
         );
+    });
+
+    it('does not reboot node when unable to change log level', async () => {
+        // Mock successful response when log modal is opened
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: '2000-01-01 00:00:00 - CRITICAL - Boot - Booted, log level: ERROR'
+            })
+        }));
+
+        // Click dropdown, click view log option
+        await user.click(app.getAllByRole('button')[1]);
+        await user.click(app.getByText('View Log'));
+
+        // Wait for log contents to appear
+        await waitFor(() => {
+            expect(app.queryByText(/Downloading log/)).toBeNull();
+            expect(app.queryByText(/Booted, log level: ERROR/)).not.toBeNull();
+        });
+
+        // Mock set_log_level error response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 502,
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
+        }));
+
+        // Select Warning in the log level dropdown, click change button
+        const dropdown = app.getByText('Error').parentElement;
+        await user.selectOptions(dropdown, 'Warning');
+        await user.click(app.getByRole('button', { name: 'Change' }))
+
+        // Confirm did NOT send reboot request (failed to change log level)
+        expect(global.fetch).not.toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "reboot",
+                "target": "192.168.1.100"
+            }),
+            headers: postHeaders
+        });
     });
 });
