@@ -110,7 +110,7 @@ def get_schedule_keywords_dict():
     '''
 
     # Load from django database if env var set
-    if os.environ.get('SMARTHOME_FRONTEND'):
+    if os.environ.get('SMARTHOME_FRONTEND'):  # pragma: no cover
         # pylint: disable-next=import-outside-toplevel
         from node_configuration.models import ScheduleKeyword
         return {keyword.keyword: keyword.timestamp
