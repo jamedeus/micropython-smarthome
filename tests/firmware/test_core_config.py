@@ -36,7 +36,8 @@ loaded_json = {
         'nickname': 'device1',
         'schedule': {
             'sunrise': 0,
-            'sunset': 32
+            'sunset': 32,
+            '01:00': 8,
         },
         '_type': 'pwm',
         'pin': 4,
@@ -143,7 +144,20 @@ class TestConfig(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.config._instantiate_peripherals()
 
-    def test_04__build_queue(self):
+    def test_04_start_reload_timer(self):
+        # Confirm reload timer not in queue
+        app_context.timer_instance.cancel("reload_schedule_rules")
+        # Yield to let cancel coroutine run
+        asyncio.run(self.sleep(10))
+        self.assertTrue("reload_schedule_rules" not in str(app_context.timer_instance.schedule))
+
+        # Call method to start config_timer, yield to let create coroutine run
+        self.config._start_reload_schedule_rules_timer()
+        asyncio.run(self.sleep(10))
+        # Confirm timer running
+        self.assertIn("reload_schedule_rules", str(app_context.timer_instance.schedule))
+
+    def test_05_build_queue(self):
         # Confirm no schedule rule timers in SoftwareTimer queue
         app_context.timer_instance.cancel('scheduler')
         asyncio.run(self.sleep(10))
@@ -162,16 +176,21 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.config.sensors[0].scheduled_rule, 5.0)
         self.assertEqual(self.config.sensors[0].scheduled_rule, 5.0)
 
-        # Device should have rules in queue, sensor should have none (no schedule rules)
-        self.assertGreaterEqual(len(self.config.devices[0].rule_queue), 1)
-        self.assertEqual(len(self.config.sensors[0].rule_queue), 0)
+        # Device should have 3 rules in queue
+        self.assertEqual(len(self.config.devices[0].rule_queue), 3)
+        # Queue should contain each rule with no duplicates
+        self.assertTrue(0 in self.config.devices[0].rule_queue)
+        self.assertTrue(8 in self.config.devices[0].rule_queue)
+        self.assertTrue(32 in self.config.devices[0].rule_queue)
+        # Sensor should empty queue (no schedule rules)
+        self.assertEqual(self.config.sensors[0].rule_queue, [])
 
         # Confirm schedule rule timers were added to SoftwareTimer queue
         rules = [time for time, rule in app_context.timer_instance.schedule.items()
                  if rule[0] == "scheduler"]
         self.assertGreaterEqual(len(rules), 1)
 
-    def test_05__build_groups(self):
+    def test_06_build_groups(self):
         # Confirm no groups
         self.assertEqual(self.config.groups, [])
 
@@ -184,19 +203,6 @@ class TestConfig(unittest.TestCase):
         # Should not be able to call _build_groups again
         with self.assertRaises(RuntimeError):
             self.config._build_groups()
-
-    def test_06_start_reload_timer(self):
-        # Confirm reload timer not in queue
-        app_context.timer_instance.cancel("reload_schedule_rules")
-        # Yield to let cancel coroutine run
-        asyncio.run(self.sleep(10))
-        self.assertTrue("reload_schedule_rules" not in str(app_context.timer_instance.schedule))
-
-        # Call method to start config_timer, yield to let create coroutine run
-        self.config._start_reload_schedule_rules_timer()
-        asyncio.run(self.sleep(10))
-        # Confirm timer running
-        self.assertIn("reload_schedule_rules", str(app_context.timer_instance.schedule))
 
     def test_07_full_instantiation(self):
         # Add GPS coordinates to config

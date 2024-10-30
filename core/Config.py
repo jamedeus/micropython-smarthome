@@ -126,6 +126,9 @@ class Config():
         self._instantiate_peripherals()
         gc.collect()
 
+        # Start timer to build schedule rule queue for next 24 hours around 3 am
+        self._start_reload_schedule_rules_timer()
+
         # Create timers for all schedule rules expiring in next 24 hours
         self._build_queue()
         gc.collect()
@@ -135,9 +138,6 @@ class Config():
         # before correct scheduled rule applied
         self._build_groups()
         gc.collect()
-
-        # Start timer to build schedule rule queue for next 24 hours around 3 am
-        self._start_reload_schedule_rules_timer()
 
         log.info("Finished instantiating config")
 
@@ -485,16 +485,14 @@ class Config():
                 rules[timestamp] = rules[keyword]
                 del rules[keyword]
 
-        # Get rule start times, sort chronologically
-        schedule = list(rules)
-        schedule.sort()
-
         # Get epoch time in current timezone
         epoch = time.time()
         # Get time tuple in current timezone
         now = time.localtime(epoch)
+        # Get current HH:MM timestamp to determine if each rule has expired
+        now_hour_min = f'{now[3]}:{now[4]}'
 
-        for rule in schedule:
+        for rule in rules:
             # Skip unconverted keywords
             if not re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", rule):
                 continue
@@ -502,22 +500,26 @@ class Config():
             # Get epoch time by substituting rule hour and minute into current date params
             # Timezone (last arg) is none (required for cpython test environment)
             hour, minute = rule.split(":")
-            params = (now[0], now[1], now[2], int(hour), int(minute), 0, now[6], now[7], -1)
-            trigger_time = time.mktime(params)
+            trigger_time = time.mktime(
+                (now[0], now[1], now[2], int(hour), int(minute), 0, now[6], now[7], -1)
+            )
 
             # Add to results: Key = unix timestamp, value = rule from original dict
             result[trigger_time] = rules[rule]
-            # Add same rule with timestamp 24 hours earlier (expired rules must
-            # exist, current_rule determined by finding first non-expired rule)
-            result[trigger_time - 86400] = rules[rule]
-            # Add same rule with timestamp 24 hours later (moves rules that have
-            # already expired today to tomorrow, eg rules after midnight)
-            result[trigger_time + 86400] = rules[rule]
+
+            # If the rule has not already expired today add the same rule with
+            # timestamp 24 hours earlier (used below to determine current_rule)
+            if rule > now_hour_min:
+                result[trigger_time - 86400] = rules[rule]
+
+            # If the rule will expire between midnight and reload timer add the
+            # same rule with timestamp 24 hours later (tomorrow). Rules that
+            # expire after reload timer will be added when reload timer runs.
+            if rule < self._metadata["_reload_time"]:
+                result[trigger_time + 86400] = rules[rule]
 
         # Get chronological list of rule timestamps
-        schedule = []
-        for rule in result:
-            schedule.append(rule)
+        schedule = list(result)
         schedule.sort()
 
         # Find current scheduled rule (last rule with timestamp before current time)
@@ -551,8 +553,10 @@ class Config():
         # Iterate device and sensor instances, create timers for all rules
         for instance in self.devices:
             self._build_instance_queue(instance)
+            gc.collect()
         for instance in self.sensors:
             self._build_instance_queue(instance)
+            gc.collect()
 
         print_with_timestamp("Finished building schedule rule queue")
         log.debug(
@@ -587,9 +591,7 @@ class Config():
 
         # Get list of timestamps, sort chronologically
         # First item in queue is current scheduled rule
-        queue = []
-        for j in epoch_rules:
-            queue.append(j)
+        queue = list(epoch_rules)
         queue.sort()
 
         # Set current_rule and scheduled_rule (returns False if invalid)
@@ -659,8 +661,9 @@ class Config():
         self._api_calls()
         gc.collect()
 
+        # Set timer to run again tomorrow between 3-4 am
+        self._start_reload_schedule_rules_timer()
+
         # Create timers for all schedule rules expiring in next 24 hours
         self._build_queue()
 
-        # Set timer to run again tomorrow between 3-4 am
-        self._start_reload_schedule_rules_timer()

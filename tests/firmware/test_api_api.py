@@ -110,6 +110,7 @@ class TestApi(unittest.TestCase):
         # Instantiate config object, pass to global context
         app_context.config_instance = Config(config_file, delay_setup=True)
         app_context.config_instance._instantiate_peripherals()
+        app_context.config_instance._start_reload_schedule_rules_timer()
         app_context.config_instance._build_queue()
         app_context.config_instance._build_groups()
 
