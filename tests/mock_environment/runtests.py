@@ -31,6 +31,11 @@ def set_mocks():
     # Must be last to give mock libraries priority over ../lib
     sys.path.insert(0, os.path.join(mock_dir, 'mocks'))
 
+    # Ensure timezone is PST (Config._convert_rules uses time.mktime, this will
+    # return different values if timezone differs and cause test to fail)
+    os.environ['TZ'] = 'America/Los_Angeles'
+    time.tzset()
+
     def sleep_us(us):
         # Convert microseconds to seconds
         time.sleep(us / 1000000.0)
