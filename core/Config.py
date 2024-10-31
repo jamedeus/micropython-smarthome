@@ -165,7 +165,7 @@ class Config():
 
         # Get HH:MM timestamp of next reload, write to log
         reload_time = time.localtime(next_reload + adjust)
-        self._metadata["_reload_time"] = f"{reload_time[3]}:{reload_time[4]}"
+        self._metadata["_reload_time"] = f"0{reload_time[3]}:{reload_time[4]}"
         log.info(
             "Reload_schedule_rules callback scheduled for %s am",
             self._metadata["_reload_time"]
@@ -489,8 +489,6 @@ class Config():
         epoch = time.time()
         # Get time tuple in current timezone
         now = time.localtime(epoch)
-        # Get current HH:MM timestamp to determine if each rule has expired
-        now_hour_min = f'{now[3]}:{now[4]}'
 
         for rule in rules:
             # Skip unconverted keywords
@@ -507,10 +505,9 @@ class Config():
             # Add to results: Key = unix timestamp, value = rule from original dict
             result[trigger_time] = rules[rule]
 
-            # If the rule has not already expired today add the same rule with
-            # timestamp 24 hours earlier (used below to determine current_rule)
-            if rule > now_hour_min:
-                result[trigger_time - 86400] = rules[rule]
+            # Add the same rule with timestamp 24 hours earlier (used below to
+            # determine current_rule, iterates expired rules until first non-expired )
+            result[trigger_time - 86400] = rules[rule]
 
             # If the rule will expire between midnight and reload timer add the
             # same rule with timestamp 24 hours later (tomorrow). Rules that

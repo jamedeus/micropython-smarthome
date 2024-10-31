@@ -176,12 +176,10 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.config.sensors[0].scheduled_rule, 5.0)
         self.assertEqual(self.config.sensors[0].scheduled_rule, 5.0)
 
-        # Device should have 3 rules in queue
-        self.assertEqual(len(self.config.devices[0].rule_queue), 3)
-        # Queue should contain each rule with no duplicates
-        self.assertTrue(0 in self.config.devices[0].rule_queue)
+        # Device should have at least 1 rule in queue (depends on time of day)
+        self.assertGreaterEqual(len(self.config.devices[0].rule_queue), 1)
+        # Should always contain 1:00 am rule (adds for tomorrow if expired today)
         self.assertTrue(8 in self.config.devices[0].rule_queue)
-        self.assertTrue(32 in self.config.devices[0].rule_queue)
         # Sensor should empty queue (no schedule rules)
         self.assertEqual(self.config.sensors[0].rule_queue, [])
 
@@ -653,3 +651,44 @@ class TestConfig(unittest.TestCase):
         # Call method, confirm error triggers reboot
         with self.assertRaises(MockRebootCalled):
             Config._api_calls(self.config)
+
+    @cpython_only
+    def test_24_regression_no_rules_expired_when_convert_rules_runs(self):
+        '''Original bug: Config._convert_rules finds current_rule by iterating
+        chronological schedule rules until the first non-expired rule is found
+        (the expired rule before this is current rule). After 70a7f85a removed
+        most duplicate rules it was possible for there to be no expired rules,
+        which prevented the `current` variable from being set and resulted in
+        an uncaught UnboundLocalError. For devices/sensors with no schedule
+        rules between midnight and 3 am this happened every time the reload
+        timer expired between 3 and 4 am.
+        '''
+
+        from unittest.mock import patch
+
+        # Mock time methods to simulate running at 3:10 am on 2024-10-30
+        # (crash occurred when reload rules timer expired, but not in day time)
+        with patch('time.time', return_value=1730283000.0), \
+             patch('time.localtime', return_value=(2024, 10, 30, 3, 10, 0, 2, 304, 1)):
+
+            # Convert schedule with no expired rules (should not raise exception)
+            epoch_rules = self.config._convert_rules({
+                "23:00": "fade/32/7200",
+                "06:00": "disabled",
+                "18:00": "1023"
+            })
+
+            # Confirm that 23:00 (current_rule) is first even though timestamp
+            # is last, confirm that other rules are in chronological order
+
+            # Confirm that 23:00 rule is first (current rule), timestamps for
+            # other rules are chronological (23:00 < sunrise < sunset)
+            self.assertEqual(
+                epoch_rules,
+                {
+                    1730354400.0: 'fade/32/7200',
+                    1730268000.0: 'fade/32/7200',
+                    1730293200.0: 'disabled',
+                    1730336400.0: '1023'
+                }
+            )
