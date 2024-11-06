@@ -22,3 +22,4 @@ setup_ssl_certs.py
 lib/hardware_classes.py
 lib/ir_code_classes.py
 *.log
+*.txt
