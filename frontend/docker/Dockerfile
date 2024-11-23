@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Node dependencies build stage
-FROM node:19-buster-slim AS node_build
+FROM node:22-bookworm-slim AS node_build
 
 # Copy directory containing package.json and react components
 COPY frontend/ .
@@ -11,13 +11,13 @@ RUN npm install
 RUN npm run build
 
 # Python dependencies build stage
-FROM python:3.10-slim-buster AS py_build
+FROM python:3.13-slim-bookworm AS py_build
 
 COPY frontend/docker/requirements.txt .
 RUN pip install --no-cache-dir -r /requirements.txt
 
 # Final build stage
-FROM python:3.10-slim-buster
+FROM python:3.13-slim-bookworm
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
@@ -40,7 +40,7 @@ COPY frontend/frontend /repo/frontend/frontend
 COPY frontend/webapp /repo/frontend/webapp
 
 # Copy python dependencies to final build stage
-COPY --from=py_build /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
+COPY --from=py_build /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
 # Copy webpack bundles to final build stage
 COPY --from=node_build webapp/static/webapp/ /repo/frontend/webapp/static/webapp/
 
