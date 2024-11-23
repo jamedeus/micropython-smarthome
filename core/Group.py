@@ -1,4 +1,5 @@
 import logging
+import app_context
 
 
 class Group():
@@ -138,13 +139,19 @@ class Group():
             for function in self.post_action_routines:
                 function()
 
-        # Reset group state if send failed (prevents getting stuck - if action
-        # is True and group.state remains False due to a failed send then when
-        # action changes to False it will match current state and send will not
-        # be called. Changing to None allows any action to be applied).
+        # If send failed schedule retry in 5 seconds + reset group state to
+        # prevent getting stuck (if action is True and group.state remains
+        # False due to a failed send then when action changes to False it will
+        # match current state and send will not be called. Changing state to
+        # None allows any action to be applied).
         else:
             self.log.debug("encountered errors while applying action")
             self.reset_state()
+            app_context.timer_instance.create(
+                5000,
+                self.retry,
+                self.name + "_retry"
+            )
 
     def refresh(self, *args):
         '''Checks all sensors conditions, turns devices on or off if needed.
@@ -157,3 +164,10 @@ class Group():
         if action is not None:
             self.log.info("applying action: %s", action)
             self.apply_action(action)
+
+    def retry(self):
+        '''Callback function scheduled to run in 5 seconds when send fails.
+        Calls refresh method to attempt to turn failed device on/off again.
+        '''
+        self.log.debug("retrying after failed send")
+        self.refresh()

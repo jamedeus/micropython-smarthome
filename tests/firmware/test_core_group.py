@@ -1,4 +1,8 @@
+# pylint: disable=missing-function-docstring,missing-class-docstring
+
+import asyncio
 import unittest
+import app_context
 from Group import Group
 from Device import Device
 from Sensor import Sensor
@@ -118,6 +122,9 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(self.device.send_method_called)
         self.assertFalse(self.sensor.routine_called)
         self.device.send_method_called = False
+        # Confirm that retry was scheduled
+        asyncio.run(asyncio.sleep_ms(10))
+        self.assertTrue("group1_retry" in str(app_context.timer_instance.schedule))
 
     def test_06_refresh(self):
         # Reset mock device: send method not called, send result = True
@@ -151,12 +158,25 @@ class TestGroup(unittest.TestCase):
         # Confirm device.send not called
         self.assertFalse(self.device.send_method_called)
 
+    def test_07_retry(self):
+        # Reset mock device: send method not called, send result = True
+        self.device.send_method_called = False
+        self.device.send_result = True
+
+        # Simulate sensor triggered
+        self.sensor.condition = True
+
+        # Call retry (simulate callback that runs 5 seconds after failed
+        # refresh), confirm device turned on
+        self.group.retry()
+        self.assertTrue(self.device.send_method_called)
+
     # Original bug: Disabling a device while turned on did not turn off, but did flip state to False
     # This resulted in device staying on even after sensors turned other devices in group off. If
     # device was enabled while sensor conditions not met, it still would not be turned off because
-    # state (False) matched correct action (turn off). This meant it was impossible to turn the light
-    # off without triggering + resetting sensors (or using API).
-    def test_07_regression_correct_state_when_re_enabled(self):
+    # state (False) matched correct action (turn off). This meant it was impossible to turn the
+    # light off without triggering + resetting sensors (or using API).
+    def test_08_regression_correct_state_when_re_enabled(self):
         # Ensure Device enabled, simulate turning on
         self.device.enable()
         self.group.state = False
@@ -191,7 +211,7 @@ class TestGroup(unittest.TestCase):
     # devices do NOT respond to on commands, but do flip their state to True to stay in sync with
     # rest of group - this is necessary to allow turning off, since a device with state == False
     # will be skipped by loop (already off), and user flipping light switch doesn't effect state
-    def test_08_regression_turn_off_while_disabled(self):
+    def test_09_regression_turn_off_while_disabled(self):
         # Disable Device, simulate user turning on (cannot call send while disabled)
         self.device.disable()
         self.device.hardware_state = True
@@ -235,7 +255,7 @@ class TestGroup(unittest.TestCase):
     # Group.apply_action now resets state to None when an error occurs to allow
     # applying opposite action when sensor conditions change (or retry failed
     # send if group refreshed again).
-    def test_09_regression_failed_send_causes_group_to_stop_responding(self):
+    def test_10_regression_failed_send_causes_group_to_stop_responding(self):
         # Ensure device and sensor are enabled
         self.device.enable()
         self.sensor.enable()
