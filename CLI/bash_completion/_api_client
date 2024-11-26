@@ -33,107 +33,107 @@ _api_client()
 
     # Display node friendly names first
     if [[ $prev == *"api_client.py" || $prev == "--api" ]]; then
-        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        mapfile -t COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
         return 0
     fi
 
     # Display endpoints if prev is a node friendly name
     for i in $opts; do
-        if [[ $prev == $i ]]; then
-            COMPREPLY=( $(compgen -W "${endpoints}" -- "${cur}") )
+        if [[ $prev == "$i" ]]; then
+            mapfile -t COMPREPLY < <(compgen -W "${endpoints}" -- "${cur}")
             return 0
         fi
     done
 
     # Display endpoints if prev is an IP address
     if [[ $prev =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-        COMPREPLY=( $(compgen -W "${endpoints}" -- "${cur}") )
+        mapfile -t COMPREPLY < <(compgen -W "${endpoints}" -- "${cur}")
         return 0
 
     # Display IR categories if prev is ir
     elif [[ $prev == "ir" ]]; then
-        COMPREPLY=( $(compgen -W "ac tv treadmill" -- "${cur}") )
+        mapfile -t COMPREPLY < <(compgen -W "ac tv treadmill" -- "${cur}")
         return 0
 
     # Display AC remote keys if prev is ac and word before is ir
-    elif [[ $prev == "ac" && ${COMP_WORDS[COMP_CWORD-2]} == "ir" ]]; then
-        COMPREPLY=( $(compgen -W "start stop off" -- "${cur}") )
+    elif [[ $prev == "ac" && "${COMP_WORDS[COMP_CWORD-2]}" == "ir" ]]; then
+        mapfile -t COMPREPLY < <(compgen -W "start stop off" -- "${cur}")
         return 0
 
     # Display TV remote keys if prev is tv and word before is ir
-    elif [[ $prev == "tv" && ${COMP_WORDS[COMP_CWORD-2]} == "ir"  ]]; then
-        COMPREPLY=( $(compgen -W "power vol_up vol_down mute up down left right enter settings exit source" -- "${cur}") )
+    elif [[ $prev == "tv" && "${COMP_WORDS[COMP_CWORD-2]}" == "ir"  ]]; then
+        mapfile -t COMPREPLY < <(compgen -W "power vol_up vol_down mute up down left right enter settings exit source" -- "${cur}")
         return 0
 
     # Display treadmill remote keys if prev is treadmill and word before is ir
-    elif [[ $prev == "treadmill" && ${COMP_WORDS[COMP_CWORD-2]} == "ir"  ]]; then
-        COMPREPLY=( $(compgen -W "power start mode up down" -- "${cur}") )
+    elif [[ $prev == "treadmill" && "${COMP_WORDS[COMP_CWORD-2]}" == "ir"  ]]; then
+        mapfile -t COMPREPLY < <(compgen -W "power start mode up down" -- "${cur}")
         return 0
 
     # Display schedule keywords if prev is remove_schedule_keyword
     elif [[ $prev == "remove_schedule_keyword" ]]; then
-        COMPREPLY=( $(compgen -W "${keywords}" -- "${cur}") )
+        mapfile -t COMPREPLY < <(compgen -W "${keywords}" -- "${cur}")
         return 0
 
     # Display valid log levels if prev is set_log_level
     elif [[ $prev == "set_log_level" ]]; then
-        COMPREPLY=( $(compgen -W "DEBUG INFO WARNING ERROR CRITICAL" -- "${cur}") )
+        mapfile -t COMPREPLY < <(compgen -W "DEBUG INFO WARNING ERROR CRITICAL" -- "${cur}")
         return 0
 
     fi
 
     # Display schedule keywords if prev is device/sensor and arg before that is add/remove_rule
     for i in $keyword_endpoints; do
-        if [[ "${COMP_WORDS[COMP_CWORD-2]}" == $i ]] && [[ $prev =~ ^(device|sensor)[0-9]+ ]]; then
-            COMPREPLY=( $(compgen -W "${keywords}" -- "${cur}") )
+        if [[ "${COMP_WORDS[COMP_CWORD-2]}" == "$i" ]] && [[ $prev =~ ^(device|sensor)[0-9]+ ]]; then
+            mapfile -t COMPREPLY < <(compgen -W "${keywords}" -- "${cur}")
             return 0
         fi
     done
 
     # Display available devices/sensors if prev command accepts both as target
     for i in $target_endpoints; do
-        if [[ $prev == $i ]]; then
+        if [[ $prev == "$i" ]]; then
             # Call API status command, parse devices and sensors from response object
             # COMP_WORDS slice replaces last word (endpoint) with status
             # sed removes everything before first { (remove failed sync warning when django offline)
             targets=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" status | sed -n '/{/,${p;}' | jq '.devices, .sensors' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
-            COMPREPLY=( $(compgen -W "${targets}" -- "${cur}") )
+            mapfile -t COMPREPLY < <(compgen -W "${targets}" -- "${cur}")
             return 0
         fi
     done
 
     # Display available devices if prev command requires device target
     for i in $device_endpoints; do
-        if [[ $prev == $i ]]; then
+        if [[ $prev == "$i" ]]; then
             # Call API status command, parse devices from response object
             # COMP_WORDS slice replaces last word (endpoint) with status
             # sed removes everything before first { (remove failed sync warning when django offline)
             targets=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" status | sed -n '/{/,${p;}' | jq '.devices' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
-            COMPREPLY=( $(compgen -W "${targets}" -- "${cur}") )
+            mapfile -t COMPREPLY < <(compgen -W "${targets}" -- "${cur}")
             return 0
         fi
     done
 
     # Display available sensors if prev command requires sensor target
     for i in $sensor_endpoints; do
-        if [[ $prev == $i ]]; then
+        if [[ $prev == "$i" ]]; then
             # Call API status command, parse sensors from response object
             # COMP_WORDS slice replaces last word (endpoint) with status
             # sed removes everything before first { (remove failed sync warning when django offline)
             targets=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" status | sed -n '/{/,${p;}' | jq '.sensors' 2>/dev/null | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
-            COMPREPLY=( $(compgen -W "${targets}" -- "${cur}") )
+            mapfile -t COMPREPLY < <(compgen -W "${targets}" -- "${cur}")
             return 0
         fi
     done
 
     # Display existing IR macro names if prev command requires macro name
     for i in $ir_macro_endpoints; do
-        if [[ $prev == $i ]]; then
+        if [[ $prev == "$i" ]]; then
             # Call API ir_get_existing_macros command, parse names from response object
             # COMP_WORDS slice replaces last word (endpoint) with status
             # sed removes everything before first { (remove failed sync warning when django offline)
             macros=$("${COMP_WORDS[@]:0:COMP_CWORD-1}" ir_get_existing_macros | sed -n '/{/,${p;}' | jq 'keys | .[]' 2>/dev/null | sed 's/"//g' | sed -z 's/\n/ /g')
-            COMPREPLY=( $(compgen -W "${macros}" -- "${cur}") )
+            mapfile -t COMPREPLY < <(compgen -W "${macros}" -- "${cur}")
             return 0
         fi
     done

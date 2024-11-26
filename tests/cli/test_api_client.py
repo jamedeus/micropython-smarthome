@@ -373,7 +373,7 @@ class TestExampleUsage(TestCase):
         response = parse_ip(['192.168.1.123', 'ir'])
         self.assertEqual(
             response,
-            {"Example usage": "./api_client.py ir [samsung_tv|whynter_ac] [command]"}
+            {"Example usage": "./api_client.py ir [samsung_tv|whynter_ac|treadmill] [command]"}
         )
 
         response = parse_ip(['192.168.1.123', 'set_gps_coords'])
@@ -913,7 +913,7 @@ class TestEndpointErrors(TestCase):
         response = parse_command('192.168.1.123', ['ir', 'pacemaker'])
         self.assertEqual(
             response,
-            {"Example usage": "./api_client.py ir [samsung_tv|whynter_ac] [command]"}
+            {"Example usage": "./api_client.py ir [samsung_tv|whynter_ac|treadmill] [command]"}
         )
 
     def test_ir_add_macro_action_missing_args(self):

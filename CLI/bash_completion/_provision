@@ -25,8 +25,8 @@ _provision()
     # Returns 0 if NO used args are in category
     option_used() {
         for i in $1; do
-            for j in ${COMP_WORDS[*]}; do
-                if [[ $i == $j ]]; then
+            for j in "${COMP_WORDS[@]}"; do
+                if [[ $i == "$j" ]]; then
                     return 1
                 fi
             done
@@ -92,27 +92,27 @@ _provision()
 
     # Add remaining available options to command completion list (may be overwritten in loops below)
     # stderr redirected to /dev/null due to error when completing words starting with -- on Ubuntu (default config bug)
-    COMPREPLY=( $(compgen -W "${all}" -- "${cur}" 2>/dev/null) )
+    mapfile -t COMPREPLY < <(compgen -W "${all}" -- "${cur}" 2>/dev/null)
 
     # Display nothing if prev is a password flag (user must enter password before next option)
     for i in $password_opts; do
-        if [[ $i == $prev ]]; then
-            COMPREPLY=( $(compgen -W "" -- "${cur}") )
+        if [[ $i == "$prev" ]]; then
+            mapfile -t COMPREPLY < <(compgen -W "" -- "${cur}")
         fi
     done
 
     # Display nothing if prev is an ip flag (user must enter IP before next option)
     for i in $ip_opts; do
-        if [[ $i == $prev ]]; then
-            COMPREPLY=( $(compgen -W "" -- "${cur}") )
+        if [[ $i == "$prev" ]]; then
+            mapfile -t COMPREPLY < <(compgen -W "" -- "${cur}")
         fi
     done
 
     # Display config files if prev is a config flag (user must select config file before next option)
     for i in $config_opts; do
-        if [[ $i == $prev ]]; then
-            config_files=$(ls -CF $config_dir)
-            COMPREPLY=( $(compgen -W "${config_files}" -- "${cur}") )
+        if [[ $i == "$prev" ]]; then
+            config_files=$(ls -CF "$config_dir")
+            mapfile -t COMPREPLY < <(compgen -W "${config_files}" -- "${cur}")
         fi
     done
 
