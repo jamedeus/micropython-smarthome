@@ -6431,10 +6431,6 @@ exports[`App matches snapshot when all IR remotes are configured 1`] = `
         >
           <div
             class="col-sm col"
-            id="sensor-cards"
-          />
-          <div
-            class="col-sm col"
             id="device-cards"
           >
             <div
@@ -6844,10 +6840,6 @@ exports[`App matches snapshot when all IR remotes are configured 1`] = `
       <div
         class="row"
       >
-        <div
-          class="col-sm col"
-          id="sensor-cards"
-        />
         <div
           class="col-sm col"
           id="device-cards"
@@ -7555,10 +7547,6 @@ exports[`App matches snapshot when only AC remote is configured 1`] = `
         >
           <div
             class="col-sm col"
-            id="sensor-cards"
-          />
-          <div
-            class="col-sm col"
             id="device-cards"
           >
             <div
@@ -7699,10 +7687,6 @@ exports[`App matches snapshot when only AC remote is configured 1`] = `
       <div
         class="row"
       >
-        <div
-          class="col-sm col"
-          id="sensor-cards"
-        />
         <div
           class="col-sm col"
           id="device-cards"
@@ -7932,10 +7916,6 @@ exports[`App matches snapshot when only TV remote is configured 1`] = `
         <div
           class="row"
         >
-          <div
-            class="col-sm col"
-            id="sensor-cards"
-          />
           <div
             class="col-sm col"
             id="device-cards"
@@ -8233,10 +8213,6 @@ exports[`App matches snapshot when only TV remote is configured 1`] = `
       <div
         class="row"
       >
-        <div
-          class="col-sm col"
-          id="sensor-cards"
-        />
         <div
           class="col-sm col"
           id="device-cards"
@@ -8623,10 +8599,6 @@ exports[`App matches snapshot when only treadmill remote is configured 1`] = `
         >
           <div
             class="col-sm col"
-            id="sensor-cards"
-          />
-          <div
-            class="col-sm col"
             id="device-cards"
           >
             <div
@@ -8793,10 +8765,6 @@ exports[`App matches snapshot when only treadmill remote is configured 1`] = `
       <div
         class="row"
       >
-        <div
-          class="col-sm col"
-          id="sensor-cards"
-        />
         <div
           class="col-sm col"
           id="device-cards"

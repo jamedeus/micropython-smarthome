@@ -1,5 +1,5 @@
 // WARNING: do not change cache name without updating hooks/pre-commit
-const staticCacheName = 'django-pwa-v48a23b8c';
+const staticCacheName = 'django-pwa-v7fdffda0';
 const filesToCache = [
     '/offline/',
     '/static/css/django-pwa-app.css',
