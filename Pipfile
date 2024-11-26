@@ -22,4 +22,4 @@ esptool = "~=4.7.0"
 codespell = "*"
 
 [requires]
-python_version = "3.13"
+python_version = "3.10"
