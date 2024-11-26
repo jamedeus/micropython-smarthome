@@ -6357,7 +6357,7 @@ exports[`App matches snapshot 1`] = `
 }
 `;
 
-exports[`App matches snapshot when both IR remotes are configured 1`] = `
+exports[`App matches snapshot when all IR remotes are configured 1`] = `
 {
   "asFragment": [Function],
   "baseElement": <body>
@@ -6389,7 +6389,7 @@ exports[`App matches snapshot when both IR remotes are configured 1`] = `
     <div
       id="status"
     >
-      {"metadata":{"next_reload":"3:46","ir_blaster":true,"ir_targets":["samsung_tv","whynter_ac"],"location":"Bedroom","floor":2,"id":"Thermostat","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{},"sensors":{}}
+      {"metadata":{"next_reload":"3:46","ir_blaster":true,"ir_targets":["samsung_tv","whynter_ac","treadmill"],"location":"Bedroom","floor":2,"id":"Thermostat","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{},"sensors":{}}
     </div>
     <div>
       <div
@@ -6676,6 +6676,76 @@ exports[`App matches snapshot when both IR remotes are configured 1`] = `
                 >
                   <i
                     class="bi-snow"
+                  />
+                </button>
+              </div>
+            </div>
+            <div
+              class="d-flex flex-column remote mx-auto mb-4"
+            >
+              <div
+                class="row text-center"
+              >
+                <h4
+                  class="my-2"
+                >
+                  Treadmill Remote
+                </h4>
+              </div>
+              <div
+                class="d-flex flex-row mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Increase speed"
+                  type="button"
+                >
+                  <i
+                    class="bi-plus-lg"
+                  />
+                </button>
+              </div>
+              <div
+                class="d-flex flex-row mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Toggle display mode"
+                  type="button"
+                >
+                  <i
+                    class="bi-gear-fill"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Start or stop"
+                  type="button"
+                >
+                  <i
+                    class="bi-pause-fill"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Toggle power"
+                  type="button"
+                >
+                  <i
+                    class="bi-power"
+                  />
+                </button>
+              </div>
+              <div
+                class="d-flex flex-row mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Decrease speed"
+                  type="button"
+                >
+                  <i
+                    class="bi-dash-lg"
                   />
                 </button>
               </div>
@@ -7021,6 +7091,76 @@ exports[`App matches snapshot when both IR remotes are configured 1`] = `
               >
                 <i
                   class="bi-snow"
+                />
+              </button>
+            </div>
+          </div>
+          <div
+            class="d-flex flex-column remote mx-auto mb-4"
+          >
+            <div
+              class="row text-center"
+            >
+              <h4
+                class="my-2"
+              >
+                Treadmill Remote
+              </h4>
+            </div>
+            <div
+              class="d-flex flex-row mx-auto"
+            >
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Increase speed"
+                type="button"
+              >
+                <i
+                  class="bi-plus-lg"
+                />
+              </button>
+            </div>
+            <div
+              class="d-flex flex-row mx-auto"
+            >
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Toggle display mode"
+                type="button"
+              >
+                <i
+                  class="bi-gear-fill"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Start or stop"
+                type="button"
+              >
+                <i
+                  class="bi-pause-fill"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Toggle power"
+                type="button"
+              >
+                <i
+                  class="bi-power"
+                />
+              </button>
+            </div>
+            <div
+              class="d-flex flex-row mx-auto"
+            >
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Decrease speed"
+                type="button"
+              >
+                <i
+                  class="bi-dash-lg"
                 />
               </button>
             </div>
@@ -8296,6 +8436,437 @@ exports[`App matches snapshot when only TV remote is configured 1`] = `
               >
                 <i
                   class="bi-arrow-return-left"
+                />
+              </button>
+            </div>
+          </div>
+          <div
+            class="d-flex flex-column remote mx-auto mb-4"
+            style="min-width: 60%;"
+          >
+            <div
+              class="row text-center"
+            >
+              <h4
+                class="my-2"
+              >
+                IR Macros
+              </h4>
+            </div>
+            <button
+              class="my-3 mx-auto btn btn-secondary"
+              type="button"
+            >
+              <i
+                class="bi-plus-lg"
+              />
+            </button>
+            <div
+              class="collapse"
+            >
+              <div
+                class="d-flex flex-column"
+              >
+                <div
+                  class="px-3 pb-3 form-floating"
+                >
+                  <input
+                    class="mb-3 form-control"
+                    id="new-macro-name"
+                    placeholder="New macro name"
+                    type="text"
+                    value=""
+                  />
+                  <label>
+                    New macro name
+                  </label>
+                </div>
+                <button
+                  class="mx-auto btn btn-success"
+                  disabled=""
+                  type="button"
+                >
+                  Start Recording
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
+
+exports[`App matches snapshot when only treadmill remote is configured 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div
+      id="target_ip"
+    >
+      "192.168.1.100"
+    </div>
+    <div
+      id="recording"
+    >
+      false
+    </div>
+    <div
+      id="ir_macros"
+    >
+      {}
+    </div>
+    <div
+      id="instance_metadata"
+    >
+      {"devices":{"http-get":{"rule_prompt":"standard"},"pwm":{"rule_prompt":"int_or_fade","rule_limits":[0,1023]},"desktop":{"rule_prompt":"standard"},"tasmota-relay":{"rule_prompt":"standard"},"dimmer":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"api-target":{"rule_prompt":"api_target"},"relay":{"rule_prompt":"standard"},"bulb":{"rule_prompt":"int_or_fade","rule_limits":[1,100]},"wled":{"rule_prompt":"int_or_fade","rule_limits":[1,255]}},"sensors":{"switch":{"rule_prompt":"standard","triggerable":false},"dht22":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"ld2410":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"si7021":{"rule_prompt":"thermostat","rule_limits":[18,27],"triggerable":false},"desktop":{"rule_prompt":"standard","triggerable":true},"pir":{"rule_prompt":"float_range","rule_limits":[0,60],"triggerable":true},"load-cell":{"rule_prompt":"float_range","rule_limits":[0,10000000],"triggerable":false},"dummy":{"rule_prompt":"on_off","triggerable":true}}}
+    </div>
+    <div
+      id="api_target_options"
+    >
+      {"device6":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["samsung_tv","whynter_ac"],"keys":{"samsung_tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"whynter_ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
+    </div>
+    <div
+      id="status"
+    >
+      {"metadata":{"next_reload":"3:46","ir_blaster":true,"ir_targets":["treadmill"],"location":"Bedroom","floor":2,"id":"Thermostat","schedule_keywords":{"sleep":"23:00","morning":"08:00","sunset":"20:56","relax":"20:00","sunrise":"05:36"}},"devices":{},"sensors":{}}
+    </div>
+    <div>
+      <div
+        class="h-100"
+      >
+        <div
+          class="d-flex justify-content-between"
+        >
+          <button
+            class="my-auto btn btn-light"
+            type="button"
+          >
+            <i
+              class="bi-chevron-left"
+            />
+          </button>
+          <h1
+            class="my-3 "
+          >
+            Thermostat
+          </h1>
+          <div
+            class="my-auto dropdown"
+          >
+            <button
+              aria-expanded="false"
+              class="dropdown-toggle btn btn-light"
+              id="settings-button"
+              type="button"
+            >
+              <i
+                class="bi-list"
+              />
+            </button>
+          </div>
+        </div>
+        <div
+          class="row"
+        >
+          <div
+            class="col-sm col"
+            id="sensor-cards"
+          />
+          <div
+            class="col-sm col"
+            id="device-cards"
+          >
+            <div
+              class="d-flex flex-column remote mx-auto mb-4"
+            >
+              <div
+                class="row text-center"
+              >
+                <h4
+                  class="my-2"
+                >
+                  Treadmill Remote
+                </h4>
+              </div>
+              <div
+                class="d-flex flex-row mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Increase speed"
+                  type="button"
+                >
+                  <i
+                    class="bi-plus-lg"
+                  />
+                </button>
+              </div>
+              <div
+                class="d-flex flex-row mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Toggle display mode"
+                  type="button"
+                >
+                  <i
+                    class="bi-gear-fill"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Start or stop"
+                  type="button"
+                >
+                  <i
+                    class="bi-pause-fill"
+                  />
+                </button>
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Toggle power"
+                  type="button"
+                >
+                  <i
+                    class="bi-power"
+                  />
+                </button>
+              </div>
+              <div
+                class="d-flex flex-row mx-auto"
+              >
+                <button
+                  class="m-3 ir-btn null btn btn-primary btn-lg"
+                  title="Decrease speed"
+                  type="button"
+                >
+                  <i
+                    class="bi-dash-lg"
+                  />
+                </button>
+              </div>
+            </div>
+            <div
+              class="d-flex flex-column remote mx-auto mb-4"
+              style="min-width: 60%;"
+            >
+              <div
+                class="row text-center"
+              >
+                <h4
+                  class="my-2"
+                >
+                  IR Macros
+                </h4>
+              </div>
+              <button
+                class="my-3 mx-auto btn btn-secondary"
+                type="button"
+              >
+                <i
+                  class="bi-plus-lg"
+                />
+              </button>
+              <div
+                class="collapse"
+              >
+                <div
+                  class="d-flex flex-column"
+                >
+                  <div
+                    class="px-3 pb-3 form-floating"
+                  >
+                    <input
+                      class="mb-3 form-control"
+                      id="new-macro-name"
+                      placeholder="New macro name"
+                      type="text"
+                      value=""
+                    />
+                    <label>
+                      New macro name
+                    </label>
+                  </div>
+                  <button
+                    class="mx-auto btn btn-success"
+                    disabled=""
+                    type="button"
+                  >
+                    Start Recording
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="h-100"
+    >
+      <div
+        class="d-flex justify-content-between"
+      >
+        <button
+          class="my-auto btn btn-light"
+          type="button"
+        >
+          <i
+            class="bi-chevron-left"
+          />
+        </button>
+        <h1
+          class="my-3 "
+        >
+          Thermostat
+        </h1>
+        <div
+          class="my-auto dropdown"
+        >
+          <button
+            aria-expanded="false"
+            class="dropdown-toggle btn btn-light"
+            id="settings-button"
+            type="button"
+          >
+            <i
+              class="bi-list"
+            />
+          </button>
+        </div>
+      </div>
+      <div
+        class="row"
+      >
+        <div
+          class="col-sm col"
+          id="sensor-cards"
+        />
+        <div
+          class="col-sm col"
+          id="device-cards"
+        >
+          <div
+            class="d-flex flex-column remote mx-auto mb-4"
+          >
+            <div
+              class="row text-center"
+            >
+              <h4
+                class="my-2"
+              >
+                Treadmill Remote
+              </h4>
+            </div>
+            <div
+              class="d-flex flex-row mx-auto"
+            >
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Increase speed"
+                type="button"
+              >
+                <i
+                  class="bi-plus-lg"
+                />
+              </button>
+            </div>
+            <div
+              class="d-flex flex-row mx-auto"
+            >
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Toggle display mode"
+                type="button"
+              >
+                <i
+                  class="bi-gear-fill"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Start or stop"
+                type="button"
+              >
+                <i
+                  class="bi-pause-fill"
+                />
+              </button>
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Toggle power"
+                type="button"
+              >
+                <i
+                  class="bi-power"
+                />
+              </button>
+            </div>
+            <div
+              class="d-flex flex-row mx-auto"
+            >
+              <button
+                class="m-3 ir-btn null btn btn-primary btn-lg"
+                title="Decrease speed"
+                type="button"
+              >
+                <i
+                  class="bi-dash-lg"
                 />
               </button>
             </div>

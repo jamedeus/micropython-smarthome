@@ -311,6 +311,89 @@ describe('IrRemotes', () => {
         });
     });
 
+    it('sends correct payload when treadmill remote buttons are pressed', async () => {
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: {
+                    'treadmill': 'key_name'
+                }
+            })
+        }));
+
+        // Get remote div
+        const remote = app.getByText('Treadmill Remote').parentElement.parentElement;
+
+        // Click power button, confirm correct payload sent
+        await user.click(within(remote).getAllByRole('button')[3]);
+        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "ir",
+                "ir_target": "treadmill",
+                "key": "power",
+                "target": "192.168.1.100"
+            }),
+            headers: postHeaders
+        });
+        jest.clearAllMocks();
+
+        // Click start button, confirm correct payload sent
+        await user.click(within(remote).getAllByRole('button')[2]);
+        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "ir",
+                "ir_target": "treadmill",
+                "key": "start",
+                "target": "192.168.1.100"
+            }),
+            headers: postHeaders
+        });
+        jest.clearAllMocks();
+
+        // Click mode button, confirm correct payload sent
+        await user.click(within(remote).getAllByRole('button')[1]);
+        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "ir",
+                "ir_target": "treadmill",
+                "key": "mode",
+                "target": "192.168.1.100"
+            }),
+            headers: postHeaders
+        });
+
+        // Click up button, confirm correct payload sent
+        await user.click(within(remote).getAllByRole('button')[0]);
+        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "ir",
+                "ir_target": "treadmill",
+                "key": "up",
+                "target": "192.168.1.100"
+            }),
+            headers: postHeaders
+        });
+
+        // Click down button, confirm correct payload sent
+        await user.click(within(remote).getAllByRole('button')[4]);
+        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "ir",
+                "ir_target": "treadmill",
+                "key": "down",
+                "target": "192.168.1.100"
+            }),
+            headers: postHeaders
+        });
+    });
+
     it('opens EditIrMacroModal modal when edit option is clicked', async () => {
         // Get macros div, green pencil button next to backlight_off macro
         const macros = app.getByText('IR Macros').parentElement.parentElement;
@@ -497,6 +580,7 @@ describe('IrRemotes', () => {
         // Get remote divs, macros div
         const tvRemote = app.getByText('TV Remote').parentElement.parentElement;
         const acRemote = app.getByText('AC Remote').parentElement.parentElement;
+        const treadmillRemote = app.getByText('Treadmill Remote').parentElement.parentElement;
         const macros = app.getByText('IR Macros').parentElement.parentElement;
 
         // Start recording new macro
@@ -504,9 +588,10 @@ describe('IrRemotes', () => {
         await user.type(within(macros).getByRole('textbox'), 'New Macro');
         await user.click(app.getByRole('button', { name: 'Start Recording' }));
 
-        // Click TV power button, AC start cooling button
+        // Click TV power button, AC start cooling button, Treadmill up button
         await user.click(within(tvRemote).getAllByRole('button')[0]);
         await user.click(within(acRemote).getAllByRole('button')[2]);
+        await user.click(within(treadmillRemote).getAllByRole('button')[0]);
 
         // Click Save Macro, confirm correct payload sent
         await user.click(app.getByRole('button', { name: 'Save Macro' }));
@@ -517,7 +602,8 @@ describe('IrRemotes', () => {
                 "name": "New Macro",
                 "actions": [
                     "samsung_tv power 100 1",
-                    "whynter_ac start 100 1"
+                    "whynter_ac start 100 1",
+                    "treadmill up 100 1"
                 ]
             }),
             headers: postHeaders

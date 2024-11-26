@@ -212,6 +212,67 @@ TvRemote.propTypes = {
     addMacroAction: PropTypes.func.isRequired
 };
 
+const TreadmillRemote = ({ recording, addMacroAction }) => {
+    const { send_command } = useContext(ApiCardContext);
+
+    const HandleKey = (key) => {
+        if (recording) {
+            addMacroAction(`treadmill ${key} 100 1`);
+        } else {
+            send_command({command: 'ir', ir_target: 'treadmill', key: key});
+        }
+    };
+
+    return (
+        <div className="d-flex flex-column remote mx-auto mb-4">
+            <div className="row text-center">
+                <h4 className="my-2">Treadmill Remote</h4>
+            </div>
+            <div className="d-flex flex-row mx-auto">
+                <IrButton
+                    title="Increase speed"
+                    icon="bi-plus-lg"
+                    recording={recording}
+                    onClick={() => HandleKey('up')}
+                />
+            </div>
+            <div className="d-flex flex-row mx-auto">
+                <IrButton
+                    title="Toggle display mode"
+                    icon="bi-gear-fill"
+                    recording={recording}
+                    onClick={() => HandleKey('mode')}
+                />
+                <IrButton
+                    title="Start or stop"
+                    icon="bi-pause-fill"
+                    recording={recording}
+                    onClick={() => HandleKey('start')}
+                />
+                <IrButton
+                    title="Toggle power"
+                    icon="bi-power"
+                    recording={recording}
+                    onClick={() => HandleKey('power')}
+                />
+            </div>
+            <div className="d-flex flex-row mx-auto">
+                <IrButton
+                    title="Decrease speed"
+                    icon="bi-dash-lg"
+                    recording={recording}
+                    onClick={() => HandleKey('down')}
+                />
+            </div>
+        </div>
+    );
+};
+
+TreadmillRemote.propTypes = {
+    recording: PropTypes.bool,
+    addMacroAction: PropTypes.func.isRequired
+};
+
 const IrMacros = ({ recording, setRecording, newMacroActions, setNewMacroActions }) => {
     const {
         irMacros,
@@ -388,6 +449,9 @@ const IrRemotes = () => {
                 ) : null }
                 {status.metadata.ir_targets.includes('whynter_ac') ? (
                     <AcRemote recording={recordingMacro} addMacroAction={addMacroAction} />
+                ) : null }
+                {status.metadata.ir_targets.includes('treadmill') ? (
+                    <TreadmillRemote recording={recordingMacro} addMacroAction={addMacroAction} />
                 ) : null }
                 <IrMacros
                     recording={recordingMacro}

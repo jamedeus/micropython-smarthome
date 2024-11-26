@@ -48,8 +48,8 @@ describe('App', () => {
         expect(component).toMatchSnapshot();
     });
 
-    it('matches snapshot when both IR remotes are configured', () => {
-        // Create mock status object with both IR remotes
+    it('matches snapshot when all IR remotes are configured', () => {
+        // Create mock status object with all IR remotes
         createMockContext('status', mockContextIrRemotes.status);
 
         // Render App, confirm matches snapshot
@@ -87,6 +87,25 @@ describe('App', () => {
         createMockContext('status', {
             ...mockContextIrRemotes.status, metadata: {
                 ...mockContextIrRemotes.status.metadata, ir_targets: [ 'whynter_ac' ]
+            }
+        });
+
+        // Render App, confirm matches snapshot
+        const component = render(
+            <MetadataContextProvider>
+                <ApiCardContextProvider>
+                    <App />
+                </ApiCardContextProvider>
+            </MetadataContextProvider>
+        );
+        expect(component).toMatchSnapshot();
+    });
+
+    it('matches snapshot when only treadmill remote is configured', () => {
+        // Create mock status object with only treadmill remote
+        createMockContext('status', {
+            ...mockContextIrRemotes.status, metadata: {
+                ...mockContextIrRemotes.status.metadata, ir_targets: [ 'treadmill' ]
             }
         });
 

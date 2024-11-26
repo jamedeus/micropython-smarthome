@@ -363,7 +363,8 @@ export const mockContextIrRemotes = {
             "ir_blaster": true,
             "ir_targets": [
                 "samsung_tv",
-                "whynter_ac"
+                "whynter_ac",
+                "treadmill"
             ],
             "location": "Bedroom",
             "floor": 2,
