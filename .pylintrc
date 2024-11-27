@@ -387,7 +387,7 @@ int-import-graph=
 
 # Force import order to recognize a module as part of the standard
 # compatibility libraries.
-known-standard-library=tls,network,dht
+known-standard-library=tls,network,dht,vfs
 
 # Force import order to recognize a module as part of a third party library.
 known-third-party=enchant

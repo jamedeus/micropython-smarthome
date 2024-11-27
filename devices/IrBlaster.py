@@ -2,8 +2,8 @@ import asyncio
 import logging
 from machine import Pin
 from ir_tx import Player
-from util import read_ir_macros_from_disk, write_ir_macros_to_disk, print_with_timestamp
 from ir_code_classes import ir_code_classes
+from util import read_ir_macros_from_disk, write_ir_macros_to_disk, print_with_timestamp
 
 
 class IrBlaster():
@@ -140,12 +140,12 @@ class IrBlaster():
             delay = int(delay)
         except ValueError:
             self.log.error("IrBlaster.add_macro_action: delay arg must be integer")
-            raise ValueError("Delay arg must be integer (milliseconds)")
+            raise ValueError("Delay arg must be integer (milliseconds)")  # pylint: disable=W0707
         try:
             repeat = int(repeat)
         except ValueError:
             self.log.error("IrBlaster.add_macro_action: repeat arg must be integer")
-            raise ValueError("Repeat arg must be integer (number of times to press key)")
+            raise ValueError("Repeat arg must be integer (number of times to press key)")  # pylint: disable=W0707
 
         # Add action
         self.macros[name].append((target, key, delay, repeat))

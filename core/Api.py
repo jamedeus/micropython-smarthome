@@ -193,7 +193,7 @@ class Api:
                     # Return error if request JSON is invalid
                     swriter.write(json.dumps({"ERROR": "Syntax error in received JSON"}).encode())
                     await swriter.drain()
-                    raise OSError
+                    raise OSError  # pylint: disable=W0707
 
             # Prevent calling non-endpoint class methods
             if path.startswith('_'):

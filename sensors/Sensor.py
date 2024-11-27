@@ -35,7 +35,7 @@ class Sensor(Instance):
         '''
         if self.group:
             self.print(f"Refreshing {self.group.name}")
-            schedule(self.group._refresh, None)
+            schedule(self.group._refresh, None)  # pylint: disable=W0212
 
     def enable(self):
         '''Sets enabled bool to True (allows sensor to be checked), ensures

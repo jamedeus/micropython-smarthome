@@ -31,7 +31,7 @@ def start():
     # Load blank config template if config.json does not exist (initial setup)
     except OSError:
         log.critical("config.json not found, loading blank template")
-        from default_config import default_config
+        from default_config import default_config  # pylint: disable=C0415
         app_context.config_instance = Config(default_config)
     gc.collect()
 
@@ -53,7 +53,7 @@ def start():
     app_context.api_instance = Api()
     gc.collect()
     # Start server and await requests
-    loop.create_task(app_context.api_instance._run())
+    loop.create_task(app_context.api_instance._run())  # pylint: disable=W0212
 
     # Run forever
     loop.run_forever()

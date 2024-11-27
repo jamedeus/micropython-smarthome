@@ -21,7 +21,7 @@ gc.collect()
 
 # Set log file and syntax
 logging.basicConfig(
-    level=logging._nameToLevel[LOG_LEVEL],
+    level=logging._nameToLevel[LOG_LEVEL],  # pylint: disable=W0212
     filename='app.log',
     format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
     style='%'

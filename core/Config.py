@@ -202,7 +202,7 @@ class Config():
         # IR Blaster is not a Device subclass, has no schedule rules, and is
         # only triggered by API calls (can use ApiTarget to add to Group)
         if "_ir_blaster_config" in self.__dict__:
-            from IrBlaster import IrBlaster
+            from IrBlaster import IrBlaster  # pylint: disable=C0415
             self.ir_blaster = IrBlaster(
                 int(self._ir_blaster_config["pin"]),
                 self._ir_blaster_config["target"]
@@ -663,4 +663,3 @@ class Config():
 
         # Create timers for all schedule rules expiring in next 24 hours
         self._build_queue()
-

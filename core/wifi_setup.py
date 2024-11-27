@@ -8,8 +8,8 @@ import logging
 import binascii
 from machine import Timer
 import setup_ssl_certs
-from util import reboot
 from setup_page import setup_page
+from util import reboot
 
 log = logging.getLogger("Setup")
 log.critical("Wifi credentials not found, starting captive portal")
@@ -168,7 +168,7 @@ async def run_captive_portal(port=53):
             await asyncio.sleep_ms(100)
 
         # Raises "[Errno 11] EAGAIN" if timed out with no connection
-        except:
+        except:  # pylint: disable=W0702
             await asyncio.sleep_ms(3000)
 
 
@@ -217,7 +217,15 @@ def serve_setup_page():
     # Listen for TCP connections on port 80, redirect to port 443
     loop.create_task(asyncio.start_server(handle_http_client, '0.0.0.0', 80))
     # Serve setup page on port 443 with SSL
-    loop.create_task(asyncio.start_server(handle_https_client, "0.0.0.0", 443, 5, ssl=ssl_context))
+    loop.create_task(
+        asyncio.start_server(
+            handle_https_client,
+            host="0.0.0.0",
+            port=443,
+            backlog=5,
+            ssl=ssl_context
+        )
+    )
     # Listen for DNS queries on port 53, redirect to setup page
     loop.create_task(run_captive_portal())
     loop.run_forever()

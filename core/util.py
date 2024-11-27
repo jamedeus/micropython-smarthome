@@ -92,7 +92,7 @@ def reboot(*args):
     '''
     print_with_timestamp("Reboot function called, rebooting...")
     log.critical("Reboot function called, rebooting...\n")
-    from machine import reset
+    from machine import reset  # pylint: disable=C0415
     reset()
 
 
@@ -134,7 +134,7 @@ def get_timestamp():
     for i in range(1, 6):
         if len(str(ct[i])) == 1:
             ct[i] = "0" + str(ct[i])
-    return "{0}-{1}-{2} {3}:{4}:{5}".format(*ct)
+    return "{0}-{1}-{2} {3}:{4}:{5}".format(*ct)  # pylint: disable=C0209
 
 
 def print_with_timestamp(msg):
