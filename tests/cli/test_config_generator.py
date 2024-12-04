@@ -261,11 +261,11 @@ class TestGenerateConfigFile(TestCase):
 
             # Run method, confirm all mocks called
             self.generator.run_prompt()
-            self.assertTrue(mock_metadata_prompt.called_once)
-            self.assertTrue(mock_add_devices_and_sensors.called_once)
-            self.assertTrue(mock_select_sensor_targets.called_once)
-            self.assertTrue(mock_finished_prompt.called_once)
-            self.assertTrue(mock_validate_full_config.called_once)
+            mock_metadata_prompt.assert_called_once()
+            mock_add_devices_and_sensors.assert_called_once()
+            mock_select_sensor_targets.assert_called_once()
+            mock_finished_prompt.assert_called_once()
+            mock_validate_full_config.assert_called_once()
 
             # Confirm passed_validation set to True (mock)
             self.assertTrue(self.generator.passed_validation)
@@ -279,10 +279,10 @@ class TestGenerateConfigFile(TestCase):
 
             # Run method, confirm all mocks called
             self.generator.run_prompt()
-            self.assertTrue(mock_metadata_prompt.called_once)
-            self.assertTrue(mock_add_devices_and_sensors.called_once)
-            self.assertTrue(mock_select_sensor_targets.called_once)
-            self.assertTrue(mock_validate_full_config.called_once)
+            mock_metadata_prompt.assert_called_once()
+            mock_add_devices_and_sensors.assert_called_once()
+            mock_select_sensor_targets.assert_called_once()
+            mock_validate_full_config.assert_called_once()
 
             # Confirm passed_validation set to False (mock)
             self.assertFalse(self.generator.passed_validation)
@@ -482,7 +482,7 @@ class TestGenerateConfigFile(TestCase):
         self.mock_ask.unsafe_ask.return_value = ['Target1 (relay)', 'Target2 (relay)']
         with patch('questionary.checkbox', return_value=self.mock_ask):
             self.generator.delete_devices_and_sensors()
-            self.assertTrue(self.mock_ask.called_once)
+            self.mock_ask.unsafe_ask.assert_called_once()
 
         # Confirm both devices were deleted
         self.assertEqual(list(self.generator.config.keys()), ["metadata", "sensor1"])
@@ -1079,7 +1079,7 @@ class TestGenerateConfigFile(TestCase):
         self.mock_ask.unsafe_ask.return_value = ['Target1 (relay)', 'Target2 (relay)']
         with patch('questionary.checkbox', return_value=self.mock_ask):
             self.generator.select_sensor_targets()
-            self.assertTrue(self.mock_ask.called_once)
+            self.assertTrue(self.mock_ask.assert_called_once)
 
         # Confirm both devices added to sensor targets
         self.assertEqual(
@@ -1108,7 +1108,7 @@ class TestGenerateConfigFile(TestCase):
         # Mock checkbox ask method, confirm nothing is called
         with patch('questionary.checkbox', return_value=self.mock_ask):
             self.generator.select_sensor_targets()
-            self.assertFalse(self.mock_ask.called)
+            self.mock_ask.assert_not_called()
 
     def test_add_schedule_rule_keyword(self):
         # Simulate user reaching schedule rule prompt
@@ -1187,7 +1187,7 @@ class TestGenerateConfigFile(TestCase):
 
             # Run prompt, confirm correct IP prompt is called
             self.generator._GenerateConfigFile__configure_device(config)
-            self.assertTrue(mock_ip_prompt.called)
+            mock_ip_prompt.assert_called()
 
     def test_api_target_rule_prompt(self):
         # Mock nodes.json to include unit-test-config.json
@@ -1366,11 +1366,11 @@ class TestGenerateConfigFile(TestCase):
 
             # Run prompt, confirm all mocks called
             generator.run_prompt()
-            self.assertTrue(mock_metadata_prompt.called_once)
-            self.assertTrue(mock_add_devices_and_sensors.called_once)
-            self.assertTrue(mock_delete_devices_and_sensors.called_once)
-            self.assertTrue(mock_select_sensor_targets.called_once)
-            self.assertTrue(mock_validate_full_config.called_once)
+            mock_metadata_prompt.assert_called_once()
+            mock_add_devices_and_sensors.assert_called_once()
+            mock_delete_devices_and_sensors.assert_called_once()
+            mock_select_sensor_targets.assert_called_once()
+            mock_validate_full_config.assert_called_once()
 
             # Confirm prompt methods were called with default values from existing config
             self.assertEqual(

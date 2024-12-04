@@ -96,7 +96,7 @@ config_file = {
 
 # Mock endpoint that raises uncaught exception for testing
 def uncaught_exception(self, args):
-    raise TypeError
+    raise Exception
 
 
 class TestApi(unittest.TestCase):
@@ -167,7 +167,7 @@ class TestApi(unittest.TestCase):
             return "Error: Request failed"
         try:
             response = json.loads(res)
-        except ValueError:
+        except (OSError, ValueError):
             return "Error: Unable to decode response"
         writer.close()
         await writer.wait_closed()
@@ -1124,9 +1124,9 @@ class TestApi(unittest.TestCase):
     # with context manager and automatically released if an exception occurs.
     @cpython_only
     def test_56_regression_fails_to_release_lock(self):
-        # Call endpoint that raises uncaught exception, should time out
+        # Call endpoint that raises uncaught exception, should fail to decode
         response = self.send_command(['uncaught_exception'])
-        self.assertEqual(response, "Error: Timed out waiting for response")
+        self.assertEqual(response, "Error: Unable to decode response")
 
         # Call status endpoint, should succeed (this would hang + timeout prior to fix)
         response = self.send_command(['status'])

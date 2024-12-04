@@ -258,7 +258,7 @@ class ApiCardTests(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], mock_log)
             # Confirm correct file downloaded from node
-            self.assertTrue(mock_get_file.called_with('app.log'))
+            mock_get_file.assert_called_with('app.log')
 
     def test_get_log_connection_error(self):
         # Mock Webrepl.get_file_mem to simulate connection error
@@ -472,7 +472,7 @@ class SyncScheduleKeywordTests(TestCase):
             self.assertEqual(response.json()['message'], "Done")
 
             # Should not be called, no keywords to upload
-            self.assertFalse(mock_parse_command.called)
+            mock_parse_command.assert_not_called()
 
         # Delete 2 keywords, test again
         del self.payload['existing_keywords']['Test1']
@@ -622,7 +622,7 @@ class SyncScheduleRulesTests(TestCase):
             response = self.client.post('/sync_schedule_rules', {"ip": '192.168.1.123'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['message'], "Done syncing schedule rules")
-            self.assertTrue(mock_get_file.called_with('config.json'))
+            mock_get_file.assert_called_with('config.json')
 
             # Verify that node config was replaced with the modified config
             self.node.refresh_from_db()

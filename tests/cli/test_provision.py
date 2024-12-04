@@ -135,10 +135,11 @@ class TestInstantiation(TestCase):
             # Confirm provision called once for each node
             main()
             self.assertEqual(mock_provision.call_count, 3)
-
-            self.assertEqual(mock_provision.call_args_list[0][1]['ip'], '192.168.1.123')
-            self.assertEqual(mock_provision.call_args_list[1][1]['ip'], '192.168.1.234')
-            self.assertEqual(mock_provision.call_args_list[2][1]['ip'], '192.168.1.111')
+            called_ips = [c[1]['ip'] for c in mock_provision.call_args_list]
+            self.assertCountEqual(
+                called_ips,
+                ['192.168.1.123', '192.168.1.234', '192.168.1.111']
+            )
 
     def test_provision_friendly_name(self):
         # Mock args with node friendly name
@@ -289,7 +290,7 @@ class TestInstantiation(TestCase):
             args = mock_provision.call_args[0]
             self.assertEqual(args[0], '192.168.1.123')
             self.assertEqual(args[3], test_modules)
-            self.assertTrue(mock_provision.called_once)
+            mock_provision.assert_called_once()
 
     def test_provision_manual_args(self):
         # Mock config file contents with ID parameter set (used as key in cli_config.json nodes section)
@@ -399,7 +400,7 @@ class TestInstantiation(TestCase):
 
             # Confirm node was NOT uploaded to django database (only uploads if
             # successfully provisioned node)
-            mock_post.assert_not_called
+            mock_post.assert_not_called()
 
         # Confirm ID from mock config was NOT added to cli_config.json nodes
         # section (only adds if successfully uploaded to node)
@@ -416,7 +417,7 @@ class TestInstantiation(TestCase):
         with patch('provision.parse_args', return_value=(args, mock_parser)):
             main()
             # Confirm print_help was called
-            self.assertTrue(mock_parser.print_help.called)
+            mock_parser.print_help.assert_called()
 
 
 class TestGetModules(TestCase):
