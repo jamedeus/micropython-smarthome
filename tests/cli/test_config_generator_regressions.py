@@ -181,7 +181,7 @@ class TestRegressions(TestCase):
         self.mock_ask.unsafe_ask.return_value = ['Thermostat (si7021)']
         with patch('questionary.checkbox', return_value=self.mock_ask):
             generator.delete_devices_and_sensors()
-            self.assertTrue(self.mock_ask.called_once)
+            self.mock_ask.unsafe_ask.assert_called_once()
 
         # Mock user adding another si7021 (option should reappear)
         self.mock_ask.unsafe_ask.side_effect = [
@@ -229,8 +229,8 @@ class TestRegressions(TestCase):
             # Confirm FloatRange called, IntRange not called
             rule = default_rule_prompt_router(mock_config)
             self.assertEqual(rule, '69.5')
-            self.assertTrue(mock_float_range.called)
-            self.assertFalse(mock_int_range.called)
+            mock_float_range.assert_called()
+            mock_int_range.assert_not_called()
 
         # Call schedule rule router with simulated float rule input
         self.mock_ask.unsafe_ask.side_effect = ['Float', '69.5']
@@ -242,8 +242,8 @@ class TestRegressions(TestCase):
             # Confirm FloatRange called, IntRange not called
             rule = schedule_rule_prompt_router(mock_config)
             self.assertEqual(rule, '69.5')
-            self.assertTrue(mock_float_range.called)
-            self.assertFalse(mock_int_range.called)
+            mock_float_range.assert_called()
+            mock_int_range.assert_not_called()
 
         # Repeat both tests with motion sensor
         mock_config = {
@@ -264,8 +264,8 @@ class TestRegressions(TestCase):
             # Confirm FloatRange called, IntRange not called
             rule = default_rule_prompt_router(mock_config)
             self.assertEqual(rule, '5.5')
-            self.assertTrue(mock_float_range.called)
-            self.assertFalse(mock_int_range.called)
+            mock_float_range.assert_called()
+            mock_int_range.assert_not_called()
 
         # Call schedule rule router with simulated float rule input
         self.mock_ask.unsafe_ask.side_effect = ['Float', '5.5']
@@ -277,8 +277,8 @@ class TestRegressions(TestCase):
             # Confirm FloatRange called, IntRange not called
             rule = schedule_rule_prompt_router(mock_config)
             self.assertEqual(rule, '5.5')
-            self.assertTrue(mock_float_range.called)
-            self.assertFalse(mock_int_range.called)
+            mock_float_range.assert_called()
+            mock_int_range.assert_not_called()
 
     # Original bug: When devices and sensors were deleted the selected keys
     # were deleted from config dict without adjusting index to prevent gaps.
@@ -338,7 +338,7 @@ class TestRegressions(TestCase):
         ]
         with patch("questionary.checkbox", return_value=self.mock_ask):
             self.generator.delete_devices_and_sensors()
-            self.assertTrue(self.mock_ask.called_once)
+            self.mock_ask.unsafe_ask.assert_called_once()
 
         # Confirm device1 and sensor1 were deleted, device2 and sensor2 IDs
         # were decremented to keep index sequential

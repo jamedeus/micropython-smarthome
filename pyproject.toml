@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smarthome_cli"
+version = "0.1.0"
+description = "CLI tools and dependencies for provisioning ESP32 nodes"
+readme = "CLI/readme.md"
+dependencies = [
+    "questionary==2.0.1",
+    "colorama==0.4.3",
+    "requests==2.32.3",
+]
+requires-python = ">=3.10"
+
+[project.scripts]
+smarthome_cli = "smarthome_cli.CLI.entrypoint:entrypoint"
+
+[tool.setuptools]
+packages = [
+    "smarthome_cli.CLI",
+    "smarthome_cli.core",
+    "smarthome_cli.devices",
+    "smarthome_cli.lib.ir_codes",
+    "smarthome_cli.sensors",
+    "smarthome_cli.util",
+]
+
+[tool.setuptools.package-dir]
+"smarthome_cli.CLI" = "CLI"
+"smarthome_cli.core" = "core"
+"smarthome_cli.devices" = "devices"
+"smarthome_cli.lib.ir_codes" = "lib/ir_codes"
+"smarthome_cli.sensors" = "sensors"
+"smarthome_cli.util" = "util"
+
+include-package-data = 'true'
+
+[tool.setuptools.package-data]
+"smarthome_cli.util" = [
+    "metadata/devices/*.json",
+    "metadata/sensors/*.json",
+]

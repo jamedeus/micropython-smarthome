@@ -4,7 +4,7 @@ import os
 import json
 from copy import deepcopy
 from unittest import TestCase
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, call
 import requests
 from requests.exceptions import ConnectionError
 from cli_config_manager import (
@@ -825,17 +825,21 @@ class TestCliConfigManager(TestCase):
 
             # Confirm add_schedule_keyword endpoint was called once for each node
             self.assertEqual(mock_add_keyword.call_count, 3)
-            add_keyword_calls = mock_add_keyword.call_args_list
-            self.assertEqual(add_keyword_calls[0][0], ('192.168.1.123', ['NewName', '12:34']))
-            self.assertEqual(add_keyword_calls[1][0], ('192.168.1.234', ['NewName', '12:34']))
-            self.assertEqual(add_keyword_calls[2][0], ('192.168.1.111', ['NewName', '12:34']))
+            expected_calls = [
+                call('192.168.1.123', ['NewName', '12:34']),
+                call('192.168.1.234', ['NewName', '12:34']),
+                call('192.168.1.111', ['NewName', '12:34']),
+            ]
+            self.assertCountEqual(mock_add_keyword.call_args_list, expected_calls)
 
             # Confirm save_schedule_keywords endpoint was called once for each node
             self.assertEqual(mock_save_keywords.call_count, 3)
-            save_keyword_calls = mock_save_keywords.call_args_list
-            self.assertEqual(save_keyword_calls[0][0], ('192.168.1.123', ''))
-            self.assertEqual(save_keyword_calls[1][0], ('192.168.1.234', ''))
-            self.assertEqual(save_keyword_calls[2][0], ('192.168.1.111', ''))
+            expected_calls = [
+                call('192.168.1.123', ''),
+                call('192.168.1.234', ''),
+                call('192.168.1.111', ''),
+            ]
+            self.assertCountEqual(mock_save_keywords.call_args_list, expected_calls)
 
             # Confirm new keyword was posted to django backend
             mock_post.assert_called_once_with(
@@ -914,17 +918,21 @@ class TestCliConfigManager(TestCase):
 
             # Confirm add_schedule_keyword endpoint was called once for each node
             self.assertEqual(mock_add_keyword.call_count, 3)
-            add_keyword_calls = mock_add_keyword.call_args_list
-            self.assertEqual(add_keyword_calls[0][0], ('192.168.1.123', ['NewName', '12:34']))
-            self.assertEqual(add_keyword_calls[1][0], ('192.168.1.234', ['NewName', '12:34']))
-            self.assertEqual(add_keyword_calls[2][0], ('192.168.1.111', ['NewName', '12:34']))
+            expected_calls = [
+                call('192.168.1.123', ['NewName', '12:34']),
+                call('192.168.1.234', ['NewName', '12:34']),
+                call('192.168.1.111', ['NewName', '12:34']),
+            ]
+            self.assertCountEqual(mock_add_keyword.call_args_list, expected_calls)
 
             # Confirm save_schedule_keywords endpoint was called once for each node
             self.assertEqual(mock_save_keywords.call_count, 3)
-            save_keyword_calls = mock_save_keywords.call_args_list
-            self.assertEqual(save_keyword_calls[0][0], ('192.168.1.123', ''))
-            self.assertEqual(save_keyword_calls[1][0], ('192.168.1.234', ''))
-            self.assertEqual(save_keyword_calls[2][0], ('192.168.1.111', ''))
+            expected_calls = [
+                call('192.168.1.123', ''),
+                call('192.168.1.234', ''),
+                call('192.168.1.111', ''),
+            ]
+            self.assertCountEqual(mock_save_keywords.call_args_list, expected_calls)
 
             # Confirm new keyword was posted to django backend
             mock_post.assert_called_once_with(
@@ -981,24 +989,30 @@ class TestCliConfigManager(TestCase):
 
             # Confirm remove_schedule_keyword endpoint was called once for each node
             self.assertEqual(mock_rm_keyword.call_count, 3)
-            rm_keyword_calls = mock_rm_keyword.call_args_list
-            self.assertEqual(rm_keyword_calls[0][0], ('192.168.1.123', ['sleep']))
-            self.assertEqual(rm_keyword_calls[1][0], ('192.168.1.234', ['sleep']))
-            self.assertEqual(rm_keyword_calls[2][0], ('192.168.1.111', ['sleep']))
+            expected_calls = [
+                call('192.168.1.123', ['sleep']),
+                call('192.168.1.234', ['sleep']),
+                call('192.168.1.111', ['sleep']),
+            ]
+            self.assertCountEqual(mock_rm_keyword.call_args_list, expected_calls)
 
             # Confirm add_schedule_keyword endpoint was called once for each node
             self.assertEqual(mock_add_keyword.call_count, 3)
-            add_keyword_calls = mock_add_keyword.call_args_list
-            self.assertEqual(add_keyword_calls[0][0], ('192.168.1.123', ['NewName', '12:34']))
-            self.assertEqual(add_keyword_calls[1][0], ('192.168.1.234', ['NewName', '12:34']))
-            self.assertEqual(add_keyword_calls[2][0], ('192.168.1.111', ['NewName', '12:34']))
+            expected_calls = [
+                call('192.168.1.123', ['NewName', '12:34']),
+                call('192.168.1.234', ['NewName', '12:34']),
+                call('192.168.1.111', ['NewName', '12:34']),
+            ]
+            self.assertCountEqual(mock_add_keyword.call_args_list, expected_calls)
 
             # Confirm save_schedule_keywords endpoint was called once for each node
             self.assertEqual(mock_save_keywords.call_count, 3)
-            save_keyword_calls = mock_save_keywords.call_args_list
-            self.assertEqual(save_keyword_calls[0][0], ('192.168.1.123', ''))
-            self.assertEqual(save_keyword_calls[1][0], ('192.168.1.234', ''))
-            self.assertEqual(save_keyword_calls[2][0], ('192.168.1.111', ''))
+            expected_calls = [
+                call('192.168.1.123', ''),
+                call('192.168.1.234', ''),
+                call('192.168.1.111', ''),
+            ]
+            self.assertCountEqual(mock_save_keywords.call_args_list, expected_calls)
 
             # Confirm new keyword was posted to django backend
             mock_post.assert_called_once_with(
@@ -1052,17 +1066,21 @@ class TestCliConfigManager(TestCase):
 
             # Confirm add_schedule_keyword endpoint was called once for each node
             self.assertEqual(mock_add_keyword.call_count, 3)
-            add_keyword_calls = mock_add_keyword.call_args_list
-            self.assertEqual(add_keyword_calls[0][0], ('192.168.1.123', ['sleep', '12:34']))
-            self.assertEqual(add_keyword_calls[1][0], ('192.168.1.234', ['sleep', '12:34']))
-            self.assertEqual(add_keyword_calls[2][0], ('192.168.1.111', ['sleep', '12:34']))
+            expected_calls = [
+                call('192.168.1.123', ['sleep', '12:34']),
+                call('192.168.1.234', ['sleep', '12:34']),
+                call('192.168.1.111', ['sleep', '12:34']),
+            ]
+            self.assertCountEqual(mock_add_keyword.call_args_list, expected_calls)
 
             # Confirm save_schedule_keywords endpoint was called once for each node
             self.assertEqual(mock_save_keywords.call_count, 3)
-            save_keyword_calls = mock_save_keywords.call_args_list
-            self.assertEqual(save_keyword_calls[0][0], ('192.168.1.123', ''))
-            self.assertEqual(save_keyword_calls[1][0], ('192.168.1.234', ''))
-            self.assertEqual(save_keyword_calls[2][0], ('192.168.1.111', ''))
+            expected_calls = [
+                call('192.168.1.123', ''),
+                call('192.168.1.234', ''),
+                call('192.168.1.111', ''),
+            ]
+            self.assertCountEqual(mock_save_keywords.call_args_list, expected_calls)
 
             # Confirm new keyword was posted to django backend
             mock_post.assert_called_once_with(
@@ -1158,17 +1176,21 @@ class TestCliConfigManager(TestCase):
 
             # Confirm add_schedule_keyword endpoint was called once for each node
             self.assertEqual(mock_add_keyword.call_count, 3)
-            add_keyword_calls = mock_add_keyword.call_args_list
-            self.assertEqual(add_keyword_calls[0][0], ('192.168.1.123', ['sleep', '12:34']))
-            self.assertEqual(add_keyword_calls[1][0], ('192.168.1.234', ['sleep', '12:34']))
-            self.assertEqual(add_keyword_calls[2][0], ('192.168.1.111', ['sleep', '12:34']))
+            expected_calls = [
+                call('192.168.1.123', ['sleep', '12:34']),
+                call('192.168.1.234', ['sleep', '12:34']),
+                call('192.168.1.111', ['sleep', '12:34']),
+            ]
+            self.assertCountEqual(mock_add_keyword.call_args_list, expected_calls)
 
             # Confirm save_schedule_keywords endpoint was called once for each node
             self.assertEqual(mock_save_keywords.call_count, 3)
-            save_keyword_calls = mock_save_keywords.call_args_list
-            self.assertEqual(save_keyword_calls[0][0], ('192.168.1.123', ''))
-            self.assertEqual(save_keyword_calls[1][0], ('192.168.1.234', ''))
-            self.assertEqual(save_keyword_calls[2][0], ('192.168.1.111', ''))
+            expected_calls = [
+                call('192.168.1.123', ''),
+                call('192.168.1.234', ''),
+                call('192.168.1.111', ''),
+            ]
+            self.assertCountEqual(mock_save_keywords.call_args_list, expected_calls)
 
             # Confirm new keyword was posted to django backend
             mock_post.assert_called_once_with(
@@ -1217,17 +1239,21 @@ class TestCliConfigManager(TestCase):
 
             # Confirm remove_schedule_keyword endpoint was called once for each node
             self.assertEqual(mock_rm_keyword.call_count, 3)
-            rm_keyword_calls = mock_rm_keyword.call_args_list
-            self.assertEqual(rm_keyword_calls[0][0], ('192.168.1.123', ['sleep']))
-            self.assertEqual(rm_keyword_calls[1][0], ('192.168.1.234', ['sleep']))
-            self.assertEqual(rm_keyword_calls[2][0], ('192.168.1.111', ['sleep']))
+            expected_calls = [
+                call('192.168.1.123', ['sleep']),
+                call('192.168.1.234', ['sleep']),
+                call('192.168.1.111', ['sleep']),
+            ]
+            self.assertCountEqual(mock_rm_keyword.call_args_list, expected_calls)
 
             # Confirm save_schedule_keywords endpoint was called once for each node
             self.assertEqual(mock_save_keywords.call_count, 3)
-            save_keyword_calls = mock_save_keywords.call_args_list
-            self.assertEqual(save_keyword_calls[0][0], ('192.168.1.123', ''))
-            self.assertEqual(save_keyword_calls[1][0], ('192.168.1.234', ''))
-            self.assertEqual(save_keyword_calls[2][0], ('192.168.1.111', ''))
+            expected_calls = [
+                call('192.168.1.123', ''),
+                call('192.168.1.234', ''),
+                call('192.168.1.111', ''),
+            ]
+            self.assertCountEqual(mock_save_keywords.call_args_list, expected_calls)
 
             # Confirm keyword was removed from django backend
             mock_post.assert_called_once_with(
@@ -1515,9 +1541,12 @@ class TestCliConfigManager(TestCase):
             self.assertEqual(mock_save_config.call_count, 3)
 
             # Confirm download method was called with IP of each existing node
-            self.assertEqual(mock_download.call_args_list[0][0][0], '192.168.1.123')
-            self.assertEqual(mock_download.call_args_list[1][0][0], '192.168.1.234')
-            self.assertEqual(mock_download.call_args_list[2][0][0], '192.168.1.111')
+            expected_calls = [
+                call('192.168.1.123'),
+                call('192.168.1.234'),
+                call('192.168.1.111'),
+            ]
+            self.assertCountEqual(mock_download.call_args_list, expected_calls)
 
     def test_download_all_node_config_files_from_django_missing_configs(self):
         # Mock download_node_config_file_from_django method to return False (missing from backend)

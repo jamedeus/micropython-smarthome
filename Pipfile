@@ -4,22 +4,22 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-colorama = "~=0.4.3"
-django = "~=4.0"
-django-pwa = ">=1.1"
-questionary = "*"
-requests = "*"
+colorama = "~=0.4.6"
+django = "~=5.1.3"
+django-pwa = "~=2.0.1"
+questionary = "~=2.0.1"
+requests = "~=2.32.3"
 util = {file = "util", editable = true}
 
 [dev-packages]
 ipython = "8.14.0"
-nest-asyncio = "*"
-coverage = "*"
-pylint = "*"
-pylint-django = "*"
+nest-asyncio = "~=1.6.0"
+coverage = "~=7.6.8"
+pylint = "~=3.3.2"
+pylint-django = "~=2.6.1"
 mpremote = "~=1.22.0"
 esptool = "~=4.7.0"
 codespell = "*"
 
 [requires]
-python_version = "3.10"
+python_version = "3.13"

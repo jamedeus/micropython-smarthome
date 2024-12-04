@@ -205,18 +205,18 @@ class WebreplTests(TestCase):
 
             # All methods should attempt to open connection, raise OSError when it fails
             self.assertRaises(OSError, node.get_file, 'app.log', 'app.log')
-            self.assertTrue(mock_open_connection.called)
+            mock_open_connection.assert_called()
             mock_open_connection.reset_mock()
 
             self.assertRaises(OSError, node.get_file_mem, 'app.log')
-            self.assertTrue(mock_open_connection.called)
+            mock_open_connection.assert_called()
             mock_open_connection.reset_mock()
 
             self.assertRaises(OSError, node.put_file, 'app.log', 'app.log')
-            self.assertTrue(mock_open_connection.called)
+            mock_open_connection.assert_called()
 
             self.assertRaises(OSError, node.put_file_mem, 'app.log', 'app.log')
-            self.assertTrue(mock_open_connection.called)
+            mock_open_connection.assert_called()
 
     def test_get_file(self):
         node = Webrepl('123.45.67.89', 'password')
@@ -314,11 +314,11 @@ class WebreplTests(TestCase):
 
             # Call method, confirm correct methods called
             node.put_file(test_config_path, 'config.json')
-            self.assertTrue(mock_websocket.write.called)
-            self.assertTrue(mock_read_resp.called)
+            mock_websocket.write.assert_called()
+            mock_read_resp.assert_called()
 
             # Confirm logged in (open_connection called)
-            self.assertTrue(mock_login.called)
+            mock_login.assert_called()
 
         # Simulate connection already open when method called
         with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
@@ -327,11 +327,11 @@ class WebreplTests(TestCase):
 
             # Call method, confirm correct methods called
             node.put_file(test_config_path, 'config.json')
-            self.assertTrue(mock_websocket.write.called)
-            self.assertTrue(mock_read_resp.called)
+            mock_websocket.write.assert_called()
+            mock_read_resp.assert_called()
 
             # Confirm did NOT log in (connection already open)
-            self.assertFalse(mock_login.called)
+            mock_login.assert_not_called()
 
     def test_put_file_mem(self):
         node = Webrepl('123.45.67.89', 'password')
@@ -354,8 +354,8 @@ class WebreplTests(TestCase):
 
             # Send as dict, confirm correct methods called
             node.put_file_mem(config, 'config.json')
-            self.assertTrue(mock_websocket.write.called)
-            self.assertTrue(mock_read_resp.called)
+            mock_websocket.write.assert_called()
+            mock_read_resp.assert_called()
 
         # Should also accept string
         with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
@@ -363,8 +363,8 @@ class WebreplTests(TestCase):
 
             # Send as string
             node.put_file_mem(str(json.dumps(config)), 'config.json')
-            self.assertTrue(mock_websocket.write.called)
-            self.assertTrue(mock_read_resp.called)
+            mock_websocket.write.assert_called()
+            mock_read_resp.assert_called()
 
         # Should also accept bytes
         with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
@@ -372,8 +372,8 @@ class WebreplTests(TestCase):
 
             # Send as bytes
             node.put_file_mem(json.dumps(config).encode(), 'config.json')
-            self.assertTrue(mock_websocket.write.called)
-            self.assertTrue(mock_read_resp.called)
+            mock_websocket.write.assert_called()
+            mock_read_resp.assert_called()
 
         # Should raise error for other types
         with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
@@ -391,7 +391,7 @@ class WebreplTests(TestCase):
 
             # Should login successfully due to Websocket.read simulating password prompt
             self.assertTrue(node.open_connection())
-            self.assertTrue(mock_client_handshake.called)
+            mock_client_handshake.assert_called()
 
     def test_read_resp(self):
         node = Webrepl('123.45.67.89', 'password')

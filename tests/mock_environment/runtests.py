@@ -152,11 +152,12 @@ async def run_tests():
         except FileNotFoundError:
             pass
 
-    # Exit non-zero if any tests failed
-    if not result.wasSuccessful():
-        sys.exit(1)
+    # Return 1 if any tests failed, otherwise 0
+    return 1 if not result.wasSuccessful() else 0
 
 
 if __name__ == '__main__':
     set_mocks()
-    asyncio.run(run_tests())
+    exit_code = asyncio.run(run_tests())
+    # Exit 1 if tests failed (fail CI/CD pipeline)
+    sys.exit(exit_code)

@@ -520,16 +520,16 @@ class TestEndpointErrors(TestCase):
         with patch('api_endpoints.request') as mock_request:
             response = parse_command('192.168.1.123', ['enable_in', 'device1', 'string'])
             self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
-            self.assertFalse(mock_request.called)
+            mock_request.assert_not_called()
 
         # Confirm correct error for NaN delay, confirm request not called
         with patch('api_endpoints.request') as mock_request:
             response = parse_command('192.168.1.123', ['enable_in', 'device1', 'NaN'])
             self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
-            self.assertFalse(mock_request.called)
+            mock_request.assert_not_called()
 
         # Repeat NaN delay for disable_in, confirm error + request not called
         with patch('api_endpoints.request') as mock_request:
             response = parse_command('192.168.1.123', ['disable_in', 'device1', 'NaN'])
             self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
-            self.assertFalse(mock_request.called)
+            mock_request.assert_not_called()

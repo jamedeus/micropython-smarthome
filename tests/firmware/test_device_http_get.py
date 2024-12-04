@@ -59,21 +59,21 @@ class TestHttpGet(unittest.TestCase):
         with patch.object(requests, 'get', return_value=response) as mock_request:
             # Turn on, should return True, confirm correct arg passed
             self.assertTrue(self.instance.send(1))
-            self.assertTrue(mock_request.called_once)
+            mock_request.assert_called_once()
             self.assertEqual(mock_request.call_args_list[0][0][0], 'http://192.168.1.100/on')
 
         # Repeat with off command, confirm called with correct URI and path
         with patch.object(requests, 'get', return_value=response) as mock_request:
             # Turn off, should return True, confirm correct arg passed
             self.assertTrue(self.instance.send(0))
-            self.assertTrue(mock_request.called_once)
+            mock_request.assert_called_once()
             self.assertEqual(mock_request.call_args_list[0][0][0], 'http://192.168.1.100/off')
 
         # Confirm send method returns False when request fails
         response.status_code = 500
         with patch.object(requests, 'get', return_value=response) as mock_request:
             self.assertFalse(self.instance.send(1))
-            self.assertTrue(mock_request.called_once)
+            mock_request.assert_called_once()
             self.assertEqual(mock_request.call_args_list[0][0][0], 'http://192.168.1.100/on')
 
     # Original bug: get_url concatenates URI and on/off_path separated by

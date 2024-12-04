@@ -19,7 +19,7 @@ from wifi_setup import (
 
 # Import dependencies for tests that only run in mocked environment
 if sys.implementation.name == 'cpython':
-    from unittest.mock import patch, Mock, AsyncMock, call
+    from unittest.mock import patch, AsyncMock, call
 
     # Used to simulate DNS request to captive portal
     class DnsRequestClient(asyncio.DatagramProtocol):
@@ -195,7 +195,7 @@ class WifiSetupTests(unittest.TestCase):
         mock_reader = AsyncMock()
         mock_writer = AsyncMock()
         request = b'GET / HTTP/1.1\r\n\r\n'
-        mock_reader.read = asyncio.coroutine(Mock(return_value=request))
+        mock_reader.read = AsyncMock(return_value=request)
 
         # Simulate connection, confirm responds with redirect page
         loop = asyncio.get_event_loop()
@@ -217,7 +217,7 @@ class WifiSetupTests(unittest.TestCase):
         mock_reader = AsyncMock()
         mock_writer = AsyncMock()
         request = b'POST / HTTP/1.1\r\n\r\n{"data": "value"}'
-        mock_reader.read = asyncio.coroutine(Mock(return_value=request))
+        mock_reader.read = AsyncMock(return_value=request)
 
         # Simulate connection, confirm responds with redirect page
         loop = asyncio.get_event_loop()
@@ -239,7 +239,7 @@ class WifiSetupTests(unittest.TestCase):
         mock_reader = AsyncMock()
         mock_writer = AsyncMock()
         request = b'GET / HTTP/1.1\r\n\r\n'
-        mock_reader.read = asyncio.coroutine(Mock(return_value=request))
+        mock_reader.read = AsyncMock(return_value=request)
 
         # Simulate connection, confirm correct response (serve setup page)
         loop = asyncio.get_event_loop()
@@ -259,7 +259,7 @@ class WifiSetupTests(unittest.TestCase):
         mock_reader = AsyncMock()
         mock_writer = AsyncMock()
         request = b'POST / HTTP/1.1\r\n\r\n{"data": "value"}'
-        mock_reader.read = asyncio.coroutine(Mock(return_value=request))
+        mock_reader.read = AsyncMock(return_value=request)
 
         # Simulate connection, confirm correct error
         with patch('wifi_setup.create_config_file', return_value=False):
@@ -288,7 +288,7 @@ class WifiSetupTests(unittest.TestCase):
         # Create mock stream handlers simulating client closing connection early
         mock_reader = AsyncMock()
         mock_writer = AsyncMock()
-        mock_reader.read = asyncio.coroutine(Mock(side_effect=OSError))
+        mock_reader.read = AsyncMock(side_effect=OSError)
 
         # Simulate connection, confirm no response sent after connection closed
         with patch('wifi_setup.create_config_file', return_value=False):

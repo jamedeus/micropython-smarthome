@@ -212,13 +212,13 @@ class TestParseIP(TestCase):
         with patch('api_client.parse_command', return_value=mock_response) as mock_parse_command:
 
             self.assertTrue(parse_ip(['node2', 'enable', 'device1']))
-            self.assertTrue(mock_parse_command.called_once)
+            mock_parse_command.assert_called_once()
 
     def test_ip_flag(self):
         mock_response = {"Enabled": "device1"}
         with patch('api_client.parse_command', return_value=mock_response) as mock_parse_command:
             self.assertTrue(parse_ip(['-ip', '192.168.1.123', 'enable', 'device1']))
-            self.assertTrue(mock_parse_command.called_once)
+            mock_parse_command.assert_called_once()
 
     def test_ip_flag_invalid(self):
         mock_response = {"Enabled": "device1"}
@@ -226,7 +226,7 @@ class TestParseIP(TestCase):
              self.assertRaises(SystemExit):
 
             self.assertTrue(parse_ip(['-ip', '192.168.1', 'enable', 'device1']))
-            self.assertFalse(mock_parse_command.called)
+            mock_parse_command.assert_not_called()
 
     def test_no_target_ip(self):
         mock_response = {"Enabled": "device1"}
@@ -234,7 +234,7 @@ class TestParseIP(TestCase):
              self.assertRaises(SystemExit):
 
             self.assertTrue(parse_ip(['enable', 'device1']))
-            self.assertFalse(mock_parse_command.called)
+            mock_parse_command.assert_not_called()
 
     def test_no_config_file(self):
         mock_response = {"Enabled": "device1"}
@@ -243,7 +243,7 @@ class TestParseIP(TestCase):
              self.assertRaises(SystemExit):
 
             self.assertTrue(parse_ip(['--all', 'enable', 'device1']))
-            self.assertFalse(mock_parse_command.called)
+            mock_parse_command.assert_not_called()
 
 
 # Test function that takes IP + command args and calls correct endpoint function
@@ -254,14 +254,14 @@ class TestParseCommand(TestCase):
              self.assertRaises(SystemExit):
 
             parse_command('192.168.1.123', [])
-            self.assertTrue(mock_error.called)
+            mock_error.assert_called()
 
     def test_invalid_endpoint(self):
         with patch('api_client.endpoint_error', MagicMock(side_effect=SystemExit)) as mock_error, \
              self.assertRaises(SystemExit):
 
             parse_command('192.168.1.123', ['self_destruct'])
-            self.assertTrue(mock_error.called)
+            mock_error.assert_called()
 
 
 # Verify that the correct usage examples are shown for each endpoint when no arguments are provided
@@ -386,7 +386,7 @@ class TestExampleUsage(TestCase):
         # Pass non-existing endpoint to example usage error, should show endpoint error
         with patch('api_client.endpoint_error', MagicMock()) as mock_error:
             example_usage_error('self_destruct')
-            self.assertTrue(mock_error.called)
+            mock_error.assert_called()
 
 
 # Test successful calls to all API endpoints (with mocked return values)
@@ -960,19 +960,19 @@ class TestEndpointErrors(TestCase):
         with patch('api_endpoints.request') as mock_request:
             response = parse_command('192.168.1.123', ['enable_in', 'device1', 'string'])
             self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
-            self.assertFalse(mock_request.called)
+            mock_request.assert_not_called()
 
         # Confirm correct error for NaN delay, confirm request not called
         with patch('api_endpoints.request') as mock_request:
             response = parse_command('192.168.1.123', ['enable_in', 'device1', 'NaN'])
             self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
-            self.assertFalse(mock_request.called)
+            mock_request.assert_not_called()
 
         # Repeat NaN delay for disable_in, confirm error + request not called
         with patch('api_endpoints.request') as mock_request:
             response = parse_command('192.168.1.123', ['disable_in', 'device1', 'NaN'])
             self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
-            self.assertFalse(mock_request.called)
+            mock_request.assert_not_called()
 
 
 # Test CLI script entrypoint

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "util"
+version = "0.1.0"
+description = "Shared dependencies used by the frontend and CLI tools"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.setuptools]
+py-modules = [
+    "api_endpoints",
+    "api_helper_functions",
+    "helper_functions",
+    "instance_validators",
+    "provision_tools",
+    "validate_config",
+    "validation_constants",
+    "Webrepl"
+]
