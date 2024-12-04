@@ -24,7 +24,7 @@ See [test readme](https://gitlab.com/jamedeus/micropython-smarthome/-/tree/maste
 ## Development
 
 Requirements:
-* pipenv
+* pipenv (>=2023.6.2)
 * npm
 * docker
 
