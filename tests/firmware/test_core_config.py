@@ -692,3 +692,64 @@ class TestConfig(unittest.TestCase):
                     1730336400.0: '1023'
                 }
             )
+
+    def test_25_regression_sensor_target_order_broke_group_matching(self):
+        '''Original bug: Config._build_groups determines which sensors are part
+        of the same group by comparing their targets attribute (list of device
+        instances). If 2 sensors had identical targets but different order they
+        would be incorrectly put in separate groups. This could happen if a web
+        frontend user clicked sensor target checkboxes in a different order.
+        '''
+
+        # Instantiate a config with 2 sensors with identical targets but
+        # non-identical order
+        config = Config(
+            {
+                'metadata': {
+                    'id': 'test',
+                    'floor': 1,
+                    'location': 'unit tests'
+                },
+                'schedule_keywords': {},
+                'sensor1': {
+                    'nickname': 'sensor1',
+                    'schedule': {},
+                    'targets': [
+                        'device1',
+                        'device2'
+                    ],
+                    '_type': 'dummy',
+                    'default_rule': 'on'
+                },
+                'sensor2': {
+                    'nickname': 'sensor2',
+                    'schedule': {},
+                    'targets': [
+                        'device2',
+                        'device1'
+                    ],
+                    '_type': 'dummy',
+                    'default_rule': 'on'
+                },
+                'device1': {
+                    'nickname': 'device1',
+                    'schedule': {},
+                    '_type': 'relay',
+                    'pin': 18,
+                    'default_rule': 'enabled'
+                },
+                'device2': {
+                    'nickname': 'device2',
+                    'schedule': {},
+                    '_type': 'relay',
+                    'pin': 19,
+                    'default_rule': 'enabled'
+                }
+            }
+        )
+
+        # Confirm both devices and sensors instantiated successfully
+        self.assertEqual(len(config.devices), 2)
+        self.assertEqual(len(config.sensors), 2)
+        # Confirm all 4 instances are part of a single group
+        self.assertEqual(len(config.groups), 1)

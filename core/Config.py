@@ -250,9 +250,10 @@ class Config():
         log.debug("Instantiating sensors")
         for sensor in sorted(conf):
             try:
-                # Find device instances for each ID in targets list
+                # Find device instances for each ID in targets list (sort
+                # targets to ensure same order for group matching)
                 targets = [t for t in (
-                    self.find(target) for target in conf[sensor]["targets"]
+                    self.find(target) for target in sorted(conf[sensor]["targets"])
                 ) if t]
 
                 # Replace targets list with list of instances
