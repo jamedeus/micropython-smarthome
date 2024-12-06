@@ -46,13 +46,25 @@ fail-under=9.9
 #from-stdin=
 
 # Files or directories to be skipped. They should be base names, not paths.
-ignore=CVS
+ignore=CVS,
+       apps.py,
+       admin.py
 
 # Add files or directories matching the regular expressions patterns to the
 # ignore-list. The regex matches against paths and can be in Posix or Windows
 # format. Because '\\' represents the directory delimiter on Windows systems,
 # it can't be used as an escape character.
-ignore-paths=
+ignore-paths=frontend/api/tests.py,
+             frontend/api/test_endpoints.py,
+             frontend/api/test_overview.py,
+             frontend/api/unit_test_helpers.py,
+             frontend/node_configuration/unit_test_helpers.py,
+             frontend/node_configuration/tests.py,
+             frontend/node_configuration/test_api_target_menu_options.py,
+             frontend/node_configuration/test_models.py,
+             frontend/node_configuration/test_overview.py,
+             frontend/node_configuration/test_webrepl.py,
+             frontend/node_configuration/unit_test_helpers.py
 
 # Files or directories matching the regular expression patterns are skipped.
 # The regex matches against base names, not paths. The default value ignores
@@ -71,7 +83,8 @@ init-hook='import sys;
       sys.path.append("core");
       sys.path.append("devices");
       sys.path.append("sensors");
-      sys.path.append("lib")'
+      sys.path.append("lib");
+      sys.path.append("frontend")'
 
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use, and will cap the count on Windows to
@@ -85,7 +98,8 @@ limit-inference-results=100
 
 # List of plugins (as comma separated values of python module names) to load,
 # usually to register additional checkers.
-load-plugins=
+load-plugins=pylint_django
+django-settings-module=frontend.settings
 
 # Pickle collected data for later comparisons.
 persistent=yes
