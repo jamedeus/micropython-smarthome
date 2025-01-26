@@ -1,4 +1,5 @@
 import socket
+import asyncio
 from struct import pack
 from DimmableLight import DimmableLight
 
@@ -38,6 +39,10 @@ class Tplink(DimmableLight):
         # Stores parameters in dict when fade in progress
         self.fading = False
 
+        # Run monitor loop (requests status every 5 seconds to keep in sync if
+        # user changes brightness from wall dimmer)
+        self.monitor_task = asyncio.create_task(self.monitor())
+
         self.log.info("Instantiated, ip=%s", self.ip)
 
     def encrypt(self, string):
@@ -64,7 +69,7 @@ class Tplink(DimmableLight):
 
     def _send_payload(self, payload):
         '''Takes payload string, encrypts and sends to Tplink device IP.
-        Returns True if request succeeded, False if response contains error.
+        Returns decrypted response from Tplink device.
         '''
         self.log.debug("Sending payload: %s", payload)
         try:
@@ -79,7 +84,7 @@ class Tplink(DimmableLight):
             response = self.decrypt(data[4:])
             self.log.debug("Response: %s", response)
 
-            return self._parse_response(response)
+            return response
 
         except Exception as ex:
             self.print(f"Could not connect to host {self.ip}, exception: {ex}")
@@ -93,7 +98,10 @@ class Tplink(DimmableLight):
         response contains an error, return True if no error.
         '''
 
-        # Empty object (returned when request syntax incorrect)
+        # Bool (returned when exception occurs in _send_payload)
+        if type(response) is bool:
+            return False
+        # Empty object {} (returned when request syntax incorrect)
         if len(response) == 2:
             return False
         # Slice right after "err_code":, if next character is 0 no error
@@ -101,6 +109,20 @@ class Tplink(DimmableLight):
             return True
         # If next character after "err_code": is not 0 an error occurred
         return False
+
+    def _check_brightness(self):
+        '''Requests status object from Tplink device, parses current brightness
+        and returns as integer.
+        '''
+        response = self._send_payload('{"system":{"get_sysinfo":{}}}')
+        try:
+            if self._type == "dimmer":
+                return int(response.split('"brightness":')[1].split(',')[0])
+            else:
+                return int(response.split('"brightness":')[1].split('}')[0])
+        except (AttributeError, IndexError, ValueError):
+            self.log.error("Failed to parse brightness from: %s", response)
+            return False
 
     def send(self, state=1):
         '''Makes API call to turn Tplink device ON if argument is True.
@@ -120,28 +142,28 @@ class Tplink(DimmableLight):
 
         # Dimmer has separate brightness and on/off commands
         if self._type == "dimmer":
-            if not self._send_payload(
+            if not self._parse_response(self._send_payload(
                 '{"system":{"set_relay_state":{"state":'
                 + str(state)
                 + '}}}'
-            ):
+            )):
                 return False
-            if not self._send_payload(
+            if not self._parse_response(self._send_payload(
                 '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":'
                 + str(self.current_rule)
                 + '}}}'
-            ):
+            )):
                 return False
 
         # Bulb combines brightness and on/off into single command
         else:
-            if not self._send_payload(
+            if not self._parse_response(self._send_payload(
                 '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"ignore_default":1,"on_off":'
                 + str(state)
                 + ',"transition_period":0,"brightness":'
                 + str(self.current_rule)
                 + '}}}'
-            ):
+            )):
                 return False
 
         self.print(f"brightness = {self.current_rule}, state = {state}")
@@ -149,3 +171,24 @@ class Tplink(DimmableLight):
 
         # Tell calling function that request succeeded
         return True
+
+    async def monitor(self):
+        '''Async coroutine that runs while device is enabled. Queries current
+        brightness from Tplink device every 5 seconds and updates current_rule
+        (allows user to change current_rule using dimmer on wall).
+        '''
+        self.log.debug("Starting Tplink.monitor coro")
+        try:
+            while True:
+                brightness = self._check_brightness()
+                if brightness and brightness != self.current_rule:
+                    self.log.debug("monitor: current rule changed to %s", brightness)
+                    self.current_rule = brightness
+
+                # Poll every 5 seconds
+                await asyncio.sleep(5)
+
+        # Device disabled, exit loop
+        except asyncio.CancelledError:
+            self.log.debug("Exiting Tplink.monitor coro")
+            return False
