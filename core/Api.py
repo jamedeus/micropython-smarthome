@@ -403,8 +403,16 @@ class Api:
         if not target:
             return TARGET_MISSING_ERROR
 
-        target.set_rule(target.scheduled_rule)
-        return {target.name: "Reverted to scheduled rule", "current_rule": target.current_rule}
+        if target.current_rule != target.scheduled_rule:
+            target.set_rule(target.scheduled_rule)
+            return {
+                target.name: "Reverted to scheduled rule",
+                "current_rule": target.current_rule
+            }
+        return {
+            target.name: "Rule already matches scheduled rule",
+            "current_rule": target.current_rule
+        }
 
     def reset_all_rules(self, args):
         '''Resets current_rule of all devices and sensors to scheduled_rule.'''
@@ -412,12 +420,14 @@ class Api:
         response["New rules"] = {}
 
         for device in app_context.config_instance.devices:
-            device.set_rule(device.scheduled_rule)
-            response["New rules"][device.name] = device.current_rule
+            if device.current_rule != device.scheduled_rule:
+                device.set_rule(device.scheduled_rule)
+                response["New rules"][device.name] = device.current_rule
 
         for sensor in app_context.config_instance.sensors:
-            sensor.set_rule(sensor.scheduled_rule)
-            response["New rules"][sensor.name] = sensor.current_rule
+            if sensor.current_rule != sensor.scheduled_rule:
+                sensor.set_rule(sensor.scheduled_rule)
+                response["New rules"][sensor.name] = sensor.current_rule
 
         return response
 

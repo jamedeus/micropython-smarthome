@@ -358,6 +358,16 @@ class TestApi(unittest.TestCase):
         )
         self.assertEqual(self.device1.current_rule, self.device1.scheduled_rule)
 
+        # Call again, confirm response indicates already at scheduled rule
+        response = self.send_command(['reset_rule', 'device1'])
+        self.assertEqual(
+            response,
+            {
+                'device1': 'Rule already matches scheduled rule',
+                'current_rule': self.device1.scheduled_rule
+            }
+        )
+
     def test_10_reset_all_rules(self):
         # Set placeholder rules
         self.device1.set_rule(78)
@@ -371,9 +381,7 @@ class TestApi(unittest.TestCase):
                 "New rules": {
                     "device1": self.device1.scheduled_rule,
                     "sensor1": self.sensor1.scheduled_rule,
-                    "sensor2": self.sensor2.scheduled_rule,
-                    "sensor3": self.sensor3.scheduled_rule,
-                    "sensor4": self.sensor4.scheduled_rule
+                    "sensor2": self.sensor2.scheduled_rule
                 }
             }
         )
