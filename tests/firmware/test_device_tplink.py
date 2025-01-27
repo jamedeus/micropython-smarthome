@@ -8,6 +8,27 @@ from cpython_only import cpython_only
 with open('config.json', 'r') as file:
     config = json.load(file)
 
+# Expected return value of get_attributes method just after instantiation
+expected_attributes = {
+    'ip': config["mock_receiver"]["ip"],
+    'nickname': 'device1',
+    '_type': 'dimmer',
+    'scheduled_rule': None,
+    'schedule': {},
+    'current_rule': None,
+    'default_rule': 42,
+    'min_rule': 1,
+    'max_rule': 100,
+    'fading': False,
+    'enabled': True,
+    "group": None,
+    'rule_queue': [],
+    'state': None,
+    'name': 'device1',
+    'triggered_by': [],
+    'monitor_task': True
+}
+
 
 class TestTplink(unittest.TestCase):
 
@@ -20,31 +41,36 @@ class TestTplink(unittest.TestCase):
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.fading)
 
-    def test_02_turn_off(self):
+    def test_02_get_attributes(self):
+        # Confirm get_attributes dict has expected values, class objects removed
+        attributes = self.instance.get_attributes()
+        self.assertEqual(attributes, expected_attributes)
+
+    def test_03_turn_off(self):
         self.assertTrue(self.instance.send(0))
 
         # Repeat as bulb
         self.instance._type = "bulb"
         self.assertTrue(self.instance.send(0))
 
-    def test_03_turn_on(self):
+    def test_04_turn_on(self):
         self.assertTrue(self.instance.send(1))
 
         # Repeat as dimmer
         self.instance._type = "dimmer"
         self.assertTrue(self.instance.send(1))
 
-    def test_04_turn_on_while_disabled(self):
+    def test_05_turn_on_while_disabled(self):
         self.instance.disable()
         self.assertTrue(self.instance.send(1))
         self.instance.enable()
 
-    def test_05_send_method_error(self):
+    def test_06_send_method_error(self):
         # Instantiate with invalid IP, confirm send method returns False
         test = Tplink("device1", "device1", "dimmer", 42, {}, 1, 100, "0.0.0.")
         self.assertFalse(test.send())
 
-    def test_06_parse_response(self):
+    def test_07_parse_response(self):
         # Should return True if response does not contain error
         self.assertTrue(self.instance._parse_response(
             '{"smartlife.iot.dimmer":{"set_brightness":{"err_code":0}}}'
@@ -62,7 +88,7 @@ class TestTplink(unittest.TestCase):
         self.assertFalse(self.instance._parse_response('{}'))
 
     @cpython_only
-    def test_07_send_detects_errors(self):
+    def test_08_send_detects_errors(self):
         from unittest.mock import patch
 
         # Simulate error response from dimmer, confirm send returns False
@@ -80,7 +106,7 @@ class TestTplink(unittest.TestCase):
             self.assertFalse(self.instance.send(1))
 
     @cpython_only
-    def test_08_check_device_status(self):
+    def test_09_check_device_status(self):
         from unittest.mock import patch
 
         # Simulate dimmer status object with dimmer turned on and brightness = 100
@@ -99,7 +125,7 @@ class TestTplink(unittest.TestCase):
             self.instance._check_device_status()
 
     @cpython_only
-    def test_17_monitor(self):
+    def test_10_monitor(self):
         from unittest.mock import patch
 
         # Task breaks monitor loop after first reading

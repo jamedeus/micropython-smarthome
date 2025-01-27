@@ -200,3 +200,15 @@ class Tplink(DimmableLight):
         except asyncio.CancelledError:
             self.log.debug("Exiting Tplink.monitor coro")
             return False
+
+    def get_attributes(self):
+        '''Return JSON-serializable dict containing all current attributes
+        Called by API get_attributes endpoint, more verbose than status
+        '''
+        attributes = super().get_attributes()
+        # Replace monitor_task with True or False
+        if attributes["monitor_task"] is not None:
+            attributes["monitor_task"] = True
+        else:
+            attributes["monitor_task"] = False
+        return attributes
