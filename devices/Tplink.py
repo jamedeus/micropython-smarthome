@@ -36,9 +36,6 @@ class Tplink(DimmableLight):
 
         self.ip = ip
 
-        # Stores parameters in dict when fade in progress
-        self.fading = False
-
         # Run monitor loop (requests status every 5 seconds to keep in sync if
         # user changes brightness from wall dimmer)
         self.monitor_task = asyncio.create_task(self.monitor())
@@ -99,7 +96,7 @@ class Tplink(DimmableLight):
         '''
 
         # Bool (returned when exception occurs in _send_payload)
-        if type(response) is bool:
+        if isinstance(response, bool):
             return False
         # Empty object {} (returned when request syntax incorrect)
         if len(response) == 2:
@@ -118,8 +115,7 @@ class Tplink(DimmableLight):
         try:
             if self._type == "dimmer":
                 return int(response.split('"brightness":')[1].split(',')[0])
-            else:
-                return int(response.split('"brightness":')[1].split('}')[0])
+            return int(response.split('"brightness":')[1].split('}')[0])
         except (AttributeError, IndexError, ValueError):
             self.log.error("Failed to parse brightness from: %s", response)
             return False

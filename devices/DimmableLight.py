@@ -241,13 +241,6 @@ class DimmableLight(Device):
         # Ensure device is enabled
         self.enabled = True
 
-        # Create fade timer
-        app_context.timer_instance.create(
-            fade_period,
-            self.fade,
-            self.name + "_fade"
-        )
-
         # Store fade parameters in dict, used by fade method below
         self.fading = {
             "started": app_context.timer_instance.epoch_now(),
@@ -258,6 +251,13 @@ class DimmableLight(Device):
             "scheduled": scheduled
         }
         self.log.debug("fade parameters: %s", self.fading)
+
+        # Create fade timer
+        app_context.timer_instance.create(
+            fade_period,
+            self.fade,
+            self.name + "_fade"
+        )
 
         return True
 
@@ -321,7 +321,7 @@ class DimmableLight(Device):
 
             # Fading down
             if self.fading["down"]:
-                new_rule = self.fading["starting_brightness"] + steps * -1
+                new_rule = self.fading["starting_brightness"] - steps
                 new_rule = max(new_rule, self.fading['target'])
 
             # Fading up
