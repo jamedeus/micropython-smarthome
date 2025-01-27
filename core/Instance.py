@@ -12,6 +12,7 @@ class Instance():
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
+      schedule:     Dict with timestamps/keywords as keys, rules as values
 
     Subclassed by the Device and Sensor base classes which implement functions
     specific to devices (lights, relays, etc) and sensors (sensors which turn
@@ -60,7 +61,7 @@ class Instance():
         # on when >=1 sensor condition is met, off when no conditions are met)
         self.group = None
 
-        # Dict with schedule rule timestamps/keywords as keysm, rules as values
+        # Dict with schedule rule timestamps/keywords as keys, rules as values
         # Used by Config._build_queue to create timers for each rule change
         self.schedule = schedule
 

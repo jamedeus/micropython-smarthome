@@ -19,6 +19,7 @@ class ApiTarget(Device):
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
+      schedule:     Dict with timestamps/keywords as keys, rules as values
       ip:           The IPv4 address of the target node (can be own IP address)
       port:         Only used in unit testing (allows overriding the API port)
 

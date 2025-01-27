@@ -12,6 +12,7 @@ class Sensor(Instance):
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
+      schedule:     Dict with timestamps/keywords as keys, rules as values
       targets:      List of device names (device1 etc) controlled by sensor
 
     Subclassed by all sensor drivers. Drivers must implement condition_met

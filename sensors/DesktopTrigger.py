@@ -14,6 +14,7 @@ class DesktopTrigger(SensorWithLoop):
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
+      schedule:     Dict with timestamps/keywords as keys, rules as values
       targets:      List of device names (device1 etc) controlled by sensor
       mode:         Either "screen" or "activity", determines sensor condition
       ip:           The IPv4 address of the Linux computer

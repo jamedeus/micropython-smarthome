@@ -13,6 +13,7 @@ class LedStrip(DimmableLight):
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
+      schedule:     Dict with timestamps/keywords as keys, rules as values
       min_rule:     The minimum supported integer rule, used by rule validator
       max_rule:     The maximum supported integer rule, used by rule validator
       pin:          The ESP32 pin connected to the MOSFET gate pin

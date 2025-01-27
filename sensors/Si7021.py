@@ -15,6 +15,7 @@ class Si7021(Thermostat):
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
+      schedule:     Dict with timestamps/keywords as keys, rules as values
       mode:         Must be "cool" (turn on when temperature > current_rule) or
                     "heat" (turn on when temperature < current_rule)
       tolerance:    Number between 0.1 and 10, determines buffer above and

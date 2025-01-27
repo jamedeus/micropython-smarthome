@@ -17,6 +17,7 @@ class LoadCell(SensorWithLoop):
       _type:        Instance type, determines driver class and frontend UI
       enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
+      schedule:     Dict with timestamps/keywords as keys, rules as values
       targets:      List of device names (device1 etc) controlled by sensor
       pin_data:     The ESP32 pin connected to the HX711 data pin
       pin_clock:    The ESP32 pin connected to the HX711 clock pin
