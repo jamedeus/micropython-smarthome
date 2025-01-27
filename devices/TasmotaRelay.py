@@ -1,3 +1,4 @@
+import asyncio
 import requests
 from HttpGet import HttpGet
 
@@ -24,6 +25,10 @@ class TasmotaRelay(HttpGet):
     def __init__(self, name, nickname, _type, default_rule, schedule, ip):
         super().__init__(name, nickname, _type, default_rule, schedule, ip, ON_PATH, OFF_PATH)
 
+        # Run monitor loop (requests power state every 5 seconds to keep in
+        # sync if user flips wall switch)
+        self.monitor_task = asyncio.create_task(self.monitor())
+
         self.log.info("Instantiated, ip=%s", self.uri)
 
     def check_state(self):
@@ -36,4 +41,29 @@ class TasmotaRelay(HttpGet):
             ).json()["POWER"]
         except OSError:
             self.log.error("network error while checking state")
-            return "Network Error"
+            raise RuntimeError
+
+    async def monitor(self):
+        '''Async coroutine that runs while device is enabled. Queries power
+        state from Tasmota device every 5 seconds and updates self.state (keeps
+        in sync with actual device when user uses wall switch).
+        '''
+        self.log.debug("Starting TasmotaRelay.monitor coro")
+        try:
+            while True:
+                try:
+                    power = self.check_state() == "ON"
+                    if power != self.state:
+                        self.log.debug("monitor: power state changed to %s", power)
+                        self.state = power
+                except RuntimeError:
+                    # Error during request, ignore
+                    pass
+
+                # Poll every 5 seconds
+                await asyncio.sleep(5)
+
+        # Device disabled, exit loop
+        except asyncio.CancelledError:
+            self.log.debug("Exiting TasmotaRelay.monitor coro")
+            return False
