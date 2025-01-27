@@ -107,18 +107,22 @@ class Tplink(DimmableLight):
         # If next character after "err_code": is not 0 an error occurred
         return False
 
-    def _check_brightness(self):
-        '''Requests status object from Tplink device, parses current brightness
-        and returns as integer.
+    def _check_device_status(self):
+        '''Requests status object from Tplink device, parses power state and
+        current brightness, returns power state (bool) and brightness (int).
         '''
         response = self._send_payload('{"system":{"get_sysinfo":{}}}')
         try:
             if self._type == "dimmer":
-                return int(response.split('"brightness":')[1].split(',')[0])
-            return int(response.split('"brightness":')[1].split('}')[0])
+                power = bool(int(response.split('"relay_state":')[1].split(',')[0]))
+                brightness = int(response.split('"brightness":')[1].split(',')[0])
+            else:
+                power = bool(int(response.split('"on_off":')[1].split(',')[0]))
+                brightness = int(response.split('"brightness":')[1].split('}')[0])
+            return power, brightness
         except (AttributeError, IndexError, ValueError):
-            self.log.error("Failed to parse brightness from: %s", response)
-            return False
+            self.log.error("Failed to parse status response: %s", response)
+            raise RuntimeError  # pylint: disable=W0707
 
     def send(self, state=1):
         '''Makes API call to turn Tplink device ON if argument is True.
@@ -169,17 +173,25 @@ class Tplink(DimmableLight):
         return True
 
     async def monitor(self):
-        '''Async coroutine that runs while device is enabled. Queries current
-        brightness from Tplink device every 5 seconds and updates current_rule
-        (allows user to change current_rule using dimmer on wall).
+        '''Async coroutine that runs while device is enabled. Queries power
+        state and brightness from Tplink device every 5 seconds and updates
+        self.state and self.current_rule respectively (keeps in sync with
+        actual device when user uses dimmer on wall).
         '''
         self.log.debug("Starting Tplink.monitor coro")
         try:
             while True:
-                brightness = self._check_brightness()
-                if brightness and brightness != self.current_rule:
-                    self.log.debug("monitor: current rule changed to %s", brightness)
-                    self.current_rule = brightness
+                try:
+                    power, brightness = self._check_device_status()
+                    if brightness != self.current_rule:
+                        self.log.debug("monitor: current rule changed to %s", brightness)
+                        self.current_rule = brightness
+                    if power != self.state:
+                        self.log.debug("monitor: power state changed to %s", power)
+                        self.state = power
+                except RuntimeError:
+                    # Error during request, ignore
+                    pass
 
                 # Poll every 5 seconds
                 await asyncio.sleep(5)
