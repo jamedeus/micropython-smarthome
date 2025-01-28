@@ -27,22 +27,31 @@ class MotionSensor(Sensor):
     The default_rule must be an integer or float (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, targets, pin):
-        super().__init__(name, nickname, _type, True, default_rule, schedule, targets)
-
-        # Prevent instantiating with invalid default_rule
-        if str(self.default_rule).lower() in ("enabled", "disabled"):
-            self.log.critical("Invalid default_rule: %s", self.default_rule)
-            raise AttributeError
-
+    def __init__(self, name, nickname, _type, default_rule, schedule, targets, pin, **kwargs):
         # Pin setup
         self.sensor = Pin(int(pin), Pin.IN, Pin.PULL_DOWN)
 
         # Motion detection state from last hardware interrupt
         self.motion = False
 
+        super().__init__(
+            name=name,
+            nickname=nickname,
+            _type=_type,
+            enabled=True,
+            default_rule=default_rule,
+            schedule=schedule,
+            targets=targets,
+            **kwargs
+        )
+
         # Create hardware interrupt
         self.enable()
+
+        # Prevent instantiating with invalid default_rule
+        if str(self.default_rule).lower() in ("enabled", "disabled"):
+            self.log.critical("Invalid default_rule: %s", self.default_rule)
+            raise AttributeError
 
         self.log.info("Instantiated, pin=%s", pin)
 

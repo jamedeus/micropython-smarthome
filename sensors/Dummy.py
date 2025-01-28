@@ -22,8 +22,17 @@ class Dummy(Sensor):
     The default_rule must be "on" or "off" (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, targets):
-        super().__init__(name, nickname, _type, True, default_rule, schedule, targets)
+    def __init__(self, name, nickname, _type, default_rule, schedule, targets, **kwargs):
+        super().__init__(
+            name=name,
+            nickname=nickname,
+            _type=_type,
+            enabled=True,
+            default_rule=default_rule,
+            schedule=schedule,
+            targets=targets,
+            **kwargs
+        )
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):

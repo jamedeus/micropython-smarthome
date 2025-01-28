@@ -28,9 +28,7 @@ class LedStrip(DimmableLight):
     The default_rule must be an integer or fade (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, min_rule, max_rule, pin):
-        super().__init__(name, nickname, _type, True, default_rule, schedule, min_rule, max_rule)
-
+    def __init__(self, name, nickname, _type, default_rule, schedule, min_rule, max_rule, pin, **kwargs):
         # TODO - Find optimal PWM freq. Default (5 KHz) causes coil whine in
         # downstairs bathroom at 128 duty cycle. Raising significantly reduces
         # max brightness (exceed MOSFET switching time), may need different power supply?
@@ -45,6 +43,18 @@ class LedStrip(DimmableLight):
 
         # Store current brightness, allows smooth transition when rule changes
         self.bright = 0
+
+        super().__init__(
+            name=name,
+            nickname=nickname,
+            _type=_type,
+            enabled=True,
+            default_rule=default_rule,
+            schedule=schedule,
+            min_rule=min_rule,
+            max_rule=max_rule,
+            **kwargs
+        )
 
         self.log.info("Instantiated, pin=%s", pin)
 

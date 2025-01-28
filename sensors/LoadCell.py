@@ -27,17 +27,28 @@ class LoadCell(SensorWithLoop):
     The default_rule must be an integer or float (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, targets, pin_data, pin_clock):
-        super().__init__(name, nickname, _type, True, default_rule, schedule, targets)
-
-        # Instantiate sensor, tare
+    def __init__(self, name, nickname, _type, default_rule, schedule, targets, pin_data, pin_clock, **kwargs):
+        # Instantiate sensor
         data = Pin(int(pin_data), Pin.IN, Pin.PULL_DOWN)
         clock = Pin(int(pin_clock), Pin.OUT)
         self.sensor = HX711(clock, data)
-        self.tare_sensor()
 
         # Track output of condition_met (set by monitor callback)
         self.current = None
+
+        super().__init__(
+            name=name,
+            nickname=nickname,
+            _type=_type,
+            enabled=True,
+            default_rule=default_rule,
+            schedule=schedule,
+            targets=targets,
+            **kwargs
+        )
+
+        # Tare sensor
+        self.tare_sensor()
 
         # Start monitor loop (checks if threshold met every second)
         self.monitor_task = asyncio.create_task(self.monitor())

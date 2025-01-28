@@ -31,12 +31,12 @@ class SensorWithLoop(Sensor):
     be supported by replacing the validator method in subclass.
     '''
 
-    def __init__(self, name, nickname, _type, enabled, default_rule, schedule, targets):
-        super().__init__(name, nickname, _type, enabled, default_rule, schedule, targets)
-
+    def __init__(self, **kwargs):
         # Stores monitor loop asyncio.Task object (subclass init method should
         # assign this to return value of asyncio.create_task(self.monitor()))
         self.monitor_task = None
+
+        super().__init__(**kwargs)
 
     def enable(self):
         '''Sets enabled bool to True (allows sensor to be checked), ensures

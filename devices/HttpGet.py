@@ -34,16 +34,9 @@ class HttpGet(Device):
     Supports universal rules ("enabled" and "disabled").
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, uri, on_path, off_path):
-        super().__init__(name, nickname, _type, True, default_rule, schedule)
-
+    def __init__(self, uri, on_path, off_path, **kwargs):
         # Can be IP or domain, remove protocol if present
         self.uri = str(uri).replace('http://', '').replace('https://', '')
-
-        # Prevent instantiating with invalid URI
-        if not re.match(uri_pattern, self.uri):
-            self.log.critical("Received invalid URI: %s", self.uri)
-            raise AttributeError
 
         # Paths added to URI for on, off respectively
         self.on_path = on_path
@@ -54,6 +47,13 @@ class HttpGet(Device):
             self.on_path = self.on_path[1:]
         if self.off_path.startswith('/'):
             self.off_path = self.off_path[1:]
+
+        super().__init__(**kwargs)
+
+        # Prevent instantiating with invalid URI
+        if not re.match(uri_pattern, self.uri):
+            self.log.critical("Received invalid URI: %s", self.uri)
+            raise AttributeError
 
         self.log.info("Instantiated, uri=%s", self.uri)
 

@@ -29,9 +29,7 @@ class ApiTarget(Device):
     The default_rule must be a dict (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, ip, port=8123):
-        super().__init__(name, nickname, _type, True, default_rule, schedule)
-
+    def __init__(self, name, nickname, _type, default_rule, schedule, ip, port=8123, **kwargs):
         # IP that API command is sent to
         self.ip = ip
 
@@ -41,6 +39,16 @@ class ApiTarget(Device):
         # IP of ESP32, used to detect self-target
         self.node_ip = None
         self.get_node_ip()
+
+        super().__init__(
+            name=name,
+            nickname=nickname,
+            _type=_type,
+            enabled=True,
+            default_rule=default_rule,
+            schedule=schedule,
+            **kwargs
+        )
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):

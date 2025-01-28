@@ -22,7 +22,7 @@ class Instance():
     be supported by replacing the validator method in subclass.
     '''
 
-    def __init__(self, name, nickname, _type, enabled, default_rule, schedule):
+    def __init__(self, name, nickname, _type, enabled, default_rule, schedule, **kwargs):
 
         # Set name for module's log lines
         self.log = logging.getLogger(f"{name} ({_type})")
@@ -69,6 +69,8 @@ class Instance():
         # All schedule rule timers call the next_rule method, which applies the
         # next rule in queue.
         self.rule_queue = []
+
+        super().__init__(**kwargs)
 
     def enable(self):
         '''Sets enabled bool to True (allows sensors to be checked, devices to

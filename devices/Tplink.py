@@ -5,7 +5,7 @@ from DimmableLight import DimmableLight
 from DeviceWithLoop import DeviceWithLoop
 
 
-class Tplink(DeviceWithLoop, DimmableLight):
+class Tplink(DimmableLight, DeviceWithLoop):
     '''Driver for TP-Link Kasa dimmers and smart bulbs. Makes API calls to set
     power state and brightness when send method is called.
 
@@ -33,11 +33,20 @@ class Tplink(DeviceWithLoop, DimmableLight):
     The default_rule must be an integer or fade (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, min_rule, max_rule, ip):
-        DeviceWithLoop.__init__(self, name, nickname, _type, True, default_rule, schedule)
-        DimmableLight.__init__(self, name, nickname, _type, True, default_rule, schedule, min_rule, max_rule)
-
+    def __init__(self, name, nickname, _type, default_rule, schedule, min_rule, max_rule, ip, **kwargs):
         self.ip = ip
+
+        super().__init__(
+            name=name,
+            nickname=nickname,
+            _type=_type,
+            enabled=True,
+            default_rule=default_rule,
+            schedule=schedule,
+            min_rule=min_rule,
+            max_rule=max_rule,
+            **kwargs
+        )
 
         # Run monitor loop (requests status every 5 seconds to keep in sync if
         # user changes brightness from wall dimmer)
@@ -45,35 +54,19 @@ class Tplink(DeviceWithLoop, DimmableLight):
 
         self.log.info("Instantiated, ip=%s", self.ip)
 
-    def set_rule(self, rule, scheduled=False):
-        '''Takes new rule, validates, if valid sets as current_rule (and
-        scheduled_rule if scheduled arg is True) and calls apply_new_rule.
-
-        Args:
-          rule:      The new rule, will be set as current_rule if valid
-          scheduled: Optional, if True also sets scheduled_rule if rule valid
-
-        If fade rule received (syntax: fade/target_rule/duration_seconds) calls
-        _start_fade method (creates interrupts that run when each step is due).
-
-        Aborts in-progress fade if it receives an integer rule that causes rule
-        to move in opposite direction of fade (eg if new rule is greater than
-        current_rule while fading down).
+    def enable(self):
+        '''Sets enabled bool to True (allows device to be turned on), ensures
+        current_rule contains a usable value, and turns the device on if group
+        state is True (one or more sensor targeting device has condition met).
+        Restarts monitor loop if stopped (poll device for external changes).
         '''
-        return DimmableLight.set_rule(self, rule, scheduled)
+        return DeviceWithLoop.enable(self)
 
-    def rule_validator(self, rule):
-        '''Accepts universal rules ("enabled" and "disabled"), integer rules
-        between self.min_rule and self.max_rule, and rules that start gradual
-        fade (syntax: fade/target_rule/duration_seconds).
-
-        Takes rule, returns rule if valid (may return modified rule, eg cast to
-        lowercase), return False if rule is invalid.
-
-        Can be extended to support other rules by replacing the validator
-        method (called if rule is neither "enabled" nor "disabled").
+    def disable(self):
+        '''Sets enabled bool to False (prevents device from being turned on),
+        turns device off if currently turned on, and stops monitor loop.
         '''
-        return DimmableLight.rule_validator(self, rule)
+        return DeviceWithLoop.disable(self)
 
     def encrypt(self, string):
         '''Encrypts an API call using TP-Link's very weak algorithm.'''
@@ -234,9 +227,8 @@ class Tplink(DeviceWithLoop, DimmableLight):
             self.log.debug("Exiting Tplink.monitor coro")
             return False
 
-    def get_status(self):
-        '''Return JSON-serializable dict containing status information.
-        Called by Config.get_status to build API status endpoint response.
-        Contains all attributes displayed on the web frontend.
+    def get_attributes(self):
+        '''Return JSON-serializable dict containing all current attributes
+        Called by API get_attributes endpoint, more verbose than status
         '''
-        return DimmableLight.get_status(self)
+        return DeviceWithLoop.get_attributes(self)

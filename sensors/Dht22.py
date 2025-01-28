@@ -39,12 +39,24 @@ class Dht22(Thermostat):
     The default_rule must be a float (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, mode, tolerance, units, targets, pin):
+    def __init__(self, name, nickname, _type, default_rule, schedule, mode, tolerance, units, targets, pin, **kwargs):
         # Instantiate pin and sensor driver
         self.temp_sensor = dht.DHT22(Pin(int(pin)))
 
         # Set mode, tolerance, units, current_rule, create monitor task
-        super().__init__(name, nickname, _type, default_rule, schedule, mode, tolerance, units, targets)
+        super().__init__(
+            name=name,
+            nickname=nickname,
+            _type=_type,
+            enabled=True,
+            default_rule=default_rule,
+            schedule=schedule,
+            mode=mode,
+            tolerance=tolerance,
+            units=units,
+            targets=targets,
+            **kwargs
+        )
         self.log.info("Instantiated, units=%s, tolerance=%s", units, tolerance)
 
     def get_raw_temperature(self):

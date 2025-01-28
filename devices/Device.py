@@ -20,9 +20,7 @@ class Device(Instance):
     be supported by replacing the validator method in subclass.
     '''
 
-    def __init__(self, name, nickname, _type, enabled, default_rule, schedule):
-        super().__init__(name, nickname, _type, enabled, default_rule, schedule)
-
+    def __init__(self, name, nickname, _type, enabled, default_rule, schedule, **kwargs):
         # Track device on/off state, prevent turning on/off when already on/off
         # Included in status object, used by API to display device state
         self.state = None
@@ -30,6 +28,16 @@ class Device(Instance):
         # List of Sensor instances which control the device, populated by
         # Config when sensors are instantiated
         self.triggered_by = []
+
+        super().__init__(
+            name=name,
+            nickname=nickname,
+            _type=_type,
+            enabled=enabled,
+            default_rule=default_rule,
+            schedule=schedule,
+            **kwargs
+        )
 
     def enable(self):
         '''Sets enabled bool to True (allows device to be turned on), ensures

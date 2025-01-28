@@ -39,13 +39,25 @@ class Si7021(Thermostat):
     The default_rule must be a float (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, mode, tolerance, units, targets):
+    def __init__(self, name, nickname, _type, default_rule, schedule, mode, tolerance, units, targets, **kwargs):
         # Setup I2C interface
         self.i2c = SoftI2C(Pin(22), Pin(21))
         self.temp_sensor = si7021.Si7021(self.i2c)
 
         # Set mode, tolerance, units, current_rule, create monitor task
-        super().__init__(name, nickname, _type, default_rule, schedule, mode, tolerance, units, targets)
+        super().__init__(
+            name=name,
+            nickname=nickname,
+            _type=_type,
+            enabled=True,
+            default_rule=default_rule,
+            schedule=schedule,
+            mode=mode,
+            tolerance=tolerance,
+            units=units,
+            targets=targets,
+            **kwargs
+        )
         self.log.info("Instantiated, units=%s, tolerance=%s", units, tolerance)
 
     def get_raw_temperature(self):

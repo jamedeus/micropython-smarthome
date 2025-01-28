@@ -53,14 +53,7 @@ class Thermostat(SensorWithLoop):
     The default_rule must be a float (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, mode, tolerance, units, targets):
-        super().__init__(name, nickname, _type, True, default_rule, schedule, targets)
-
-        # Prevent instantiating with invalid default_rule
-        if str(self.default_rule).lower() in ("enabled", "disabled"):
-            self.log.critical("Invalid default_rule: %s", self.default_rule)
-            raise AttributeError
-
+    def __init__(self, mode, tolerance, units, **kwargs):
         # Set cooling or heating mode, determines when targets turn on/off
         # Cooling: Turn ON when measured temp exceeds rule, turn OFF when below rule
         # Heating: Turn OFF when measured temp exceeds rule, turn ON when below rule
@@ -89,6 +82,13 @@ class Thermostat(SensorWithLoop):
         # Track output of condition_met (set by monitor coro, calls
         # refresh_group when current changes instead of every read)
         self.current = None
+
+        super().__init__(**kwargs)
+
+        # Prevent instantiating with invalid default_rule
+        if str(self.default_rule).lower() in ("enabled", "disabled"):
+            self.log.critical("Invalid default_rule: %s", self.default_rule)
+            raise AttributeError
 
         # Start monitor loop (checks temp every 5 seconds)
         self.monitor_task = asyncio.create_task(self.monitor())

@@ -31,9 +31,7 @@ class DesktopTrigger(SensorWithLoop):
     met when the screen is off, regardless of last user activity.
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, targets, mode, ip, port=5000):
-        super().__init__(name, nickname, _type, True, default_rule, schedule, targets)
-
+    def __init__(self, name, nickname, _type, default_rule, schedule, targets, mode, ip, port=5000, **kwargs):
         self.uri = f"{ip}:{port}"
 
         # Current monitor state
@@ -44,6 +42,17 @@ class DesktopTrigger(SensorWithLoop):
             self.mode = mode.lower()
         else:
             raise ValueError('Invalid mode, must be "screen" or "activity"')
+
+        super().__init__(
+            name=name,
+            nickname=nickname,
+            _type=_type,
+            enabled=True,
+            default_rule=default_rule,
+            schedule=schedule,
+            targets=targets,
+            **kwargs
+        )
 
         # Find desktop target so monitor loop (below) can update target's state
         # attribute when screen turns on/off

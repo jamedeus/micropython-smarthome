@@ -23,9 +23,7 @@ class Switch(Sensor):
     Supports universal rules ("enabled" and "disabled").
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, targets, pin):
-        super().__init__(name, nickname, _type, True, default_rule, schedule, targets)
-
+    def __init__(self, name, nickname, _type, default_rule, schedule, targets, pin, **kwargs):
         self.switch = Pin(int(pin), Pin.IN, Pin.PULL_DOWN)
 
         # Create hardware interrupt, refresh group when switch changes state
@@ -36,6 +34,17 @@ class Switch(Sensor):
 
         # Track whether switch open or closed (allows checking state via API)
         self.switch_closed = bool(self.switch.value())
+
+        super().__init__(
+            name=name,
+            nickname=nickname,
+            _type=_type,
+            enabled=True,
+            default_rule=default_rule,
+            schedule=schedule,
+            targets=targets,
+            **kwargs
+        )
 
         self.log.info("Instantiated, pin=%s", pin)
 

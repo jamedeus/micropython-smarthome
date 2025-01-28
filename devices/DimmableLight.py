@@ -32,14 +32,14 @@ class DimmableLight(Device):
     The default_rule must be an integer or fade (not universal rule).
     '''
 
-    def __init__(self, name, nickname, _type, enabled, default_rule, schedule, min_rule, max_rule):
-        Device.__init__(self, name, nickname, _type, enabled, default_rule, schedule)
-
+    def __init__(self, min_rule, max_rule, **kwargs):
         self.min_rule = int(min_rule)
         self.max_rule = int(max_rule)
 
         # Store parameters in dict while fade in progress
         self.fading = False
+
+        super().__init__(**kwargs)
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):

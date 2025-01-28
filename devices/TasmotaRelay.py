@@ -8,7 +8,7 @@ ON_PATH = 'cm?cmnd=Power%20On'
 OFF_PATH = 'cm?cmnd=Power%20Off'
 
 
-class TasmotaRelay(DeviceWithLoop, HttpGet):
+class TasmotaRelay(HttpGet, DeviceWithLoop):
     '''Driver for smart relays running Tasmota. Makes Tasmota API calls when
     send method called (turn ON if arg is True, turn OFF if arg is False).
 
@@ -24,15 +24,39 @@ class TasmotaRelay(DeviceWithLoop, HttpGet):
     Supports universal rules ("enabled" and "disabled").
     '''
 
-    def __init__(self, name, nickname, _type, default_rule, schedule, ip):
-        DeviceWithLoop.__init__(self, name, nickname, _type, True, default_rule, schedule)
-        HttpGet.__init__(self, name, nickname, _type, default_rule, schedule, ip, ON_PATH, OFF_PATH)
+    def __init__(self, name, nickname, _type, default_rule, schedule, ip, **kwargs):
+        super().__init__(
+            name=name,
+            nickname=nickname,
+            _type=_type,
+            enabled=True,
+            default_rule=default_rule,
+            schedule=schedule,
+            uri=ip,
+            on_path=ON_PATH,
+            off_path=OFF_PATH,
+            **kwargs
+        )
 
         # Run monitor loop (requests power state every 5 seconds to keep in
         # sync if user flips wall switch)
         self.monitor_task = asyncio.create_task(self.monitor())
 
         self.log.info("Instantiated, ip=%s", self.uri)
+
+    def enable(self):
+        '''Sets enabled bool to True (allows device to be turned on), ensures
+        current_rule contains a usable value, and turns the device on if group
+        state is True (one or more sensor targeting device has condition met).
+        Restarts monitor loop if stopped (poll device for external changes).
+        '''
+        return DeviceWithLoop.enable(self)
+
+    def disable(self):
+        '''Sets enabled bool to False (prevents device from being turned on),
+        turns device off if currently turned on, and stops monitor loop.
+        '''
+        return DeviceWithLoop.disable(self)
 
     def check_state(self):
         '''Makes API call to get Tasmota relay power state, return response'''
@@ -71,8 +95,8 @@ class TasmotaRelay(DeviceWithLoop, HttpGet):
             self.log.debug("Exiting TasmotaRelay.monitor coro")
             return False
 
-    def send(self, state=1):
-        '''Makes request to ON action URL if argument is True.
-        Makes request to OFF action URL if argument is False.
+    def get_attributes(self):
+        '''Return JSON-serializable dict containing all current attributes
+        Called by API get_attributes endpoint, more verbose than status
         '''
-        return HttpGet.send(self, state)
+        return DeviceWithLoop.get_attributes(self)
