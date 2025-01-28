@@ -1,13 +1,14 @@
 import asyncio
 import requests
 from HttpGet import HttpGet
+from DeviceWithLoop import DeviceWithLoop
 
 # Paths used by Tasmota to turn on, off
 ON_PATH = 'cm?cmnd=Power%20On'
 OFF_PATH = 'cm?cmnd=Power%20Off'
 
 
-class TasmotaRelay(HttpGet):
+class TasmotaRelay(DeviceWithLoop, HttpGet):
     '''Driver for smart relays running Tasmota. Makes Tasmota API calls when
     send method called (turn ON if arg is True, turn OFF if arg is False).
 
@@ -24,7 +25,8 @@ class TasmotaRelay(HttpGet):
     '''
 
     def __init__(self, name, nickname, _type, default_rule, schedule, ip):
-        super().__init__(name, nickname, _type, default_rule, schedule, ip, ON_PATH, OFF_PATH)
+        DeviceWithLoop.__init__(self, name, nickname, _type, True, default_rule, schedule)
+        HttpGet.__init__(self, name, nickname, _type, default_rule, schedule, ip, ON_PATH, OFF_PATH)
 
         # Run monitor loop (requests power state every 5 seconds to keep in
         # sync if user flips wall switch)
@@ -69,15 +71,8 @@ class TasmotaRelay(HttpGet):
             self.log.debug("Exiting TasmotaRelay.monitor coro")
             return False
 
-    def get_attributes(self):
-        '''Return JSON-serializable dict containing all current attributes
-        Called by API get_attributes endpoint, more verbose than status
+    def send(self, state=1):
+        '''Makes request to ON action URL if argument is True.
+        Makes request to OFF action URL if argument is False.
         '''
-        attributes = super().get_attributes()
-        # Replace monitor_task with True or False
-        if attributes["monitor_task"] is not None:
-            attributes["monitor_task"] = True
-        else:
-            attributes["monitor_task"] = False
-        return attributes
-
+        return HttpGet.send(self, state)

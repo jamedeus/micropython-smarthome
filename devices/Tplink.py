@@ -2,9 +2,10 @@ import socket
 import asyncio
 from struct import pack
 from DimmableLight import DimmableLight
+from DeviceWithLoop import DeviceWithLoop
 
 
-class Tplink(DimmableLight):
+class Tplink(DeviceWithLoop, DimmableLight):
     '''Driver for TP-Link Kasa dimmers and smart bulbs. Makes API calls to set
     power state and brightness when send method is called.
 
@@ -33,7 +34,8 @@ class Tplink(DimmableLight):
     '''
 
     def __init__(self, name, nickname, _type, default_rule, schedule, min_rule, max_rule, ip):
-        super().__init__(name, nickname, _type, True, default_rule, schedule, min_rule, max_rule)
+        DeviceWithLoop.__init__(self, name, nickname, _type, True, default_rule, schedule)
+        DimmableLight.__init__(self, name, nickname, _type, True, default_rule, schedule, min_rule, max_rule)
 
         self.ip = ip
 
@@ -42,6 +44,36 @@ class Tplink(DimmableLight):
         self.monitor_task = asyncio.create_task(self.monitor())
 
         self.log.info("Instantiated, ip=%s", self.ip)
+
+    def set_rule(self, rule, scheduled=False):
+        '''Takes new rule, validates, if valid sets as current_rule (and
+        scheduled_rule if scheduled arg is True) and calls apply_new_rule.
+
+        Args:
+          rule:      The new rule, will be set as current_rule if valid
+          scheduled: Optional, if True also sets scheduled_rule if rule valid
+
+        If fade rule received (syntax: fade/target_rule/duration_seconds) calls
+        _start_fade method (creates interrupts that run when each step is due).
+
+        Aborts in-progress fade if it receives an integer rule that causes rule
+        to move in opposite direction of fade (eg if new rule is greater than
+        current_rule while fading down).
+        '''
+        return DimmableLight.set_rule(self, rule, scheduled)
+
+    def rule_validator(self, rule):
+        '''Accepts universal rules ("enabled" and "disabled"), integer rules
+        between self.min_rule and self.max_rule, and rules that start gradual
+        fade (syntax: fade/target_rule/duration_seconds).
+
+        Takes rule, returns rule if valid (may return modified rule, eg cast to
+        lowercase), return False if rule is invalid.
+
+        Can be extended to support other rules by replacing the validator
+        method (called if rule is neither "enabled" nor "disabled").
+        '''
+        return DimmableLight.rule_validator(self, rule)
 
     def encrypt(self, string):
         '''Encrypts an API call using TP-Link's very weak algorithm.'''
@@ -202,14 +234,9 @@ class Tplink(DimmableLight):
             self.log.debug("Exiting Tplink.monitor coro")
             return False
 
-    def get_attributes(self):
-        '''Return JSON-serializable dict containing all current attributes
-        Called by API get_attributes endpoint, more verbose than status
+    def get_status(self):
+        '''Return JSON-serializable dict containing status information.
+        Called by Config.get_status to build API status endpoint response.
+        Contains all attributes displayed on the web frontend.
         '''
-        attributes = super().get_attributes()
-        # Replace monitor_task with True or False
-        if attributes["monitor_task"] is not None:
-            attributes["monitor_task"] = True
-        else:
-            attributes["monitor_task"] = False
-        return attributes
+        return DimmableLight.get_status(self)
