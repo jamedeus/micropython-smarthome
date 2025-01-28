@@ -24,7 +24,14 @@ class TestSensorWithLoop(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Create test instance, add rule to queue
-        cls.instance = SensorWithLoop("sensor1", "Test", "sensor", True, "enabled", {}, [])
+        cls.instance = SensorWithLoop(
+            name="sensor1",
+            nickname="Test",
+            _type="sensor",
+            default_rule="enabled",
+            schedule={},
+            targets=[]
+        )
         cls.instance.rule_queue = ["disabled"]
         cls.instance.current_rule = "enabled"
         cls.instance.scheduled_rule = "enabled"
