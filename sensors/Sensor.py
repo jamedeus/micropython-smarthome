@@ -10,7 +10,6 @@ class Sensor(Instance):
       name:         Unique, sequential config name (sensor1, sensor2, etc)
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
-      enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
       schedule:     Dict with timestamps/keywords as keys, rules as values
       targets:      List of device names (device1 etc) controlled by sensor
@@ -23,7 +22,7 @@ class Sensor(Instance):
     be supported by replacing the validator method in subclass.
     '''
 
-    def __init__(self, name, nickname, _type, enabled, default_rule, schedule, targets, **kwargs):
+    def __init__(self, name, nickname, _type, default_rule, schedule, targets, **kwargs):
         # List of Device instances controlled by Sensor (Config.build_groups
         # adds sensors with identical targets attribute to same Group instance)
         self.targets = targets
@@ -32,7 +31,6 @@ class Sensor(Instance):
             name=name,
             nickname=nickname,
             _type=_type,
-            enabled=enabled,
             default_rule=default_rule,
             schedule=schedule,
             **kwargs

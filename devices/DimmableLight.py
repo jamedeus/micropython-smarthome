@@ -12,7 +12,6 @@ class DimmableLight(Device):
       name:         Unique, sequential config name (device1, device2, etc)
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
-      enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
       schedule:     Dict with timestamps/keywords as keys, rules as values
       min_rule:     The minimum supported integer rule, used by rule validator

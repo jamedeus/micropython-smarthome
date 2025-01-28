@@ -10,7 +10,6 @@ class Instance():
       name:         Unique, sequential config name (device1, sensor3, etc)
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
-      enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
       schedule:     Dict with timestamps/keywords as keys, rules as values
 
@@ -22,7 +21,7 @@ class Instance():
     be supported by replacing the validator method in subclass.
     '''
 
-    def __init__(self, name, nickname, _type, enabled, default_rule, schedule, **kwargs):
+    def __init__(self, name, nickname, _type, default_rule, schedule, **kwargs):
 
         # Set name for module's log lines
         self.log = logging.getLogger(f"{name} ({_type})")
@@ -39,7 +38,7 @@ class Instance():
 
         # Bool, set with enable/disable methods
         # Determines whether instance affects other instances in group
-        self.enabled = enabled
+        self.enabled = True
 
         # The rule currently being followed, has different effects depending on subclass
         # - Devices: determines whether device can be turned on, device brightness, etc

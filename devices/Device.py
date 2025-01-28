@@ -9,7 +9,6 @@ class Device(Instance):
       name:         Unique, sequential config name (device1, device2, etc)
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
-      enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
       schedule:     Dict with timestamps/keywords as keys, rules as values
 
@@ -20,7 +19,7 @@ class Device(Instance):
     be supported by replacing the validator method in subclass.
     '''
 
-    def __init__(self, name, nickname, _type, enabled, default_rule, schedule, **kwargs):
+    def __init__(self, name, nickname, _type, default_rule, schedule, **kwargs):
         # Track device on/off state, prevent turning on/off when already on/off
         # Included in status object, used by API to display device state
         self.state = None
@@ -33,7 +32,6 @@ class Device(Instance):
             name=name,
             nickname=nickname,
             _type=_type,
-            enabled=enabled,
             default_rule=default_rule,
             schedule=schedule,
             **kwargs

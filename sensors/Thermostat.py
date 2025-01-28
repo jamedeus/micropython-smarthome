@@ -33,7 +33,6 @@ class Thermostat(SensorWithLoop):
       name:         Unique, sequential config name (device1, device2, etc)
       nickname:     User-configured friendly name shown on frontend
       _type:        Instance type, determines driver class and frontend UI
-      enabled:      Initial enable state (True or False)
       default_rule: Fallback rule used when no other valid rules are available
       schedule:     Dict with timestamps/keywords as keys, rules as values
       mode:         Must be "cool" (turn on when temperature > current_rule) or
