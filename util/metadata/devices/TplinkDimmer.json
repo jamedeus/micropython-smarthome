@@ -5,6 +5,7 @@
     "dependencies": [
         "devices/Tplink.py",
         "devices/DimmableLight.py",
+        "devices/DeviceWithLoop.py",
         "devices/Device.py",
         "core/Instance.py"
     ],

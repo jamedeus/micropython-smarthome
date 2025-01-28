@@ -5,6 +5,7 @@
     "dependencies": [
         "devices/TasmotaRelay.py",
         "devices/HttpGet.py",
+        "devices/DeviceWithLoop.py",
         "devices/Device.py",
         "core/Instance.py"
     ],
