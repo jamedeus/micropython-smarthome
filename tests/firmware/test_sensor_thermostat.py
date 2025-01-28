@@ -51,7 +51,7 @@ class TestThermostat(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Create test instance, mock device, mock group
-        cls.target = Device('device1', 'target', 'device', True, '70', {})
+        cls.target = Device('device1', 'target', 'device', '70', {})
         cls.instance = Si7021("sensor1", "sensor1", "si7021", 74, {}, "cool", 1, "fahrenheit", [cls.target])
         cls.instance.set_rule(74)
         cls.group = MockGroup('group1', [cls.instance])
