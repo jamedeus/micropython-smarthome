@@ -1,31 +1,11 @@
 import asyncio
-from Device import Device
 
 
-class DeviceWithLoop(Device):
-    '''Base class for all device drivers which use a loop to update their state
-    in response to external changes (user changing brightness from wall dimmer,
-    flipping light switch, etc).
-
-    Args:
-      name:         Unique, sequential config name (device1, device2, etc)
-      nickname:     User-configured friendly name shown on frontend
-      _type:        Instance type, determines driver class and frontend UI
-      default_rule: Fallback rule used when no other valid rules are available
-      schedule:     Dict with timestamps/keywords as keys, rules as values
-
-    Subclasses must implement an async monitor method containing an infinite
-    loop that checks the device state and updates self.current_rule and/or
-    self.state when changes are detected. The loop must await asyncio.sleep at
-    some point to allow other tasks to run (use this to set the polling
-    interval, eg 1 second). The loop should be wrapped in try/except and exit
-    when asyncio.CancelledError is raised.
-
-    The disable method stops the loop to reduce network overhead while the
-    device is disabled. The enable method recreates the loop.
-
-    Supports universal rules ("enabled" and "disabled"). Additional rules can
-    be supported by replacing the validator method in subclass.
+class DeviceWithLoopMixin():
+    '''A mixin for device drivers which use a loop to update their state in
+    response to external changes (user changing brightness from wall dimmer,
+    flipping light switch, etc). Extends the enable and disable methods to
+    start and stop the loop respectively.
     '''
 
     def __init__(self, **kwargs):

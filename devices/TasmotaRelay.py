@@ -1,14 +1,14 @@
 import asyncio
 import requests
 from HttpGet import HttpGet
-from DeviceWithLoop import DeviceWithLoop
+from DeviceWithLoopMixin import DeviceWithLoopMixin
 
 # Paths used by Tasmota to turn on, off
 ON_PATH = 'cm?cmnd=Power%20On'
 OFF_PATH = 'cm?cmnd=Power%20Off'
 
 
-class TasmotaRelay(HttpGet, DeviceWithLoop):
+class TasmotaRelay(DeviceWithLoopMixin, HttpGet):
     '''Driver for smart relays running Tasmota. Makes Tasmota API calls when
     send method called (turn ON if arg is True, turn OFF if arg is False).
 
@@ -41,20 +41,6 @@ class TasmotaRelay(HttpGet, DeviceWithLoop):
         self.monitor_task = asyncio.create_task(self.monitor())
 
         self.log.info("Instantiated, ip=%s", self.uri)
-
-    def enable(self):
-        '''Sets enabled bool to True (allows device to be turned on), ensures
-        current_rule contains a usable value, and turns the device on if group
-        state is True (one or more sensor targeting device has condition met).
-        Restarts monitor loop if stopped (poll device for external changes).
-        '''
-        return DeviceWithLoop.enable(self)
-
-    def disable(self):
-        '''Sets enabled bool to False (prevents device from being turned on),
-        turns device off if currently turned on, and stops monitor loop.
-        '''
-        return DeviceWithLoop.disable(self)
 
     def check_state(self):
         '''Makes API call to get Tasmota relay power state, return response'''
@@ -92,9 +78,3 @@ class TasmotaRelay(HttpGet, DeviceWithLoop):
         except asyncio.CancelledError:
             self.log.debug("Exiting TasmotaRelay.monitor coro")
             return False
-
-    def get_attributes(self):
-        '''Return JSON-serializable dict containing all current attributes
-        Called by API get_attributes endpoint, more verbose than status
-        '''
-        return DeviceWithLoop.get_attributes(self)
