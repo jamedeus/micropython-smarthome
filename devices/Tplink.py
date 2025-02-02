@@ -2,10 +2,10 @@ import socket
 import asyncio
 from struct import pack
 from DimmableLight import DimmableLight
-from DeviceWithLoopMixin import DeviceWithLoopMixin
+from DriverLoopMixin import DriverLoopMixin
 
 
-class Tplink(DeviceWithLoopMixin, DimmableLight):
+class Tplink(DimmableLight):
     '''Driver for TP-Link Kasa dimmers and smart bulbs. Makes API calls to set
     power state and brightness when send method is called.
 
@@ -51,6 +51,20 @@ class Tplink(DeviceWithLoopMixin, DimmableLight):
         self.monitor_task = asyncio.create_task(self.monitor())
 
         self.log.info("Instantiated, ip=%s", self.ip)
+
+    def enable(self):
+        '''Sets enabled bool to True (allows device to be turned on), ensures
+        current_rule contains a usable value, and turns the device on if group
+        state is True (one or more sensor targeting device has condition met).
+        Restarts monitor loop if stopped (poll device for external changes).
+        '''
+        return DriverLoopMixin.enable(self, DimmableLight)
+
+    def disable(self):
+        '''Sets enabled bool to False (prevents device from being turned on),
+        turns device off if currently turned on, and stops monitor loop.
+        '''
+        return DriverLoopMixin.disable(self, DimmableLight)
 
     def encrypt(self, string):
         '''Encrypts an API call using TP-Link's very weak algorithm.'''
@@ -210,3 +224,9 @@ class Tplink(DeviceWithLoopMixin, DimmableLight):
         except asyncio.CancelledError:
             self.log.debug("Exiting Tplink.monitor coro")
             return False
+
+    def get_attributes(self):
+        '''Return JSON-serializable dict containing all current attributes
+        Called by API get_attributes endpoint, more verbose than status
+        '''
+        return DriverLoopMixin.get_attributes(self, DimmableLight)

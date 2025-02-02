@@ -5,9 +5,9 @@
     "dependencies": [
         "devices/TasmotaRelay.py",
         "devices/HttpGet.py",
-        "devices/DeviceWithLoopMixin.py",
         "devices/Device.py",
-        "core/Instance.py"
+        "core/Instance.py",
+        "core/DriverLoopMixin.py"
     ],
     "config_template": {
         "_type": "tasmota-relay",
